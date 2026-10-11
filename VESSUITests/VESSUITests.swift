@@ -106,9 +106,13 @@ final class VESSUITests: XCTestCase {
         type("Lentil soup", into: app.textFields["Food"])
         type("320", into: app.textFields["Calories"])
         XCTAssertTrue(submit.isEnabled)
-        submit.tap()
 
-        XCTAssertTrue(app.staticTexts["Lentil soup"].waitForExistence(timeout: 10))
+        submitAndConfirmDismissal(submit, in: app)
+
+        // The diary row combines name and detail for VoiceOver ("Lentil soup, Quick add …").
+        let entry = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "Lentil soup")).firstMatch
+        XCTAssertTrue(entry.waitForExistence(timeout: 10), "The new entry appears in the diary")
     }
 
     // MARK: Navigation
@@ -160,6 +164,12 @@ final class VESSUITests: XCTestCase {
         if done.exists && done.isHittable { done.tap() }
     }
 
+    /// Replaces a field's contents with `text` and verifies the result.
+    ///
+    /// Deterministic by construction: waits until the field can be tapped,
+    /// confirms focus by predicate (not a fixed sleep), clears anything already
+    /// in the field, then asserts the field holds exactly `text`. A dropped or
+    /// duplicated keystroke fails here, at its source.
     @MainActor
     private func type(_ text: String, into field: XCUIElement) {
         XCTAssertTrue(field.waitForExistence(timeout: 10), "Missing field \(field)")
@@ -168,16 +178,58 @@ final class VESSUITests: XCTestCase {
         if !field.isHittable {
             dismissKeyboard(in: XCUIApplication())
         }
-        let hittable = expectation(for: NSPredicate(format: "isHittable == true"), evaluatedWith: field)
-        wait(for: [hittable], timeout: 10)
+        waitFor(field, "isHittable == true")
 
-        // A tap during a sheet's presentation can be dropped; retry until focused.
-        for _ in 0..<3 {
+        // A tap during a sheet's presentation can be dropped: tap, wait for
+        // focus, and tap once more only if focus didn't arrive.
+        field.tap()
+        if !wait(for: field, "hasKeyboardFocus == true", timeout: 3) {
             field.tap()
-            if (field.value(forKey: "hasKeyboardFocus") as? Bool) == true { break }
-            Thread.sleep(forTimeInterval: 0.5)
         }
-        XCTAssertEqual(field.value(forKey: "hasKeyboardFocus") as? Bool, true, "Field never took focus: \(field)")
-        field.typeText(text)
+        waitFor(field, "hasKeyboardFocus == true")
+
+        // Clear, type, and verify. On a heavily loaded Simulator the software
+        // keyboard can drop keystrokes, so one clean retry is allowed; the
+        // field must still end up holding exactly `text`.
+        for _ in 0..<2 {
+            clear(field)
+            field.typeText(text)
+            if field.value as? String == text { break }
+        }
+        XCTAssertEqual(field.value as? String, text, "Field holds exactly what was typed")
+    }
+
+    /// Deletes any text in a focused field (placeholder text is not content).
+    @MainActor
+    private func clear(_ field: XCUIElement) {
+        guard let current = field.value as? String, !current.isEmpty, current != field.placeholderValue else { return }
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count))
+    }
+
+    /// Closes the keyboard through its Done button, waits for the submit
+    /// button to become tappable, submits, and asserts the sheet closed.
+    @MainActor
+    private func submitAndConfirmDismissal(_ submit: XCUIElement, in app: XCUIApplication) {
+        let done = app.buttons["keyboard.done"]
+        if done.exists {
+            done.tap()
+            waitFor(done, "exists == false")
+        }
+        waitFor(submit, "isHittable == true")
+        submit.tap()
+        waitFor(submit, "exists == false")
+    }
+
+    /// Waits for `predicate` on `element`, failing the test if it never holds.
+    @MainActor
+    private func waitFor(_ element: XCUIElement, _ predicate: String, timeout: TimeInterval = 10) {
+        XCTAssertTrue(wait(for: element, predicate, timeout: timeout), "Timed out waiting for \(predicate) on \(element)")
+    }
+
+    /// Waits for `predicate` on `element`; returns whether it held in time.
+    @MainActor
+    private func wait(for element: XCUIElement, _ predicate: String, timeout: TimeInterval) -> Bool {
+        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: predicate), object: element)
+        return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
     }
 }
