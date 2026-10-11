@@ -116,7 +116,7 @@ struct TodayView: View {
         .animation(.snappy, value: undoLog?.id)
         .sensoryFeedback(.success, trigger: waterAddCount)
         .sheet(item: $addFood) { request in
-            AddFoodSheet(request: request)
+            FoodSearchSheet(request: request)
         }
         .vessErrorAlert(isPresented: $showError)
     }
@@ -163,18 +163,18 @@ struct TodayView: View {
 #Preview("Sample day") {
     @Previewable @State var tab = AppTab.today
     TodayView(selectedTab: $tab)
-        .environment(LocalStore.preview())
+        .previewEnvironment(LocalStore.preview())
 }
 
 #Preview("First day") {
     @Previewable @State var tab = AppTab.today
     TodayView(selectedTab: $tab)
-        .environment(LocalStore.preview(.profileOnly))
+        .previewEnvironment(LocalStore.preview(.profileOnly))
 }
 
 #Preview("Sample day, dark") {
     @Previewable @State var tab = AppTab.today
     TodayView(selectedTab: $tab)
-        .environment(LocalStore.preview())
+        .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }

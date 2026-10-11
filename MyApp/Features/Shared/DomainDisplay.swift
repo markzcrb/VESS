@@ -57,13 +57,6 @@ nonisolated extension MealType: Identifiable {
     var id: Self { self }
 }
 
-/// A request to open the Add food sheet for a meal on a day.
-struct AddFoodRequest: Identifiable {
-    let id = UUID()
-    var meal: MealType
-    var day: Date
-}
-
 extension WellnessGoal {
     var title: LocalizedStringResource {
         switch self {
@@ -192,6 +185,60 @@ extension StorageLocation {
         case .pantry: "Pantry"
         case .other: "Other"
         }
+    }
+}
+
+extension CoreNutrient {
+    var title: LocalizedStringResource {
+        switch self {
+        case .calories: "Calories"
+        case .protein: "Protein"
+        case .carbohydrates: "Carbs"
+        case .fat: "Fat"
+        }
+    }
+
+    /// Lowercase, for use mid-sentence ("protein", "carbs").
+    var inlineName: LocalizedStringResource {
+        switch self {
+        case .calories: "calories"
+        case .protein: "protein"
+        case .carbohydrates: "carbs"
+        case .fat: "fat"
+        }
+    }
+}
+
+extension Food {
+    /// One honest line about where the values come from.
+    var provenanceText: LocalizedStringResource {
+        switch source {
+        case .openFoodFacts: "Community data from Open Food Facts · not verified"
+        case .starterCatalog: "Typical values from USDA FoodData Central"
+        case .userCreated: "Your food"
+        case .aiEstimate: "Estimate"
+        case .foodDatabase, .barcodeScan: "Food database"
+        }
+    }
+
+    /// The default portion as text, such as "1 medium (118 g)" or "100 g".
+    var defaultPortionText: String {
+        defaultPortion.text(unit: servingUnit)
+    }
+}
+
+extension Portion {
+    /// "1 medium (118 g)", "1.5 × 1 slice (48 g)" or "150 g".
+    func text(unit: QuantityUnit) -> String {
+        let unitText = String(localized: unit.abbreviation)
+        if option.isBaseUnit {
+            return "\(VESSFormat.quantity(count)) \(unitText)"
+        }
+        let total = "\(VESSFormat.quantity(baseAmount)) \(unitText)"
+        if count == 1 {
+            return "\(option.label) (\(total))"
+        }
+        return "\(VESSFormat.quantity(count)) × \(option.label) (\(total))"
     }
 }
 

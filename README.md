@@ -76,7 +76,7 @@ automatically. Replace the PNGs in `AppIcon.appiconset` with the final icons.
 |---|---|---|
 | 0 | Architecture, design system, structure, models, navigation, mock data | ✅ Done |
 | 1 | Onboarding, Today, Nutrition day diary with quick add, drinks with hydration contribution, navigation | ✅ Done |
-| 2 | Food database, search, barcode, meals, profile editing | Next |
+| 2 | Food catalog and search, Open Food Facts lookup, portions, meal assignment, editing entries, custom foods | ✅ Done (camera scanning and profile editing deferred) |
 | 3 | Hydration, drinks, water reminders | |
 | 4 | Activity, workouts, calendar, completion | |
 | 5 | Food inventory, grocery list, expiration tracking | |
@@ -85,6 +85,38 @@ automatically. Replace the PNGs in `AppIcon.appiconset` with the final icons.
 | 8 | AI | |
 | 9 | StoreKit 2, VESS+ | |
 | 10 | QA, performance, accessibility, App Store preparation | |
+
+---
+
+## Food data
+
+- **Starter catalog** (`Data/Catalog/StarterCatalog.swift`): about 35 common
+  foods with typical values per 100 g / 100 ml from USDA FoodData Central
+  (public domain). Compiled into the app, so it works offline. IDs are
+  derived from a stable key, so they never change between launches.
+- **Your foods**: foods you create, products you open or log, and favorites
+  are saved on the device (SwiftData). Logged entries keep a nutrition
+  snapshot, so history never changes if a food is edited.
+- **Open Food Facts** (`Data/Remote/`): online text search
+  (Search-a-licious) and barcode lookup (`/api/v3/product/{barcode}`). Reads
+  need no account or key. Data is community-contributed, shown as "not
+  verified", and attributed in the app under the Open Database License
+  (ODbL). Product images are not used. The client stays within the published
+  limits (15 product reads and 10 searches per minute) and honors HTTP 429.
+  Products are cached on the device and keep working offline.
+- **Unknown is not zero**: a nutrient a source doesn't report is shown as
+  "Not reported" and never counted as 0. A product without calories can't be
+  logged.
+- **Before release**: add a public contact (URL or email of the project, never
+  a user's data) to the Open Food Facts User-Agent in
+  `OpenFoodFactsClient.Configuration`.
+- **Later**: USDA FoodData Central can be added as a second
+  `RemoteFoodProvider` (needs a free API key, which must not be embedded in
+  the app). Camera barcode scanning needs a camera permission text
+  (`NSCameraUsageDescription`) and is not added yet; barcodes can be typed in.
+
+UI tests run with `-uiTesting`, which replaces Open Food Facts with an
+offline provider, so tests never touch the network.
 
 ---
 

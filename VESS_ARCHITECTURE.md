@@ -115,7 +115,8 @@ boundaries. Not needed yet.
 | HealthKit | Phase 7 | read weight/steps/workouts/sleep, write nutrition/water/workouts |
 | UserNotifications | Phase 3 | optional reminders |
 | StoreKit 2 | Phase 9 | VESS+ subscriptions |
-| Vision / VisionKit | Phase 2 | barcode scanning (`DataScannerViewController`) |
+| Vision / VisionKit | deferred | camera barcode scanning (`DataScannerViewController`); needs an approved camera permission text |
+| Open Food Facts API | Phase 2 | product search and barcode lookup over HTTPS with `URLSession`; no SDK, no key |
 | [supabase-swift](https://github.com/supabase/supabase-swift) | Phase 7+ | Auth, Postgres, Storage, Edge Functions. Only third-party dependency planned |
 
 No third-party packages are installed today.
@@ -183,6 +184,30 @@ View ──intent──▶ ScreenModel (@Observable, @MainActor)
   Word, pace, macros, hydration), `NutritionTargetCalculator`, meal suggestions.
 - Workouts, inventory and insights are not persisted yet (Phases 4–6). In
   production they are empty, so their Today sections stay hidden.
+
+**As built in Phase 2 (food data):**
+
+- `StoredFood` keeps saved foods (custom foods, opened or logged Open Food
+  Facts products, favorites) with `id`, a normalized `searchKey`, `barcode`
+  and `isFavorite` as query columns, plus the `Food` as JSON.
+- `StarterCatalog` (`Data/Catalog/`) is compiled in. `LocalStore.food(id:)`
+  checks saved foods first, then the catalog. `searchLocalFoods` ranks both
+  with the pure `FoodSearch` rules (`Domain/Rules/`) and never uses the network.
+- `RemoteFoodProvider` (`Data/Remote/`) is the seam for online sources.
+  `OpenFoodFactsClient` (an actor) implements it with a local sliding-window
+  `RateLimiter`, a 10 s timeout, typed `FoodProviderError`s and an
+  injectable `HTTPClient` for tests. `OpenFoodFactsMapper` maps products,
+  marking missing core nutrients in `NutritionFacts.unreportedCoreNutrients`.
+  A USDA FoodData Central provider would be a second conformance; its API
+  key would have to go through a backend proxy, never into the app.
+- `FoodLookupService` (`@Observable`, injected with `.environment`) combines
+  the store and the provider: a cached product younger than 30 days wins;
+  if the network fails, a stale cached copy is still returned; remote
+  products are cached when opened or logged. Under `-uiTesting` the provider
+  is `OfflineFoodProvider`.
+- `FoodLogEntry` stores the portion label and amount used, and editing
+  rescales the entry's own snapshot (`updated(portionCount:mealType:)`), so
+  results are deterministic and independent of later food changes.
 
 **Sample data** (`MockData`) is compiled only into Debug builds. It's used by
 previews, unit tests, and the `-seedSampleData` launch argument, always in

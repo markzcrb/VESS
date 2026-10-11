@@ -32,6 +32,28 @@ final class StoredFoodLogEntry {
     }
 }
 
+/// A food saved on this device: user-created, cached from an online
+/// provider, or a catalog food the user marked as a favorite.
+@Model
+final class StoredFood {
+    @Attribute(.unique) var id: UUID
+    /// Normalized name and brand, for search (see `FoodSearch.normalized`).
+    var searchKey: String
+    var barcode: String?
+    var isFavorite: Bool
+    var updatedAt: Date
+    var payload: Data
+
+    init(id: UUID, searchKey: String, barcode: String?, isFavorite: Bool, updatedAt: Date, payload: Data) {
+        self.id = id
+        self.searchKey = searchKey
+        self.barcode = barcode
+        self.isFavorite = isFavorite
+        self.updatedAt = updatedAt
+        self.payload = payload
+    }
+}
+
 @Model
 final class StoredHydrationLog {
     @Attribute(.unique) var id: UUID

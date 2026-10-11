@@ -4,11 +4,18 @@ import SwiftUI
 /// Opens the local store, then shows onboarding or the main tabs depending
 /// on whether a profile exists.
 struct AppRootView: View {
-    @State private var store: LocalStore? = Self.makeStore()
+    @State private var store: LocalStore?
+    @State private var lookup: FoodLookupService?
+
+    init() {
+        let store = Self.makeStore()
+        _store = State(initialValue: store)
+        _lookup = State(initialValue: store.map { Self.makeLookup(store: $0) })
+    }
 
     var body: some View {
         Group {
-            if let store {
+            if let store, let lookup {
                 Group {
                     if store.profile == nil {
                         OnboardingFlow()
@@ -19,9 +26,13 @@ struct AppRootView: View {
                     }
                 }
                 .environment(store)
+                .environment(lookup)
                 .animation(.default, value: store.profile == nil)
             } else {
-                StoreUnavailableView { store = Self.makeStore() }
+                StoreUnavailableView {
+                    store = Self.makeStore()
+                    lookup = store.map { Self.makeLookup(store: $0) }
+                }
             }
         }
         .tint(VESSColor.accent)
@@ -48,6 +59,17 @@ struct AppRootView: View {
             Logger(subsystem: "VESS", category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
             return nil
         }
+    }
+
+    /// Online lookups use Open Food Facts. UI tests (`-uiTesting`) never touch
+    /// the network, so they behave as if offline.
+    private static func makeLookup(store: LocalStore) -> FoodLookupService {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-uiTesting") {
+            return FoodLookupService(store: store, provider: OfflineFoodProvider())
+        }
+        #endif
+        return FoodLookupService(store: store, provider: OpenFoodFactsClient())
     }
 }
 

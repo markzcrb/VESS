@@ -37,11 +37,11 @@ struct RootTabView: View {
 
 #Preview("Light") {
     RootTabView()
-        .environment(LocalStore.preview())
+        .previewEnvironment(LocalStore.preview())
 }
 
 #Preview("Dark") {
     RootTabView()
-        .environment(LocalStore.preview())
+        .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }

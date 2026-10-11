@@ -18,9 +18,11 @@ nonisolated struct NutrientID: RawRepresentable, Hashable, Codable, CodingKeyRep
 
 /// Nutrition values for one amount of food.
 ///
-/// The four core values are always present. Fiber, sugar and sodium are
-/// optional because many food sources don't report them, and "unknown"
-/// must not be shown as zero.
+/// Fiber, sugar and sodium are optional because many sources don't report
+/// them, and "unknown" must not be shown as zero. The four core values are
+/// stored as numbers, but a source can leave one unreported: it is then listed
+/// in `unreportedCoreNutrients`, its stored value is 0 only as a placeholder,
+/// and the UI shows "Not reported" instead of a number.
 nonisolated struct NutritionFacts: Codable, Hashable, Sendable {
     var calories: Double
     var proteinGrams: Double
@@ -31,11 +33,30 @@ nonisolated struct NutritionFacts: Codable, Hashable, Sendable {
     var sodiumMilligrams: Double?
     /// Any other nutrients, keyed by identifier. Units are per `NutrientID` convention.
     var additional: [NutrientID: Double] = [:]
+    /// Core values the source did not report. `nil` (older data) means all reported.
+    var unreportedCoreNutrients: Set<CoreNutrient>? = nil
 
     static let zero = NutritionFacts(calories: 0, proteinGrams: 0, carbohydrateGrams: 0, fatGrams: 0)
 }
 
+/// The four values every VESS nutrition summary is built on.
+nonisolated enum CoreNutrient: String, Codable, CaseIterable, Sendable {
+    case calories
+    case protein
+    case carbohydrates
+    case fat
+}
+
 nonisolated extension NutritionFacts {
+    /// Whether `nutrient` has a real, reported value.
+    func isReported(_ nutrient: CoreNutrient) -> Bool {
+        !(unreportedCoreNutrients?.contains(nutrient) ?? false)
+    }
+
+    /// Calories are required to log a food: without them it can't count
+    /// toward the day.
+    var canBeLogged: Bool { isReported(.calories) }
+
     /// Returns these values multiplied by `factor`, for example 1.5 servings.
     func scaled(by factor: Double) -> NutritionFacts {
         NutritionFacts(
@@ -46,14 +67,17 @@ nonisolated extension NutritionFacts {
             fiberGrams: fiberGrams.map { $0 * factor },
             sugarGrams: sugarGrams.map { $0 * factor },
             sodiumMilligrams: sodiumMilligrams.map { $0 * factor },
-            additional: additional.mapValues { $0 * factor }
+            additional: additional.mapValues { $0 * factor },
+            unreportedCoreNutrients: unreportedCoreNutrients
         )
     }
 
     /// Sums two sets of values. An optional nutrient is known in the result
-    /// if either side knows it.
+    /// if either side knows it. A core nutrient unreported on either side is
+    /// unreported in the total, so the total is never presented as complete.
     static func + (lhs: NutritionFacts, rhs: NutritionFacts) -> NutritionFacts {
-        NutritionFacts(
+        let unreported = (lhs.unreportedCoreNutrients ?? []).union(rhs.unreportedCoreNutrients ?? [])
+        return NutritionFacts(
             calories: lhs.calories + rhs.calories,
             proteinGrams: lhs.proteinGrams + rhs.proteinGrams,
             carbohydrateGrams: lhs.carbohydrateGrams + rhs.carbohydrateGrams,
@@ -61,7 +85,8 @@ nonisolated extension NutritionFacts {
             fiberGrams: sum(lhs.fiberGrams, rhs.fiberGrams),
             sugarGrams: sum(lhs.sugarGrams, rhs.sugarGrams),
             sodiumMilligrams: sum(lhs.sodiumMilligrams, rhs.sodiumMilligrams),
-            additional: lhs.additional.merging(rhs.additional, uniquingKeysWith: +)
+            additional: lhs.additional.merging(rhs.additional, uniquingKeysWith: +),
+            unreportedCoreNutrients: unreported.isEmpty ? nil : unreported
         )
     }
 

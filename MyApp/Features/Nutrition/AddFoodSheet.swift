@@ -1,14 +1,23 @@
 import SwiftUI
 
-/// Quick add: log a food by entering what you know. Search, barcode and
-/// photo logging build on this sheet in later phases.
-struct AddFoodSheet: View {
+/// A request to open the food sheet for a meal on a day.
+struct AddFoodRequest: Identifiable {
+    let id = UUID()
+    var meal: MealType
+    var day: Date
+}
+
+/// Quick add: log a food by entering what you know, without a product.
+/// Shown inside `FoodSearchSheet`. A macro left empty is saved as
+/// "not reported", never as zero.
+struct QuickAddForm: View {
     @Environment(LocalStore.self) private var store
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private let day: Date
-    @State private var meal: MealType
+    let day: Date
+    @Binding var meal: MealType
+    let onLogged: () -> Void
+
     @State private var name = ""
     @State private var calories = ""
     @State private var protein = ""
@@ -18,82 +27,41 @@ struct AddFoodSheet: View {
 
     private let calendar = Calendar.current
 
-    init(request: AddFoodRequest) {
-        day = request.day
-        _meal = State(initialValue: request.meal)
-    }
-
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                    header
+        ScrollView {
+            VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                MealPickerHeader(title: "Add to", subtitle: "Quick add", meal: $meal)
 
-                    VESSTextField("Food", text: $name, prompt: Text("For example, chicken salad"))
-                        .textInputAutocapitalization(.sentences)
-                        .accessibilityIdentifier("addFood.name")
+                VESSTextField("Food", text: $name, prompt: Text("For example, chicken salad"))
+                    .textInputAutocapitalization(.sentences)
+                    .accessibilityIdentifier("addFood.name")
 
-                    VESSTextField("Calories", text: $calories, unit: "kcal")
-                        .keyboardType(.numberPad)
-                        .accessibilityIdentifier("addFood.calories")
+                VESSTextField("Calories", text: $calories, unit: "kcal")
+                    .keyboardType(.numberPad)
+                    .accessibilityIdentifier("addFood.calories")
 
-                    macroFields
+                macroFields
 
-                    Text("Leave macros empty if you don't know them.")
-                        .vessTextStyle(.label)
-                }
-                .padding(.horizontal, VESSSpacing.screenInset)
-                .padding(.bottom, VESSSpacing.xl)
+                Text("Leave a macro empty if you don't know it. It shows as not reported, not as zero.")
+                    .vessTextStyle(.label)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .scrollDismissesKeyboard(.interactively)
-            .background(VESSColor.card)
-            .safeAreaInset(edge: .bottom) {
-                Button(action: add) {
-                    Text("Add to \(Text(meal.title))")
-                }
-                .buttonStyle(.vessPrimary)
-                .disabled(entry == nil)
-                .padding(.horizontal, VESSSpacing.screenInset)
-                .padding(.vertical, VESSSpacing.sm)
-                .background(VESSColor.card)
-                .accessibilityIdentifier("addFood.submit")
-            }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .close) { dismiss() }
-                }
-            }
-            .vessErrorAlert(isPresented: $showError, retry: add)
-            .vessKeyboardDoneButton()
+            .padding(.horizontal, VESSSpacing.screenInset)
+            .padding(.bottom, VESSSpacing.xl)
         }
-        .presentationDetents([.large])
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                Text("Add to")
-                    .vessTextStyle(.detailTitle)
-                Menu {
-                    Picker("Meal", selection: $meal) {
-                        ForEach(MealType.dayOrder) { meal in
-                            Text(meal.title).tag(meal)
-                        }
-                    }
-                } label: {
-                    HStack(spacing: VESSSpacing.xxs) {
-                        Text(meal.title)
-                        Image(systemName: "chevron.down")
-                            .font(.subheadline.weight(.semibold))
-                    }
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(VESSColor.accent)
-                }
-                .accessibilityLabel(Text("Meal: \(Text(meal.title))"))
+        .scrollDismissesKeyboard(.interactively)
+        .background(VESSColor.card)
+        .vessBottomAction {
+            Button(action: add) {
+                Text("Add to \(Text(meal.title))")
             }
-            Text("Quick add")
-                .vessTextStyle(.secondary)
+            .buttonStyle(.vessPrimary)
+            .disabled(entry == nil)
+            .accessibilityIdentifier("addFood.submit")
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .vessErrorAlert(isPresented: $showError, retry: add)
+        .vessKeyboardDoneButton()
     }
 
     private var macroFields: some View {
@@ -113,9 +81,9 @@ struct AddFoodSheet: View {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty,
               let kcal = VESSFormat.number(from: calories), (0...5000).contains(kcal),
-              let proteinGrams = optionalGrams(protein),
-              let carbGrams = optionalGrams(carbs),
-              let fatGrams = optionalGrams(fat)
+              let proteinGrams = NutrientInput.grams(protein),
+              let carbGrams = NutrientInput.grams(carbs),
+              let fatGrams = NutrientInput.grams(fat)
         else { return nil }
 
         return FoodLogEntry(
@@ -126,21 +94,10 @@ struct AddFoodSheet: View {
             mealType: meal,
             quantity: 1,
             servingUnit: .serving,
-            nutrition: NutritionFacts(
-                calories: kcal,
-                proteinGrams: proteinGrams,
-                carbohydrateGrams: carbGrams,
-                fatGrams: fatGrams
-            ),
-            loggedAt: logTime
+            nutrition: NutrientInput.facts(calories: kcal, protein: proteinGrams, carbs: carbGrams, fat: fatGrams),
+            loggedAt: logTime,
+            source: .userCreated
         )
-    }
-
-    /// Empty means 0; otherwise the value must be a plausible gram amount.
-    private func optionalGrams(_ text: String) -> Double? {
-        if text.trimmingCharacters(in: .whitespaces).isEmpty { return 0 }
-        guard let value = VESSFormat.number(from: text), (0...1000).contains(value) else { return nil }
-        return value
     }
 
     /// Now for today; the meal's typical time for a past day.
@@ -154,17 +111,35 @@ struct AddFoodSheet: View {
         guard let entry else { return }
         do {
             try store.add(entry)
-            dismiss()
+            onLogged()
         } catch {
             showError = true
         }
     }
 }
 
-#Preview {
-    Color.clear
-        .sheet(isPresented: .constant(true)) {
-            AddFoodSheet(request: AddFoodRequest(meal: .dinner, day: .now))
-                .environment(LocalStore.preview(.profileOnly))
-        }
+/// Parsing for nutrient fields where empty means "not reported".
+enum NutrientInput {
+    /// `.some(nil)` for an empty field (unreported), `.some(value)` for a
+    /// plausible gram amount, `nil` for invalid input.
+    static func grams(_ text: String) -> Double?? {
+        if text.trimmingCharacters(in: .whitespaces).isEmpty { return .some(nil) }
+        guard let value = VESSFormat.number(from: text), (0...1000).contains(value) else { return nil }
+        return .some(value)
+    }
+
+    /// Builds nutrition facts, marking empty macros as unreported.
+    static func facts(calories: Double, protein: Double?, carbs: Double?, fat: Double?) -> NutritionFacts {
+        var unreported = Set<CoreNutrient>()
+        if protein == nil { unreported.insert(.protein) }
+        if carbs == nil { unreported.insert(.carbohydrates) }
+        if fat == nil { unreported.insert(.fat) }
+        return NutritionFacts(
+            calories: calories,
+            proteinGrams: protein ?? 0,
+            carbohydrateGrams: carbs ?? 0,
+            fatGrams: fat ?? 0,
+            unreportedCoreNutrients: unreported.isEmpty ? nil : unreported
+        )
+    }
 }

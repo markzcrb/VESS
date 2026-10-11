@@ -83,6 +83,7 @@ struct MealDiarySection: View {
     let meal: MealType
     let entries: [FoodLogEntry]
     let onAdd: () -> Void
+    let onEdit: (FoodLogEntry) -> Void
     let onDelete: (FoodLogEntry) -> Void
 
     var body: some View {
@@ -92,18 +93,26 @@ struct MealDiarySection: View {
             if !entries.isEmpty {
                 VESSRowGroup {
                     ForEach(entries) { entry in
-                        VESSRow(
-                            title: Text(entry.foodName),
-                            subtitle: subtitle(for: entry),
-                            trailing: {
-                                Text(VESSFormat.calories(entry.nutrition.calories))
-                                    .font(.body.monospacedDigit())
-                                    .foregroundStyle(VESSColor.text)
-                            }
-                        )
+                        Button {
+                            onEdit(entry)
+                        } label: {
+                            VESSRow(
+                                title: Text(entry.foodName),
+                                subtitle: subtitle(for: entry),
+                                trailing: {
+                                    Text(VESSFormat.calories(entry.nutrition.calories))
+                                        .font(.body.monospacedDigit())
+                                        .foregroundStyle(VESSColor.text)
+                                }
+                            )
+                        }
+                        .buttonStyle(.plain)
                         .accessibilityElement(children: .combine)
                         .accessibilityValue(Text("\(VESSFormat.calories(entry.nutrition.calories)) kcal"))
+                        .accessibilityHint(Text("Edit or delete"))
+                        .accessibilityIdentifier("entry.\(entry.foodName)")
                         .contextMenu {
+                            Button("Edit", systemImage: "pencil") { onEdit(entry) }
                             Button("Delete", systemImage: "trash", role: .destructive) { onDelete(entry) }
                         }
                         .accessibilityAction(named: "Delete") { onDelete(entry) }
@@ -120,7 +129,15 @@ struct MealDiarySection: View {
 
     private func subtitle(for entry: FoodLogEntry) -> Text {
         if entry.foodID == nil {
+            guard entry.nutrition.isReported(.protein) else { return Text("Quick add") }
             return Text("Quick add · \(VESSFormat.grams(entry.nutrition.proteinGrams)) g protein")
+        }
+        if let label = entry.portionLabel, entry.portionAmount != nil {
+            let count = entry.portionCount
+            let total = Text("\(VESSFormat.quantity(entry.quantity)) \(Text(entry.servingUnit.abbreviation))")
+            return count == 1
+                ? Text("\(label) · \(total)")
+                : Text("\(VESSFormat.quantity(count)) × \(label) · \(total)")
         }
         if entry.servingUnit == .piece {
             return Text("^[\(VESSFormat.quantity(entry.quantity)) piece](inflect: true)")

@@ -35,7 +35,24 @@ struct CaloriesOverview: View {
 
             MacroSummaryView(consumed: summary.consumed, targets: summary.targets)
                 .padding(.top, VESSSpacing.xs)
+
+            if let note = unreportedNote {
+                Text(note)
+                    .vessTextStyle(.label)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
+    }
+
+    /// Macro totals only count what was reported; say so rather than imply zero.
+    private var unreportedNote: String? {
+        guard let unreported = summary.consumed.unreportedCoreNutrients?.subtracting([.calories]),
+              !unreported.isEmpty else { return nil }
+        let names = CoreNutrient.allCases
+            .filter(unreported.contains)
+            .map { String(localized: $0.inlineName) }
+            .formatted(.list(type: .and))
+        return String(localized: "Some foods don't report \(names), so those totals may be low.")
     }
 
     private var remainingText: String {

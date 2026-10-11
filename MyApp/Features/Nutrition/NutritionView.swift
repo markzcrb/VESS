@@ -6,6 +6,7 @@ struct NutritionView: View {
     @State private var selectedDay = Date.now
     @State private var addFood: AddFoodRequest?
     @State private var addDrinkDay: Date?
+    @State private var editing: FoodLogEntry?
     @State private var showError = false
 
     private let calendar = Calendar.current
@@ -68,6 +69,7 @@ struct NutritionView: View {
                             meal: meal,
                             entries: entries.entries(for: meal),
                             onAdd: { addFood = AddFoodRequest(meal: meal, day: selectedDay) },
+                            onEdit: { editing = $0 },
                             onDelete: { delete(entry: $0) }
                         )
                     }
@@ -89,7 +91,10 @@ struct NutritionView: View {
             }
         }
         .sheet(item: $addFood) { request in
-            AddFoodSheet(request: request)
+            FoodSearchSheet(request: request)
+        }
+        .sheet(item: $editing) { entry in
+            EditEntrySheet(entry: entry)
         }
         .sheet(item: Binding(
             get: { addDrinkDay.map(DrinkSheetDay.init) },
@@ -133,16 +138,16 @@ private struct DrinkSheetDay: Identifiable {
 
 #Preview("Sample day") {
     NutritionView()
-        .environment(LocalStore.preview())
+        .previewEnvironment(LocalStore.preview())
 }
 
 #Preview("Empty day") {
     NutritionView()
-        .environment(LocalStore.preview(.profileOnly))
+        .previewEnvironment(LocalStore.preview(.profileOnly))
 }
 
 #Preview("Sample day, dark") {
     NutritionView()
-        .environment(LocalStore.preview())
+        .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }

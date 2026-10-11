@@ -10,10 +10,17 @@ nonisolated struct FoodLogEntry: Identifiable, Codable, Hashable, Sendable {
     var foodID: UUID?
     var foodName: String
     var mealType: MealType
+    /// Amount logged, in `servingUnit`.
     var quantity: Double
     var servingUnit: QuantityUnit
     var nutrition: NutritionFacts
     var loggedAt: Date
+    /// The named portion used, such as "1 slice", if any.
+    var portionLabel: String? = nil
+    /// Size of one `portionLabel` portion in `servingUnit`.
+    var portionAmount: Double? = nil
+    /// Where the food's data came from when it was logged.
+    var source: FoodSource? = nil
 }
 
 nonisolated extension FoodLogEntry {
@@ -35,8 +42,45 @@ nonisolated extension FoodLogEntry {
             quantity: quantity,
             servingUnit: food.servingUnit,
             nutrition: food.nutrition(forQuantity: quantity),
-            loggedAt: loggedAt
+            loggedAt: loggedAt,
+            source: food.source
         )
+    }
+
+    /// Creates an entry for a chosen portion of `food`, with a nutrition
+    /// snapshot so later edits to the food never change history.
+    init(
+        id: UUID = UUID(),
+        userID: UUID,
+        food: Food,
+        portion: Portion,
+        mealType: MealType,
+        loggedAt: Date
+    ) {
+        self.init(id: id, userID: userID, food: food, quantity: portion.baseAmount, mealType: mealType, loggedAt: loggedAt)
+        if !portion.option.isBaseUnit {
+            portionLabel = portion.option.label
+            portionAmount = portion.option.amount
+        }
+    }
+
+    /// How many portions (or base units) this entry represents, for editing.
+    var portionCount: Double {
+        guard let portionAmount, portionAmount > 0 else { return quantity }
+        return quantity / portionAmount
+    }
+
+    /// A copy with a new portion count and meal. Nutrition is rescaled from
+    /// this entry's own snapshot, so the result is deterministic and never
+    /// depends on the food's current data.
+    func updated(portionCount newCount: Double, mealType newMeal: MealType) -> FoodLogEntry {
+        var copy = self
+        copy.mealType = newMeal
+        let newQuantity = (portionAmount ?? 1) * newCount
+        guard quantity > 0, newQuantity > 0 else { return copy }
+        copy.nutrition = nutrition.scaled(by: newQuantity / quantity)
+        copy.quantity = newQuantity
+        return copy
     }
 }
 

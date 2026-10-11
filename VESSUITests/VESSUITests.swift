@@ -98,6 +98,7 @@ final class VESSUITests: XCTestCase {
 
         app.tabBars.buttons["Nutrition"].tap()
         app.buttons["nutrition.addFood"].tap()
+        tapWhenReady(app.buttons["foodSearch.quickAdd"])
 
         let submit = app.buttons["addFood.submit"]
         XCTAssertTrue(submit.waitForExistence(timeout: 10))
@@ -105,14 +106,53 @@ final class VESSUITests: XCTestCase {
 
         type("Lentil soup", into: app.textFields["Food"])
         type("320", into: app.textFields["Calories"])
-        XCTAssertTrue(submit.isEnabled)
 
+        // Asserts the button is enabled once the keyboard is closed, then submits.
         submitAndConfirmDismissal(submit, in: app)
 
         // The diary row combines name and detail for VoiceOver ("Lentil soup, Quick add …").
         let entry = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label BEGINSWITH %@", "Lentil soup")).firstMatch
         XCTAssertTrue(entry.waitForExistence(timeout: 10), "The new entry appears in the diary")
+    }
+
+    @MainActor
+    func testSearchLogEditAndDeleteCatalogFood() throws {
+        let app = launch(seeded: true)
+
+        app.tabBars.buttons["Nutrition"].tap()
+        app.buttons["nutrition.addFood"].tap()
+
+        // Local results appear without the network; UI tests run offline,
+        // so the online section must say so instead of failing silently.
+        type("Lentils", into: app.searchFields.firstMatch)
+        let onlineMessage = app.staticTexts["foodSearch.onlineMessage"]
+        XCTAssertTrue(onlineMessage.waitForExistence(timeout: 10))
+        XCTAssertTrue(onlineMessage.label.contains("offline"), "Offline is explained: \(onlineMessage.label)")
+
+        tapWhenReady(app.buttons["foodRow.Lentils, cooked"])
+        let add = app.buttons["foodDetail.add"]
+        waitFor(add, "isHittable == true")
+        XCTAssertTrue(app.staticTexts["Typical values from USDA FoodData Central"].exists)
+        add.tap()
+        waitFor(add, "exists == false")
+
+        // Logged with the default portion, "1 cup".
+        let entry = app.buttons["entry.Lentils, cooked"]
+        scrollUntilHittable(entry, in: app)
+        XCTAssertTrue(entry.label.contains("1 cup"), "Entry shows its portion: \(entry.label)")
+
+        // Edit: two portions.
+        entry.tap()
+        type("2", into: app.textFields["Portions"])
+        submitAndConfirmDismissal(app.buttons["editEntry.save"], in: app)
+        scrollUntilHittable(entry, in: app)
+        XCTAssertTrue(entry.label.contains("2 × 1 cup"), "Entry shows the new amount: \(entry.label)")
+
+        // Delete.
+        entry.tap()
+        tapWhenReady(app.buttons["editEntry.delete"])
+        waitFor(entry, "exists == false")
     }
 
     // MARK: Navigation
@@ -157,6 +197,17 @@ final class VESSUITests: XCTestCase {
         element.tap()
     }
 
+    /// Scrolls the screen until `element` can be tapped (diary rows can sit
+    /// below the fold on a full day).
+    @MainActor
+    private func scrollUntilHittable(_ element: XCUIElement, in app: XCUIApplication) {
+        XCTAssertTrue(element.waitForExistence(timeout: 10), "Missing \(element)")
+        for _ in 0..<6 where !element.isHittable {
+            app.swipeUp()
+        }
+        waitFor(element, "isHittable == true")
+    }
+
     /// Closes the software keyboard with its Done button, if it is showing.
     @MainActor
     private func dismissKeyboard(in app: XCUIApplication) {
@@ -191,10 +242,13 @@ final class VESSUITests: XCTestCase {
         // Clear, type, and verify. On a heavily loaded Simulator the software
         // keyboard can drop keystrokes, so one clean retry is allowed; the
         // field must still end up holding exactly `text`.
+        // Keystrokes reach the field's value asynchronously, so wait for the
+        // value by predicate before deciding a retry is needed.
+        let typed = NSPredicate(format: "value == %@", text)
         for _ in 0..<2 {
             clear(field)
             field.typeText(text)
-            if field.value as? String == text { break }
+            if wait(for: field, typed, timeout: 10) { break }
         }
         XCTAssertEqual(field.value as? String, text, "Field holds exactly what was typed")
     }
@@ -207,7 +261,8 @@ final class VESSUITests: XCTestCase {
     }
 
     /// Closes the keyboard through its Done button, waits for the submit
-    /// button to become tappable, submits, and asserts the sheet closed.
+    /// button to become tappable (screens hide it while the keyboard is up),
+    /// asserts it is enabled, submits, and asserts the screen closed.
     @MainActor
     private func submitAndConfirmDismissal(_ submit: XCUIElement, in app: XCUIApplication) {
         let done = app.buttons["keyboard.done"]
@@ -216,6 +271,7 @@ final class VESSUITests: XCTestCase {
             waitFor(done, "exists == false")
         }
         waitFor(submit, "isHittable == true")
+        XCTAssertTrue(submit.isEnabled, "\(submit) is enabled once the form is complete")
         submit.tap()
         waitFor(submit, "exists == false")
     }
@@ -229,7 +285,12 @@ final class VESSUITests: XCTestCase {
     /// Waits for `predicate` on `element`; returns whether it held in time.
     @MainActor
     private func wait(for element: XCUIElement, _ predicate: String, timeout: TimeInterval) -> Bool {
-        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: predicate), object: element)
+        wait(for: element, NSPredicate(format: predicate), timeout: timeout)
+    }
+
+    @MainActor
+    private func wait(for element: XCUIElement, _ predicate: NSPredicate, timeout: TimeInterval) -> Bool {
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
         return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
     }
 }
