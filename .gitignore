@@ -1,0 +1,15 @@
+# Xcode per-user state
+xcuserdata/
+*.xcuserstate
+
+# Build output and test results
+build/
+DerivedData/
+*.xcresult
+
+# macOS
+.DS_Store
+
+# Local configuration and secrets (see README)
+Config/Secrets.xcconfig
+*.xcconfig.local
