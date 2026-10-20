@@ -52,7 +52,7 @@ struct ExpirationTests {
         #expect(!status.needsAttention)
     }
 
-    @Test("Mock inventory surfaces strawberries, chicken and avocado as expiring")
+    @Test("Mock inventory surfaces strawberries, cod and avocado as expiring")
     func mockInventory() throws {
         let now = try TestClock.date(2026, 3, 10, 18)
         let data = MockData(now: now, calendar: TestClock.utc)
@@ -61,11 +61,11 @@ struct ExpirationTests {
             ($0.name, $0.expirationStatus(now: now, calendar: TestClock.utc))
         })
         #expect(statuses["Strawberries"] == .tomorrow)
-        #expect(statuses["Chicken breast"] == .soon(days: 2))
+        #expect(statuses["Cod fillets"] == .soon(days: 2))
 
         let needsAttention = data.inventory
             .filter { $0.expirationStatus(now: now, calendar: TestClock.utc).needsAttention }
             .map(\.name)
-        #expect(Set(needsAttention) == ["Strawberries", "Chicken breast", "Avocado"])
+        #expect(Set(needsAttention) == ["Strawberries", "Cod fillets", "Avocado"])
     }
 }

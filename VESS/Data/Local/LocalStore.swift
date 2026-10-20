@@ -299,7 +299,7 @@ extension LocalStore {
         try saveProfile(data.profile)
         // The sample log refers to these foods, so Recent can resolve them.
         for food in data.foods { try save(food) }
-        for entry in data.foodLog { try add(entry) }
+        for entry in data.foodHistory + data.foodLog { try add(entry) }
         for log in data.hydrationLog { try add(log) }
         workouts = data.workouts
         inventory = data.inventory

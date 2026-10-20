@@ -153,10 +153,13 @@ struct VESSRowIcon: View {
     @ScaledMetric(relativeTo: .body) private var width = VESSSize.rowIcon
 
     var body: some View {
+        // Wide symbols such as "fish" scale down to the same column as the rest.
         Image(systemName: systemImage)
-            .font(.body)
+            .resizable()
+            .scaledToFit()
+            .fontWeight(.regular)
             .foregroundStyle(tint)
-            .frame(width: width)
+            .frame(width: width, height: width)
             .accessibilityHidden(true)
     }
 }
@@ -171,7 +174,6 @@ struct VESSMealRow: View {
     let calories: String
     var isPlanned = false
 
-    @ScaledMetric(relativeTo: .caption) private var timeWidth: CGFloat = 40
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
@@ -202,10 +204,15 @@ struct VESSMealRow: View {
 
     private var regular: some View {
         HStack(alignment: .top, spacing: VESSSpacing.sm + 2) {
-            Text(time, format: .dateTime.hour().minute())
-                .vessTextStyle(.caption)
-                .foregroundStyle(VESSColor.tertiaryText)
-                .frame(minWidth: timeWidth, alignment: .leading)
+            // A fixed column as wide as the widest time ("12:59 PM" or "23:59"),
+            // so titles line up whatever the clock format.
+            ZStack(alignment: .leading) {
+                Text(Self.widestTime, format: .dateTime.hour().minute())
+                    .hidden()
+                Text(time, format: .dateTime.hour().minute())
+                    .foregroundStyle(VESSColor.tertiaryText)
+            }
+            .vessTextStyle(.caption)
             VStack(alignment: .leading, spacing: 2) {
                 title
                     .vessTextStyle(.bodyMStrong)
@@ -225,6 +232,13 @@ struct VESSMealRow: View {
             }
         }
     }
+}
+
+extension VESSMealRow {
+    /// 12:58, the widest hour and minutes in both 12- and 24-hour clocks.
+    fileprivate static let widestTime: Date = {
+        Calendar.current.date(bySettingHour: 12, minute: 58, second: 0, of: Date(timeIntervalSinceReferenceDate: 0)) ?? .now
+    }()
 }
 
 // MARK: - Metric rows

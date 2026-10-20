@@ -1,12 +1,16 @@
 import SwiftUI
 
-/// Today: the daily command center. A single editorial column that answers
-/// "how is my day going, and what's next?" without becoming a dashboard.
+/// Today (01-today): the day at a glance. Strip, Fuel ring, one editorial
+/// line, the breakdown, an insight, intake, meals and hydration. Variants:
+/// first log (S1), syncing with Apple Health (S2), full day (I09).
 struct TodayView: View {
     @Binding var selectedTab: AppTab
 
     @Environment(LocalStore.self) private var store
+    @Environment(HealthDataStore.self) private var health
     @State private var addFood: AddFoodRequest?
+    @State private var addDrink = false
+    @State private var showCoach = false
     @State private var undoLog: HydrationLog?
     @State private var undoDismissal: Task<Void, Never>?
     @State private var waterAddCount = 0
@@ -24,87 +28,107 @@ struct TodayView: View {
 
     private func content(profile: UserProfile, now: Date) -> some View {
         let entries = store.foodEntries(on: now, calendar: calendar)
+        let drinks = store.hydrationLogs(on: now, calendar: calendar)
         let history = store.foodEntries(
-            from: calendar.date(byAdding: .day, value: -14, to: calendar.startOfDay(for: now)) ?? now,
+            from: calendar.date(byAdding: .day, value: -MealRegularity.historyDays, to: calendar.startOfDay(for: now)) ?? now,
             to: calendar.startOfDay(for: now)
         )
         let summary = DaySummary(
             entries: entries,
-            hydrationLogs: store.hydrationLogs(on: now, calendar: calendar),
+            hydrationLogs: drinks,
             targets: profile.nutritionTargets,
             waterTargetMilliliters: profile.waterTargetMilliliters,
             day: now,
             now: now,
             calendar: calendar
         )
-        let todaysWorkout = store.workouts.first { workout in
-            [workout.scheduledDate, workout.completedAt].contains { date in
-                date.map { calendar.isDate($0, inSameDayAs: now) } ?? false
-            }
-        }
-        let logged = Set(MealType.dayOrder.filter { !entries.entries(for: $0).isEmpty })
-        let nextMeal = MealType.nextSuggestion(logged: logged, now: now, calendar: calendar)
-            ?? (logged.isEmpty ? MealType.likely(at: now, calendar: calendar) : nil)
-        let expiring = store.inventory
-            .filter { $0.status == .available && $0.expirationStatus(now: now, calendar: calendar).needsAttention }
-            .sorted { ($0.expirationDate ?? .distantFuture) < ($1.expirationDate ?? .distantFuture) }
+        let fuel = FuelScore(
+            summary: summary,
+            hasLoggedFood: !entries.isEmpty,
+            regularity: MealRegularity.score(today: entries, history: history, calendar: calendar)
+        )
+        let mealsLogged = MealType.dayOrder.filter { !entries.entries(for: $0).isEmpty }.count
+        let insight = TodayInsight.content(summary: summary, entries: entries, history: history, now: now, calendar: calendar)
 
         return ScrollView {
-            VStack(alignment: .leading, spacing: VESSSpacing.section) {
-                // The Day Word and the day's calories read as one composition.
-                VStack(alignment: .leading, spacing: VESSSpacing.xxl) {
-                    TodayHeader(
-                        date: now,
-                        greeting: Greeting.text(for: now, name: profile.name, calendar: calendar),
-                        summary: summary
-                    )
-                    CaloriesOverview(summary: summary)
-                }
+            Group {
+                if health.state == .syncing {
+                    TodaySkeleton()
+                } else {
+                    VStack(alignment: .leading, spacing: 36) {
+                        VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                            TodayHeader(
+                                date: now,
+                                greeting: Greeting.text(for: now, name: profile.name, calendar: calendar),
+                                onCoach: VESSFeatureFlags.coach ? { showCoach = true } : nil
+                            )
+                            if !entries.isEmpty {
+                                TodayMetricStrip(summary: summary, fuel: fuel, health: health.state.snapshot)
+                            }
+                        }
 
-                // Statement (Day Word), evidence (calories), then the next step.
-                if let next = nextMeal {
-                    NextMealRow(meal: next, history: history, now: now, calendar: calendar) {
-                        addFood = AddFoodRequest(meal: next, day: now)
+                        VStack(spacing: VESSSpacing.xl) {
+                            TodayFuelRing(fuel: fuel, mealsLogged: mealsLogged)
+                            Text(summary.editorialLine)
+                                .vessTextStyle(.editorialL)
+                                .foregroundStyle(VESSColor.text)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity)
+                                .accessibilityIdentifier("today.dayWord")
+                        }
+
+                        TodayBreakdown(summary: summary, hasLogged: !entries.isEmpty)
+
+                        if let insight {
+                            VESSInsightCard(
+                                text: Text(insight.text),
+                                linkTitle: insight.logMeal.map { "Log \(String(localized: $0.title).lowercased())" },
+                                action: {
+                                    if let meal = insight.logMeal { addFood = AddFoodRequest(meal: meal, day: now) }
+                                }
+                            )
+                        }
+
+                        if entries.isEmpty {
+                            Button {
+                                addFood = AddFoodRequest(meal: .likely(at: now, calendar: calendar), day: now)
+                            } label: {
+                                Label("Log a meal", systemImage: "plus")
+                            }
+                            .buttonStyle(.vessPrimary)
+                            .accessibilityIdentifier("today.addMeal")
+                        } else {
+                            TodayIntake(summary: summary, entries: entries, calendar: calendar)
+                            TodayMeals(entries: entries, onOpenDiary: { selectedTab = .nutrition })
+                        }
+
+                        TodayHydration(
+                            hydration: summary.hydration,
+                            lastDrink: drinks.map(\.loggedAt).max(),
+                            onAddWater: { addWater(250, profile: profile) },
+                            onAddDrink: { addDrink = true }
+                        )
                     }
-                    .padding(.top, -VESSSpacing.md)
-                }
-
-                if !entries.isEmpty {
-                    TodayMealsSection(entries: entries, now: now, onOpenDiary: { selectedTab = .nutrition })
-                }
-
-                DayMeasuresCard(hydration: summary.hydration, workout: todaysWorkout) {
-                    addWater(250, profile: profile)
-                }
-
-                if !expiring.isEmpty {
-                    ExpiringSoonSection(items: expiring, now: now, calendar: calendar)
-                }
-
-                if let insight = store.insights.first {
-                    VESSMarginNote(text: Text(insight.body))
                 }
             }
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.xs)
             .padding(.bottom, VESSSpacing.huge)
         }
-        .background(VESSColor.background)
-        // An untitled inline bar hosts the native "+". Without a title the
-        // automatic edge effect is too faint, so use the defined (hard) edge:
-        // rows never collide with the "+" or the clock while scrolling.
-        .scrollEdgeEffectStyle(.hard, for: .top)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Add food", systemImage: "plus") {
-                    addFood = AddFoodRequest(meal: .likely(at: now, calendar: calendar), day: now)
-                }
-                .accessibilityIdentifier("today.addFood")
-            }
+        .vessScreenBackground(.fuel)
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(isPresented: $showCoach) {
+            ContentUnavailableView(
+                "Coach",
+                systemImage: "bubble.left",
+                description: Text("Debug builds only. The Coach screen (12) is a static design until its backend is approved.")
+            )
+            .vessDetailTitle("Coach")
         }
         .safeAreaInset(edge: .bottom) {
-            if let undoLog {
+            if health.state == .syncing {
+                TodaySyncingLabel()
+            } else if let undoLog {
                 VESSUndoToast(message: Text("Added \(VESSFormat.milliliters(undoLog.volumeMilliliters)) ml of water")) {
                     undo(undoLog)
                 }
@@ -112,9 +136,12 @@ struct TodayView: View {
             }
         }
         .animation(.snappy, value: undoLog?.id)
-        .sensoryFeedback(.success, trigger: waterAddCount)
+        .sensoryFeedback(.impact(weight: .light), trigger: waterAddCount)
         .sheet(item: $addFood) { request in
             FoodSearchSheet(request: request)
+        }
+        .sheet(isPresented: $addDrink) {
+            AddDrinkSheet(day: now)
         }
         .vessErrorAlert(isPresented: $showError)
     }
@@ -141,7 +168,7 @@ struct TodayView: View {
         undoDismissal?.cancel()
         undoLog = log
         undoDismissal = Task {
-            try? await Task.sleep(for: .seconds(4))
+            try? await Task.sleep(for: .seconds(5))
             guard !Task.isCancelled else { return }
             undoLog = nil
         }
@@ -158,21 +185,30 @@ struct TodayView: View {
     }
 }
 
-#Preview("Sample day") {
+#Preview("Today · Dark") {
     @Previewable @State var tab = AppTab.today
     TodayView(selectedTab: $tab)
         .previewEnvironment(LocalStore.preview())
+        .preferredColorScheme(.dark)
 }
 
-#Preview("First day") {
-    @Previewable @State var tab = AppTab.today
-    TodayView(selectedTab: $tab)
-        .previewEnvironment(LocalStore.preview(.profileOnly))
-}
-
-#Preview("Sample day, dark") {
+#Preview("Today · Light") {
     @Previewable @State var tab = AppTab.today
     TodayView(selectedTab: $tab)
         .previewEnvironment(LocalStore.preview())
+        .preferredColorScheme(.light)
+}
+
+#Preview("First log (S1)") {
+    @Previewable @State var tab = AppTab.today
+    TodayView(selectedTab: $tab)
+        .previewEnvironment(LocalStore.preview(.profileOnly), health: .notConnected)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Syncing (S2)") {
+    @Previewable @State var tab = AppTab.today
+    TodayView(selectedTab: $tab)
+        .previewEnvironment(LocalStore.preview(), health: .syncing)
         .preferredColorScheme(.dark)
 }

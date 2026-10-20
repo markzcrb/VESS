@@ -7,14 +7,15 @@ struct NutritionTests {
     @Test("Logging a quantity scales the food's per-serving nutrition")
     func logScalesNutrition() throws {
         let data = MockData(now: try TestClock.date(2026, 3, 10, 18), calendar: TestClock.utc)
-        let chicken = try #require(data.foods.first { $0.name == "Chicken breast, grilled" })
+        let salmon = try #require(data.foods.first { $0.name == "Salmon poke" })
 
-        let entry = FoodLogEntry(userID: data.profile.id, food: chicken, quantity: 150, mealType: .lunch, loggedAt: .now)
+        // 250 kcal and 27 g protein per 120 g serving.
+        let entry = FoodLogEntry(userID: data.profile.id, food: salmon, quantity: 150, mealType: .lunch, loggedAt: .now)
 
-        #expect(entry.nutrition.calories.isApproximately(247.5))
-        #expect(entry.nutrition.proteinGrams.isApproximately(46.5))
+        #expect(entry.nutrition.calories.isApproximately(312.5))
+        #expect(entry.nutrition.proteinGrams.isApproximately(33.75))
         #expect(entry.servingUnit == .gram)
-        #expect(entry.foodName == chicken.name)
+        #expect(entry.foodName == salmon.name)
     }
 
     @Test("A food with no serving size yields zero instead of infinity")
@@ -54,10 +55,12 @@ struct NutritionTests {
         let data = MockData(now: try TestClock.date(2026, 3, 10, 18), calendar: TestClock.utc)
         let totals = data.foodLog.totalNutrition
 
-        // 300 + 124 + 32 (breakfast) + 247.5 + 260 + 80 (lunch) + 164 + 105 (snack)
-        #expect(totals.calories.isApproximately(1312.5))
-        // 10.6 + 17 + 0.7 + 46.5 + 5.4 + 1 + 6 + 1.3
-        #expect(totals.proteinGrams.isApproximately(88.5))
+        // 146 + 285 + 89 (breakfast 520) + 250 + 97 + 343 (lunch 690) + 95 + 56 + 59 (snack 210)
+        #expect(totals.calories.isApproximately(1420))
+        // 20 + 10 + 1 + 27 + 9 + 7 + 16 + 3 + 0.3
+        #expect(totals.proteinGrams.isApproximately(93.3))
+        // 7.5 + 3.5 + 4 + 4 + 0.6 + 1.4; yogurt and salmon don't report fibre.
+        #expect(totals.fiberGrams?.isApproximately(21) == true)
     }
 
     @Test("Entries are grouped by meal")
@@ -66,7 +69,7 @@ struct NutritionTests {
 
         #expect(data.foodLog.entries(for: .breakfast).count == 3)
         #expect(data.foodLog.entries(for: .lunch).count == 3)
-        #expect(data.foodLog.entries(for: .snack).count == 2)
+        #expect(data.foodLog.entries(for: .snack).count == 3)
         #expect(data.foodLog.entries(for: .dinner).isEmpty)
     }
 }

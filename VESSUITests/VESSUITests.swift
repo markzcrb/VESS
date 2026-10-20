@@ -60,7 +60,8 @@ final class VESSUITests: XCTestCase {
 
         let dayWord = app.staticTexts["today.dayWord"]
         XCTAssertTrue(dayWord.waitForExistence(timeout: 5))
-        XCTAssertEqual(dayWord.label, "Fresh start")
+        XCTAssertEqual(dayWord.label, "Nothing logged yet today.")
+        XCTAssertTrue(app.descendants(matching: .any)["today.fuel"].exists, "The Fuel ring shows \u{2014} before the first log")
         XCTAssertTrue(app.staticTexts["Good morning, Mark"].exists
             || app.staticTexts["Good afternoon, Mark"].exists
             || app.staticTexts["Good evening, Mark"].exists)

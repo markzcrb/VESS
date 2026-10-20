@@ -312,9 +312,10 @@ private enum OnlineState {
 #if DEBUG
 extension View {
     /// The store plus an offline lookup service, for previews.
-    func previewEnvironment(_ store: LocalStore) -> some View {
+    func previewEnvironment(_ store: LocalStore, health: HealthSyncState? = nil) -> some View {
         environment(store)
             .environment(FoodLookupService.preview(store: store))
+            .environment(HealthDataStore(state: health ?? .available(MockData.preview.health)))
     }
 }
 #endif

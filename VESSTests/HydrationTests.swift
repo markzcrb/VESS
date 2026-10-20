@@ -16,11 +16,11 @@ struct HydrationTests {
             calendar: TestClock.utc
         )
 
-        // Water 500 + flat white 240 × 79% + water 500 + tea 250 × 90% + water 250.
+        // Water 500 + sparkling 330 + green tea 300 × 90% + water 500 (DATA.md).
         // Yesterday's 750 ml is excluded.
-        #expect(progress.consumedMilliliters.isApproximately(500 + 189.6 + 500 + 225 + 250))
-        #expect(progress.volumeMilliliters == 1740)
-        #expect(progress.targetMilliliters == 2300)
+        #expect(progress.consumedMilliliters.isApproximately(500 + 330 + 270 + 500))
+        #expect(progress.volumeMilliliters == 1630)
+        #expect(progress.targetMilliliters == 2200)
         #expect(!progress.isTargetReached)
     }
 

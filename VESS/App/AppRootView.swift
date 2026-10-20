@@ -6,6 +6,7 @@ import SwiftUI
 struct AppRootView: View {
     @State private var store: LocalStore?
     @State private var lookup: FoodLookupService?
+    @State private var health = Self.makeHealth()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
 
     init() {
@@ -28,6 +29,7 @@ struct AppRootView: View {
                 }
                 .environment(store)
                 .environment(lookup)
+                .environment(health)
                 .animation(.default, value: store.profile == nil)
             } else {
                 StoreUnavailableView {
@@ -42,16 +44,26 @@ struct AppRootView: View {
 
     /// The live on-device store. Debug builds also accept two launch arguments:
     /// - `-uiTesting`: start with an empty in-memory store (UI tests).
+    /// - `-seedProfileOnly`: a profile with history but nothing logged today (S1).
     /// - `-seedSampleData`: start with clearly labeled sample data, in memory,
     ///   never written to the real store.
     private static func makeStore() -> LocalStore? {
         do {
             #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
-            if arguments.contains("-uiTesting") || arguments.contains("-seedSampleData") {
+            if arguments.contains("-uiTesting") || arguments.contains("-seedSampleData") || arguments.contains("-seedProfileOnly") {
                 let store = try LocalStore.inMemory()
-                if arguments.contains("-seedSampleData") {
-                    try store.seed(MockData(now: .now, calendar: .current))
+                let data = MockData(now: .now, calendar: .current)
+                if arguments.contains("-seedProfileOnly") {
+                    // S1: a profile and history, nothing logged today.
+                    try store.saveProfile(data.profile)
+                    for entry in data.foodHistory { try store.add(entry) }
+                } else if arguments.contains("-seedSampleData") {
+                    try store.seed(data)
+                    // I09: dinner and two extras logged, a full day.
+                    if arguments.contains("-seedFullDay") {
+                        for entry in data.fullDayExtras { try store.add(entry) }
+                    }
                 }
                 return store
             }
@@ -61,6 +73,22 @@ struct AppRootView: View {
             Logger(subsystem: "VESS", category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
             return nil
         }
+    }
+
+    /// Apple Health starts disconnected. Debug builds accept two launch
+    /// arguments: `-seedSampleData` shows the demo snapshot, and
+    /// `-healthSyncing` shows the syncing state (S2).
+    private static func makeHealth() -> HealthDataStore {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-healthSyncing") {
+            return HealthDataStore(state: .syncing)
+        }
+        if arguments.contains("-seedSampleData") {
+            return HealthDataStore(state: .available(MockData(now: .now, calendar: .current).health))
+        }
+        #endif
+        return HealthDataStore()
     }
 
     /// Online lookups use Open Food Facts. UI tests (`-uiTesting`) never touch
