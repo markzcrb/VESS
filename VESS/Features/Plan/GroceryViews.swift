@@ -117,7 +117,7 @@ struct GroceryContent: View {
                         .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.secondaryText)
                 }
-                if list.leftOffCount > 0 && list.checked.isEmpty {
+                if list.leftOffCount > 0 {
                     note(list.leftOffCount == 1
                          ? Text("Updated from your plan. 1 thing you already have at home was left off.")
                          : Text("Updated from your plan. \(list.leftOffCount) things you already have at home were left off."))
@@ -207,7 +207,12 @@ struct GroceryContent: View {
             NavigationLink {
                 GroceryItemView(key: line.key)
             } label: {
-                VESSRow(title: Text(line.name), subtitle: subtitle(line, detail: detail), subtitleLineLimit: 2) {
+                VESSRow(
+                    // Checked items read quieter, without hiding them.
+                    title: Text(line.name).foregroundStyle(line.isChecked ? VESSColor.secondaryText : VESSColor.text),
+                    subtitle: subtitle(line, detail: detail),
+                    subtitleLineLimit: 2
+                ) {
                     if let amount = PlannedMeal.Item(name: line.name, quantity: line.quantity, unit: line.unit).amountText {
                         Text(amount)
                             .vessTextStyle(.bodyM)
