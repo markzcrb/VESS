@@ -48,7 +48,7 @@ struct EnergyDetailView: View {
         let consumed = summary.consumed.calories
         let share = target > 0 ? consumed / target : 0
         let allMainMeals = MealType.mainMeals.allSatisfy { !entries.entries(for: $0).isEmpty }
-        let pace = allMainMeals ? 1 : max(summary.expectedPace, FuelScore.minimumPace)
+        let pace = allMainMeals ? 1 : max(summary.expectedPace, DaySummary.minimumPace)
         let regularity = MealRegularity.score(today: entries, history: history, calendar: calendar)
         let beforeNoon = IntakeAnalysis.beforeNoonShare(entries, calendar: calendar)
         let week = IntakeAnalysis.dailyTotals(

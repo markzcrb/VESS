@@ -1,19 +1,20 @@
 import Foundation
 
-/// The Fuel score: a 0–100 summary of how today's logging compares with the
-/// user's own targets, prorated for the time of day. It is a logging summary,
-/// not a health measurement.
+/// The Fuel score: a 0–100 summary of today's logging against the user's
+/// full-day targets, the same measure as the metric strip. It is a logging
+/// summary, not a health measurement.
 ///
 /// Weights (approved, `Redesign/docs/PRODUCT-LOGIC.md` #1):
-/// - 40 % energy versus the prorated target, full marks between 90 and 105 %;
-/// - 30 % protein versus the prorated target;
-/// - 20 % hydration versus the prorated target;
-/// - 10 % meal regularity (`MealRegularity`).
+/// - 40 % energy: rises with intake to full marks at 100–105 % of target,
+///   then declines gently;
+/// - 30 % protein, up to the target;
+/// - 20 % hydration, up to the target;
+/// - 10 % meal regularity: each meal slot with a usual time adds its share
+///   when logged near that time (`MealRegularity.dayProgress`).
 ///
-/// When there is no history for regularity, its 10 % is left out and the
-/// other weights are rescaled, rather than guessing. Once every main meal
-/// (breakfast, lunch, dinner) is logged, the day is judged against the full
-/// targets, so an early dinner isn't read as eating ahead of the clock.
+/// The score only rises as the user logs; eating well past the energy target
+/// is the only way it falls. When there is no history for regularity, its
+/// 10 % is left out and the other weights are rescaled, rather than guessing.
 /// Pure and deterministic.
 nonisolated struct FuelScore: Equatable, Sendable {
     /// Each part scored 0...1.
@@ -30,13 +31,11 @@ nonisolated struct FuelScore: Equatable, Sendable {
     static let hydrationWeight = 0.20
     static let regularityWeight = 0.10
 
-    /// Energy within this share of the prorated target scores full marks.
-    static let energyFullMarks = 0.90...1.05
-    /// Above target, energy reaches zero at this share of the prorated target.
-    static let energyZeroAbove = 1.50
-    /// The day is never judged against less than a quarter of the targets,
-    /// so an early breakfast isn't compared with almost nothing.
-    static let minimumPace = 0.25
+    /// Energy within this share of the target scores full marks.
+    static let energyFullMarks = 1.00...1.05
+    /// Above full marks, energy loses all its marks only at this share of
+    /// the target: a gentle decline, one fortieth of the score per 10 % over.
+    static let energyZeroAbove = 2.05
 
     /// 0...100.
     let value: Int
@@ -44,20 +43,13 @@ nonisolated struct FuelScore: Equatable, Sendable {
 
     /// The score for a day, or `nil` before any food is logged ("—").
     ///
-    /// - Parameters:
-    ///   - allMainMealsLogged: breakfast, lunch and dinner are all logged.
-    ///   - regularity: `MealRegularity.score`, 0...1, or `nil`.
-    init?(summary: DaySummary, hasLoggedFood: Bool, allMainMealsLogged: Bool = false, regularity: Double?) {
+    /// - Parameter regularity: `MealRegularity.dayProgress`, 0...1, or `nil`.
+    init?(summary: DaySummary, hasLoggedFood: Bool, regularity: Double?) {
         guard hasLoggedFood else { return nil }
-        let pace = allMainMealsLogged ? 1 : max(summary.expectedPace, Self.minimumPace)
 
-        let energyRatio = Self.ratio(summary.consumed.calories, of: summary.targets.calories * pace)
-        let energy = Self.energyScore(energyRatio)
-        let protein = min(Self.ratio(summary.consumed.proteinGrams, of: summary.targets.proteinGrams * pace), 1)
-        let hydration = min(
-            Self.ratio(summary.hydration.consumedMilliliters, of: summary.hydration.targetMilliliters * pace),
-            1
-        )
+        let energy = Self.energyScore(Self.ratio(summary.consumed.calories, of: summary.targets.calories))
+        let protein = min(Self.ratio(summary.consumed.proteinGrams, of: summary.targets.proteinGrams), 1)
+        let hydration = min(Self.ratio(summary.hydration.consumedMilliliters, of: summary.hydration.targetMilliliters), 1)
         let regularity = regularity.map { min(max($0, 0), 1) }
 
         var weighted = Self.energyWeight * energy + Self.proteinWeight * protein + Self.hydrationWeight * hydration
@@ -71,8 +63,8 @@ nonisolated struct FuelScore: Equatable, Sendable {
         self.components = Components(energy: energy, protein: protein, hydration: hydration, regularity: regularity)
     }
 
-    /// Full marks inside `energyFullMarks`; linear below it; falls to zero
-    /// at `energyZeroAbove` above it.
+    /// Rises linearly to full marks at the target, holds to 105 %, then
+    /// declines linearly to zero at `energyZeroAbove`.
     static func energyScore(_ ratio: Double) -> Double {
         if ratio < energyFullMarks.lowerBound {
             return max(ratio, 0) / energyFullMarks.lowerBound
@@ -100,16 +92,32 @@ nonisolated enum MealRegularity {
     /// the last 14 days, at least 3 days), 1 minus the deviation over two
     /// hours; averaged. `nil` when no logged meal has a usual time yet.
     static func score(today: [FoodLogEntry], history: [FoodLogEntry], calendar: Calendar) -> Double? {
-        var scores: [Double] = []
-        for meal in MealType.dayOrder {
-            guard let first = today.filter({ $0.mealType == meal }).map(\.loggedAt).min(),
-                  let usual = history.usualTime(for: meal, calendar: calendar) else { continue }
+        let slots = slotScores(today: today, history: history, calendar: calendar)
+        let logged = slots.compactMap(\.self)
+        guard !logged.isEmpty else { return nil }
+        return logged.reduce(0, +) / Double(logged.count)
+    }
+
+    /// 0...1 for Fuel: the same per-meal scores, summed over every slot that
+    /// has a usual time, so each meal adds to it and an unlogged one adds
+    /// nothing. It never falls as more meals are logged. `nil` when no slot
+    /// has a usual time yet.
+    static func dayProgress(today: [FoodLogEntry], history: [FoodLogEntry], calendar: Calendar) -> Double? {
+        let slots = slotScores(today: today, history: history, calendar: calendar)
+        guard !slots.isEmpty else { return nil }
+        return slots.reduce(0) { $0 + ($1 ?? 0) } / Double(slots.count)
+    }
+
+    /// One value per meal slot with a usual time: its score if logged
+    /// today, `nil` if not yet.
+    private static func slotScores(today: [FoodLogEntry], history: [FoodLogEntry], calendar: Calendar) -> [Double?] {
+        MealType.dayOrder.compactMap { meal -> Double?? in
+            guard let usual = history.usualTime(for: meal, calendar: calendar) else { return nil }
+            guard let first = today.filter({ $0.mealType == meal }).map(\.loggedAt).min() else { return .some(nil) }
             let parts = calendar.dateComponents([.hour, .minute], from: first)
             let minutes = Double((parts.hour ?? 0) * 60 + (parts.minute ?? 0))
             let usualMinutes = Double((usual.hour ?? 0) * 60 + (usual.minute ?? 0))
-            scores.append(max(0, 1 - abs(minutes - usualMinutes) / zeroAfterMinutes))
+            return .some(max(0, 1 - abs(minutes - usualMinutes) / zeroAfterMinutes))
         }
-        guard !scores.isEmpty else { return nil }
-        return scores.reduce(0, +) / Double(scores.count)
     }
 }

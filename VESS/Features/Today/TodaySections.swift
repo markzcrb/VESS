@@ -81,7 +81,8 @@ struct TodayMetricStrip: View {
 
 struct TodayFuelRing: View {
     let fuel: FuelScore?
-    let mealsLogged: Int
+    /// Breakfast, lunch and dinner are all logged.
+    let mainMealsLogged: Bool
     let onInfo: () -> Void
 
     var body: some View {
@@ -98,7 +99,8 @@ struct TodayFuelRing: View {
         VESSScoreRing(
             value: fuel.map { "\($0.value)" } ?? "—",
             label: "Fuel",
-            sublabel: fuel == nil ? Text("Builds as you log") : Text("\(mealsLogged) of 4 meals logged"),
+            // "Building" while the day is still being logged.
+            sublabel: mainMealsLogged ? Text("Main meals logged") : Text("Building"),
             progress: Double(fuel?.value ?? 0) / 100
         )
     }

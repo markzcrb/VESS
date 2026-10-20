@@ -15,7 +15,7 @@ Mark · maintaining · **pescatarian · nut-free** · targets: 2,400 kcal, 140 g
 
 - The three logged meals sum to the totals below. (The first version listed 520 / 690 / 210 kcal, which did not add up to 1,840; corrected on 2026-10-20 by scaling each meal proportionally. Protein per meal: 36 / 50 / 22 g.)
 - **Totals:** 1,840 / 2,400 kcal (560 left) · protein 108 / 140 g · carbs 196 / 260 g · fat 58 / 80 g · fibre 21 g · water 1.6 / 2.2 L · steps 6,420 (Tuesday average 8,000) · active energy 412 kcal.
-- **Scores on Today:** Fuel 78 in the PNG; the implemented rule gives 95 for this day at 18:40 (see `FuelScoreSampleDayTests`), Energy 77, Protein 77, Water 73, Steps 80.
+- **Scores on Today:** Fuel 78 in the PNG; the full-day rule (2026-10-20) gives 76 for this day at 18:40 (see `FuelScoreSampleDayTests`), Energy 77, Protein 77, Water 73, Steps 80.
 - **Last 7 days, energy (W–T):** 2,310, 2,480, 1,960, 2,520, 2,390, 2,180, today 1,840.
 - **Last 7 days, protein:** 122, 138, 96, 144, 131, 118, 108.
 - **Last 7 days, steps:** 7,840, 5,210, 8,930, 11,240, 4,380, 9,120, 6,420.

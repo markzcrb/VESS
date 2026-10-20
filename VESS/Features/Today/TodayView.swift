@@ -47,10 +47,9 @@ struct TodayView: View {
         let fuel = FuelScore(
             summary: summary,
             hasLoggedFood: !entries.isEmpty,
-            allMainMealsLogged: MealType.mainMeals.allSatisfy { !entries.entries(for: $0).isEmpty },
-            regularity: MealRegularity.score(today: entries, history: history, calendar: calendar)
+            regularity: MealRegularity.dayProgress(today: entries, history: history, calendar: calendar)
         )
-        let mealsLogged = MealType.dayOrder.filter { !entries.entries(for: $0).isEmpty }.count
+        let mainMealsLogged = MealType.mainMeals.allSatisfy { !entries.entries(for: $0).isEmpty }
         let trends = trends(now: now)
         let insight = TodayInsight.content(summary: summary, entries: entries, history: history, now: now, calendar: calendar)
 
@@ -72,7 +71,7 @@ struct TodayView: View {
                         }
 
                         VStack(spacing: VESSSpacing.xl) {
-                            TodayFuelRing(fuel: fuel, mealsLogged: mealsLogged, onInfo: { showFuelInfo = true })
+                            TodayFuelRing(fuel: fuel, mainMealsLogged: mainMealsLogged, onInfo: { showFuelInfo = true })
                             Text(summary.editorialLine)
                                 .vessTextStyle(.editorialL)
                                 .foregroundStyle(VESSColor.text)

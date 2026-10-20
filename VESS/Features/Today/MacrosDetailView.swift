@@ -122,7 +122,7 @@ struct MacrosDetailView: View {
             entries: entries, hydrationLogs: [], targets: profile.nutritionTargets,
             waterTargetMilliliters: profile.waterTargetMilliliters, day: now, now: now, calendar: calendar
         )
-        let floor = max(summary.expectedPace, FuelScore.minimumPace) * DaySummary.behindThreshold
+        let floor = max(summary.expectedPace, DaySummary.minimumPace) * DaySummary.behindThreshold
         let consumed = summary.consumed, targets = summary.targets
         let carbsOnPace = targets.carbohydrateGrams > 0 && consumed.carbohydrateGrams / targets.carbohydrateGrams >= floor
         let fatOnPace = targets.fatGrams > 0 && consumed.fatGrams / targets.fatGrams >= floor

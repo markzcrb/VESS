@@ -21,13 +21,17 @@ The screens show these features, but their logic is not specified. **Do not inve
 
 ## Decided with Mark
 
+### Fuel score (#1), revised 2026-10-20
+
+Scored against full-day targets, the same measure as the metric strip; no clock proration and no "all main meals" switch. 40 % energy (linear to full marks at 100 %, full to 105 %, then a gentle linear decline to zero at 205 %), 30 % protein and 20 % hydration (up to the target), 10 % regularity (`MealRegularity.dayProgress`: each meal slot with a usual time adds its share when logged, so it never falls). The score only rises as the user logs; overshooting energy is the only way it falls. The ring caption reads "Building" until breakfast, lunch and dinner are logged, then "Main meals logged". Tested in `FuelScoreTests` and `FuelTimelineTests`.
+
 ### Energy detail (02) status levels
 
 Approved 2026-10-20. Implemented in `StatusLevel` (`Domain/Rules/IntakeAnalysis.swift`), tested in `IntakeAnalysisTests.levels`.
 
 | Row | Measure | Optimal | Sufficient | Low |
 |---|---|---|---|---|
-| Energy vs. target | kcal ÷ target, prorated by time of day (full target once all main meals are logged) | 90–105 % (the Fuel full-marks band) | above 105 % (being ahead is never "low"), or 63–90 % (energy score ≥ 0.7) | under 63 % |
+| Energy vs. target | kcal ÷ target, prorated by time of day (full target once all main meals are logged) | 90–105 % (its own band; no longer shared with Fuel) | above 105 % (being ahead is never "low"), or 63–90 % | under 63 % |
 | Meal regularity | `MealRegularity.score`: closeness of today's meal times to the 14-day median per slot, zero at 2 hours off | ≥ 0.85 | 0.60–0.85 | under 0.60 |
 | Before noon | % of the day's kcal logged before 12:00 | no level: shown as a value only | | |
 | Whole foods | hidden: there is no food-quality source | | | |

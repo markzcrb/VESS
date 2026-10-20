@@ -80,13 +80,17 @@ nonisolated enum IntakeAnalysis {
 nonisolated enum StatusLevel: Equatable, Sendable {
     case low, sufficient, optimal
 
-    /// Energy against the prorated target. Optimal inside the Fuel full-marks
-    /// band (90–105 %); sufficient above it (being ahead is never "low") and
-    /// from 63 % (0.7 of full marks); low only when well under.
+    /// The approved Energy (02) bands (PRODUCT-LOGIC.md), independent of Fuel.
+    static let energyOptimal = 0.90...1.05
+    static let energySufficientFrom = 0.63
+
+    /// Energy against the prorated target. Optimal at 90–105 %; sufficient
+    /// above it (being ahead is never "low") and from 63 %; low only when
+    /// well under.
     static func energy(ratio: Double) -> StatusLevel {
-        if FuelScore.energyFullMarks.contains(ratio) { return .optimal }
-        if ratio > FuelScore.energyFullMarks.upperBound { return .sufficient }
-        return level(FuelScore.energyScore(ratio), optimal: 1, sufficient: 0.7)
+        if energyOptimal.contains(ratio) { return .optimal }
+        if ratio > energyOptimal.upperBound { return .sufficient }
+        return ratio >= energySufficientFrom ? .sufficient : .low
     }
 
     /// Meal regularity (`MealRegularity.score`): optimal from 0.85, sufficient from 0.6.

@@ -26,6 +26,9 @@ nonisolated struct DaySummary: Sendable {
     let isProteinBehind: Bool
     let isWaterBehind: Bool
 
+    /// Pace is never taken as less than a quarter of the day, so an early
+    /// breakfast isn't compared with almost nothing (Energy and Macros).
+    static let minimumPace = 0.25
     /// Below this share of the expected pace, a measure counts as "behind".
     static let behindThreshold = 0.75
     /// At or above this share of the calorie target, the day is "full".

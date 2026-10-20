@@ -20,16 +20,16 @@ struct FuelInfoSheet: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     VESSRowGroup {
-                        part("Energy", weight: 40, detail: "Full marks between 90 and 105 % of your target", value: fuel?.components.energy)
+                        part("Energy", weight: 40, detail: "Full marks at 100–105 % of your target, a little less above", value: fuel?.components.energy)
                         part("Protein", weight: 30, detail: "Up to your protein target", value: fuel?.components.protein)
                         part("Hydration", weight: 20, detail: "Up to your water target", value: fuel?.components.hydration)
-                        part("Meal regularity", weight: 10, detail: "Meals near your usual times", value: fuel?.components.regularity)
+                        part("Meal regularity", weight: 10, detail: "Each meal near its usual time adds to this part", value: fuel?.components.regularity)
                     }
                     .vessHairlineBottom()
 
                     VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                        note("During the day, targets are scaled to the time: at 14:00 you're compared with half of each target. You're never compared with less than a quarter.")
-                        note("Once breakfast, lunch and dinner are logged, the day is compared with your full targets.")
+                        note("Fuel compares what you've logged with your full-day targets, like the rings above it. It builds as you log through the day, so a low number in the morning is expected.")
+                        note("It only goes up as you log. The one thing that lowers it is going well past your energy target.")
                         note("Without 3 days of history there's no regularity yet, so the other three parts make up the whole score.")
                         note("Fuel shows \u{2014} until you log something to eat.")
                     }
