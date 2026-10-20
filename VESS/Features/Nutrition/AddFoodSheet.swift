@@ -5,6 +5,8 @@ struct AddFoodRequest: Identifiable {
     let id = UUID()
     var meal: MealType
     var day: Date
+    /// Which saved foods the Add sheet opens on.
+    var collection: FoodCollection = .recent
 }
 
 /// Quick add: log a food by entering what you know, without a product.

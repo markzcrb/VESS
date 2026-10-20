@@ -98,7 +98,9 @@ final class VESSUITests: XCTestCase {
         let app = launch(seeded: true)
 
         app.tabBars.buttons["Nutrition"].tap()
-        app.buttons["nutrition.addFood"].tap()
+        let addDinner = app.buttons["nutrition.add.dinner"]
+        scrollUntilHittable(addDinner, in: app)
+        addDinner.tap()
         tapWhenReady(app.buttons["foodSearch.quickAdd"])
 
         let submit = app.buttons["addFood.submit"]
@@ -122,11 +124,13 @@ final class VESSUITests: XCTestCase {
         let app = launch(seeded: true)
 
         app.tabBars.buttons["Nutrition"].tap()
-        app.buttons["nutrition.addFood"].tap()
+        let addDinner = app.buttons["nutrition.add.dinner"]
+        scrollUntilHittable(addDinner, in: app)
+        addDinner.tap()
 
         // Local results appear without the network; UI tests run offline,
         // so the online section must say so instead of failing silently.
-        type("Lentils", into: app.searchFields.firstMatch)
+        type("Lentils", into: app.textFields["foodSearch.query"])
         let onlineMessage = app.staticTexts["foodSearch.onlineMessage"]
         XCTAssertTrue(onlineMessage.waitForExistence(timeout: 10))
         XCTAssertTrue(onlineMessage.label.contains("offline"), "Offline is explained: \(onlineMessage.label)")

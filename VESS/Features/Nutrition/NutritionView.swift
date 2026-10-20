@@ -34,62 +34,60 @@ struct NutritionView: View {
         let week = weekDays(containing: selectedDay)
         let loggedDays = daysWithLogs(in: week)
 
-        return VESSScreen(title: "Nutrition") {
-            VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                VESSDayStrip(
-                    days: week,
-                    selection: $selectedDay,
-                    today: now,
-                    calendar: calendar,
-                    hasEntries: { loggedDays.contains(calendar.startOfDay(for: $0)) }
-                )
-                CaloriesOverview(summary: summary, prominence: .compact)
-            }
-
-            if entries.isEmpty && drinks.isEmpty {
-                // An empty day: one sentence, then the day's diary as a short
-                // list where every meal is one tap from logging.
-                VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                    Text(calendar.isDateInToday(selectedDay)
-                         ? "Nothing logged yet today."
-                         : "Nothing was logged on this day.")
-                        .vessTextStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    EmptyDiaryList(
-                        onAddFood: { meal in addFood = AddFoodRequest(meal: meal, day: selectedDay) },
-                        onAddDrink: { addDrinkDay = selectedDay }
-                    )
-                }
-            } else {
-                // Meals and drinks sit closer together than top-level sections:
-                // they are one diary, read top to bottom.
+        return ScrollView {
+            VStack(alignment: .leading, spacing: VESSSpacing.section) {
                 VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                    ForEach(MealType.dayOrder) { meal in
-                        MealDiarySection(
-                            meal: meal,
-                            entries: entries.entries(for: meal),
-                            onAdd: { addFood = AddFoodRequest(meal: meal, day: selectedDay) },
-                            onEdit: { editing = $0 },
-                            onDelete: { delete(entry: $0) }
-                        )
-                    }
+                    VESSDayStrip(
+                        days: week,
+                        selection: $selectedDay,
+                        today: now,
+                        calendar: calendar,
+                        hasEntries: { loggedDays.contains(calendar.startOfDay(for: $0)) }
+                    )
+                    Text(editorialLine(isEmpty: entries.isEmpty && drinks.isEmpty))
+                        .vessTextStyle(.editorialL)
+                        .foregroundStyle(VESSColor.text)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
+                    DiaryTotals(summary: summary)
+                }
 
-                    DrinksDiarySection(
-                        logs: drinks,
-                        onAdd: { addDrinkDay = selectedDay },
-                        onDelete: { delete(log: $0) }
+                ForEach(MealType.dayOrder) { meal in
+                    MealDiarySection(
+                        meal: meal,
+                        entries: entries.entries(for: meal),
+                        emptyNote: emptyNote(for: meal, summary: summary, now: now),
+                        onAdd: { addFood = AddFoodRequest(meal: meal, day: selectedDay) },
+                        onEdit: { editing = $0 },
+                        onDelete: { delete(entry: $0) }
                     )
                 }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Add food", systemImage: "plus") {
-                    addFood = AddFoodRequest(meal: .likely(at: now, calendar: calendar), day: selectedDay)
+
+                DrinksDiarySection(
+                    logs: drinks,
+                    onAdd: { addDrinkDay = selectedDay },
+                    onDelete: { delete(log: $0) }
+                )
+
+                // Shortcuts into the Add sheet's saved foods.
+                VESSChipFlow {
+                    VESSChip(title: "Favorites", isSelected: false) {
+                        addFood = AddFoodRequest(meal: .likely(at: now, calendar: calendar), day: selectedDay, collection: .favorites)
+                    }
+                    .accessibilityIdentifier("nutrition.favorites")
+                    VESSChip(title: "My foods", isSelected: false) {
+                        addFood = AddFoodRequest(meal: .likely(at: now, calendar: calendar), day: selectedDay, collection: .mine)
+                    }
+                    .accessibilityIdentifier("nutrition.myFoods")
                 }
-                .accessibilityIdentifier("nutrition.addFood")
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, VESSSpacing.screenInset)
+            .padding(.top, VESSSpacing.xs)
+            .padding(.bottom, VESSSpacing.huge)
         }
+        .vessScreenBackground()
+        .vessDetailTitle("Nutrition")
         .sheet(item: $addFood) { request in
             FoodSearchSheet(request: request)
         }
@@ -106,6 +104,26 @@ struct NutritionView: View {
     }
 
     // MARK: Helpers
+
+    private func editorialLine(isEmpty: Bool) -> LocalizedStringResource {
+        guard isEmpty else { return "Your day, item by item." }
+        return calendar.isDateInToday(selectedDay) ? "Nothing logged yet today." : "Nothing was logged on this day."
+    }
+
+    /// "Usually around 19:30 · 560 kcal left", for a meal not yet logged
+    /// today. The usual time is the median of the last 14 days (at least 3).
+    private func emptyNote(for meal: MealType, summary: DaySummary, now: Date) -> Text? {
+        let end = calendar.startOfDay(for: now)
+        guard calendar.isDate(selectedDay, inSameDayAs: now),
+              let start = calendar.date(byAdding: .day, value: -MealRegularity.historyDays, to: end),
+              let usual = store.foodEntries(from: start, to: end).usualTime(for: meal, calendar: calendar),
+              let time = calendar.date(bySettingHour: usual.hour ?? 0, minute: usual.minute ?? 0, second: 0, of: now)
+        else { return nil }
+        let usually = Text("Usually around \(time, format: .dateTime.hour().minute())")
+        let remaining = summary.caloriesRemaining
+        guard summary.targets.calories > 0, remaining > 0 else { return usually }
+        return Text("\(usually) · \(VESSFormat.calories(remaining)) kcal left")
+    }
 
     private func weekDays(containing day: Date) -> [Date] {
         let start = calendar.dateInterval(of: .weekOfYear, for: day)?.start ?? calendar.startOfDay(for: day)

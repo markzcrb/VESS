@@ -134,6 +134,9 @@ struct VESSListRow<Trailing: View>: View {
                         .accessibilityHidden(true)
                 }
             }
+            // The value keeps its natural width before the title shrinks,
+            // so "20.6 g protein" never breaks between number and unit.
+            .layoutPriority(1)
         }
         .accessibilityElement(children: .combine)
     }

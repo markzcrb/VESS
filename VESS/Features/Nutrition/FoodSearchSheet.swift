@@ -17,23 +17,26 @@ struct FoodSearchSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let day: Date
+    private let collection: FoodCollection
     @State private var meal: MealType
     @State private var path: [FoodRoute] = []
 
     init(request: AddFoodRequest) {
         self.day = request.day
+        self.collection = request.collection
         _meal = State(initialValue: request.meal)
     }
 
     var body: some View {
         NavigationStack(path: $path) {
-            FoodSearchHome(meal: $meal, path: $path)
+            FoodSearchHome(day: day, meal: $meal, path: $path, collection: collection)
                 .navigationDestination(for: FoodRoute.self) { route in
                     destination(for: route)
                         .toolbar { closeButton }
                 }
                 .toolbar { closeButton }
         }
+        .presentationDragIndicator(.visible)
     }
 
     @ViewBuilder
@@ -65,24 +68,40 @@ struct FoodSearchSheet: View {
     }
 }
 
-/// The search screen: actions and saved foods when idle, results while typing.
+/// The search screen (05): saved foods when idle, results while typing.
+/// Tapping a food opens its detail; its + button selects it, and the
+/// sticky bar logs every selected food with its default portion.
 private struct FoodSearchHome: View {
     @Environment(LocalStore.self) private var store
     @Environment(FoodLookupService.self) private var lookup
+    @Environment(\.dismiss) private var dismiss
 
+    let day: Date
     @Binding var meal: MealType
     @Binding var path: [FoodRoute]
 
     @State private var query = ""
-    @State private var collection: FoodCollection = .recent
+    @State private var collection: FoodCollection
     @State private var online: OnlineState = .idle
+    @State private var selected: [Food] = []
+    @State private var showError = false
+    @FocusState private var isSearchFocused: Bool
+
+    private let calendar = Calendar.current
+
+    init(day: Date, meal: Binding<MealType>, path: Binding<[FoodRoute]>, collection: FoodCollection) {
+        self.day = day
+        _meal = meal
+        _path = path
+        _collection = State(initialValue: collection)
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                MealPickerHeader(title: "Add to", meal: $meal)
-                    .padding(.top, VESSSpacing.sm)
+                searchField
                 if trimmedQuery.isEmpty {
+                    collectionChips
                     actions
                     savedFoods
                 } else {
@@ -91,30 +110,127 @@ private struct FoodSearchHome: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, VESSSpacing.screenInset)
+            .padding(.top, VESSSpacing.xs)
             .padding(.bottom, VESSSpacing.huge)
         }
         .scrollDismissesKeyboard(.immediately)
         .background(VESSColor.background)
         .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search food or drink")
-        .autocorrectionDisabled()
+        .navigationTitle(Text(meal.addToTitle))
+        .toolbar {
+            ToolbarItem(placement: .principal) { mealTitle }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if !selected.isEmpty { selectionBar }
+        }
+        .animation(VESSMotion.selection, value: selected.count)
         .task(id: trimmedQuery) { await searchOnline() }
+        .vessErrorAlert(isPresented: $showError, retry: addSelected)
     }
 
     private var trimmedQuery: String {
         query.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    // MARK: Header
+
+    /// "ADD TO DINNER ⌄": the meal is a menu so it can change without leaving.
+    private var mealTitle: some View {
+        Menu {
+            Picker("Meal", selection: $meal) {
+                ForEach(MealType.dayOrder) { meal in
+                    Text(meal.title).tag(meal)
+                }
+            }
+        } label: {
+            HStack(spacing: VESSSpacing.xxs) {
+                Text(meal.addToTitle)
+                    .vessTextStyle(.labelCaps)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(VESSColor.secondaryText)
+            }
+            .foregroundStyle(VESSColor.text)
+            .frame(minHeight: VESSHitTarget.minimum)
+        }
+        .accessibilityLabel(Text("Meal: \(Text(meal.title))"))
+        .accessibilityIdentifier("mealPicker")
+    }
+
+    private var searchField: some View {
+        HStack(spacing: VESSSpacing.sm) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(VESSColor.secondaryText)
+                .accessibilityHidden(true)
+            TextField("Search foods or brands", text: $query)
+                .vessTextStyle(.bodyM)
+                .foregroundStyle(VESSColor.text)
+                .focused($isSearchFocused)
+                .submitLabel(.search)
+                .autocorrectionDisabled()
+                .accessibilityIdentifier("foodSearch.query")
+            if !query.isEmpty {
+                Button {
+                    query = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(VESSColor.tertiaryText)
+                        .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
+            }
+            Rectangle()
+                .fill(VESSColor.divider)
+                .frame(width: 1, height: VESSSpacing.xl)
+                .accessibilityHidden(true)
+            Button {
+                path.append(.barcode)
+            } label: {
+                Image(systemName: "barcode")
+                    .foregroundStyle(VESSColor.text)
+                    .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Enter a barcode")
+            .accessibilityIdentifier("foodSearch.barcode")
+        }
+        .padding(.leading, VESSSpacing.md)
+        .padding(.trailing, VESSSpacing.xxs)
+        .frame(minHeight: VESSHitTarget.control)
+        .background(VESSColor.fill, in: RoundedRectangle(cornerRadius: VESSRadius.control, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: VESSRadius.control, style: .continuous).strokeBorder(VESSColor.divider))
+    }
+
     // MARK: Idle
 
-    private var actions: some View {
-        VESSRowGroup {
-            actionRow("Quick add", detail: "Log calories without a product", symbol: "bolt", route: .quickAdd, identifier: "foodSearch.quickAdd")
-            actionRow("Create a food", detail: "Save your own food or recipe", symbol: "square.and.pencil", route: .createFood, identifier: "foodSearch.createFood")
-            actionRow("Enter a barcode", detail: "Look up a packaged product", symbol: "barcode", route: .barcode, identifier: "foodSearch.barcode")
-            if VESSFeatureFlags.photoEstimate {
-                actionRow("Take a photo", detail: "Debug only", symbol: "camera", route: .photo, identifier: "foodSearch.photo")
+    private var collectionChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: VESSSpacing.xs) {
+                ForEach(FoodCollection.allCases) { item in
+                    VESSChip(title: item.title, isSelected: collection == item) {
+                        collection = item
+                    }
+                }
             }
+        }
+        .scrollClipDisabled()
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("foodSearch.collection")
+    }
+
+    private var actions: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+            VESSSectionHeader(title: "Other ways to add")
+            VESSRowGroup {
+                actionRow("Quick add", detail: "Log calories without a product", symbol: "bolt", route: .quickAdd, identifier: "foodSearch.quickAdd")
+                actionRow("Create a food", detail: "Save your own food or recipe", symbol: "square.and.pencil", route: .createFood, identifier: "foodSearch.createFood")
+                if VESSFeatureFlags.photoEstimate {
+                    actionRow("Take a photo", detail: "Debug only", symbol: "camera", route: .photo, identifier: "foodSearch.photo")
+                }
+            }
+            .vessHairlineBottom()
         }
     }
 
@@ -128,8 +244,8 @@ private struct FoodSearchHome: View {
         Button {
             path.append(route)
         } label: {
-            VESSRow(title: Text(title), subtitle: Text(detail), titleStyle: .rowTitle) {
-                VESSThumbnail(systemImage: symbol, isAction: true)
+            VESSRow(title: Text(title), subtitle: Text(detail)) {
+                VESSRowIcon(systemImage: symbol)
             } trailing: {
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))
@@ -143,18 +259,12 @@ private struct FoodSearchHome: View {
 
     private var savedFoods: some View {
         let foods = foods(in: collection)
-        return VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            Picker("Show", selection: $collection) {
-                ForEach(FoodCollection.allCases) { collection in
-                    Text(collection.title).tag(collection)
-                }
-            }
-            .pickerStyle(.segmented)
-            .accessibilityIdentifier("foodSearch.collection")
-
+        return VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+            VESSSectionHeader(title: collection.title)
             if foods.isEmpty {
                 Text(collection.emptyText)
-                    .vessTextStyle(.secondary)
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, VESSSpacing.xs)
             } else {
@@ -176,11 +286,12 @@ private struct FoodSearchHome: View {
     @ViewBuilder
     private var results: some View {
         let local = store.searchLocalFoods(trimmedQuery)
-        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
             VESSSectionHeader(title: "On this iPhone")
             if local.isEmpty {
                 Text("No saved or common foods match \u{201C}\(trimmedQuery)\u{201D}.")
-                    .vessTextStyle(.secondary)
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 foodList(local)
@@ -193,32 +304,33 @@ private struct FoodSearchHome: View {
     private func onlineSection(excluding localIDs: Set<UUID>) -> some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             VESSSectionHeader(title: "Open Food Facts")
-            switch online {
-            case .idle:
-                Text("Type at least 3 letters to search packaged products online.")
-                    .vessTextStyle(.secondary)
-            case .searching:
-                HStack(spacing: VESSSpacing.sm) {
-                    ProgressView()
-                    Text("Searching…")
-                        .vessTextStyle(.secondary)
+            Group {
+                switch online {
+                case .idle:
+                    Text("Type at least 3 letters to search packaged products online.")
+                case .searching:
+                    HStack(spacing: VESSSpacing.sm) {
+                        ProgressView()
+                        Text("Searching…")
+                    }
+                case .results(let foods):
+                    let remaining = foods.filter { !localIDs.contains($0.id) }
+                    if remaining.isEmpty {
+                        Text("No other products found.")
+                    } else {
+                        foodList(remaining)
+                    }
+                case .failed(let error):
+                    Text(Self.message(for: error))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("foodSearch.onlineMessage")
                 }
-            case .results(let foods):
-                let remaining = foods.filter { !localIDs.contains($0.id) }
-                if remaining.isEmpty {
-                    Text("No other products found.")
-                        .vessTextStyle(.secondary)
-                } else {
-                    foodList(remaining)
-                }
-            case .failed(let error):
-                Text(Self.message(for: error))
-                    .vessTextStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityIdentifier("foodSearch.onlineMessage")
             }
+            .vessTextStyle(.bodyS)
+            .foregroundStyle(VESSColor.secondaryText)
             Text(OpenFoodFactsClient.attribution)
-                .vessTextStyle(.label)
+                .vessTextStyle(.caption)
+                .foregroundStyle(VESSColor.tertiaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .contain)
@@ -255,32 +367,126 @@ private struct FoodSearchHome: View {
     private func foodList(_ foods: [Food]) -> some View {
         VESSRowGroup {
             ForEach(foods) { food in
-                Button {
-                    path.append(.food(food))
-                } label: {
-                    VESSRow(title: Text(food.name), subtitle: subtitle(for: food)) {
-                        if food.nutrition.canBeLogged {
-                            Text("\(VESSFormat.calories(food.nutrition(forQuantity: food.defaultPortion.baseAmount).calories)) kcal")
-                                .font(.subheadline.monospacedDigit())
-                                .foregroundStyle(VESSColor.secondaryText)
+                foodRow(food)
+            }
+        }
+        .vessHairlineBottom()
+    }
+
+    /// Name and "180 g · Brand"; kcal for the default portion; a + that
+    /// turns into a filled check when the food is selected.
+    private func foodRow(_ food: Food) -> some View {
+        let isSelected = selected.contains { $0.id == food.id }
+        return HStack(spacing: VESSSpacing.sm) {
+            Button {
+                path.append(.food(food))
+            } label: {
+                VESSRow(title: Text(food.name), subtitle: subtitle(for: food)) {
+                    if food.nutrition.canBeLogged {
+                        VStack(alignment: .trailing, spacing: 0) {
+                            Text(VESSFormat.calories(defaultNutrition(of: food).calories))
+                                .vessTextStyle(.numberS)
+                                .foregroundStyle(VESSColor.text)
+                            Text("kcal")
+                                .vessTextStyle(.caption)
+                                .foregroundStyle(VESSColor.tertiaryText)
                         }
                     }
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("foodRow.\(food.name)")
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("foodRow.\(food.name)")
+
+            if food.nutrition.canBeLogged {
+                VESSIconButton(
+                    systemImage: isSelected ? "checkmark" : "plus",
+                    label: isSelected ? "Remove \(food.name) from selection" : "Select \(food.name)",
+                    isFilled: isSelected
+                ) {
+                    toggle(food)
+                }
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+                .accessibilityIdentifier("foodSelect.\(food.name)")
+                .sensoryFeedback(.selection, trigger: isSelected)
             }
         }
     }
 
     private func subtitle(for food: Food) -> Text {
         if let brand = food.brand {
-            return Text("\(brand) · \(food.defaultPortionText)")
+            return Text("\(food.defaultPortionText) · \(brand)")
         }
         return Text(food.defaultPortionText)
     }
+
+    // MARK: Selection
+
+    /// "2 ITEMS / 514 kcal · 34 g protein" and "Add to dinner".
+    private var selectionBar: some View {
+        let total = selected.map(defaultNutrition(of:)).total
+        return HStack(spacing: VESSSpacing.md) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("^[\(selected.count) item](inflect: true)")
+                    .vessTextStyle(.labelCapsS)
+                    .foregroundStyle(VESSColor.secondaryText)
+                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xxs) {
+                    Text(VESSFormat.calories(total.calories))
+                        .vessTextStyle(.numberRow)
+                        .foregroundStyle(VESSColor.text)
+                    Text("kcal · \(VESSFormat.grams(total.proteinGrams)) g protein")
+                        .vessTextStyle(.bodyS)
+                        .foregroundStyle(VESSColor.secondaryText)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .layoutPriority(1)
+            Button(action: addSelected) {
+                Text(meal.addToTitle)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .buttonStyle(.vessPrimary)
+            .accessibilityIdentifier("foodSearch.addSelected")
+        }
+        .padding(.horizontal, VESSSpacing.screenInset)
+        .padding(.vertical, VESSSpacing.md)
+        .frame(maxWidth: .infinity)
+        .background(VESSColor.background)
+        .overlay(alignment: .top) { VESSHairline() }
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    private func defaultNutrition(of food: Food) -> NutritionFacts {
+        food.nutrition(forQuantity: food.defaultPortion.baseAmount)
+    }
+
+    private func toggle(_ food: Food) {
+        if let index = selected.firstIndex(where: { $0.id == food.id }) {
+            selected.remove(at: index)
+        } else {
+            selected.append(food)
+        }
+    }
+
+    /// Logs each selected food once, with its default portion.
+    private func addSelected() {
+        guard let profile = store.profile else { return }
+        let time = meal.logTime(on: day, calendar: calendar)
+        do {
+            for food in selected where food.nutrition.canBeLogged {
+                let entry = FoodLogEntry(userID: profile.id, food: food, portion: food.defaultPortion, mealType: meal, loggedAt: time)
+                try store.add(entry)
+                lookup.cache(food)
+            }
+            selected = []
+            dismiss()
+        } catch {
+            showError = true
+        }
+    }
 }
 
-private enum FoodCollection: String, CaseIterable, Identifiable {
+enum FoodCollection: String, CaseIterable, Identifiable {
     case recent, favorites, mine
 
     var id: Self { self }

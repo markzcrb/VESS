@@ -11,6 +11,7 @@ struct ActivityView: View {
         )
         .vessScreenBackground(.activity)
         .vessDetailTitle("Activity")
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 

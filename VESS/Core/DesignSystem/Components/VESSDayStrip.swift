@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// A week of days to pick from. The selected day is a filled disc, today is
-/// ringed, and a dot marks days that have entries. Future days are shown
-/// but not selectable.
+/// A week of days to pick from (Plan week pills). Each day is a column of
+/// weekday, date and a dot for days with entries; the selected day is a
+/// tall filled capsule. Future days are shown but not selectable.
 struct VESSDayStrip: View {
     let days: [Date]
     @Binding var selection: Date
@@ -10,11 +10,14 @@ struct VESSDayStrip: View {
     let calendar: Calendar
     let hasEntries: (Date) -> Bool
 
-    @ScaledMetric(relativeTo: .body) private var scaledCircleSize: CGFloat = 36
+    @ScaledMetric(relativeTo: .body) private var scaledPillWidth: CGFloat = 38
+    @ScaledMetric(relativeTo: .body) private var scaledPillHeight: CGFloat = 68
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Capped so seven days always fit: the scaled metric reads the text size
     /// from outside this view's own `dynamicTypeSize` clamp.
-    private var circleSize: CGFloat { min(scaledCircleSize, 44) }
+    private var pillWidth: CGFloat { min(scaledPillWidth, 46) }
+    private var pillHeight: CGFloat { min(scaledPillHeight, 84) }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -22,38 +25,37 @@ struct VESSDayStrip: View {
                 dayButton(day)
             }
         }
-        // Seven columns must always fit the width. Past XXXL the circles
+        // Seven columns must always fit the width. Past XXXL the pills
         // would overflow and push the whole screen sideways; VoiceOver
         // still reads each full date.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .animation(reduceMotion ? nil : VESSMotion.selection, value: selection)
     }
 
     private func dayButton(_ day: Date) -> some View {
         let isSelected = calendar.isDate(day, inSameDayAs: selection)
         let isFuture = calendar.startOfDay(for: day) > calendar.startOfDay(for: today)
-        let isToday = calendar.isDate(day, inSameDayAs: today)
+        let foreground = isSelected ? VESSColor.background : (isFuture ? VESSColor.tertiaryText : VESSColor.text)
 
         return Button {
             selection = day
         } label: {
-            VStack(spacing: VESSSpacing.xs - 2) {
+            VStack(spacing: VESSSpacing.xxs + 2) {
                 Text(day, format: .dateTime.weekday(.narrow))
-                    .vessTextStyle(.label)
-                // Selected: a filled disc. Today, when not selected: a quiet ring.
+                    .vessTextStyle(.labelCapsS)
+                    .foregroundStyle(isSelected ? VESSColor.background : VESSColor.tertiaryText)
                 Text(day, format: .dateTime.day())
-                    .font(.callout.weight(isSelected ? .semibold : .regular).monospacedDigit())
-                    .foregroundStyle(isSelected ? VESSColor.background : (isFuture ? VESSColor.tertiaryText : VESSColor.text))
-                    .frame(width: circleSize, height: circleSize)
-                    .background {
-                        if isSelected {
-                            Circle().fill(VESSColor.text)
-                        } else if isToday {
-                            Circle().strokeBorder(VESSColor.divider, lineWidth: 1)
-                        }
-                    }
+                    .vessTextStyle(.numberS)
+                    .foregroundStyle(foreground)
                 Circle()
-                    .fill(hasEntries(day) ? VESSColor.secondaryText : .clear)
+                    .fill(hasEntries(day) ? (isSelected ? VESSColor.background : VESSColor.tertiaryText) : .clear)
                     .frame(width: 4, height: 4)
+            }
+            .frame(width: pillWidth, height: pillHeight)
+            .background {
+                if isSelected {
+                    Capsule().fill(VESSColor.text)
+                }
             }
             .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
             .contentShape(Rectangle())
@@ -61,6 +63,7 @@ struct VESSDayStrip: View {
         .buttonStyle(.plain)
         .disabled(isFuture)
         .accessibilityLabel(Text(day, format: .dateTime.weekday(.wide).day().month(.wide)))
+        .accessibilityValue(hasEntries(day) ? Text("Has entries") : Text(verbatim: ""))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

@@ -30,6 +30,7 @@ struct MacrosDetailView: View {
         }
         .vessScreenBackground(.protein)
         .vessDetailTitle("Macros")
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("How this is measured", systemImage: "info.circle") { showInfo = true }
@@ -41,7 +42,9 @@ struct MacrosDetailView: View {
     private func content(profile: UserProfile, now: Date) -> some View {
         let targets = profile.nutritionTargets
         let start = calendar.date(byAdding: .day, value: -(Range.month.days - 1), to: calendar.startOfDay(for: now)) ?? now
-        let entries = store.foodEntries(from: start, to: now)
+        // The whole of today, as on Today and Nutrition.
+        let end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now
+        let entries = store.foodEntries(from: start, to: end)
         let totals = IntakeAnalysis.dailyTotals(entries, endingOn: now, days: range.days, calendar: calendar)
         let protein = IntakeAnalysis.average(totals, \.proteinGrams) ?? 0
         let carbs = IntakeAnalysis.average(totals, \.carbohydrateGrams) ?? 0

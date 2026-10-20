@@ -51,6 +51,14 @@ extension MealType {
         case .dinner: DateComponents(hour: 19, minute: 30)
         }
     }
+
+    /// When an entry added now to this meal on `day` is logged: now for
+    /// today, otherwise the meal's typical time on that day.
+    func logTime(on day: Date, now: Date = .now, calendar: Calendar) -> Date {
+        if calendar.isDate(day, inSameDayAs: now) { return now }
+        let time = typicalTime
+        return calendar.date(bySettingHour: time.hour ?? 12, minute: time.minute ?? 0, second: 0, of: day) ?? day
+    }
 }
 
 nonisolated extension MealType: Identifiable {

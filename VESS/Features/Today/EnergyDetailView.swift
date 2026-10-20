@@ -18,6 +18,7 @@ struct EnergyDetailView: View {
         }
         .vessScreenBackground(.energy)
         .vessDetailTitle("Energy")
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("How this is measured", systemImage: "info.circle") { showInfo = true }
@@ -51,7 +52,10 @@ struct EnergyDetailView: View {
         let regularity = MealRegularity.score(today: entries, history: history, calendar: calendar)
         let beforeNoon = IntakeAnalysis.beforeNoonShare(entries, calendar: calendar)
         let week = IntakeAnalysis.dailyTotals(
-            store.foodEntries(from: calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: day)) ?? day, to: clock),
+            store.foodEntries(
+                from: calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: day)) ?? day,
+                to: calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: day)) ?? clock
+            ),
             endingOn: day, days: 7, calendar: calendar
         )
 
@@ -238,7 +242,7 @@ private struct EnergyThroughDayChart: View {
                 AxisGridLine().foregroundStyle(VESSColor.chartGuide)
                 AxisValueLabel {
                     if let kcal = value.as(Double.self) {
-                        Text(kcal.formatted(.number.notation(.compactName)))
+                        Text(VESSFormat.calories(kcal))
                             .vessTextStyle(.caption)
                             .foregroundStyle(VESSColor.tertiaryText)
                     }
