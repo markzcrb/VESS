@@ -121,10 +121,11 @@ struct QuickAddForm: View {
 
     // MARK: Validation (H03)
 
-    /// Required fields only complain once something has been typed, so an
-    /// empty form (H01) stays calm.
-    private var hasStarted: Bool {
-        [name, calories, protein, carbs, fat].contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+    /// A required field only complains once a field below it has content,
+    /// so an empty form (H01) stays calm and typing top to bottom never
+    /// shows an error for the field you're about to fill (H03).
+    private func hasContent(_ texts: [String]) -> Bool {
+        texts.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 
     private var trimmedName: String {
@@ -142,7 +143,7 @@ struct QuickAddForm: View {
     }
 
     private var nameError: Text? {
-        hasStarted && trimmedName.isEmpty ? Text("Add a name so you can find it again.") : nil
+        hasContent([calories, protein, carbs, fat]) && trimmedName.isEmpty ? Text("Add a name so you can find it again.") : nil
     }
 
     private var servingsError: Text? {
@@ -150,8 +151,9 @@ struct QuickAddForm: View {
     }
 
     private var caloriesError: Text? {
-        guard hasStarted else { return nil }
-        if calories.trimmingCharacters(in: .whitespaces).isEmpty { return Text("Add calories to save.") }
+        if calories.trimmingCharacters(in: .whitespaces).isEmpty {
+            return hasContent([protein, carbs, fat]) ? Text("Add calories to save.") : nil
+        }
         return kcal == nil ? Text("Enter between 0 and 5,000 kcal.") : nil
     }
 
