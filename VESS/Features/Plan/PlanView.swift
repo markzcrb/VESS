@@ -1,15 +1,29 @@
 import SwiftUI
 
-/// Placeholder. Phase 5 builds meal planning, groceries and expiration tracking here.
+/// Plan. Until the week plan (07) is built, the tab leads to Pantry.
 struct PlanView: View {
+    @Environment(LocalStore.self) private var store
+
     var body: some View {
         NavigationStack {
-            ContentUnavailableView(
-                "Plan",
-                systemImage: "calendar",
-                description: Text("Plan meals, keep a grocery list and see what's at home before it expires.")
-            )
-            .background(VESSColor.background)
+            ScrollView {
+                VESSRowGroup {
+                    NavigationLink {
+                        PantryView()
+                    } label: {
+                        VESSListRow(
+                            systemImage: "refrigerator",
+                            title: Text("Pantry"),
+                            subtitle: Text("^[\(store.inventory.count) item](inflect: true) at home")
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("plan.pantry")
+                }
+                .vessHairlineBottom()
+                .padding(.horizontal, VESSSpacing.screenInset)
+            }
+            .vessScreenBackground()
             .navigationTitle("Plan")
         }
     }
@@ -17,4 +31,5 @@ struct PlanView: View {
 
 #Preview {
     PlanView()
+        .previewEnvironment(LocalStore.preview())
 }

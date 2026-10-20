@@ -23,6 +23,8 @@ nonisolated struct MockData: Sendable {
     let hydrationLog: [HydrationLog]
     let workouts: [Workout]
     let inventory: [InventoryItem]
+    /// C01's pantry, beyond `inventory`: what Plan and recipes draw on.
+    let pantryExtras: [InventoryItem]
     let supplements: [Supplement]
     let supplementLog: [SupplementLog]
     let weightHistory: [WeightEntry]
@@ -258,6 +260,24 @@ nonisolated struct MockData: Sendable {
             item("Greek yogurt", 2, .pack, expiresIn: 6, .dairy, .fridge),
             item("Jasmine rice", 1, .kilogram, expiresIn: 240, .carbohydrates, .pantry),
             item("Frozen spinach", 450, .gram, expiresIn: nil, .vegetables, .freezer),
+        ]
+        // Pescatarian and nut-free (DATA.md overrides).
+        pantryExtras = [
+            item("Baby spinach", 150, .gram, expiresIn: 1, .vegetables, .fridge),
+            item("Bok choy", 2, .piece, expiresIn: 2, .vegetables, .fridge),
+            item("Hummus", 200, .gram, expiresIn: 4, .protein, .fridge),
+            item("Skyr", 300, .gram, expiresIn: 6, .dairy, .fridge),
+            item("Carrots", 500, .gram, expiresIn: 8, .vegetables, .fridge),
+            item("Mixed berries", 400, .gram, expiresIn: nil, .fruit, .freezer),
+            item("Peas", 500, .gram, expiresIn: nil, .vegetables, .freezer),
+            item("Rolled oats", 500, .gram, expiresIn: nil, .carbohydrates, .pantry),
+            item("Red lentils", 400, .gram, expiresIn: nil, .carbohydrates, .pantry),
+            item("Chickpeas", 2, .pack, expiresIn: nil, .protein, .pantry),
+            item("White miso", 200, .gram, expiresIn: nil, .other, .pantry),
+            item("Mirin", 250, .milliliter, expiresIn: nil, .other, .pantry),
+            item("Olive oil", 500, .milliliter, expiresIn: nil, .other, .pantry),
+            item("Rye crackers", 200, .gram, expiresIn: nil, .carbohydrates, .pantry),
+            item("Onions", 3, .piece, expiresIn: nil, .vegetables, .other),
         ]
 
         // MARK: Supplements (the user's own choices)

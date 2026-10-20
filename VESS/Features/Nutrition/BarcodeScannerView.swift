@@ -18,6 +18,9 @@ struct BarcodeScannerView: View {
     let onLogged: () -> Void
     let onTypeNumber: () -> Void
     let onAddManually: () -> Void
+    /// When set (Pantry), a found product is handed back and the scanner
+    /// closes, instead of opening Product found for logging.
+    var onProduct: ((Food) -> Void)?
 
     private enum Phase: Equatable {
         case starting
@@ -233,7 +236,7 @@ struct BarcodeScannerView: View {
         Task {
             switch await lookup.lookUp(barcode: code) {
             case .success(let food):
-                found = food
+                handle(food)
             case .failure(.notFound):
                 phase = .notFound(code)
             case .failure(let error):
@@ -251,9 +254,18 @@ struct BarcodeScannerView: View {
         guard let code = MockData.barcodeDemo.barcode else { return }
         phase = .reading(code)
         try? await Task.sleep(for: .seconds(3))
-        found = MockData.barcodeDemo
+        handle(MockData.barcodeDemo)
     }
     #endif
+
+    private func handle(_ food: Food) {
+        if let onProduct {
+            onProduct(food)
+            dismiss()
+        } else {
+            found = food
+        }
+    }
 
     private func setTorch(_ on: Bool) {
         guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }

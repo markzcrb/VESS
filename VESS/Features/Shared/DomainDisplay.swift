@@ -190,8 +190,9 @@ extension StorageLocation {
         switch self {
         case .fridge: "Fridge"
         case .freezer: "Freezer"
-        case .pantry: "Pantry"
-        case .other: "Other"
+        // The design's names; the stored values are unchanged.
+        case .pantry: "Cupboard"
+        case .other: "Counter"
         }
     }
 }

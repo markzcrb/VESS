@@ -66,3 +66,21 @@ final class StoredHydrationLog {
         self.payload = payload
     }
 }
+
+/// Something at home (Pantry). Added in the redesign; an additive entity,
+/// so stores from earlier builds open unchanged.
+@Model
+final class StoredInventoryItem {
+    @Attribute(.unique) var id: UUID
+    var expirationDate: Date?
+    /// `false` once used up or thrown away; kept for food-waste insights.
+    var isActive: Bool
+    var payload: Data
+
+    init(id: UUID, expirationDate: Date?, isActive: Bool, payload: Data) {
+        self.id = id
+        self.expirationDate = expirationDate
+        self.isActive = isActive
+        self.payload = payload
+    }
+}

@@ -23,10 +23,9 @@ final class LocalStore {
     /// Bumped on every write so views that read logs re-render.
     private var revision = 0
 
-    // Not persisted yet: these arrive with Activity (Phase 4), Plan (Phase 5)
-    // and Insights (Phase 6). Empty in production; filled only by sample data.
+    // Not persisted yet: these arrive with Activity (Phase 4) and Insights
+    // (Phase 6). Empty in production; filled only by sample data.
     private(set) var workouts: [Workout] = []
-    private(set) var inventory: [InventoryItem] = []
     private(set) var insights: [Insight] = []
 
     init(container: ModelContainer) {
@@ -46,7 +45,10 @@ final class LocalStore {
     }
 
     private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
-        let schema = Schema([StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self])
+        let schema = Schema([
+            StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
+            StoredInventoryItem.self,
+        ])
         return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
     }
 
@@ -231,6 +233,43 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Pantry
+
+    /// What's at home now (status available), soonest expiry first, then by name.
+    var inventory: [InventoryItem] {
+        _ = revision
+        let descriptor = FetchDescriptor<StoredInventoryItem>(predicate: #Predicate { $0.isActive })
+        return fetchDecoded(descriptor, as: InventoryItem.self) { $0.payload }
+            .sorted(by: PantryOverview.soonestFirst)
+    }
+
+    func inventoryItem(id: UUID) -> InventoryItem? {
+        _ = revision
+        let descriptor = FetchDescriptor<StoredInventoryItem>(predicate: #Predicate { $0.id == id })
+        return fetchDecoded(descriptor, as: InventoryItem.self) { $0.payload }.first
+    }
+
+    /// Adds or updates an item. Used up or thrown away items leave the
+    /// pantry but are kept.
+    func save(_ item: InventoryItem) throws {
+        let payload = try encoder.encode(item)
+        let id = item.id
+        let isActive = item.status == .available
+        if let existing = try context.fetch(FetchDescriptor<StoredInventoryItem>(predicate: #Predicate { $0.id == id })).first {
+            existing.expirationDate = item.expirationDate
+            existing.isActive = isActive
+            existing.payload = payload
+        } else {
+            context.insert(StoredInventoryItem(id: id, expirationDate: item.expirationDate, isActive: isActive, payload: payload))
+        }
+        try save()
+    }
+
+    func deleteInventoryItem(id: UUID) throws {
+        try context.delete(model: StoredInventoryItem.self, where: #Predicate { $0.id == id })
+        try save()
+    }
+
     // MARK: Account data
 
     /// Deletes everything stored on this device and returns to onboarding.
@@ -239,10 +278,10 @@ final class LocalStore {
         try context.delete(model: StoredFoodLogEntry.self)
         try context.delete(model: StoredHydrationLog.self)
         try context.delete(model: StoredFood.self)
+        try context.delete(model: StoredInventoryItem.self)
         try save()
         profile = nil
         workouts = []
-        inventory = []
         insights = []
     }
 
@@ -302,7 +341,7 @@ extension LocalStore {
         for entry in data.foodHistory + data.foodLog { try add(entry) }
         for log in data.hydrationLog { try add(log) }
         workouts = data.workouts
-        inventory = data.inventory
+        for item in data.inventory + data.pantryExtras { try save(item) }
         insights = data.insights
     }
 
