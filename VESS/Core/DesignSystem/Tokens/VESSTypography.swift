@@ -8,6 +8,9 @@ import SwiftUI
 enum VESSTextStyle {
     /// The Day Word, such as "On track". Also onboarding questions.
     case dayWord
+    /// Today's headline: the Day Word set larger than any other text, so
+    /// the screen reads statement first, numbers second.
+    case heroTitle
     /// Detail and sheet titles, such as a food name.
     case detailTitle
     /// Section headings, such as "Meals".
@@ -24,6 +27,8 @@ enum VESSTextStyle {
     case badge
     /// The most important number on a screen, such as calories eaten.
     case metricHero
+    /// A day's main total on secondary screens, such as Nutrition's calories.
+    case metricLarge
     /// Card-level numbers, such as "1.4 L".
     case metric
     /// Inline numbers, such as "108 / 140 g".
@@ -42,17 +47,21 @@ private struct VESSTextStyleModifier: ViewModifier {
 
     /// `Font.system(size:)` does not scale on its own, so the hero metric is
     /// scaled relative to `.largeTitle`.
-    @ScaledMetric(relativeTo: .largeTitle) private var metricHeroSize: CGFloat = 56
+    @ScaledMetric(relativeTo: .largeTitle) private var metricHeroSize: CGFloat = 64
+    @ScaledMetric(relativeTo: .largeTitle) private var metricLargeSize: CGFloat = 40
+    @ScaledMetric(relativeTo: .largeTitle) private var heroTitleSize: CGFloat = 40
 
     func body(content: Content) -> some View {
         content
             .font(font)
+            .tracking(style == .heroTitle ? -0.5 : 0)
             .foregroundStyle(color)
     }
 
     private var font: Font {
         switch style {
         case .dayWord: .largeTitle
+        case .heroTitle: .system(size: heroTitleSize, weight: .regular)
         case .detailTitle: .title2.weight(.semibold)
         case .sectionTitle: .headline
         case .rowTitle: .body.weight(.semibold)
@@ -61,6 +70,7 @@ private struct VESSTextStyleModifier: ViewModifier {
         case .label: .footnote
         case .badge: .caption.weight(.semibold)
         case .metricHero: .system(size: metricHeroSize, weight: .light).monospacedDigit()
+        case .metricLarge: .system(size: metricLargeSize, weight: .light).monospacedDigit()
         case .metric: .title.monospacedDigit()
         case .metricInline: .callout.monospacedDigit()
         }

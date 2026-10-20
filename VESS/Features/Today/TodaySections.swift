@@ -31,7 +31,7 @@ struct TodayHeader: View {
             }
 
             Text(summary.dayWord.title)
-                .vessTextStyle(.dayWord)
+                .vessTextStyle(.heroTitle)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier("today.dayWord")
 
@@ -55,51 +55,70 @@ struct TodayHeader: View {
 
 // MARK: - Meals
 
-struct TodayMealsSection: View {
-    let entries: [FoodLogEntry]
+/// The step that comes next: the first main meal not yet logged, with its
+/// usual time when there's enough history. Shown right under the day's
+/// numbers so Today reads statement, evidence, then next step.
+struct NextMealRow: View {
+    let meal: MealType
     let history: [FoodLogEntry]
     let now: Date
     let calendar: Calendar
-    let onAdd: (MealType) -> Void
+    let onAdd: () -> Void
+
+    var body: some View {
+        let usual = history.usualTime(for: meal, calendar: calendar)
+            .flatMap { calendar.date(bySettingHour: $0.hour ?? 0, minute: $0.minute ?? 0, second: 0, of: now) }
+        let shape = RoundedRectangle(cornerRadius: VESSRadius.control, style: .continuous)
+
+        Button(action: onAdd) {
+            HStack(spacing: VESSSpacing.sm) {
+                Image(systemName: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(VESSColor.accent)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: VESSSpacing.xxs / 2) {
+                    Text(meal.addTitle)
+                        .vessTextStyle(.rowTitle)
+                        .foregroundStyle(VESSColor.accent)
+                    if let usual {
+                        Text("Usually around \(usual, format: .dateTime.hour().minute())")
+                            .vessTextStyle(.label)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, VESSSpacing.md)
+            .padding(.vertical, VESSSpacing.sm)
+            .frame(maxWidth: .infinity, minHeight: VESSHitTarget.control, alignment: .leading)
+            .background(VESSColor.accentPale, in: shape)
+            .contentShape(shape)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today.addMeal")
+    }
+}
+
+/// The day's meals so far, one row each, opening the Nutrition diary.
+struct TodayMealsSection: View {
+    let entries: [FoodLogEntry]
+    let now: Date
     let onOpenDiary: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         let logged = MealType.dayOrder.filter { !entries.entries(for: $0).isEmpty }
-        let next = MealType.nextSuggestion(logged: Set(logged), now: now, calendar: calendar)
-            ?? (logged.isEmpty ? MealType.likely(at: now, calendar: calendar) : nil)
 
         VESSSection(header: VESSSectionHeader(title: "Meals", actionTitle: "Day diary", action: onOpenDiary)) {
-            if logged.isEmpty {
-                // A single action isn't a list, so it gets no card: it sits
-                // on the page with the weight of a link, not a panel.
-                if let next {
-                    suggestionButton(next)
-                        .padding(.horizontal, -VESSSpacing.lg)
-                }
-            } else {
-                VESSRowGroup {
-                    ForEach(logged) { meal in
-                        Button(action: onOpenDiary) {
-                            loggedRow(meal, entries: entries.entries(for: meal))
-                        }
-                        .buttonStyle(.plain)
+            VESSRowGroup {
+                ForEach(logged) { meal in
+                    Button(action: onOpenDiary) {
+                        loggedRow(meal, entries: entries.entries(for: meal))
                     }
-                    if let next {
-                        suggestionButton(next)
-                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
-    }
-
-    private func suggestionButton(_ meal: MealType) -> some View {
-        Button { onAdd(meal) } label: {
-            suggestionRow(meal)
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today.addMeal")
     }
 
     private func loggedRow(_ meal: MealType, entries: [FoodLogEntry]) -> some View {
@@ -110,8 +129,6 @@ struct TodayMealsSection: View {
             subtitleLineLimit: 2
         ) {
             if dynamicTypeSize.isAccessibilitySize {
-                // Stacked under the text, a bare number loses its column
-                // context, so it reads as one line: "456 kcal · 8:05 AM".
                 Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal · \(entries.first?.loggedAt ?? now, format: .dateTime.hour().minute())")
                     .vessTextStyle(.label)
             } else {
@@ -130,22 +147,43 @@ struct TodayMealsSection: View {
         .accessibilityValue(Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal"))
         .accessibilityHint("Opens Nutrition")
     }
+}
 
-    private func suggestionRow(_ meal: MealType) -> some View {
-        let usual = history.usualTime(for: meal, calendar: calendar)
-            .flatMap { calendar.date(bySettingHour: $0.hour ?? 0, minute: $0.minute ?? 0, second: 0, of: now) }
+/// Water and, when there is one today, the workout: two quiet columns on one
+/// surface, so they read as the day's other measures without competing with
+/// the calories above.
+struct DayMeasuresCard: View {
+    let hydration: HydrationProgress
+    let workout: Workout?
+    let onAddWater: () -> Void
 
-        return VESSRow(
-            title: Text("\(Image(systemName: "plus"))  \(Text(meal.addTitle))")
-                .foregroundStyle(VESSColor.accent),
-            subtitle: usual.map { Text("Usually around \($0, format: .dateTime.hour().minute())") }
-        ) {
-            EmptyView()
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        VESSCard {
+            if let workout, !dynamicTypeSize.isAccessibilitySize {
+                HStack(alignment: .top, spacing: VESSSpacing.lg) {
+                    WaterOverview(hydration: hydration, onAdd: onAddWater)
+                    Rectangle()
+                        .fill(VESSColor.divider)
+                        .frame(width: 0.5)
+                    ActivityOverview(workout: workout)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: VESSSpacing.lg) {
+                    WaterOverview(hydration: hydration, onAdd: onAddWater)
+                    if let workout {
+                        Rectangle()
+                            .fill(VESSColor.divider)
+                            .frame(height: 0.5)
+                        ActivityOverview(workout: workout)
+                    }
+                }
+            }
         }
     }
 }
-
-// MARK: - Water
 
 /// Water, open on the page. Shows the counted amount; when drinks count
 /// only partly, the volume actually drunk is shown alongside it.

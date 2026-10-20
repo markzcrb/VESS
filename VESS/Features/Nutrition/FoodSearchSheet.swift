@@ -72,6 +72,7 @@ private struct FoodSearchHome: View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                 MealPickerHeader(title: "Add to", meal: $meal)
+                    .padding(.top, VESSSpacing.sm)
                 if trimmedQuery.isEmpty {
                     actions
                     savedFoods

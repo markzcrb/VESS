@@ -19,7 +19,7 @@ private struct DesignSystemGallery: View {
 
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                     Text("Good evening, Alex").vessTextStyle(.secondary)
-                    Text("On track").vessTextStyle(.dayWord)
+                    Text("On track").vessTextStyle(.heroTitle)
                     Text("1,312 of 2,550 kcal. Protein is behind.")
                         .font(.body)
                         .foregroundStyle(VESSColor.secondaryText)
@@ -28,7 +28,8 @@ private struct DesignSystemGallery: View {
                 VESSSection(header: VESSSectionHeader(title: "Vessel Line")) {
                     VESSCard {
                         VStack(alignment: .leading, spacing: VESSSpacing.md) {
-                            VESSMetric(value: Text(verbatim: "1,312"), context: Text("of 2,550 kcal"))
+                            VESSMetric(value: Text(verbatim: "1,312"), context: Text("kcal"))
+                            VESSMetric(value: Text(verbatim: "1,312"), context: Text("kcal"), style: .metricLarge)
                             VESSVesselLine(value: 0.51, tint: VESSColor.calories)
                             VESSVesselLine(value: 1.04, tint: VESSColor.calories)
                             VESSVesselLine(value: 0.72, tint: VESSColor.water, segments: 9)

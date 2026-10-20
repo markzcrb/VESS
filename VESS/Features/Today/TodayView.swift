@@ -42,6 +42,9 @@ struct TodayView: View {
                 date.map { calendar.isDate($0, inSameDayAs: now) } ?? false
             }
         }
+        let logged = Set(MealType.dayOrder.filter { !entries.entries(for: $0).isEmpty })
+        let nextMeal = MealType.nextSuggestion(logged: logged, now: now, calendar: calendar)
+            ?? (logged.isEmpty ? MealType.likely(at: now, calendar: calendar) : nil)
         let expiring = store.inventory
             .filter { $0.status == .available && $0.expirationStatus(now: now, calendar: calendar).needsAttention }
             .sorted { ($0.expirationDate ?? .distantFuture) < ($1.expirationDate ?? .distantFuture) }
@@ -58,25 +61,20 @@ struct TodayView: View {
                     CaloriesOverview(summary: summary)
                 }
 
-                TodayMealsSection(
-                    entries: entries,
-                    history: history,
-                    now: now,
-                    calendar: calendar,
-                    onAdd: { meal in addFood = AddFoodRequest(meal: meal, day: now) },
-                    onOpenDiary: { selectedTab = .nutrition }
-                )
+                // Statement (Day Word), evidence (calories), then the next step.
+                if let next = nextMeal {
+                    NextMealRow(meal: next, history: history, now: now, calendar: calendar) {
+                        addFood = AddFoodRequest(meal: next, day: now)
+                    }
+                    .padding(.top, -VESSSpacing.md)
+                }
 
-                VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                    WaterOverview(hydration: summary.hydration) {
-                        addWater(250, profile: profile)
-                    }
-                    if let todaysWorkout {
-                        Rectangle()
-                            .fill(VESSColor.divider)
-                            .frame(height: 0.5)
-                        ActivityOverview(workout: todaysWorkout)
-                    }
+                if !entries.isEmpty {
+                    TodayMealsSection(entries: entries, now: now, onOpenDiary: { selectedTab = .nutrition })
+                }
+
+                DayMeasuresCard(hydration: summary.hydration, workout: todaysWorkout) {
+                    addWater(250, profile: profile)
                 }
 
                 if !expiring.isEmpty {

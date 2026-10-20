@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// A week of days to pick from. The selected day is ringed; a dot marks days
-/// that have entries. Future days are shown but not selectable.
+/// A week of days to pick from. The selected day is a filled disc, today is
+/// ringed, and a dot marks days that have entries. Future days are shown
+/// but not selectable.
 struct VESSDayStrip: View {
     let days: [Date]
     @Binding var selection: Date
@@ -30,6 +31,7 @@ struct VESSDayStrip: View {
     private func dayButton(_ day: Date) -> some View {
         let isSelected = calendar.isDate(day, inSameDayAs: selection)
         let isFuture = calendar.startOfDay(for: day) > calendar.startOfDay(for: today)
+        let isToday = calendar.isDate(day, inSameDayAs: today)
 
         return Button {
             selection = day
@@ -37,13 +39,16 @@ struct VESSDayStrip: View {
             VStack(spacing: VESSSpacing.xs - 2) {
                 Text(day, format: .dateTime.weekday(.narrow))
                     .vessTextStyle(.label)
+                // Selected: a filled disc. Today, when not selected: a quiet ring.
                 Text(day, format: .dateTime.day())
-                    .font(.callout.monospacedDigit())
-                    .foregroundStyle(isFuture ? VESSColor.tertiaryText : VESSColor.text)
+                    .font(.callout.weight(isSelected ? .semibold : .regular).monospacedDigit())
+                    .foregroundStyle(isSelected ? VESSColor.background : (isFuture ? VESSColor.tertiaryText : VESSColor.text))
                     .frame(width: circleSize, height: circleSize)
-                    .overlay {
+                    .background {
                         if isSelected {
-                            Circle().strokeBorder(VESSColor.text, lineWidth: 1)
+                            Circle().fill(VESSColor.text)
+                        } else if isToday {
+                            Circle().strokeBorder(VESSColor.divider, lineWidth: 1)
                         }
                     }
                 Circle()

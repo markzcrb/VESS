@@ -33,7 +33,7 @@ struct VESSMetric: View {
         // Beside a hero number the context steps up to body size,
         // so the target reads as part of the figure, not a footnote.
         context.map {
-            $0.font(style == .metricHero ? .body : .subheadline)
+            $0.font(style == .metricHero || style == .metricLarge ? .body : .subheadline)
                 .foregroundStyle(VESSColor.secondaryText)
         }
     }

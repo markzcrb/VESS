@@ -78,12 +78,13 @@ from the image pixels, then adjusted only where needed to pass contrast.
 ### Surfaces and text
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `background` | `#F7F7F4` | `#0E0F0E` | Canvas |
-| `card` | `#FFFFFF` | `#181918` | Cards, sheets |
-| `fill` | `#EFEFEA` | `#232523` | Inputs, icon buttons, quiet buttons, tracks, thumbnails |
-| `divider` | `#E7E7E2` | `#2A2B2A` | Hairlines, inset row separators |
+| `background` | `#F7F7F4` | `#111312` | Canvas |
+| `card` | `#FFFFFF` | `#1F2220` | Cards, sheets (1.16:1 on the dark canvas) |
+| `fill` | `#EFEFEA` | `#2E322F` | Inputs, icon buttons, quiet buttons, tracks, thumbnails |
+| `divider` | `#E7E7E2` | `#343835` | Hairlines, inset row separators |
 | `text` | `#171817` | `#EDEDE8` | Primary text, selected tab |
-| `secondaryText` | `#6E716D` | `#9A9D98` | Supporting text (4.6:1 on background) |
+| `secondaryText` | `#6E716D` | `#A6AAA4` | Supporting text (4.6:1 light, 6.8:1 dark on card) |
+| `tertiaryText` | `#747772` | `#7C807A` | Future dates, chevrons (4.2:1 light, 4.0:1 dark on card). `#A4A7A2` is decorative only |
 
 ### Accent
 | Token | Light | Dark | Use |
@@ -131,7 +132,8 @@ use monospaced digits. The serif display style from Phase 0 is removed.
 
 | Style | Base | Weight | Example |
 |---|---|---|---|
-| `headline` | largeTitle (34) | regular | "On track", "Full day" |
+| `heroTitle` | 40 pt, `@ScaledMetric` | regular, −0.5 tracking | Today's Day Word: "On track", "Full day" |
+| `dayWord` | largeTitle (34) | regular | Onboarding questions |
 | `screenTitle` | system navigation large title | bold | "Nutrition" |
 | `detailTitle` | title2 | semibold | "Salmon fillet, baked", "Looks like" |
 | `sectionTitle` | headline | semibold | "Meals", "Expiring soon" |
@@ -140,7 +142,8 @@ use monospaced digits. The serif display style from Phase 0 is removed.
 | `secondary` | subheadline | regular | "Greek yogurt, berries…", "of 2,400 kcal" |
 | `label` | footnote | regular | Card labels with dot ("Calories"), date line, group headers |
 | `badge` | caption | semibold | "Tomorrow", "Approx." |
-| `metricHero` | 56 pt light, `@ScaledMetric` | light | "1,840", "312" |
+| `metricHero` | 64 pt, `@ScaledMetric` | light | Today's calories: "1,840" |
+| `metricLarge` | 40 pt, `@ScaledMetric` | light | Nutrition's calories |
 | `metric` | title (28) | regular | "1.4 L", "6,420" |
 | `metricInline` | callout | regular | "108 / 140 g" (value in `text`, "/ 140 g" in `secondaryText`) |
 
