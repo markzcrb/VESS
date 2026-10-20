@@ -35,6 +35,9 @@ func pantryExpiryText(for item: InventoryItem, now: Date, calendar: Calendar) ->
     let status = item.expirationStatus(now: now, calendar: calendar)
     if status.needsAttention, let relative = status.relativeText { return relative }
     guard let date = item.expirationDate else { return Text("No date") }
+    if calendar.component(.year, from: date) != calendar.component(.year, from: now) {
+        return Text(date, format: .dateTime.day().month(.abbreviated).year())
+    }
     return Text(date, format: .dateTime.day().month(.abbreviated))
 }
 

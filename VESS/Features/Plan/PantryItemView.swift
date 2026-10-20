@@ -62,7 +62,9 @@ struct PantryItemView: View {
                 VStack(alignment: .leading, spacing: VESSSpacing.md) {
                     VESSSectionHeader(title: "Expires", detail: expiresDetail(value))
                     ExpiryChips(date: item.expirationDate, now: AppClock.now, calendar: calendar)
-                    if let date = value.expirationDate {
+                    // A date that matches no chip gets its own picker.
+                    if let date = value.expirationDate,
+                       ExpiryPreset.matching(date, now: AppClock.now, calendar: calendar) == nil {
                         DatePicker(
                             "Use by",
                             selection: Binding(
