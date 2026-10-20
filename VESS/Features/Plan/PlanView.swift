@@ -229,11 +229,6 @@ struct PlanView: View {
                 title: Text(MealSuggestions.Candidate.mealName(entries.map(\.foodName))),
                 subtitle: Text("\(Text(meal.title)) · eaten")
             ) {
-                Image(systemName: "checkmark")
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .frame(width: VESSSize.rowIcon)
-                    .accessibilityHidden(true)
-            } trailing: {
                 Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.secondaryText)
@@ -244,7 +239,6 @@ struct PlanView: View {
                 PlannedMealView(mealID: plannedMeal.id)
             } label: {
                 VESSListRow(
-                    systemImage: day.isToday ? "clock" : nil,
                     title: Text(plannedMeal.name),
                     subtitle: Text(meal.title),
                     value: Text("\(VESSFormat.calories(plannedMeal.nutrition.calories)) kcal")
@@ -284,7 +278,8 @@ struct PlanView: View {
         guard !counted.isEmpty, counted.contains(where: { $0.upcoming }) else { return nil }
         let kcal = counted.reduce(0) { $0 + $1.nutrition.calories } / Double(counted.count)
         let protein = counted.reduce(0) { $0 + $1.nutrition.proteinGrams } / Double(counted.count)
-        let average = Text("This week averages \(VESSFormat.calories(kcal)) kcal and \(VESSFormat.grams(protein)) g protein.")
+        // Non-breaking spaces keep each number with its unit.
+        let average = Text("This week averages \(VESSFormat.calories(kcal))\u{00A0}kcal and \(VESSFormat.grams(protein))\u{00A0}g protein.")
         let light = counted
             .filter { $0.upcoming && $0.filled >= 2 && $0.nutrition.proteinGrams < profile.nutritionTargets.proteinGrams * 0.75 }
             .min { $0.nutrition.proteinGrams < $1.nutrition.proteinGrams }

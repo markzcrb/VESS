@@ -66,9 +66,15 @@ struct SuggestionsView: View {
                 }
 
                 if !suggestions.isEmpty {
-                    Text("\(selected.count) of \(suggestions.count) selected · You can change any later")
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.secondaryText)
+                    VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                        if suggestions.count < openSlots.count {
+                            Text("^[\(openSlots.count - suggestions.count) slot](inflect: true) had nothing that fits yet. Add them from the plan when you're ready.")
+                        }
+                        Text("\(selected.count) of \(suggestions.count) selected · You can change any later")
+                    }
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(.horizontal, VESSSpacing.screenInset)

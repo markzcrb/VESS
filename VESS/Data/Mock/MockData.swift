@@ -390,7 +390,7 @@ nonisolated extension MockData {
                 nutrition: facts(620, 42, 58, 21),
                 ingredients: [
                     ingredient("Cod fillets", 300, .gram), ingredient("White miso", 2, .tablespoon),
-                    ingredient("Mirin", 1, .tablespoon), ingredient("Bok choy", 2, .piece),
+                    ingredient("Mirin", 1, .tablespoon), ingredient("Honey", 1, .teaspoon), ingredient("Bok choy", 2, .piece),
                     ingredient("Baby spinach", 100, .gram), ingredient("Jasmine rice", 150, .gram),
                     ingredient("Spring onions", 2, .piece),
                 ],

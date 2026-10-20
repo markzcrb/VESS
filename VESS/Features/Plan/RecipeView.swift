@@ -106,9 +106,12 @@ struct RecipeView: View {
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: VESSSpacing.sm) {
                 Button { planForToday() } label: {
-                    Text("Plan for \(now.formatted(.dateTime.weekday(.abbreviated)))")
+                    Text(isPlannedToday
+                         ? "Planned for \(now.formatted(.dateTime.weekday(.abbreviated)))"
+                         : "Plan for \(now.formatted(.dateTime.weekday(.abbreviated)))")
                 }
                 .buttonStyle(.vessSecondary)
+                .disabled(isPlannedToday)
                 .accessibilityIdentifier("recipe.plan")
                 Button("Cook & log", action: cookAndLog)
                     .buttonStyle(.vessPrimary)
@@ -120,6 +123,13 @@ struct RecipeView: View {
             .overlay(alignment: .top) { VESSHairline() }
         }
         .vessErrorAlert(isPresented: $showError)
+    }
+
+    /// Already planned for today's slot.
+    private var isPlannedToday: Bool {
+        let today = calendar.startOfDay(for: AppClock.now)
+        let end = calendar.date(byAdding: .day, value: 1, to: today) ?? today
+        return store.plannedMeals(from: today, to: end).contains { $0.source == .recipe(recipe.id) }
     }
 
     private var dietText: Text {
@@ -180,7 +190,12 @@ struct RecipeView: View {
                 switch status {
                 case .toBuy: VESSTag(text: Text("Missing"), tone: .warning)
                 case .inPantry: VESSTag(text: Text("In pantry"))
-                case .useSoon(let expiry): VESSTag(text: expiry.relativeText.map { Text("Use \($0)") } ?? Text("Use soon"), tone: .accent)
+                case .useSoon:
+                    if let date = PantryMatch.item(for: ingredient.name, in: store.inventory)?.expirationDate {
+                        VESSTag(text: Text("Use by \(date.formatted(.dateTime.weekday(.abbreviated)))"), tone: .accent)
+                    } else {
+                        VESSTag(text: Text("Use soon"), tone: .accent)
+                    }
                 }
                 if let quantity = ingredient.quantity {
                     let scaled = quantity * Double(servings) / Double(max(recipe.servings, 1))
