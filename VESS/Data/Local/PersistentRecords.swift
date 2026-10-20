@@ -84,3 +84,18 @@ final class StoredInventoryItem {
         self.payload = payload
     }
 }
+
+/// A meal planned for a day (Plan). Additive, like `StoredInventoryItem`.
+@Model
+final class StoredPlannedMeal {
+    @Attribute(.unique) var id: UUID
+    /// The start of the planned day, for week queries.
+    var day: Date
+    var payload: Data
+
+    init(id: UUID, day: Date, payload: Data) {
+        self.id = id
+        self.day = day
+        self.payload = payload
+    }
+}

@@ -2,13 +2,15 @@ import SwiftUI
 
 /// A week of days to pick from (Plan week pills). Each day is a column of
 /// weekday, date and a dot for days with entries; the selected day is a
-/// tall filled capsule. Future days are shown but not selectable.
+/// tall filled capsule. Future days are shown but not selectable, unless
+/// `isSelectable` says otherwise (moving a planned meal).
 struct VESSDayStrip: View {
     let days: [Date]
     @Binding var selection: Date
     let today: Date
     let calendar: Calendar
     let hasEntries: (Date) -> Bool
+    var isSelectable: ((Date) -> Bool)?
 
     @ScaledMetric(relativeTo: .body) private var scaledPillWidth: CGFloat = 38
     @ScaledMetric(relativeTo: .body) private var scaledPillHeight: CGFloat = 68
@@ -35,7 +37,8 @@ struct VESSDayStrip: View {
     private func dayButton(_ day: Date) -> some View {
         let isSelected = calendar.isDate(day, inSameDayAs: selection)
         let isFuture = calendar.startOfDay(for: day) > calendar.startOfDay(for: today)
-        let foreground = isSelected ? VESSColor.background : (isFuture ? VESSColor.tertiaryText : VESSColor.text)
+        let selectable = isSelectable?(day) ?? !isFuture
+        let foreground = isSelected ? VESSColor.background : (selectable ? VESSColor.text : VESSColor.tertiaryText)
 
         return Button {
             selection = day
@@ -61,7 +64,7 @@ struct VESSDayStrip: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(isFuture)
+        .disabled(!selectable)
         .accessibilityLabel(Text(day, format: .dateTime.weekday(.wide).day().month(.wide)))
         .accessibilityValue(hasEntries(day) ? Text("Has entries") : Text(verbatim: ""))
         .accessibilityAddTraits(isSelected ? .isSelected : [])

@@ -47,7 +47,7 @@ final class LocalStore {
     private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
         let schema = Schema([
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
-            StoredInventoryItem.self,
+            StoredInventoryItem.self, StoredPlannedMeal.self,
         ])
         return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
     }
@@ -270,6 +270,42 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Plan
+
+    /// Meals planned from `start` (inclusive) to `end` (exclusive), by day.
+    func plannedMeals(from start: Date, to end: Date) -> [PlannedMeal] {
+        _ = revision
+        let descriptor = FetchDescriptor<StoredPlannedMeal>(
+            predicate: #Predicate { $0.day >= start && $0.day < end },
+            sortBy: [SortDescriptor(\.day)]
+        )
+        return fetchDecoded(descriptor, as: PlannedMeal.self) { $0.payload }
+    }
+
+    func plannedMeal(id: UUID) -> PlannedMeal? {
+        _ = revision
+        let descriptor = FetchDescriptor<StoredPlannedMeal>(predicate: #Predicate { $0.id == id })
+        return fetchDecoded(descriptor, as: PlannedMeal.self) { $0.payload }.first
+    }
+
+    /// Adds or updates a planned meal.
+    func save(_ meal: PlannedMeal) throws {
+        let payload = try encoder.encode(meal)
+        let id = meal.id
+        if let existing = try context.fetch(FetchDescriptor<StoredPlannedMeal>(predicate: #Predicate { $0.id == id })).first {
+            existing.day = meal.day
+            existing.payload = payload
+        } else {
+            context.insert(StoredPlannedMeal(id: id, day: meal.day, payload: payload))
+        }
+        try save()
+    }
+
+    func deletePlannedMeal(id: UUID) throws {
+        try context.delete(model: StoredPlannedMeal.self, where: #Predicate { $0.id == id })
+        try save()
+    }
+
     // MARK: Account data
 
     /// Deletes everything stored on this device and returns to onboarding.
@@ -279,6 +315,7 @@ final class LocalStore {
         try context.delete(model: StoredHydrationLog.self)
         try context.delete(model: StoredFood.self)
         try context.delete(model: StoredInventoryItem.self)
+        try context.delete(model: StoredPlannedMeal.self)
         try save()
         profile = nil
         workouts = []
@@ -342,6 +379,7 @@ extension LocalStore {
         for log in data.hydrationLog { try add(log) }
         workouts = data.workouts
         for item in data.inventory + data.pantryExtras { try save(item) }
+        for meal in data.plannedMeals { try save(meal) }
         insights = data.insights
     }
 

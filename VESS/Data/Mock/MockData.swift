@@ -25,6 +25,8 @@ nonisolated struct MockData: Sendable {
     let inventory: [InventoryItem]
     /// C01's pantry, beyond `inventory`: what Plan and recipes draw on.
     let pantryExtras: [InventoryItem]
+    /// DATA.md: tonight's dinner is planned (miso-glazed cod, 19:30).
+    let plannedMeals: [PlannedMeal]
     let supplements: [Supplement]
     let supplementLog: [SupplementLog]
     let weightHistory: [WeightEntry]
@@ -280,6 +282,11 @@ nonisolated struct MockData: Sendable {
             item("Onions", 3, .piece, expiresIn: nil, .vegetables, .other),
         ]
 
+        // MARK: Plan
+
+        let miso = MealSuggestions.Candidate(recipe: Self.recipes[0])
+        plannedMeals = [PlannedMeal(candidate: miso, day: today, meal: .dinner, now: day(-1), calendar: calendar)]
+
         // MARK: Supplements (the user's own choices)
 
         let vitaminD = Supplement(
@@ -337,7 +344,7 @@ nonisolated struct MockData: Sendable {
         ]
     }
 }
-extension MockData {
+nonisolated extension MockData {
     /// F03's scanned product, for `-demoBarcode` captures on the simulator
     /// (which has no camera). Never looked up online.
     static let barcodeDemo = Food(
@@ -356,5 +363,85 @@ extension MockData {
         updatedAt: AppClock.now,
         servingOptions: [ServingOption(label: "1 pot", amount: 150)]
     )
+}
+nonisolated extension MockData {
+    /// Demo recipes for the DEBUG-only recipe screens (08) and suggestions:
+    /// the dishes in the Plan references, pescatarian and nut-free per
+    /// DATA.md. Nutrition is given only where a reference shows it; the rest
+    /// is left unreported rather than guessed. Ingredients without a
+    /// reference amount have none.
+    static let recipes: [Recipe] = {
+        func ingredient(_ name: String, _ quantity: Double? = nil, _ unit: QuantityUnit? = nil) -> Recipe.Ingredient {
+            Recipe.Ingredient(name: name, quantity: quantity, unit: unit)
+        }
+        func facts(_ kcal: Double, _ protein: Double? = nil, _ carbs: Double? = nil, _ fat: Double? = nil) -> NutritionFacts {
+            var facts = NutritionFacts(calories: kcal, proteinGrams: protein ?? 0, carbohydrateGrams: carbs ?? 0, fatGrams: fat ?? 0)
+            var unreported = Set<CoreNutrient>()
+            if protein == nil { unreported.insert(.protein) }
+            if carbs == nil { unreported.insert(.carbohydrates) }
+            if fat == nil { unreported.insert(.fat) }
+            facts.unreportedCoreNutrients = unreported.isEmpty ? nil : unreported
+            return facts
+        }
+        return [
+            // 08-recipe-detail.
+            Recipe(
+                id: "miso-cod", name: "Miso-glazed cod with greens", mealType: .dinner, minutes: 25, servings: 2,
+                nutrition: facts(620, 42, 58, 21),
+                ingredients: [
+                    ingredient("Cod fillets", 300, .gram), ingredient("White miso", 2, .tablespoon),
+                    ingredient("Mirin", 1, .tablespoon), ingredient("Bok choy", 2, .piece),
+                    ingredient("Baby spinach", 100, .gram), ingredient("Jasmine rice", 150, .gram),
+                    ingredient("Spring onions", 2, .piece),
+                ],
+                steps: [
+                    "Whisk miso, mirin and a teaspoon of honey. Brush over the cod and rest 10 minutes.",
+                    "Start the rice. Halve the bok choy lengthways.",
+                    "Grill the cod 8–9 minutes until it flakes and the glaze catches.",
+                    "Wilt the spinach and bok choy in the pan juices. Serve over rice with spring onions.",
+                ],
+                diets: [.pescatarian], allergens: [.soy]
+            ),
+            // A03, with chicken swapped for cod (DATA.md).
+            Recipe(
+                id: "cod-spinach-potatoes", name: "Cod, spinach & potatoes", mealType: .dinner, minutes: 30, servings: 1,
+                nutrition: facts(690, 46, 52, 30),
+                ingredients: [ingredient("Cod fillets", 400, .gram), ingredient("Baby spinach", 150, .gram), ingredient("Baby potatoes", 500, .gram)],
+                steps: [], diets: [.pescatarian], allergens: []
+            ),
+            // A04.
+            Recipe(
+                id: "salmon-rice-greens", name: "Salmon, rice & greens", mealType: .dinner, minutes: 25, servings: 1,
+                nutrition: facts(640, 44, 58, 22),
+                ingredients: [ingredient("Salmon fillet", 150, .gram), ingredient("Jasmine rice", 90, .gram), ingredient("Broccoli", 1, .piece)],
+                steps: [], diets: [.pescatarian], allergens: []
+            ),
+            // A01 / A07, kcal only.
+            Recipe(id: "salmon-grain-bowl", name: "Salmon grain bowl", mealType: .lunch, minutes: 20, servings: 1,
+                   nutrition: facts(720), ingredients: [ingredient("Salmon fillet"), ingredient("Baby spinach")],
+                   steps: [], diets: [.pescatarian], allergens: []),
+            Recipe(id: "prawn-chickpea-curry", name: "Prawn & chickpea curry, rice", mealType: .dinner, minutes: 30, servings: 2,
+                   nutrition: facts(620), ingredients: [ingredient("Prawns"), ingredient("Chickpeas"), ingredient("Jasmine rice"), ingredient("Baby spinach")],
+                   steps: [], diets: [.pescatarian], allergens: []),
+            Recipe(id: "fish-tacos", name: "Fish tacos, red cabbage slaw", mealType: .dinner, minutes: 25, servings: 2,
+                   nutrition: facts(680), ingredients: [ingredient("White fish"), ingredient("Tortillas"), ingredient("Red cabbage"), ingredient("Limes")],
+                   steps: [], diets: [.pescatarian], allergens: [.gluten]),
+            Recipe(id: "tomato-pasta-beans", name: "Tomato pasta, white beans", mealType: .dinner, minutes: 20, servings: 2,
+                   nutrition: facts(650), ingredients: [ingredient("Pasta"), ingredient("White beans"), ingredient("Tomatoes"), ingredient("Basil")],
+                   steps: [], diets: [.vegetarian, .vegan], allergens: [.gluten]),
+            Recipe(id: "overnight-oats", name: "Overnight oats, berries", mealType: .breakfast, minutes: 5, servings: 1,
+                   nutrition: facts(420), ingredients: [ingredient("Rolled oats"), ingredient("Mixed berries"), ingredient("Skyr")],
+                   steps: [], diets: [.vegetarian], allergens: [.gluten, .lactose]),
+            Recipe(id: "eggs-on-rye", name: "Eggs on rye", mealType: .breakfast, minutes: 10, servings: 1,
+                   nutrition: facts(430), ingredients: [ingredient("Eggs"), ingredient("Rye bread")],
+                   steps: [], diets: [.vegetarian], allergens: [.eggs, .gluten]),
+            Recipe(id: "hummus-wrap", name: "Hummus & veg wrap", mealType: .lunch, minutes: 10, servings: 1,
+                   nutrition: facts(610), ingredients: [ingredient("Hummus"), ingredient("Tortillas"), ingredient("Carrots")],
+                   steps: [], diets: [.vegetarian], allergens: [.gluten]),
+            Recipe(id: "lentil-soup", name: "Red lentil soup, rye", mealType: .lunch, minutes: 30, servings: 2,
+                   nutrition: facts(560), ingredients: [ingredient("Red lentils"), ingredient("Onions"), ingredient("Carrots"), ingredient("Rye crackers")],
+                   steps: [], diets: [.vegetarian, .vegan], allergens: [.gluten]),
+        ]
+    }()
 }
 #endif
