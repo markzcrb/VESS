@@ -1,47 +1,107 @@
 import SwiftUI
 
-/// Top-level destinations. Kept to five, as in the product spec.
+/// Top-level destinations: four tabs plus the Add action.
 enum AppTab: Hashable {
     case today
     case nutrition
     case plan
-    case activity
-    case profile
+    case you
+    /// Not a destination: selecting it opens the Add sheet.
+    case add
 }
 
-/// The app's navigation shell. Each tab owns its own `NavigationStack`.
+/// The app's navigation shell: the native tab bar with Today, Nutrition,
+/// Plan and You, and Add as the separate trailing button. Each tab owns its
+/// own `NavigationStack`.
 struct RootTabView: View {
     @State private var selection: AppTab = .today
+    @State private var addRequest: AddFoodRequest?
+
+    private let calendar = Calendar.current
 
     var body: some View {
-        TabView(selection: $selection) {
-            Tab("Today", systemImage: "sun.horizon", value: .today) {
+        TabView(selection: tabSelection) {
+            Tab(value: .today) {
                 TodayView(selectedTab: $selection)
+            } label: {
+                tabLabel("Today", icon: .symbol("sun.max"), tab: .today)
             }
-            Tab("Nutrition", systemImage: "fork.knife", value: .nutrition) {
+            Tab(value: .nutrition) {
                 NutritionView()
+            } label: {
+                tabLabel("Nutrition", icon: .asset(.tabFork), tab: .nutrition)
             }
-            Tab("Plan", systemImage: "calendar", value: .plan) {
+            Tab(value: .plan) {
                 PlanView()
+            } label: {
+                tabLabel("Plan", icon: .asset(.tabCalendar), tab: .plan)
             }
-            Tab("Activity", systemImage: "figure.walk", value: .activity) {
-                ActivityView()
-            }
-            Tab("Profile", systemImage: "person.crop.circle", value: .profile) {
+            Tab(value: .you) {
                 ProfileView()
+            } label: {
+                tabLabel("You", icon: .symbol("person"), tab: .you)
+            }
+            // The pinned trailing slot draws Add as its own circle.
+            Tab("Add", systemImage: "plus", value: .add, role: .prominent) {
+                Color.clear
             }
         }
-        .tint(VESSColor.accent)
+        .tint(VESSColor.text)
+        .sheet(item: $addRequest) { request in
+            FoodSearchSheet(request: request)
+        }
     }
-}
 
-#Preview("Light") {
-    RootTabView()
-        .previewEnvironment(LocalStore.preview())
+    private enum TabIcon {
+        case symbol(String)
+        case asset(ImageResource)
+    }
+
+    /// Outline icons for every tab. Unselected icons are pre-tinted and drawn
+    /// as originals, so the glass bar shows them dimmed like the reference.
+    private func tabLabel(_ title: LocalizedStringResource, icon: TabIcon, tab: AppTab) -> some View {
+        Label {
+            Text(title)
+        } icon: {
+            tabImage(icon, isSelected: selection == tab)
+        }
+    }
+
+    private func tabImage(_ icon: TabIcon, isSelected: Bool) -> Image {
+        let base: UIImage? = switch icon {
+        case .symbol(let name): UIImage(systemName: name)
+        case .asset(let resource): UIImage(resource: resource)
+        }
+        guard let base else { return Image(systemName: "questionmark") }
+        if isSelected {
+            return Image(uiImage: base.withRenderingMode(.alwaysTemplate))
+        }
+        return Image(uiImage: base.withTintColor(UIColor(VESSColor.tertiaryText), renderingMode: .alwaysOriginal))
+    }
+
+    /// Selecting Add presents the sheet and leaves the current tab selected.
+    private var tabSelection: Binding<AppTab> {
+        Binding(
+            get: { selection },
+            set: { newValue in
+                if newValue == .add {
+                    addRequest = AddFoodRequest(meal: .likely(at: .now, calendar: calendar), day: .now)
+                } else {
+                    selection = newValue
+                }
+            }
+        )
+    }
 }
 
 #Preview("Dark") {
     RootTabView()
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
+}
+
+#Preview("Light") {
+    RootTabView()
+        .previewEnvironment(LocalStore.preview())
+        .preferredColorScheme(.light)
 }

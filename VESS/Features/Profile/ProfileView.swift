@@ -1,22 +1,34 @@
 import SwiftUI
 
-/// Profile, minimal for Phase 1: who you are, your starting targets, and
-/// deleting your data. Editing arrives with the full Profile phase.
+/// You: who you are, your starting targets, appearance, and deleting your
+/// data. Restyled to the redesign with the You screens (11, E01–E10).
 struct ProfileView: View {
     @Environment(LocalStore.self) private var store
+    @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @State private var confirmDelete = false
     @State private var showError = false
 
     var body: some View {
         NavigationStack {
             if let profile = store.profile {
-                VESSScreen(title: "Profile") {
+                VESSScreen(title: "You") {
                     header(profile)
                     targets(profile)
                     bodyMetrics(profile)
+                    appearanceSection
                     privacy
                 }
             }
+        }
+    }
+
+    private var appearanceSection: some View {
+        VESSSection(header: VESSSectionHeader(title: "Appearance")) {
+            VESSSegmented(
+                selection: $appearance,
+                options: AppAppearance.allCases.map { ($0, $0.title) }
+            )
+            .accessibilityIdentifier("you.appearance")
         }
     }
 

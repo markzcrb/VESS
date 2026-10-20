@@ -1,20 +1,22 @@
 import SwiftUI
 
-/// Placeholder. Phase 4 builds workouts, scheduling and history here.
+/// Activity: a detail screen pushed from Today's Steps row, not a tab.
+/// Placeholder until the Activity screens (09, D01–D07) are built.
 struct ActivityView: View {
     var body: some View {
-        NavigationStack {
-            ContentUnavailableView(
-                "Activity",
-                systemImage: "figure.walk",
-                description: Text("Schedule workouts, mark them complete and look back at your history.")
-            )
-            .background(VESSColor.background)
-            .navigationTitle("Activity")
-        }
+        ContentUnavailableView(
+            "Activity",
+            systemImage: "figure.walk",
+            description: Text("Workouts, steps and history will appear here.")
+        )
+        .vessScreenBackground(.activity)
+        .vessDetailTitle("Activity")
     }
 }
 
 #Preview {
-    ActivityView()
+    NavigationStack {
+        ActivityView()
+    }
+    .preferredColorScheme(.dark)
 }

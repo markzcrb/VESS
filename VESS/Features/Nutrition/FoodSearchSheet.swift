@@ -6,6 +6,8 @@ enum FoodRoute: Hashable {
     case quickAdd
     case createFood
     case barcode
+    /// DEBUG only (`VESSFeatureFlags.photoEstimate`): static photo-estimate screens.
+    case photo
 }
 
 /// Find a food and log it to a meal. Local results (starter catalog, your
@@ -46,6 +48,13 @@ struct FoodSearchSheet: View {
             CustomFoodForm(onSaved: { food in path = [.food(food)] })
         case .barcode:
             BarcodeLookupView(onFound: { food in path.append(.food(food)) })
+        case .photo:
+            ContentUnavailableView(
+                "Photo estimate",
+                systemImage: "camera",
+                description: Text("Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved.")
+            )
+            .vessDetailTitle("Photo")
         }
     }
 
@@ -103,6 +112,9 @@ private struct FoodSearchHome: View {
             actionRow("Quick add", detail: "Log calories without a product", symbol: "bolt", route: .quickAdd, identifier: "foodSearch.quickAdd")
             actionRow("Create a food", detail: "Save your own food or recipe", symbol: "square.and.pencil", route: .createFood, identifier: "foodSearch.createFood")
             actionRow("Enter a barcode", detail: "Look up a packaged product", symbol: "barcode", route: .barcode, identifier: "foodSearch.barcode")
+            if VESSFeatureFlags.photoEstimate {
+                actionRow("Take a photo", detail: "Debug only", symbol: "camera", route: .photo, identifier: "foodSearch.photo")
+            }
         }
     }
 

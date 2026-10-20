@@ -158,11 +158,13 @@ final class VESSUITests: XCTestCase {
     // MARK: Navigation
 
     @MainActor
-    func testAllFiveTabsOpen() throws {
+    func testAllFourTabsOpen() throws {
         let app = launch(seeded: true)
         let tabs = app.tabBars
 
         XCTAssertTrue(app.staticTexts["today.dayWord"].waitForExistence(timeout: 5))
+        XCTAssertFalse(tabs.buttons["Activity"].exists, "Activity is a detail screen, not a tab")
+        XCTAssertFalse(tabs.buttons["Profile"].exists, "Profile is now called You")
 
         tabs.buttons["Nutrition"].tap()
         XCTAssertTrue(app.navigationBars["Nutrition"].waitForExistence(timeout: 10))
@@ -170,14 +172,39 @@ final class VESSUITests: XCTestCase {
         tabs.buttons["Plan"].tap()
         XCTAssertTrue(app.navigationBars["Plan"].waitForExistence(timeout: 10))
 
-        tabs.buttons["Activity"].tap()
-        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 10))
-
-        tabs.buttons["Profile"].tap()
-        XCTAssertTrue(app.staticTexts["Daily targets"].waitForExistence(timeout: 10))
+        tabs.buttons["You"].tap()
+        XCTAssertTrue(app.navigationBars["You"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["you.appearance"].waitForExistence(timeout: 10))
 
         tabs.buttons["Today"].tap()
-        XCTAssertTrue(app.staticTexts["today.dayWord"].exists)
+        XCTAssertTrue(app.staticTexts["today.dayWord"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    func testAddOpensSheetAndKeepsTab() throws {
+        let app = launch(seeded: true)
+        let tabs = app.tabBars
+
+        tapWhenReady(tabs.buttons["Nutrition"])
+        XCTAssertTrue(app.navigationBars["Nutrition"].waitForExistence(timeout: 10))
+
+        tapWhenReady(tabs.buttons["Add"])
+        let quickAdd = app.buttons["foodSearch.quickAdd"]
+        XCTAssertTrue(quickAdd.waitForExistence(timeout: 10), "Add opens the Add sheet")
+        XCTAssertTrue(app.buttons["foodSearch.barcode"].exists)
+
+        app.buttons["Close"].firstMatch.tap()
+        waitFor(quickAdd, "exists == false")
+        XCTAssertTrue(app.navigationBars["Nutrition"].waitForExistence(timeout: 10), "The tab stays where it was")
+    }
+
+    @MainActor
+    func testActivityOpensFromToday() throws {
+        let app = launch(seeded: true)
+        let activity = app.buttons["today.activity"]
+        scrollUntilHittable(activity, in: app)
+        activity.tap()
+        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 10))
     }
 
     // MARK: Helpers

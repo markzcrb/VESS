@@ -167,8 +167,13 @@ struct DayMeasuresCard: View {
                     Rectangle()
                         .fill(VESSColor.divider)
                         .frame(width: 0.5)
-                    ActivityOverview(workout: workout)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    NavigationLink(destination: ActivityView()) {
+                        ActivityOverview(workout: workout)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("today.activity")
                 }
             } else {
                 VStack(alignment: .leading, spacing: VESSSpacing.lg) {
@@ -177,7 +182,12 @@ struct DayMeasuresCard: View {
                         Rectangle()
                             .fill(VESSColor.divider)
                             .frame(height: 0.5)
-                        ActivityOverview(workout: workout)
+                        NavigationLink(destination: ActivityView()) {
+                            ActivityOverview(workout: workout)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("today.activity")
                     }
                 }
             }

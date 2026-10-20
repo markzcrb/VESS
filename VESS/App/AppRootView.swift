@@ -6,6 +6,7 @@ import SwiftUI
 struct AppRootView: View {
     @State private var store: LocalStore?
     @State private var lookup: FoodLookupService?
+    @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
 
     init() {
         let store = Self.makeStore()
@@ -36,6 +37,7 @@ struct AppRootView: View {
             }
         }
         .tint(VESSColor.accent)
+        .preferredColorScheme(appearance.colorScheme)
     }
 
     /// The live on-device store. Debug builds also accept two launch arguments:
