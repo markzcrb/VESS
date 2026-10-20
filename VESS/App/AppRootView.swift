@@ -40,7 +40,8 @@ struct AppRootView: View {
                 }
             }
         }
-        .tint(VESSColor.accent)
+        // Chrome is greyscale; links and CTAs set the link accent themselves.
+        .tint(VESSColor.text)
         .preferredColorScheme(appearance.colorScheme)
     }
 

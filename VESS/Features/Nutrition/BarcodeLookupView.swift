@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// Look up a packaged product by the number printed under its barcode.
-/// Camera scanning is planned; it needs camera permission, which is added
-/// only after the permission text is approved.
+/// Look up a packaged product by the number printed under its barcode:
+/// the typed alternative to the camera scanner.
 struct BarcodeLookupView: View {
     @Environment(FoodLookupService.self) private var lookup
 
@@ -16,10 +15,13 @@ struct BarcodeLookupView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                    Text("Enter a barcode")
-                        .vessTextStyle(.detailTitle)
-                    Text("Type the number printed under the barcode. Products you've looked up before also work offline.")
-                        .vessTextStyle(.secondary)
+                    Text("The number under the barcode.")
+                        .vessTextStyle(.editorialL)
+                        .foregroundStyle(VESSColor.text)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Products you've looked up before also work offline.")
+                        .vessTextStyle(.bodyM)
+                        .foregroundStyle(VESSColor.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -44,14 +46,14 @@ struct BarcodeLookupView: View {
             .padding(.bottom, VESSSpacing.xl)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(VESSColor.card)
-        .vessBottomAction {
+        .vessScreenBackground()
+        .vessBottomAction(background: VESSColor.background) {
             Button("Look up") { Task { await lookUp() } }
                 .buttonStyle(.vessPrimary)
                 .disabled(!isValid || isLooking)
                 .accessibilityIdentifier("barcode.lookUp")
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .vessDetailTitle("Barcode")
         .vessKeyboardDoneButton()
     }
 

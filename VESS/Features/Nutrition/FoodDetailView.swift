@@ -50,9 +50,6 @@ struct FoodDetailView: View {
             .padding(.bottom, VESSSpacing.xl)
         }
         .scrollDismissesKeyboard(.interactively)
-        // The title scrolls under the bar; the hard edge keeps it from
-        // showing through behind the back and close buttons.
-        .scrollEdgeEffectStyle(.hard, for: .top)
         .vessScreenBackground(.energy)
         .vessBottomAction(background: VESSColor.background) { addBar }
         .vessDetailTitle("Food")

@@ -23,8 +23,10 @@ struct CustomFoodForm: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                Text("Create a food")
-                    .vessTextStyle(.detailTitle)
+                Text("Your own food, saved on this iPhone.")
+                    .vessTextStyle(.editorialL)
+                    .foregroundStyle(VESSColor.text)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 VESSTextField("Name", text: $name, prompt: Text("For example, overnight oats"))
                     .textInputAutocapitalization(.sentences)
@@ -32,8 +34,7 @@ struct CustomFoodForm: View {
                 VESSTextField("Brand", text: $brand, prompt: Text("Optional"))
 
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                    Text("Nutrition per")
-                        .vessTextStyle(.label)
+                    VESSSectionHeader(title: "Nutrition per")
                     // Bottom-aligned so the unit picker centers on the field, not its label.
                     HStack(alignment: .bottom, spacing: VESSSpacing.sm) {
                         if basisUnit != .serving {
@@ -56,20 +57,21 @@ struct CustomFoodForm: View {
                 macroFields
 
                 Text("Leave a macro empty if the label doesn't list it.")
-                    .vessTextStyle(.label)
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.tertiaryText)
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .padding(.bottom, VESSSpacing.xl)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(VESSColor.card)
-        .vessBottomAction {
+        .vessScreenBackground()
+        .vessBottomAction(background: VESSColor.background) {
             Button("Save food", action: save)
                 .buttonStyle(.vessPrimary)
                 .disabled(food == nil)
                 .accessibilityIdentifier("customFood.save")
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .vessDetailTitle("Create a food")
         .vessErrorAlert(isPresented: $showError, retry: save)
         .vessKeyboardDoneButton()
     }
@@ -109,8 +111,8 @@ struct CustomFoodForm: View {
             allergens: [],
             quality: nil,
             source: .userCreated,
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: AppClock.now,
+            updatedAt: AppClock.now
         )
     }
 

@@ -86,7 +86,14 @@ private struct FoodSearchHome: View {
     @State private var online: OnlineState = .idle
     @State private var selected: [Food] = []
     @State private var showError = false
+    @State private var showScanner = false
+    /// Where to go once the scanner has closed.
+    @State private var afterScanner: AfterScanner?
     @FocusState private var isSearchFocused: Bool
+
+    private enum AfterScanner {
+        case logged, typeNumber, addManually
+    }
 
     private let calendar = Calendar.current
 
@@ -115,7 +122,7 @@ private struct FoodSearchHome: View {
             .padding(.bottom, VESSSpacing.huge)
         }
         .scrollDismissesKeyboard(.immediately)
-        .background(VESSColor.background)
+        .vessScreenBackground(nil)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(Text(meal.addToTitle))
         .toolbar {
@@ -127,6 +134,30 @@ private struct FoodSearchHome: View {
         .animation(VESSMotion.selection, value: selected.count)
         .task(id: trimmedQuery) { await searchOnline() }
         .vessErrorAlert(isPresented: $showError, retry: addSelected)
+        .fullScreenCover(isPresented: $showScanner, onDismiss: continueAfterScanner) {
+            BarcodeScannerView(
+                day: day,
+                meal: $meal,
+                onLogged: { closeScanner(then: .logged) },
+                onTypeNumber: { closeScanner(then: .typeNumber) },
+                onAddManually: { closeScanner(then: .addManually) }
+            )
+        }
+    }
+
+    private func closeScanner(then next: AfterScanner) {
+        afterScanner = next
+        showScanner = false
+    }
+
+    private func continueAfterScanner() {
+        switch afterScanner {
+        case .logged: dismiss()
+        case .typeNumber: path.append(.barcode)
+        case .addManually: path.append(.createFood)
+        case nil: break
+        }
+        afterScanner = nil
     }
 
     private var trimmedQuery: String {
@@ -186,7 +217,7 @@ private struct FoodSearchHome: View {
                 .frame(width: 1, height: VESSSpacing.xl)
                 .accessibilityHidden(true)
             Button {
-                path.append(.barcode)
+                showScanner = true
             } label: {
                 Image(systemName: "barcode")
                     .foregroundStyle(VESSColor.text)
@@ -194,7 +225,7 @@ private struct FoodSearchHome: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Enter a barcode")
+            .accessibilityLabel("Scan a barcode")
             .accessibilityIdentifier("foodSearch.barcode")
         }
         .padding(.leading, VESSSpacing.md)

@@ -14,6 +14,8 @@ struct VESSTextField: View {
     @Binding var text: String
     var prompt: Text?
     var unit: LocalizedStringKey?
+    /// A calm, amber message below the field, such as "Add calories to save."
+    var error: Text?
 
     @FocusState private var isFocused: Bool
 
@@ -21,25 +23,29 @@ struct VESSTextField: View {
         _ title: LocalizedStringKey,
         text: Binding<String>,
         prompt: Text? = nil,
-        unit: LocalizedStringKey? = nil
+        unit: LocalizedStringKey? = nil,
+        error: Text? = nil
     ) {
         self.title = title
         self._text = text
         self.prompt = prompt
         self.unit = unit
+        self.error = error
     }
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: VESSRadius.control, style: .continuous)
 
-        VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             // The field itself carries the label for VoiceOver.
             Text(title)
-                .vessTextStyle(.label)
+                .vessTextStyle(.labelCaps)
+                .foregroundStyle(VESSColor.secondaryText)
                 .accessibilityHidden(true)
 
             HStack(spacing: VESSSpacing.xs) {
-                TextField(title, text: $text, prompt: prompt)
+                // No placeholder unless given: the label above already names the field.
+                TextField(title, text: $text, prompt: prompt ?? Text(verbatim: ""))
                     .focused($isFocused)
                     .font(.body)
                     .foregroundStyle(VESSColor.text)
@@ -55,10 +61,24 @@ struct VESSTextField: View {
             .padding(.horizontal, VESSSpacing.md)
             .frame(minHeight: VESSHitTarget.control)
             .background(VESSColor.fill, in: shape)
-            .overlay(shape.strokeBorder(isFocused ? VESSColor.accent : .clear, lineWidth: 1.5))
+            .overlay(shape.strokeBorder(borderColor, lineWidth: error != nil || isFocused ? 1.5 : 1))
             .contentShape(shape)
             .onTapGesture { isFocused = true }
+            .accessibilityHint(error ?? Text(verbatim: ""))
+
+            if let error {
+                error
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.warningText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityHidden(true)
+            }
         }
+    }
+
+    private var borderColor: Color {
+        if error != nil { return VESSColor.warning }
+        return isFocused ? VESSColor.borderStrong : VESSColor.divider
     }
 }
 

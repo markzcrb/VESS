@@ -121,13 +121,19 @@ extension View {
                     .accessibilityAddTraits(.isHeader)
                 }
             }
-            .toolbarBackground(.hidden, for: .navigationBar)
     }
 
     /// The screen background: the canvas, with a metric-tinted atmosphere
     /// fading out over the top 440 pt. `nil` draws the plain canvas.
+    ///
+    /// Content is clipped at the top of the safe area, so text scrolled up
+    /// never shows through behind the navigation bar's buttons; it still
+    /// runs under the tab bar, and the atmosphere runs under both bars.
     func vessScreenBackground(_ metric: VESSMetricKind? = .fuel) -> some View {
-        background(alignment: .top) {
+        mask {
+            Rectangle().ignoresSafeArea(edges: .bottom)
+        }
+        .background(alignment: .top) {
             ZStack(alignment: .top) {
                 VESSColor.background
                 if let metric {

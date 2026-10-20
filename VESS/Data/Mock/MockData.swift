@@ -317,4 +317,24 @@ nonisolated struct MockData: Sendable {
         ]
     }
 }
+extension MockData {
+    /// F03's scanned product, for `-demoBarcode` captures on the simulator
+    /// (which has no camera). Never looked up online.
+    static let barcodeDemo = Food(
+        id: UUID(),
+        name: "Skyr, natural",
+        brand: "Nordic Dairy",
+        barcode: "5760466112233",
+        servingSize: 150,
+        servingUnit: .gram,
+        nutrition: NutritionFacts(calories: 95, proteinGrams: 17, carbohydrateGrams: 6, fatGrams: 0.3),
+        ingredients: [],
+        allergens: [.lactose],
+        quality: nil,
+        source: .barcodeScan,
+        createdAt: AppClock.now,
+        updatedAt: AppClock.now,
+        servingOptions: [ServingOption(label: "1 pot", amount: 150)]
+    )
+}
 #endif
