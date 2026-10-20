@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "000000000000000100000000"
-               BuildableName = "MyApp.app"
-               BlueprintName = "MyApp"
-               ReferencedContainer = "container:Untitled Project.xcodeproj">
+               BuildableName = "VESS.app"
+               BlueprintName = "VESS"
+               ReferencedContainer = "container:VESS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -37,18 +37,17 @@
                BlueprintIdentifier = "4D44BC82307A9C450082F48D"
                BuildableName = "VESSTests.xctest"
                BlueprintName = "VESSTests"
-               ReferencedContainer = "container:Untitled Project.xcodeproj">
+               ReferencedContainer = "container:VESS.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "4D44BD62307ABE520082F48D"
                BuildableName = "VESSUITests.xctest"
                BlueprintName = "VESSUITests"
-               ReferencedContainer = "container:Untitled Project.xcodeproj">
+               ReferencedContainer = "container:VESS.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -68,9 +67,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "000000000000000100000000"
-            BuildableName = "MyApp.app"
-            BlueprintName = "MyApp"
-            ReferencedContainer = "container:Untitled Project.xcodeproj">
+            BuildableName = "VESS.app"
+            BlueprintName = "VESS"
+            ReferencedContainer = "container:VESS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -85,9 +84,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "000000000000000100000000"
-            BuildableName = "MyApp.app"
-            BlueprintName = "MyApp"
-            ReferencedContainer = "container:Untitled Project.xcodeproj">
+            BuildableName = "VESS.app"
+            BlueprintName = "VESS"
+            ReferencedContainer = "container:VESS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

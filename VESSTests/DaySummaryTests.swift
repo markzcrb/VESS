@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import MyApp
+@testable import VESS
 
 @Suite("Day summary and Day Word")
 struct DaySummaryTests {
