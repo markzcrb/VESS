@@ -16,8 +16,8 @@ nonisolated struct MockData: Sendable {
     /// The six days before today, for usual meal times and regularity.
     let foodHistory: [FoodLogEntry]
     let health: HealthSnapshot
-    /// I09 "Full day": dinner (585 kcal, estimated) plus granola and dark
-    /// chocolate, bringing today to 2,425 kcal.
+    /// I09 "Full day": the estimated dinner (585 kcal), bringing today to
+    /// 2,425 kcal.
     let fullDayExtras: [FoodLogEntry]
     let drinks: [Drink]
     let hydrationLog: [HydrationLog]
@@ -109,16 +109,17 @@ nonisolated struct MockData: Sendable {
             )
         }
 
-        // Breakfast 520 kcal, lunch 690 kcal, snack 210 kcal.
-        let yogurt = food("Greek yogurt", serving: 200, unit: .gram, kcal: 146, protein: 20, carbs: 8, fat: 4, sugar: 8, allergens: [.lactose], processing: .processed)
-        let oats = food("Oats", serving: 75, unit: .gram, kcal: 285, protein: 10, carbs: 50, fat: 5, fiber: 7.5, sugar: 0.8, allergens: [.gluten])
-        let blueberries = food("Blueberries", serving: 155, unit: .gram, kcal: 89, protein: 1, carbs: 22, fat: 0.5, fiber: 3.5, sugar: 15)
-        let salmonPoke = food("Salmon poke", serving: 120, unit: .gram, kcal: 250, protein: 27, carbs: 0, fat: 15)
-        let edamame = food("Edamame", serving: 80, unit: .gram, kcal: 97, protein: 9, carbs: 7, fat: 4, fiber: 4, allergens: [.soy])
-        let brownRice = food("Brown rice", serving: 250, unit: .gram, kcal: 343, protein: 7, carbs: 72, fat: 2.5, fiber: 4)
-        let skyr = food("Skyr", serving: 150, unit: .gram, kcal: 95, protein: 16, carbs: 6, fat: 0.3, sugar: 6, allergens: [.lactose], processing: .processed)
-        let pumpkinSeeds = food("Pumpkin seeds", serving: 10, unit: .gram, kcal: 56, protein: 3, carbs: 1.5, fat: 4.9, fiber: 0.6)
-        let apple = food("Apple", serving: 1, unit: .piece, kcal: 59, protein: 0.3, carbs: 15.4, fat: 0.2, fiber: 1.4, sugar: 11.6)
+        // Breakfast 674 kcal, lunch 894 kcal, snack 272 kcal: 1,840 kcal, 108 g
+        // protein, 196 g carbs, 58 g fat and 21 g fibre (DATA.md).
+        let yogurt = food("Greek yogurt", serving: 260, unit: .gram, kcal: 189, protein: 23, carbs: 9, fat: 6, sugar: 9, allergens: [.lactose], processing: .processed)
+        let oats = food("Oats", serving: 95, unit: .gram, kcal: 369, protein: 12, carbs: 54, fat: 8, fiber: 7.5, sugar: 1, allergens: [.gluten])
+        let blueberries = food("Blueberries", serving: 200, unit: .gram, kcal: 116, protein: 1, carbs: 23, fat: 1, fiber: 3.5, sugar: 19)
+        let salmonPoke = food("Salmon poke", serving: 155, unit: .gram, kcal: 324, protein: 31, carbs: 0, fat: 24)
+        let edamame = food("Edamame", serving: 105, unit: .gram, kcal: 126, protein: 11, carbs: 8, fat: 6, fiber: 4, allergens: [.soy])
+        let brownRice = food("Brown rice", serving: 325, unit: .gram, kcal: 444, protein: 8, carbs: 77, fat: 4, fiber: 4)
+        let skyr = food("Skyr", serving: 195, unit: .gram, kcal: 123, protein: 18, carbs: 7, fat: 0.5, sugar: 7, allergens: [.lactose], processing: .processed)
+        let pumpkinSeeds = food("Pumpkin seeds", serving: 13, unit: .gram, kcal: 73, protein: 3.7, carbs: 2, fat: 8.2, fiber: 0.6)
+        let apple = food("Apple", serving: 1, unit: .piece, kcal: 76, protein: 0.3, carbs: 16, fat: 0.3, fiber: 1.4, sugar: 12)
         foods = [yogurt, oats, blueberries, salmonPoke, edamame, brownRice, skyr, pumpkinSeeds, apple]
 
         // MARK: Today's food log (breakfast, lunch, snack; dinner not yet logged)
@@ -138,36 +139,35 @@ nonisolated struct MockData: Sendable {
             entry(apple, .snack, at(16, 10)),
         ]
 
-        let granola = food("Granola, seeds", serving: 60, unit: .gram, kcal: 280, protein: 7, carbs: 34, fat: 12, fiber: 4)
-        let chocolate = food("Dark chocolate 70%", serving: 25, unit: .gram, kcal: 140, protein: 2, carbs: 9, fat: 10, fiber: 2.5, processing: .processed)
-        let dinner = food("Baked salmon, jasmine rice, roasted greens", serving: 1, unit: .serving, kcal: 585, protein: 39, carbs: 62, fat: 20, fiber: 5)
-        fullDayExtras = [
-            entry(granola, .breakfast, at(7, 45)),
-            entry(chocolate, .lunch, at(12, 30)),
-            entry(dinner, .dinner, at(18, 40)),
-        ]
+        // I09: the estimated dinner brings today to 2,425 kcal and 147 g protein.
+        let dinner = food("Baked salmon, jasmine rice, roasted greens", serving: 1, unit: .serving, kcal: 585, protein: 39, carbs: 57, fat: 21, fiber: 5)
+        fullDayExtras = [entry(dinner, .dinner, at(18, 40))]
 
-        // MARK: Last six days (DATA.md energy and protein), for usual meal times
+        // MARK: Prior 12 days (DATA.md's week, twice), for usual meal times and trends
 
-        let dailyEnergy: [Double] = [2310, 2480, 1960, 2520, 2390, 2180]
-        let dailyProtein: [Double] = [122, 138, 96, 144, 131, 118]
+        let weekEnergy: [Double] = [2310, 2480, 1960, 2520, 2390, 2180]
+        let weekProtein: [Double] = [122, 138, 96, 144, 131, 118]
+        let dailyEnergy = weekEnergy + weekEnergy
+        let dailyProtein = weekProtein + weekProtein
         let slots: [(MealType, Int, Int, Double)] = [
             (.breakfast, 7, 45, 0.25), (.lunch, 12, 30, 0.35), (.snack, 16, 10, 0.10), (.dinner, 19, 30, 0.30),
         ]
         foodHistory = dailyEnergy.indices.flatMap { index -> [FoodLogEntry] in
             let offset = index - dailyEnergy.count
             // A few minutes either side of the usual time, so medians are realistic.
-            let jitter = [-10, 5, 0, 10, -5, 15][index]
+            let jitter = [-10, 5, 0, 10, -5, 15][index % 6]
             return slots.map { meal, hour, minute, share in
-                FoodLogEntry(
+                var nutrition = NutritionFacts(
+                    calories: dailyEnergy[index] * share,
+                    proteinGrams: dailyProtein[index] * share,
+                    carbohydrateGrams: 0,
+                    fatGrams: 0
+                )
+                nutrition.fiberGrams = 24 * share
+                return FoodLogEntry(
                     id: UUID(), userID: userID, foodID: nil, foodName: meal.rawValue.capitalized,
                     mealType: meal, quantity: 1, servingUnit: .serving,
-                    nutrition: NutritionFacts(
-                        calories: dailyEnergy[index] * share,
-                        proteinGrams: dailyProtein[index] * share,
-                        carbohydrateGrams: 0,
-                        fatGrams: 0
-                    ),
+                    nutrition: nutrition,
                     loggedAt: at(hour, minute, dayOffset: offset).addingTimeInterval(Double(jitter * 60))
                 )
             }
@@ -180,15 +180,22 @@ nonisolated struct MockData: Sendable {
         let greenTea = DrinkPreset.tea.drink(name: "Green tea")
         drinks = [water, sparkling, greenTea]
 
-        hydrationLog = [
+        var hydrationLog = [
             water.log(userID: userID, volumeMilliliters: 500, at: at(10, 15)),
             sparkling.log(userID: userID, volumeMilliliters: 330, at: at(13, 0)),
             // 300 ml at 90% counts as 270 ml.
             greenTea.log(userID: userID, volumeMilliliters: 300, at: at(15, 40)),
             water.log(userID: userID, volumeMilliliters: 500, at: at(17, 20)),
-            // Yesterday. Must not count toward today's progress.
-            water.log(userID: userID, volumeMilliliters: 750, at: at(19, 0, dayOffset: -1)),
         ]
+        // Prior 12 days: 2 L a day in four glasses. Never today, so today's
+        // progress stays exactly the four drinks above.
+        hydrationLog += (1...12).flatMap { offset in
+            [9, 13, 17, 20].map { hour in
+                water.log(userID: userID, volumeMilliliters: 500, at: at(hour, 0, dayOffset: -offset))
+            }
+        }
+
+        self.hydrationLog = hydrationLog
 
         // MARK: Health (DEBUG demo only; the real app shows "—" until Apple Health is connected)
 

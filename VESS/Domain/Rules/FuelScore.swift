@@ -11,7 +11,10 @@ import Foundation
 /// - 10 % meal regularity (`MealRegularity`).
 ///
 /// When there is no history for regularity, its 10 % is left out and the
-/// other weights are rescaled, rather than guessing. Pure and deterministic.
+/// other weights are rescaled, rather than guessing. Once every main meal
+/// (breakfast, lunch, dinner) is logged, the day is judged against the full
+/// targets, so an early dinner isn't read as eating ahead of the clock.
+/// Pure and deterministic.
 nonisolated struct FuelScore: Equatable, Sendable {
     /// Each part scored 0...1.
     struct Components: Equatable, Sendable {
@@ -41,10 +44,12 @@ nonisolated struct FuelScore: Equatable, Sendable {
 
     /// The score for a day, or `nil` before any food is logged ("—").
     ///
-    /// - Parameter regularity: `MealRegularity.score`, 0...1, or `nil`.
-    init?(summary: DaySummary, hasLoggedFood: Bool, regularity: Double?) {
+    /// - Parameters:
+    ///   - allMainMealsLogged: breakfast, lunch and dinner are all logged.
+    ///   - regularity: `MealRegularity.score`, 0...1, or `nil`.
+    init?(summary: DaySummary, hasLoggedFood: Bool, allMainMealsLogged: Bool = false, regularity: Double?) {
         guard hasLoggedFood else { return nil }
-        let pace = max(summary.expectedPace, Self.minimumPace)
+        let pace = allMainMealsLogged ? 1 : max(summary.expectedPace, Self.minimumPace)
 
         let energyRatio = Self.ratio(summary.consumed.calories, of: summary.targets.calories * pace)
         let energy = Self.energyScore(energyRatio)

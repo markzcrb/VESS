@@ -45,9 +45,11 @@ struct TodayView: View {
         let fuel = FuelScore(
             summary: summary,
             hasLoggedFood: !entries.isEmpty,
+            allMainMealsLogged: MealType.mainMeals.allSatisfy { !entries.entries(for: $0).isEmpty },
             regularity: MealRegularity.score(today: entries, history: history, calendar: calendar)
         )
         let mealsLogged = MealType.dayOrder.filter { !entries.entries(for: $0).isEmpty }.count
+        let trends = trends(now: now)
         let insight = TodayInsight.content(summary: summary, entries: entries, history: history, now: now, calendar: calendar)
 
         return ScrollView {
@@ -78,7 +80,7 @@ struct TodayView: View {
                                 .accessibilityIdentifier("today.dayWord")
                         }
 
-                        TodayBreakdown(summary: summary, hasLogged: !entries.isEmpty)
+                        TodayBreakdown(summary: summary, hasLogged: !entries.isEmpty, trends: trends)
 
                         if let insight {
                             VESSInsightCard(
@@ -144,6 +146,22 @@ struct TodayView: View {
             AddDrinkSheet(day: now)
         }
         .vessErrorAlert(isPresented: $showError)
+    }
+
+    /// Trends for the breakdown rows, from the last 30 days and today so far.
+    private func trends(now: Date) -> TodayBreakdown.Trends {
+        let start = calendar.date(byAdding: .day, value: -TrendRule.windowDays, to: calendar.startOfDay(for: now)) ?? now
+        let food = store.foodEntries(from: start, to: now)
+        let drinks = store.hydrationLogs(from: start, to: now)
+        func trend(_ samples: [TrendRule.Sample]) -> Trend? {
+            TrendRule.trend(samples: samples, now: now, calendar: calendar)
+        }
+        return TodayBreakdown.Trends(
+            energy: trend(food.map { .init(date: $0.loggedAt, value: $0.nutrition.calories) }),
+            protein: trend(food.map { .init(date: $0.loggedAt, value: $0.nutrition.proteinGrams) }),
+            fibre: trend(food.compactMap { entry in entry.nutrition.fiberGrams.map { .init(date: entry.loggedAt, value: $0) } }),
+            hydration: trend(drinks.map { .init(date: $0.loggedAt, value: $0.hydrationMilliliters) })
+        )
     }
 
     // MARK: Actions

@@ -90,26 +90,55 @@ struct TodayFuelRing: View {
 
 // MARK: - Breakdown
 
-/// Energy, protein, fibre and hydration so far. "—" before anything is logged;
-/// fibre shows "—" when no logged food reports it.
+/// Energy, protein, fibre and hydration so far, each with its trend versus
+/// the prior 30 days when there is enough history (`TrendRule`). "—" before
+/// anything is logged; fibre shows "—" when no logged food reports it. The
+/// legend appears only when at least one trend is shown.
 struct TodayBreakdown: View {
+    struct Trends {
+        var energy: Trend?
+        var protein: Trend?
+        var fibre: Trend?
+        var hydration: Trend?
+
+        var isEmpty: Bool { [energy, protein, fibre, hydration].allSatisfy { $0 == nil } }
+    }
+
     let summary: DaySummary
     let hasLogged: Bool
+    var trends = Trends()
 
     var body: some View {
-        VESSRowGroup {
-            VESSMetricRow(systemImage: "flame", label: "Energy", value: value(VESSFormat.calories(summary.consumed.calories)))
-            VESSMetricRow(systemImage: "fish", label: "Protein", value: value("\(VESSFormat.grams(summary.consumed.proteinGrams)) g"))
-            VESSMetricRow(systemImage: "leaf", label: "Fibre", value: summary.consumed.fiberGrams.map { value("\(VESSFormat.grams($0)) g") } ?? "—")
-            VESSMetricRow(
-                systemImage: "drop",
-                label: "Hydration",
-                value: summary.hydration.consumedMilliliters > 0
-                    ? "\(VESSFormat.liters(fromMilliliters: summary.hydration.consumedMilliliters)) L"
-                    : "—"
-            )
+        VStack(spacing: VESSSpacing.sm + 2) {
+            VESSRowGroup {
+                VESSMetricRow(systemImage: "flame", label: "Energy", value: value(VESSFormat.calories(summary.consumed.calories)), trend: mark(trends.energy))
+                VESSMetricRow(systemImage: "fish", label: "Protein", value: value("\(VESSFormat.grams(summary.consumed.proteinGrams)) g"), trend: mark(trends.protein))
+                VESSMetricRow(systemImage: "leaf", label: "Fibre", value: summary.consumed.fiberGrams.map { value("\(VESSFormat.grams($0)) g") } ?? "—", trend: mark(trends.fibre))
+                VESSMetricRow(
+                    systemImage: "drop",
+                    label: "Hydration",
+                    value: summary.hydration.consumedMilliliters > 0
+                        ? "\(VESSFormat.liters(fromMilliliters: summary.hydration.consumedMilliliters)) L"
+                        : "—",
+                    trend: mark(trends.hydration)
+                )
+            }
+            .vessHairlineBottom()
+            if hasLogged && !trends.isEmpty {
+                VESSLegendChip()
+                    .accessibilityIdentifier("today.legend")
+            }
         }
-        .vessHairlineBottom()
+    }
+
+    private func mark(_ trend: Trend?) -> VESSTrend? {
+        guard hasLogged else { return nil }
+        return switch trend {
+        case .up: .up
+        case .down: .down
+        case .flat: .flat
+        case nil: nil
+        }
     }
 
     private func value(_ text: String) -> String {

@@ -9,11 +9,11 @@ struct NutritionTests {
         let data = MockData(now: try TestClock.date(2026, 3, 10, 18), calendar: TestClock.utc)
         let salmon = try #require(data.foods.first { $0.name == "Salmon poke" })
 
-        // 250 kcal and 27 g protein per 120 g serving.
-        let entry = FoodLogEntry(userID: data.profile.id, food: salmon, quantity: 150, mealType: .lunch, loggedAt: .now)
+        // 324 kcal and 31 g protein per 155 g serving; twice the serving doubles both.
+        let entry = FoodLogEntry(userID: data.profile.id, food: salmon, quantity: 310, mealType: .lunch, loggedAt: .now)
 
-        #expect(entry.nutrition.calories.isApproximately(312.5))
-        #expect(entry.nutrition.proteinGrams.isApproximately(33.75))
+        #expect(entry.nutrition.calories.isApproximately(648))
+        #expect(entry.nutrition.proteinGrams.isApproximately(62))
         #expect(entry.servingUnit == .gram)
         #expect(entry.foodName == salmon.name)
     }
@@ -55,10 +55,11 @@ struct NutritionTests {
         let data = MockData(now: try TestClock.date(2026, 3, 10, 18), calendar: TestClock.utc)
         let totals = data.foodLog.totalNutrition
 
-        // 146 + 285 + 89 (breakfast 520) + 250 + 97 + 343 (lunch 690) + 95 + 56 + 59 (snack 210)
-        #expect(totals.calories.isApproximately(1420))
-        // 20 + 10 + 1 + 27 + 9 + 7 + 16 + 3 + 0.3
-        #expect(totals.proteinGrams.isApproximately(93.3))
+        // Breakfast 674 + lunch 894 + snack 272 (DATA.md)
+        #expect(totals.calories.isApproximately(1840))
+        #expect(totals.proteinGrams.isApproximately(108))
+        #expect(totals.carbohydrateGrams.isApproximately(196))
+        #expect(totals.fatGrams.isApproximately(58))
         // 7.5 + 3.5 + 4 + 4 + 0.6 + 1.4; yogurt and salmon don't report fibre.
         #expect(totals.fiberGrams?.isApproximately(21) == true)
     }
