@@ -47,7 +47,7 @@ final class LocalStore {
     private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
         let schema = Schema([
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
-            StoredInventoryItem.self, StoredPlannedMeal.self,
+            StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self,
         ])
         return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
     }
@@ -306,6 +306,30 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Grocery
+
+    /// Items the user added and changes made to plan lines.
+    var groceryItems: [GroceryItem] {
+        _ = revision
+        return fetchDecoded(FetchDescriptor<StoredGroceryItem>(), as: GroceryItem.self) { $0.payload }
+    }
+
+    func save(_ item: GroceryItem) throws {
+        let payload = try encoder.encode(item)
+        let id = item.id
+        if let existing = try context.fetch(FetchDescriptor<StoredGroceryItem>(predicate: #Predicate { $0.id == id })).first {
+            existing.payload = payload
+        } else {
+            context.insert(StoredGroceryItem(id: id, payload: payload))
+        }
+        try save()
+    }
+
+    func deleteGroceryItem(id: UUID) throws {
+        try context.delete(model: StoredGroceryItem.self, where: #Predicate { $0.id == id })
+        try save()
+    }
+
     // MARK: Account data
 
     /// Deletes everything stored on this device and returns to onboarding.
@@ -316,6 +340,7 @@ final class LocalStore {
         try context.delete(model: StoredFood.self)
         try context.delete(model: StoredInventoryItem.self)
         try context.delete(model: StoredPlannedMeal.self)
+        try context.delete(model: StoredGroceryItem.self)
         try save()
         profile = nil
         workouts = []

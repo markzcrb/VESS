@@ -7,7 +7,7 @@ import SwiftUI
 struct PlanView: View {
     @Environment(LocalStore.self) private var store
 
-    private enum Segment: Hashable { case week, recipes }
+    private enum Segment: Hashable { case week, recipes, grocery }
 
     @State private var segment: Segment = .week
     @State private var weekOffset = 0
@@ -19,12 +19,11 @@ struct PlanView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: VESSSpacing.section) {
-                    #if DEBUG
-                    VESSSegmented(selection: $segment, options: [(.week, "Week"), (.recipes, "Recipes")])
-                    #endif
+                    VESSSegmented(selection: $segment, options: segments)
                     switch segment {
                     case .week: week
                     case .recipes: recipes
+                    case .grocery: GroceryContent(onPlanMeals: { segment = .week })
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -36,6 +35,15 @@ struct PlanView: View {
             .vessDetailTitle("Plan")
             .vessErrorAlert(isPresented: $showError)
         }
+    }
+
+    /// Recipes is a DEBUG-only segment until there is real recipe content.
+    private var segments: [(value: Segment, title: LocalizedStringResource)] {
+        #if DEBUG
+        [(.week, "Week"), (.recipes, "Recipes"), (.grocery, "Grocery")]
+        #else
+        [(.week, "Week"), (.grocery, "Grocery")]
+        #endif
     }
 
     // MARK: Week
@@ -73,6 +81,18 @@ struct PlanView: View {
             emptyWeek(plan, planned: planned, start: start)
         } else {
             VESSRowGroup {
+                if !isPastWeek {
+                    let toBuy = GroceryModel(store: store, calendar: calendar).list(now: now).toBuy.count
+                    Button { segment = .grocery } label: {
+                        VESSListRow(
+                            systemImage: "cart",
+                            title: Text("Grocery list"),
+                            subtitle: toBuy == 0 ? Text("Nothing to buy") : Text("\(toBuy) to buy · kept in step with this plan")
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("plan.grocery")
+                }
                 NavigationLink {
                     PantryView()
                 } label: {

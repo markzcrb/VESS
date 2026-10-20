@@ -99,3 +99,15 @@ final class StoredPlannedMeal {
         self.payload = payload
     }
 }
+
+/// What the user added to or changed on the grocery list. Additive.
+@Model
+final class StoredGroceryItem {
+    @Attribute(.unique) var id: UUID
+    var payload: Data
+
+    init(id: UUID, payload: Data) {
+        self.id = id
+        self.payload = payload
+    }
+}
