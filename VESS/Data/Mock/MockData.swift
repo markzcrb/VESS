@@ -28,7 +28,7 @@ nonisolated struct MockData: Sendable {
     let weightHistory: [WeightEntry]
     let insights: [Insight]
 
-    static let preview = MockData(now: .now, calendar: .current)
+    static let preview = MockData(now: AppClock.now, calendar: .current)
 
     init(now: Date, calendar: Calendar) {
         let today = calendar.startOfDay(for: now)

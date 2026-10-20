@@ -23,21 +23,25 @@ struct RootTabView: View {
         TabView(selection: tabSelection) {
             Tab(value: .today) {
                 TodayView(selectedTab: $selection)
+                    .vessFoodUndoToast()
             } label: {
                 tabLabel("Today", icon: .symbol("sun.max"), tab: .today)
             }
             Tab(value: .nutrition) {
                 NutritionView()
+                    .vessFoodUndoToast()
             } label: {
                 tabLabel("Nutrition", icon: .asset(.tabFork), tab: .nutrition)
             }
             Tab(value: .plan) {
                 PlanView()
+                    .vessFoodUndoToast()
             } label: {
                 tabLabel("Plan", icon: .asset(.tabCalendar), tab: .plan)
             }
             Tab(value: .you) {
                 ProfileView()
+                    .vessFoodUndoToast()
             } label: {
                 tabLabel("You", icon: .symbol("person"), tab: .you)
             }
@@ -85,7 +89,7 @@ struct RootTabView: View {
             get: { selection },
             set: { newValue in
                 if newValue == .add {
-                    addRequest = AddFoodRequest(meal: .likely(at: .now, calendar: calendar), day: .now)
+                    addRequest = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now)
                 } else {
                     selection = newValue
                 }

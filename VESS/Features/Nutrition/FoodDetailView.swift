@@ -50,6 +50,9 @@ struct FoodDetailView: View {
             .padding(.bottom, VESSSpacing.xl)
         }
         .scrollDismissesKeyboard(.interactively)
+        // The title scrolls under the bar; the hard edge keeps it from
+        // showing through behind the back and close buttons.
+        .scrollEdgeEffectStyle(.hard, for: .top)
         .vessScreenBackground(.energy)
         .vessBottomAction(background: VESSColor.background) { addBar }
         .vessDetailTitle("Food")
@@ -109,7 +112,7 @@ struct FoodDetailView: View {
             macroBar("Protein", .protein, adding: nutrition.proteinGrams, logged: logged.proteinGrams, target: targets?.proteinGrams ?? 0, metric: .protein)
             macroBar("Carbs", .carbohydrates, adding: nutrition.carbohydrateGrams, logged: logged.carbohydrateGrams, target: targets?.carbohydrateGrams ?? 0, metric: .carbs)
             macroBar("Fat", .fat, adding: nutrition.fatGrams, logged: logged.fatGrams, target: targets?.fatGrams ?? 0, metric: .fat)
-            Text(calendar.isDateInToday(day)
+            Text(calendar.isDate(day, inSameDayAs: AppClock.now)
                  ? "Grey is what you've logged today. Colour is what this adds."
                  : "Grey is what you logged that day. Colour is what this adds.")
                 .vessTextStyle(.caption)

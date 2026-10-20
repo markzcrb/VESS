@@ -317,7 +317,7 @@ struct TodayMeals: View {
                     let mealEntries = entries.entries(for: meal)
                     Button(action: onOpenDiary) {
                         VESSMealRow(
-                            time: mealEntries.map(\.loggedAt).min() ?? .now,
+                            time: mealEntries.map(\.loggedAt).min() ?? AppClock.now,
                             title: Text(meal.title),
                             detail: Text(Self.itemList(mealEntries.map(\.foodName))),
                             calories: VESSFormat.calories(mealEntries.totalNutrition.calories)

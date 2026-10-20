@@ -74,6 +74,7 @@ struct FoodSearchSheet: View {
 private struct FoodSearchHome: View {
     @Environment(LocalStore.self) private var store
     @Environment(FoodLookupService.self) private var lookup
+    @Environment(FoodLogUndo.self) private var undo
     @Environment(\.dismiss) private var dismiss
 
     let day: Date
@@ -472,13 +473,16 @@ private struct FoodSearchHome: View {
     private func addSelected() {
         guard let profile = store.profile else { return }
         let time = meal.logTime(on: day, calendar: calendar)
+        var logged: [FoodLogEntry] = []
         do {
             for food in selected where food.nutrition.canBeLogged {
                 let entry = FoodLogEntry(userID: profile.id, food: food, portion: food.defaultPortion, mealType: meal, loggedAt: time)
                 try store.add(entry)
+                logged.append(entry)
                 lookup.cache(food)
             }
             selected = []
+            undo.show(logged, meal: meal)
             dismiss()
         } catch {
             showError = true
@@ -522,11 +526,12 @@ extension View {
         environment(store)
             .environment(FoodLookupService.preview(store: store))
             .environment(HealthDataStore(state: health ?? .available(MockData.preview.health)))
+            .environment(FoodLogUndo())
     }
 }
 #endif
 
 #Preview("Search") {
-    FoodSearchSheet(request: AddFoodRequest(meal: .lunch, day: .now))
+    FoodSearchSheet(request: AddFoodRequest(meal: .lunch, day: AppClock.now))
         .previewEnvironment(LocalStore.preview())
 }

@@ -3,7 +3,7 @@ import SwiftUI
 /// Nutrition: the day diary. One day at a time, meal by meal, then drinks.
 struct NutritionView: View {
     @Environment(LocalStore.self) private var store
-    @State private var selectedDay = Date.now
+    @State private var selectedDay = AppClock.now
     @State private var addFood: AddFoodRequest?
     @State private var addDrinkDay: Date?
     @State private var editing: FoodLogEntry?
@@ -14,7 +14,7 @@ struct NutritionView: View {
     var body: some View {
         NavigationStack {
             if let profile = store.profile {
-                content(profile: profile, now: .now)
+                content(profile: profile, now: AppClock.now)
             }
         }
     }
@@ -107,7 +107,7 @@ struct NutritionView: View {
 
     private func editorialLine(isEmpty: Bool) -> LocalizedStringResource {
         guard isEmpty else { return "Your day, item by item." }
-        return calendar.isDateInToday(selectedDay) ? "Nothing logged yet today." : "Nothing was logged on this day."
+        return calendar.isDate(selectedDay, inSameDayAs: AppClock.now) ? "Nothing logged yet today." : "Nothing was logged on this day."
     }
 
     /// "Usually around 19:30 · 560 kcal left", for a meal not yet logged

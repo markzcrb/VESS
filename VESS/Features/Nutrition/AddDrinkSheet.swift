@@ -151,7 +151,7 @@ struct AddDrinkSheet: View {
     }
 
     private var logTime: Date {
-        if calendar.isDateInToday(day) { return .now }
+        if calendar.isDate(day, inSameDayAs: AppClock.now) { return AppClock.now }
         return calendar.date(bySettingHour: 12, minute: 0, second: 0, of: day) ?? day
     }
 
@@ -177,7 +177,7 @@ struct AddDrinkSheet: View {
 #Preview {
     Color.clear
         .sheet(isPresented: .constant(true)) {
-            AddDrinkSheet(day: .now)
+            AddDrinkSheet(day: AppClock.now)
                 .environment(LocalStore.preview(.profileOnly))
         }
 }

@@ -7,6 +7,7 @@ struct AppRootView: View {
     @State private var store: LocalStore?
     @State private var lookup: FoodLookupService?
     @State private var health = Self.makeHealth()
+    @State private var foodUndo = FoodLogUndo()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
 
     init() {
@@ -30,6 +31,7 @@ struct AppRootView: View {
                 .environment(store)
                 .environment(lookup)
                 .environment(health)
+                .environment(foodUndo)
                 .animation(.default, value: store.profile == nil)
             } else {
                 StoreUnavailableView {
@@ -53,7 +55,7 @@ struct AppRootView: View {
             let arguments = ProcessInfo.processInfo.arguments
             if arguments.contains("-uiTesting") || arguments.contains("-seedSampleData") || arguments.contains("-seedProfileOnly") {
                 let store = try LocalStore.inMemory()
-                let data = MockData(now: .now, calendar: .current)
+                let data = MockData(now: AppClock.now, calendar: .current)
                 if arguments.contains("-seedProfileOnly") {
                     // S1: a profile and history, nothing logged today.
                     try store.saveProfile(data.profile)
@@ -85,7 +87,7 @@ struct AppRootView: View {
             return HealthDataStore(state: .syncing)
         }
         if arguments.contains("-seedSampleData") {
-            return HealthDataStore(state: .available(MockData(now: .now, calendar: .current).health))
+            return HealthDataStore(state: .available(MockData(now: AppClock.now, calendar: .current).health))
         }
         #endif
         return HealthDataStore()

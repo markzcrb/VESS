@@ -14,7 +14,8 @@ struct VESSDayPicker: View {
             Group {
                 if isToday {
                     Text("Today")
-                } else if calendar.isDateInYesterday(day) {
+                } else if let yesterday = calendar.date(byAdding: .day, value: -1, to: today),
+                          calendar.isDate(day, inSameDayAs: yesterday) {
                     Text("Yesterday")
                 } else {
                     Text(day, format: .dateTime.weekday(.abbreviated).day().month(.abbreviated))
@@ -80,9 +81,11 @@ struct VESSWeekBars: View {
                     Text(verbatim: targetLabel)
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.tertiaryText)
-                        .padding(.horizontal, VESSSpacing.xxs)
+                        // Flush with the line's end, so no dash shows past the label.
+                        .padding(.leading, VESSSpacing.xxs)
                         .background(VESSColor.background)
-                        .position(x: proxy.size.width - 24, y: max(targetY - 10, 8))
+                        .frame(width: proxy.size.width, alignment: .trailing)
+                        .position(x: proxy.size.width / 2, y: max(targetY - 10, 8))
                     HStack(alignment: .bottom, spacing: 0) {
                         ForEach(Array(bars.enumerated()), id: \.element.id) { index, bar in
                             Capsule()

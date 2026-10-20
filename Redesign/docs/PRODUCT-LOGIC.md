@@ -19,6 +19,18 @@ The screens show these features, but their logic is not specified. **Do not inve
 | 13 | VESS+ | StoreKit 2 product | €39.99/year; features listed on E08 |
 | 14 | Privacy | On-device processing | Photos processed on device first where possible; export and delete all data available |
 
+## Decided with Mark
+
+### Energy detail (02) status levels
+
+Approved 2026-10-20. Implemented in `StatusLevel` (`Domain/Rules/IntakeAnalysis.swift`), tested in `IntakeAnalysisTests.levels`.
+
+| Row | Measure | Optimal | Sufficient | Low |
+|---|---|---|---|---|
+| Energy vs. target | kcal ÷ target, prorated by time of day (full target once all main meals are logged) | 90–105 % (the Fuel full-marks band) | above 105 % (being ahead is never "low"), or 63–90 % (energy score ≥ 0.7) | under 63 % |
+| Meal regularity | `MealRegularity.score`: closeness of today's meal times to the 14-day median per slot, zero at 2 hours off | ≥ 0.85 | 0.60–0.85 | under 0.60 |
+| Before noon | % of the day's kcal logged before 12:00 | no level: shown as a value only | | |
+| Whole foods | hidden: there is no food-quality source | | | |
 
 ## Already implemented in the codebase (reuse, don't reinvent)
 - Nutrition targets: `NutritionTargetCalculator` (Mifflin-St Jeor + activity).

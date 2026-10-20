@@ -25,7 +25,7 @@ struct MacrosDetailView: View {
     var body: some View {
         Group {
             if let profile = store.profile {
-                content(profile: profile, now: .now)
+                content(profile: profile, now: AppClock.now)
             }
         }
         .vessScreenBackground(.protein)

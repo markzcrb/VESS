@@ -104,7 +104,7 @@ struct QuickAddForm: View {
 
     /// Now for today; the meal's typical time for a past day.
     private var logTime: Date {
-        if calendar.isDateInToday(day) { return .now }
+        if calendar.isDate(day, inSameDayAs: AppClock.now) { return AppClock.now }
         let time = meal.typicalTime
         return calendar.date(bySettingHour: time.hour ?? 12, minute: time.minute ?? 0, second: 0, of: day) ?? day
     }

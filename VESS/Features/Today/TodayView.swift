@@ -23,7 +23,7 @@ struct TodayView: View {
     var body: some View {
         NavigationStack {
             if let profile = store.profile {
-                content(profile: profile, now: .now)
+                content(profile: profile, now: AppClock.now)
             }
         }
     }
@@ -184,7 +184,7 @@ struct TodayView: View {
             name: String(localized: preset.title),
             hydrationContributionPercent: profile.hydrationContributionPercent(for: preset)
         )
-        let log = drink.log(userID: profile.id, volumeMilliliters: milliliters, at: .now)
+        let log = drink.log(userID: profile.id, volumeMilliliters: milliliters, at: AppClock.now)
         do {
             try store.add(log)
             waterAddCount += 1

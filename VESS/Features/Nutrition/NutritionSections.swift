@@ -266,7 +266,7 @@ struct DrinksDiarySection: View {
     }
 
     private func row(for group: DrinkGroup) -> some View {
-        let deleteTitle: LocalizedStringResource = group.logs.count > 1 ? "Delete the last one" : "Delete"
+        let deleteTitle: LocalizedStringResource = group.logs.count > 1 ? "Delete last glass" : "Delete"
         return VESSRow(title: Text(group.name), subtitle: subtitle(for: group)) {
             Text(value(for: group))
                 .vessTextStyle(.bodyM)

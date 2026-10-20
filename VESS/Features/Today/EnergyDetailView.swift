@@ -5,7 +5,7 @@ import SwiftUI
 /// the day, and the last seven days. Pushed from Today.
 struct EnergyDetailView: View {
     @Environment(LocalStore.self) private var store
-    @State private var day = Date.now
+    @State private var day = AppClock.now
     @State private var showInfo = false
 
     private let calendar = Calendar.current
@@ -13,7 +13,7 @@ struct EnergyDetailView: View {
     var body: some View {
         Group {
             if let profile = store.profile {
-                content(profile: profile, now: .now)
+                content(profile: profile, now: AppClock.now)
             }
         }
         .vessScreenBackground(.energy)

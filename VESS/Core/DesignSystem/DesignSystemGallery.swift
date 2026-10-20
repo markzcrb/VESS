@@ -217,7 +217,7 @@ private struct DesignSystemGallery: View {
     ]
 
     private func time(_ hour: Int, _ minute: Int) -> Date {
-        calendar.date(bySettingHour: hour, minute: minute, second: 0, of: .now) ?? .now
+        calendar.date(bySettingHour: hour, minute: minute, second: 0, of: AppClock.now) ?? AppClock.now
     }
 }
 
