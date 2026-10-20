@@ -41,7 +41,7 @@ struct VESSVesselLine: View {
     private var continuous: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
-                Capsule().fill(VESSColor.fill)
+                Capsule().fill(VESSColor.chartTrack)
                 Capsule()
                     .fill(tint)
                     .frame(width: proxy.size.width * min(displayed, 1))
@@ -62,7 +62,7 @@ struct VESSVesselLine: View {
         return HStack(spacing: thickness) {
             ForEach(0..<count, id: \.self) { index in
                 Capsule()
-                    .fill(index < filled ? tint : VESSColor.fill)
+                    .fill(index < filled ? tint : VESSColor.chartTrack)
             }
         }
     }

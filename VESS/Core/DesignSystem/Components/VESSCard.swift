@@ -13,7 +13,7 @@ struct VESSCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(padding)
             .background(VESSColor.card, in: shape)
-            .overlay(shape.strokeBorder(VESSColor.divider, lineWidth: 0.5))
+            .overlay(shape.strokeBorder(VESSColor.divider, lineWidth: 1))
             .vessElevation()
     }
 }

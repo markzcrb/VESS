@@ -325,13 +325,13 @@ struct ExpiringSoonSection: View {
     private func badge(for status: ExpirationStatus) -> some View {
         switch status {
         case .expired:
-            VESSStatusBadge(text: Text("Expired"), tone: .critical)
+            VESSTag(text: Text("Expired"), tone: .warning)
         case .today:
-            VESSStatusBadge(text: Text("Today"), tone: .critical)
+            VESSTag(text: Text("Today"), tone: .warning)
         case .tomorrow:
-            VESSStatusBadge(text: Text("Tomorrow"), tone: .warning)
+            VESSTag(text: Text("Tomorrow"), tone: .warning)
         case .soon(let days):
-            VESSStatusBadge(text: Text("In \(days) days"))
+            VESSTag(text: Text("In \(days) days"))
         case .later, .noDate:
             EmptyView()
         }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A full-width selectable option, used for single-choice questions.
-/// Selection shows a filled check *and* a green outline.
+/// Selection shows a filled check *and* a stronger outline.
 struct VESSOptionRow: View {
     let title: LocalizedStringResource
     var detail: LocalizedStringResource?
@@ -25,14 +25,14 @@ struct VESSOptionRow: View {
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(isSelected ? VESSColor.accent : VESSColor.tertiaryText)
+                    .foregroundStyle(isSelected ? VESSColor.text : VESSColor.tertiaryText)
                     .accessibilityHidden(true)
             }
             .padding(.horizontal, VESSSpacing.lg)
             .padding(.vertical, VESSSpacing.md)
             .frame(minHeight: 56)
             .background(isSelected ? VESSColor.accentPale : VESSColor.card, in: shape)
-            .overlay(shape.strokeBorder(isSelected ? VESSColor.accent : VESSColor.divider, lineWidth: 1))
+            .overlay(shape.strokeBorder(isSelected ? VESSColor.text : VESSColor.divider, lineWidth: 1))
             .contentShape(shape)
         }
         .buttonStyle(.plain)

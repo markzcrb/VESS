@@ -56,13 +56,14 @@ struct VESSDotLabel: View {
     }
 }
 
-/// A tinted capsule with text, for states such as "Tomorrow".
-/// The text always carries the meaning; tint is secondary.
-struct VESSStatusBadge: View {
+/// A small tracked-caps tag, such as "Recorded", "Entered", "Use by Thu" or
+/// "New". The text always carries the meaning; tint is secondary.
+struct VESSTag: View {
     enum Tone {
         case neutral
+        case positive
         case warning
-        case critical
+        case accent
     }
 
     let text: Text
@@ -70,26 +71,28 @@ struct VESSStatusBadge: View {
 
     var body: some View {
         text
-            .vessTextStyle(.badge)
+            .vessTextStyle(.labelCapsS)
             .foregroundStyle(foreground)
-            .padding(.horizontal, VESSSpacing.xs)
+            .padding(.horizontal, VESSSpacing.xs - 1)
             .padding(.vertical, VESSSpacing.xxs)
-            .background(background, in: Capsule())
+            .background(background, in: RoundedRectangle(cornerRadius: VESSRadius.tag, style: .continuous))
     }
 
     private var foreground: Color {
         switch tone {
         case .neutral: VESSColor.secondaryText
-        case .warning: VESSColor.warningText
-        case .critical: VESSColor.criticalText
+        case .positive: VESSColor.statusOptimal
+        case .warning: VESSColor.statusPoor
+        case .accent: VESSColor.accent
         }
     }
 
     private var background: Color {
         switch tone {
         case .neutral: VESSColor.fill
-        case .warning: VESSColor.warningTint
-        case .critical: VESSColor.criticalTint
+        case .positive: VESSColor.tintOptimal
+        case .warning: VESSColor.tintPoor
+        case .accent: VESSColor.tintLink
         }
     }
 }

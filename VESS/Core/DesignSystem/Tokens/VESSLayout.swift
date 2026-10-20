@@ -14,20 +14,54 @@ enum VESSSpacing {
 
     /// Horizontal inset for screen content.
     static let screenInset: CGFloat = lg
-    /// Vertical gap between top-level sections of a screen.
-    static let section: CGFloat = xxxl
+    /// Vertical gap between top-level sections of a screen (Today uses 36).
+    static let section: CGFloat = xxl
 }
 
 /// Corner radii. All shapes use the continuous curve.
 enum VESSRadius {
-    /// Badges and small elements.
+    /// Tags.
+    static let tag: CGFloat = 5
+    /// Legend chips and small elements.
     static let small: CGFloat = 8
-    /// Row thumbnails.
+    /// Thumbnails, impact rows, quick-add tiles.
     static let thumbnail: CGFloat = 12
-    /// Buttons, inputs and icon buttons.
+    /// Inputs.
     static let control: CGFloat = 16
-    /// Cards and grouped rows.
-    static let large: CGFloat = 22
+    /// Insight cards, featured recipe, embedded cards.
+    static let large: CGFloat = 16
+    /// Sheet top corners.
+    static let sheet: CGFloat = 32
+}
+
+/// Fixed component sizes from the design (402 pt wide screen).
+enum VESSSize {
+    static let heroRing: CGFloat = 248
+    static let stripRing: CGFloat = 52
+    /// MetricRow and StatusRow.
+    static let rowHeight: CGFloat = 56
+    static let iconButton: CGFloat = 40
+    static let addButton: CGFloat = 62
+    static let rowIcon: CGFloat = 20
+}
+
+/// Ring geometry. The stroke is 9.5 % of the radius, flat caps, starting at
+/// 12 o'clock: 11.8 pt on the 248 pt hero ring.
+enum VESSRing {
+    static func lineWidth(diameter: CGFloat, innerRadiusRatio: CGFloat = 0.905) -> CGFloat {
+        diameter / 2 * (1 - innerRadiusRatio)
+    }
+}
+
+/// Motion tokens (`Redesign/docs/MOTION.md`). Callers pass `nil` instead
+/// when Reduce Motion is on.
+enum VESSMotion {
+    static let ringSweep = Animation.easeOut(duration: 0.8)
+    static let rowStagger: Double = 0.04
+    static let rowAppear = Animation.easeOut(duration: 0.35)
+    static let chart = Animation.easeOut(duration: 0.6)
+    static let selection = Animation.snappy(duration: 0.25)
+    static let sheet = Animation.spring(response: 0.38, dampingFraction: 0.86)
 }
 
 /// Minimum interactive sizes, per Apple's Human Interface Guidelines.

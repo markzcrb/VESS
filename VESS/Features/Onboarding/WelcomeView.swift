@@ -33,7 +33,7 @@ struct WelcomeView: View {
             VStack(spacing: VESSSpacing.lg) {
                 // A single thin Vessel Line as the only ornament.
                 Capsule()
-                    .fill(VESSColor.accent)
+                    .fill(VESSColor.brandSage)
                     .frame(width: 32, height: 2)
                     .accessibilityHidden(true)
 

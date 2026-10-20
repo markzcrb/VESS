@@ -23,7 +23,8 @@ struct VESSScreen<Content: View>: View {
     }
 }
 
-/// A section heading with optional trailing detail text or action.
+/// A section heading: TRACKED CAPS title, then an optional trailing
+/// detail or action ("Diary ›").
 struct VESSSectionHeader: View {
     let title: LocalizedStringResource
     var detail: Text?
@@ -33,27 +34,38 @@ struct VESSSectionHeader: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title)
-                .vessTextStyle(.sectionTitle)
+                .vessTextStyle(.labelCaps)
+                .foregroundStyle(VESSColor.secondaryText)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer(minLength: VESSSpacing.md)
 
             if let actionTitle, let action {
-                Button(action: action) { Text(actionTitle) }
-                    .font(.subheadline)
-                    .foregroundStyle(VESSColor.accent)
+                Button(action: action) {
+                    HStack(spacing: 2) {
+                        Text(actionTitle)
+                            .vessTextStyle(.bodyS)
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(VESSColor.tertiaryText)
+                            .accessibilityHidden(true)
+                    }
+                    .foregroundStyle(VESSColor.secondaryText)
                     .frame(minHeight: VESSHitTarget.minimum)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             } else if let detail {
                 detail
-                    .vessTextStyle(.secondary)
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
             }
         }
     }
 }
 
 /// A compact add action for section headers, such as adding to a meal.
-/// The glyph sits on a small soft-green disc inside a full 44 pt hit area.
-/// (Pale green disappeared against the dark-mode background.)
+/// The glyph sits on a small raised disc inside a full 44 pt hit area.
 struct VESSHeaderAddButton: View {
     let label: LocalizedStringResource
     let action: () -> Void
@@ -64,9 +76,10 @@ struct VESSHeaderAddButton: View {
         Button(action: action) {
             Image(systemName: "plus")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(VESSColor.accent)
+                .foregroundStyle(VESSColor.text)
                 .frame(width: discSize, height: discSize)
-                .background(VESSColor.accentSoft, in: Circle())
+                .background(VESSColor.fill, in: Circle())
+                .overlay(Circle().strokeBorder(VESSColor.divider))
                 .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
                 .contentShape(Rectangle())
         }
@@ -84,6 +97,49 @@ struct VESSSection<Content: View>: View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             header
             content
+        }
+    }
+}
+
+extension View {
+    /// Detail-screen navigation: a centred TRACKED CAPS title with an optional
+    /// caption below it, and a transparent bar.
+    func vessDetailTitle(_ title: LocalizedStringResource, subtitle: Text? = nil) -> some View {
+        navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(Text(title))
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 2) {
+                        Text(title)
+                            .vessTextStyle(.labelCaps)
+                            .foregroundStyle(VESSColor.text)
+                        subtitle?
+                            .vessTextStyle(.caption)
+                            .foregroundStyle(VESSColor.secondaryText)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isHeader)
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+    }
+
+    /// The screen background: the canvas, with a metric-tinted atmosphere
+    /// fading out over the top 440 pt. `nil` draws the plain canvas.
+    func vessScreenBackground(_ metric: VESSMetricKind? = .fuel) -> some View {
+        background(alignment: .top) {
+            ZStack(alignment: .top) {
+                VESSColor.background
+                if let metric {
+                    LinearGradient(
+                        colors: [metric.atmosphere, metric.atmosphere.opacity(0)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 440)
+                }
+            }
+            .ignoresSafeArea()
         }
     }
 }

@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// A selectable capsule for multi-select options and presets. Selection is
-/// shown by a soft green fill *and* a checkmark, so state never relies on
-/// color alone.
+/// A selectable capsule for filters, presets and suggestions. Selected is
+/// the filled accent capsule; unselected is raised with a hairline. State is
+/// carried by luminance and the selected trait, never by hue alone.
 struct VESSChip: View {
     let title: LocalizedStringResource
     let isSelected: Bool
@@ -10,20 +10,19 @@ struct VESSChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VESSSpacing.xs) {
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.footnote.weight(.semibold))
-                        .accessibilityHidden(true)
+            Text(title)
+                .vessTextStyle(.bodyS)
+                .foregroundStyle(isSelected ? VESSColor.onAccent : VESSColor.text)
+                .padding(.horizontal, VESSSpacing.sm + 2)
+                .padding(.vertical, VESSSpacing.xs)
+                .frame(minHeight: VESSHitTarget.minimum)
+                .background {
+                    Capsule()
+                        .fill(isSelected ? VESSColor.accentFill : VESSColor.fill)
+                        .overlay(Capsule().strokeBorder(isSelected ? Color.clear : VESSColor.divider))
+                        .padding(.vertical, VESSSpacing.xxs)
                 }
-                Text(title)
-            }
-            .font(.subheadline.weight(.medium))
-            .padding(.horizontal, VESSSpacing.md)
-            .frame(minHeight: VESSHitTarget.minimum)
-            .foregroundStyle(isSelected ? VESSColor.accent : VESSColor.text)
-            .background(isSelected ? VESSColor.accentSoft : VESSColor.fill, in: Capsule())
-            .contentShape(Capsule())
+                .contentShape(Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
