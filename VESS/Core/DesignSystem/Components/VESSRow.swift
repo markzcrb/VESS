@@ -350,11 +350,12 @@ enum VESSLevel: Int {
 }
 
 /// A status row: icon, TRACKED LABEL, a three-step level and the value.
+/// Without a level the three steps stay on the track colour.
 struct VESSStatusRow: View {
     let systemImage: String
     let label: LocalizedStringResource
     let value: String
-    let level: VESSLevel
+    let level: VESSLevel?
 
     @ScaledMetric(relativeTo: .title3) private var valueWidth: CGFloat = 58
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -377,7 +378,7 @@ struct VESSStatusRow: View {
             HStack(spacing: 3) {
                 ForEach(0..<3, id: \.self) { index in
                     Capsule()
-                        .fill(index == level.rawValue ? level.color : VESSColor.chartTrack)
+                        .fill(index == level?.rawValue ? (level?.color ?? VESSColor.chartTrack) : VESSColor.chartTrack)
                         .frame(width: 22, height: 3)
                 }
             }
@@ -391,7 +392,7 @@ struct VESSStatusRow: View {
         .frame(maxWidth: .infinity, minHeight: VESSSize.rowHeight, alignment: .leading)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(label))
-        .accessibilityValue(Text("\(value), \(Text(level.name))"))
+        .accessibilityValue(level.map { Text("\(value), \(Text($0.name))") } ?? Text(verbatim: value))
     }
 }
 

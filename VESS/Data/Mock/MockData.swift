@@ -157,11 +157,13 @@ nonisolated struct MockData: Sendable {
             // A few minutes either side of the usual time, so medians are realistic.
             let jitter = [-10, 5, 0, 10, -5, 15][index % 6]
             return slots.map { meal, hour, minute, share in
+                // DATA.md gives energy and protein; carbs and fat follow the
+                // target split (43 % and 30 % of energy).
                 var nutrition = NutritionFacts(
                     calories: dailyEnergy[index] * share,
                     proteinGrams: dailyProtein[index] * share,
-                    carbohydrateGrams: 0,
-                    fatGrams: 0
+                    carbohydrateGrams: dailyEnergy[index] * share * 0.43 / 4,
+                    fatGrams: dailyEnergy[index] * share * 0.30 / 9
                 )
                 nutrition.fiberGrams = 24 * share
                 return FoodLogEntry(

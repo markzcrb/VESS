@@ -41,8 +41,16 @@ struct TodayMetricStrip: View {
     var body: some View {
         VESSMetricStrip {
             VESSMetricStripItem(value: fuel.map { "\($0.value)" } ?? "—", label: "Fuel", progress: Double(fuel?.value ?? 0) / 100, metric: .fuel)
-            percentItem(summary.consumed.calories, of: summary.targets.calories, label: "Energy", metric: .energy)
-            percentItem(summary.consumed.proteinGrams, of: summary.targets.proteinGrams, label: "Protein", metric: .protein)
+            NavigationLink(destination: EnergyDetailView()) {
+                percentItem(summary.consumed.calories, of: summary.targets.calories, label: "Energy", metric: .energy)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens Energy")
+            NavigationLink(destination: MacrosDetailView()) {
+                percentItem(summary.consumed.proteinGrams, of: summary.targets.proteinGrams, label: "Protein", metric: .protein)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens Macros")
             percentItem(summary.hydration.consumedMilliliters, of: summary.hydration.targetMilliliters, label: "Water", metric: .water)
             NavigationLink(destination: ActivityView()) {
                 VESSMetricStripItem(
@@ -74,17 +82,25 @@ struct TodayMetricStrip: View {
 struct TodayFuelRing: View {
     let fuel: FuelScore?
     let mealsLogged: Int
+    let onInfo: () -> Void
 
     var body: some View {
+        Button(action: onInfo) {
+            ring
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier("today.fuel")
+        .accessibilityHint("Explains how Fuel is calculated. A summary of today's logging, not a health measurement.")
+    }
+
+    private var ring: some View {
         VESSScoreRing(
             value: fuel.map { "\($0.value)" } ?? "—",
             label: "Fuel",
             sublabel: fuel == nil ? Text("Builds as you log") : Text("\(mealsLogged) of 4 meals logged"),
             progress: Double(fuel?.value ?? 0) / 100
         )
-        .frame(maxWidth: .infinity)
-        .accessibilityIdentifier("today.fuel")
-        .accessibilityHint("A summary of today's logging, not a health measurement")
     }
 }
 
@@ -111,8 +127,16 @@ struct TodayBreakdown: View {
     var body: some View {
         VStack(spacing: VESSSpacing.sm + 2) {
             VESSRowGroup {
-                VESSMetricRow(systemImage: "flame", label: "Energy", value: value(VESSFormat.calories(summary.consumed.calories)), trend: mark(trends.energy))
-                VESSMetricRow(systemImage: "fish", label: "Protein", value: value("\(VESSFormat.grams(summary.consumed.proteinGrams)) g"), trend: mark(trends.protein))
+                NavigationLink(destination: EnergyDetailView()) {
+                    VESSMetricRow(systemImage: "flame", label: "Energy", value: value(VESSFormat.calories(summary.consumed.calories)), trend: mark(trends.energy))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                NavigationLink(destination: MacrosDetailView()) {
+                    VESSMetricRow(systemImage: "fish", label: "Protein", value: value("\(VESSFormat.grams(summary.consumed.proteinGrams)) g"), trend: mark(trends.protein))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
                 VESSMetricRow(systemImage: "leaf", label: "Fibre", value: summary.consumed.fiberGrams.map { value("\(VESSFormat.grams($0)) g") } ?? "—", trend: mark(trends.fibre))
                 VESSMetricRow(
                     systemImage: "drop",
@@ -157,7 +181,24 @@ struct TodayIntake: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            VESSSectionHeader(title: "Intake today")
+            HStack {
+                VESSSectionHeader(title: "Intake today")
+                NavigationLink(destination: EnergyDetailView()) {
+                    HStack(spacing: 2) {
+                        Text("Energy")
+                            .vessTextStyle(.bodyS)
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(VESSColor.tertiaryText)
+                            .accessibilityHidden(true)
+                    }
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .frame(minHeight: VESSHitTarget.minimum)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("today.openEnergy")
+            }
             ViewThatFits(in: .horizontal) {
                 HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
                     total

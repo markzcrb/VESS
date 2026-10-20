@@ -11,6 +11,8 @@ struct TodayView: View {
     @State private var addFood: AddFoodRequest?
     @State private var addDrink = false
     @State private var showCoach = false
+    @State private var showFuelInfo = false
+    @State private var showEnergy = false
     @State private var undoLog: HydrationLog?
     @State private var undoDismissal: Task<Void, Never>?
     @State private var waterAddCount = 0
@@ -70,7 +72,7 @@ struct TodayView: View {
                         }
 
                         VStack(spacing: VESSSpacing.xl) {
-                            TodayFuelRing(fuel: fuel, mealsLogged: mealsLogged)
+                            TodayFuelRing(fuel: fuel, mealsLogged: mealsLogged, onInfo: { showFuelInfo = true })
                             Text(summary.editorialLine)
                                 .vessTextStyle(.editorialL)
                                 .foregroundStyle(VESSColor.text)
@@ -85,9 +87,13 @@ struct TodayView: View {
                         if let insight {
                             VESSInsightCard(
                                 text: Text(insight.text),
-                                linkTitle: insight.logMeal.map { "Log \(String(localized: $0.title).lowercased())" },
+                                linkTitle: insight.logMeal.map { "Log \(String(localized: $0.title).lowercased())" } ?? "Break down my day",
                                 action: {
-                                    if let meal = insight.logMeal { addFood = AddFoodRequest(meal: meal, day: now) }
+                                    if let meal = insight.logMeal {
+                                        addFood = AddFoodRequest(meal: meal, day: now)
+                                    } else {
+                                        showEnergy = true
+                                    }
                                 }
                             )
                         }
@@ -119,6 +125,12 @@ struct TodayView: View {
         }
         .vessScreenBackground(.fuel)
         .toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(isPresented: $showEnergy) {
+            EnergyDetailView()
+        }
+        .sheet(isPresented: $showFuelInfo) {
+            FuelInfoSheet(fuel: fuel)
+        }
         .navigationDestination(isPresented: $showCoach) {
             ContentUnavailableView(
                 "Coach",
