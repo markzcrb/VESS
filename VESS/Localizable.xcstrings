@@ -339,6 +339,16 @@
         }
       }
     },
+    "%@ of %@ steps" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ steps"
+          }
+        }
+      }
+    },
     "%@ packs" : {
       "comment" : "A fractional count of packs, such as 1.5 packs.",
       "localizations" : {
@@ -570,6 +580,9 @@
     "%lld percent lower Fuel on these days" : {
 
     },
+    "%lld percent of target" : {
+
+    },
     "%lld piece" : {
       "comment" : "A whole count of pieces, such as 1 piece or 2 pieces.",
       "localizations" : {
@@ -787,6 +800,9 @@
 
     },
     "A steady day." : {
+
+    },
+    "about %@ kcal" : {
 
     },
     "About Activity" : {

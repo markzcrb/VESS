@@ -72,6 +72,7 @@ struct FoodSearchSheet: View {
 /// Tapping a food opens its detail; its + button selects it, and the
 /// sticky bar logs every selected food with its default portion.
 private struct FoodSearchHome: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(LocalStore.self) private var store
     @Environment(FoodLookupService.self) private var lookup
     @Environment(FoodLogUndo.self) private var undo
@@ -131,7 +132,7 @@ private struct FoodSearchHome: View {
         .safeAreaInset(edge: .bottom) {
             if !selected.isEmpty { selectionBar }
         }
-        .animation(VESSMotion.selection, value: selected.count)
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : VESSMotion.selection, value: selected.count)
         .task(id: trimmedQuery) { await searchOnline() }
         .vessErrorAlert(isPresented: $showError, retry: addSelected)
         .fullScreenCover(isPresented: $showScanner, onDismiss: continueAfterScanner) {
@@ -193,11 +194,22 @@ private struct FoodSearchHome: View {
         HStack(spacing: VESSSpacing.sm) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(VESSColor.secondaryText)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 .accessibilityHidden(true)
-            // An explicit prompt colour: the system placeholder is under 4.5:1.
-            TextField("Search foods or brands", text: $query, prompt: Text("Search foods or brands").foregroundStyle(VESSColor.tertiaryText))
+            // The placeholder is drawn here: the system one is under 4.5:1,
+            // and a custom prompt loses the scaled font at large sizes.
+            TextField("Search foods or brands", text: $query, prompt: Text(verbatim: ""))
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.text)
+                .background(alignment: .leading) {
+                    if query.isEmpty {
+                        Text("Search foods or brands")
+                            .vessTextStyle(.bodyM)
+                            .foregroundStyle(VESSColor.tertiaryText)
+                            .lineLimit(1)
+                            .accessibilityHidden(true)
+                    }
+                }
                 .focused($isSearchFocused)
                 .submitLabel(.search)
                 .autocorrectionDisabled()
@@ -222,6 +234,7 @@ private struct FoodSearchHome: View {
             } label: {
                 Image(systemName: "barcode")
                     .foregroundStyle(VESSColor.text)
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
                     .contentShape(Rectangle())
             }
@@ -277,14 +290,7 @@ private struct FoodSearchHome: View {
         Button {
             path.append(route)
         } label: {
-            VESSRow(title: Text(title), subtitle: Text(detail)) {
-                VESSRowIcon(systemImage: symbol)
-            } trailing: {
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(VESSColor.tertiaryText)
-                    .accessibilityHidden(true)
-            }
+            VESSListRow(systemImage: symbol, title: Text(title), subtitle: Text(detail))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)
@@ -489,7 +495,7 @@ private struct FoodSearchHome: View {
         .frame(maxWidth: .infinity)
         .background(VESSColor.background)
         .overlay(alignment: .top) { VESSHairline() }
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
     }
 
     private func defaultNutrition(of food: Food) -> NutritionFacts {

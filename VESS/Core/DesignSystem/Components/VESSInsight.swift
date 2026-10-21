@@ -72,20 +72,24 @@ struct VESSMacroBar: View {
     let metric: VESSMetricKind
 
     @ScaledMetric(relativeTo: .body) private var barHeight: CGFloat = 6
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm - 2) {
-            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                Text(name)
-                    .vessTextStyle(.labelCaps)
-                    .foregroundStyle(VESSColor.text)
-                Spacer(minLength: VESSSpacing.xs)
-                Text(verbatim: value)
-                    .vessTextStyle(.numberS)
-                    .foregroundStyle(VESSColor.text)
-                Text(verbatim: target)
-                    .vessTextStyle(.caption)
-                    .foregroundStyle(VESSColor.tertiaryText)
+            // At accessibility sizes the name sits above its values, so
+            // neither breaks mid-word.
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                    nameText
+                    HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) { valueText; targetText }
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+                    nameText
+                    Spacer(minLength: VESSSpacing.xs)
+                    valueText
+                    targetText
+                }
             }
             GeometryReader { proxy in
                 let width = proxy.size.width
@@ -104,6 +108,24 @@ struct VESSMacroBar: View {
             .accessibilityHidden(true)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var nameText: some View {
+        Text(name)
+            .vessTextStyle(.labelCaps)
+            .foregroundStyle(VESSColor.text)
+    }
+
+    private var valueText: some View {
+        Text(verbatim: value)
+            .vessTextStyle(.numberS)
+            .foregroundStyle(VESSColor.text)
+    }
+
+    private var targetText: some View {
+        Text(verbatim: target)
+            .vessTextStyle(.caption)
+            .foregroundStyle(VESSColor.tertiaryText)
     }
 
     private func clamp(_ value: Double, to maximum: Double) -> Double {

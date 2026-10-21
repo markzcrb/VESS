@@ -110,12 +110,16 @@ struct EnergyDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: VESSSpacing.md) {
-                    HStack(alignment: .firstTextBaseline) {
-                        VESSSectionHeader(title: "Through the day")
-                        if isToday {
-                            Text("Now · \(now, format: .dateTime.hour().minute())")
-                                .vessTextStyle(.caption)
-                                .foregroundStyle(VESSColor.secondaryText)
+                    // Beside the header when it fits, below it at large sizes.
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .firstTextBaseline) {
+                            VESSSectionHeader(title: "Through the day").fixedSize()
+                            Spacer(minLength: VESSSpacing.md)
+                            nowLabel(now: now, isToday: isToday)
+                        }
+                        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                            VESSSectionHeader(title: "Through the day")
+                            nowLabel(now: now, isToday: isToday)
                         }
                     }
                     EnergyThroughDayChart(entries: entries, target: target, now: isToday ? now : nil, calendar: calendar)
@@ -128,19 +132,28 @@ struct EnergyDetailView: View {
         }
     }
 
+    @ViewBuilder
+    private func nowLabel(now: Date, isToday: Bool) -> some View {
+        if isToday {
+            Text("Now · \(now, format: .dateTime.hour().minute())")
+                .vessTextStyle(.caption)
+                .foregroundStyle(VESSColor.secondaryText)
+                .fixedSize()
+        }
+    }
+
     private func lastSevenDays(week: [IntakeAnalysis.DayTotal], target: Double, isToday: Bool) -> some View {
         let average = IntakeAnalysis.average(week, \.calories)
         return VStack(alignment: .leading, spacing: VESSSpacing.md) {
             VESSSectionHeader(title: "Last 7 days")
             if let average {
-                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                    Text(VESSFormat.calories(average))
-                        .vessTextStyle(.displayM)
-                        .foregroundStyle(VESSColor.text)
-                    Text("kcal average · \(Self.comparison(average, target: target))")
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.secondaryText)
-                }
+                VESSMetric(
+                    value: Text(VESSFormat.calories(average)),
+                    context: Text("kcal average · \(Self.comparison(average, target: target))"),
+                    style: .displayM,
+                    contextStyle: .bodyS
+                )
+                .foregroundStyle(VESSColor.text)
                 .accessibilityElement(children: .combine)
             }
             VESSWeekBars(
@@ -253,9 +266,15 @@ private struct EnergyThroughDayChart: View {
             }
         }
         .frame(height: height)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Energy through the day")
-        .accessibilityValue(Text("\(VESSFormat.calories(total)) of \(VESSFormat.calories(target)) kcal"))
+        // Labels and meal icons stop growing at accessibility sizes, so they
+        // don't run into each other; VoiceOver hears the summary below.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        // Swift Charts exposes its marks even under `children: .ignore`
+        // (as minutes since midnight), so the chart is replaced by one summary.
+        .accessibilityRepresentation {
+            Text("Energy through the day")
+                .accessibilityValue(Text("\(VESSFormat.calories(total)) of \(VESSFormat.calories(target)) kcal"))
+        }
     }
 
     private func minute(_ date: Date) -> Int {

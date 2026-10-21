@@ -30,9 +30,21 @@ struct AddToSlotView: View {
                     HStack(spacing: VESSSpacing.sm) {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(VESSColor.secondaryText)
+                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                             .accessibilityHidden(true)
-                        TextField("Search meals and foods", text: $query, prompt: Text("Search meals and foods").foregroundStyle(VESSColor.tertiaryText))
+                        // Drawn placeholder, as in FoodSearchSheet: a custom
+                        // prompt loses the scaled font at large sizes.
+                        TextField("Search meals and foods", text: $query, prompt: Text(verbatim: ""))
                             .vessTextStyle(.bodyM)
+                            .background(alignment: .leading) {
+                                if query.isEmpty {
+                                    Text("Search meals and foods")
+                                        .vessTextStyle(.bodyM)
+                                        .foregroundStyle(VESSColor.tertiaryText)
+                                        .lineLimit(1)
+                                        .accessibilityHidden(true)
+                                }
+                            }
                             .autocorrectionDisabled()
                             .accessibilityIdentifier("addToSlot.search")
                     }

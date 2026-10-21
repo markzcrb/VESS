@@ -27,6 +27,9 @@ struct VESSButtonStyle: ButtonStyle {
             .multilineTextAlignment(.center)
             .foregroundStyle(foreground)
             .padding(.horizontal, variant == .quiet ? 0 : VESSSpacing.lg)
+            // Only matters at large text sizes, where the label outgrows the
+            // minimum height and would otherwise touch the capsule's edge.
+            .padding(.vertical, isFullWidth ? VESSSpacing.sm : 0)
             .frame(maxWidth: isFullWidth ? .infinity : nil, minHeight: minHeight)
             .background { background }
             .contentShape(Capsule())
@@ -87,7 +90,9 @@ struct VESSIconButton: View {
             Image(systemName: systemImage)
                 .font(.body.weight(.medium))
                 .foregroundStyle(isFilled ? VESSColor.onAccent : VESSColor.text)
-                .frame(width: size, height: size)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                // Grows with text, but stops before it crowds a title.
+                .frame(width: min(size, VESSSize.iconButton * 1.4), height: min(size, VESSSize.iconButton * 1.4))
                 .background(Circle().fill(isFilled ? VESSColor.accentFill : VESSColor.fill))
                 .overlay(Circle().strokeBorder(VESSColor.divider))
                 .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
@@ -95,5 +100,8 @@ struct VESSIconButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(label))
+        .accessibilityShowsLargeContentViewer {
+            Label { Text(label) } icon: { Image(systemName: systemImage) }
+        }
     }
 }

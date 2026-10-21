@@ -6,6 +6,7 @@ import SwiftUI
 /// DEBUG-only segment until there is real recipe content.
 struct PlanView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private enum Segment: Hashable { case week, recipes, grocery }
 
@@ -125,12 +126,21 @@ struct PlanView: View {
     }
 
     private func header(start: Date, end: Date) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+        // At accessibility sizes the arrows go under the title, so the
+        // range never breaks mid-word.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.sm))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+
+        return layout {
             Text(rangeText(start: start, end: end))
                 .vessTextStyle(.editorialL)
                 .foregroundStyle(VESSColor.text)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-            Spacer(minLength: VESSSpacing.sm)
+            if !dynamicTypeSize.isAccessibilitySize {
+                Spacer(minLength: VESSSpacing.sm)
+            }
             HStack(spacing: VESSSpacing.xxs) {
                 VESSIconButton(systemImage: "chevron.left", label: "Previous week") { weekOffset -= 1 }
                     .accessibilityIdentifier("plan.previousWeek")
@@ -369,6 +379,8 @@ struct PlanView: View {
                     Text("\(Image(systemName: "clock")) \(recipe.minutes) min   \(Image(systemName: "flame")) \(VESSFormat.calories(recipe.nutrition.calories)) kcal")
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.secondaryText)
+                        // Without the inline symbols' names ("clock", "flame").
+                        .accessibilityLabel(Text("\(recipe.minutes) min, \(VESSFormat.calories(recipe.nutrition.calories)) kcal"))
                 }
                 .padding(VESSSpacing.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)

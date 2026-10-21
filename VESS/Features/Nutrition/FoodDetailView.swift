@@ -83,15 +83,14 @@ struct FoodDetailView: View {
                     .foregroundStyle(VESSColor.tertiaryText)
             }
             if nutrition.isReported(.calories) {
-                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                    Text(VESSFormat.calories(nutrition.calories))
-                        .vessTextStyle(.displayL)
-                        .foregroundStyle(VESSColor.text)
-                        .contentTransition(.numericText())
-                    Text("kcal · \(amountText)")
-                        .vessTextStyle(.bodyM)
-                        .foregroundStyle(VESSColor.secondaryText)
-                }
+                VESSMetric(
+                    value: Text(VESSFormat.calories(nutrition.calories)),
+                    context: Text("kcal · \(amountText)"),
+                    style: .displayL,
+                    contextStyle: .bodyM
+                )
+                .foregroundStyle(VESSColor.text)
+                .contentTransition(.numericText())
                 .accessibilityElement(children: .combine)
             } else {
                 Text("Calories not reported")

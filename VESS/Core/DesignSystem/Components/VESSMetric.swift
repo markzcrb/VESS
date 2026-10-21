@@ -6,12 +6,15 @@ struct VESSMetric: View {
     let value: Text
     var context: Text?
     var style: VESSTextStyle = .metricHero
+    /// Overrides the context's size; nil keeps the size picked from `style`.
+    var contextStyle: VESSTextStyle? = nil
+    var spacing: CGFloat = VESSSpacing.xs
 
     var body: some View {
         // Context sits beside the number when it fits on one line, otherwise
         // directly below it (large text sizes).
         ViewThatFits(in: .horizontal) {
-            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+            HStack(alignment: .firstTextBaseline, spacing: spacing) {
                 valueText
                 contextText?.fixedSize()
             }
@@ -32,9 +35,15 @@ struct VESSMetric: View {
     private var contextText: (some View)? {
         // Beside a hero number the context steps up to body size,
         // so the target reads as part of the figure, not a footnote.
-        context.map {
-            $0.font(style == .metricHero || style == .metricLarge ? .body : .subheadline)
-                .foregroundStyle(VESSColor.secondaryText)
+        context.map { context in
+            Group {
+                if let contextStyle {
+                    context.vessTextStyle(contextStyle)
+                } else {
+                    context.font(style == .metricHero || style == .metricLarge ? .body : .subheadline)
+                }
+            }
+            .foregroundStyle(VESSColor.secondaryText)
         }
     }
 }

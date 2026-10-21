@@ -7,6 +7,18 @@ struct WelcomeView: View {
     let onStart: () -> Void
 
     var body: some View {
+        // Fills the screen as designed, and scrolls at large text sizes
+        // instead of truncating.
+        GeometryReader { proxy in
+            ScrollView {
+                content
+                    .frame(minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             if VESSBrandAssets.isAvailable(VESSBrandAssets.welcomeHero) {
                 Image(VESSBrandAssets.welcomeHero)
@@ -26,6 +38,7 @@ struct WelcomeView: View {
                     .font(.title3)
                     .foregroundStyle(VESSColor.secondaryText)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer(minLength: VESSSpacing.huge)
@@ -49,6 +62,8 @@ struct WelcomeView: View {
 
                 Text("Your data stays on this iPhone.")
                     .vessTextStyle(.label)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.horizontal, VESSSpacing.screenInset)

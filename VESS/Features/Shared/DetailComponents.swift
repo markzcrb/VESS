@@ -109,6 +109,9 @@ struct VESSWeekBars: View {
                 }
             }
         }
+        // Chart labels stop growing at accessibility sizes, so the target
+        // label doesn't cover the bars; the numbers are in the text above.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityHidden(true)
         .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.chart) { grown = true } }
     }

@@ -24,6 +24,8 @@ struct VESSToggleStyle: ToggleStyle {
                     }
                     .opacity(isEnabled ? 1 : 0.4)
             }
+            // At least 44 pt to tap, even without a visible label.
+            .frame(minHeight: VESSHitTarget.minimum)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

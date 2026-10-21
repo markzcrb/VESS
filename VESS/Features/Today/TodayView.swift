@@ -8,6 +8,7 @@ struct TodayView: View {
 
     @Environment(LocalStore.self) private var store
     @Environment(HealthDataStore.self) private var health
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var addFood: AddFoodRequest?
     @State private var addDrink = false
     @State private var showCoach = false
@@ -148,10 +149,10 @@ struct TodayView: View {
                 VESSUndoToast(message: Text("Added \(VESSFormat.milliliters(undoLog.volumeMilliliters)) ml of water")) {
                     undo(undoLog)
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.snappy, value: undoLog?.id)
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .snappy, value: undoLog?.id)
         .sensoryFeedback(.impact(weight: .light), trigger: waterAddCount)
         .sheet(item: $addFood) { request in
             FoodSearchSheet(request: request)

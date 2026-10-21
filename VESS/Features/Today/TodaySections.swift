@@ -57,7 +57,8 @@ struct TodayMetricStrip: View {
                     value: health.map { "\(Int((Double($0.steps) / Double(max($0.stepsTarget, 1)) * 100).rounded()))" } ?? "—",
                     label: "Steps",
                     progress: health?.stepsFraction ?? 0,
-                    metric: .activity
+                    metric: .activity,
+                    spokenValue: health.map { Text("\(VESSFormat.steps(Double($0.steps))) of \(VESSFormat.steps(Double($0.stepsTarget))) steps") }
                 )
             }
             .buttonStyle(.plain)
@@ -68,11 +69,13 @@ struct TodayMetricStrip: View {
 
     private func percentItem(_ value: Double, of target: Double, label: LocalizedStringResource, metric: VESSMetricKind) -> some View {
         let fraction = target > 0 ? value / target : 0
+        let percent = Int((fraction * 100).rounded())
         return VESSMetricStripItem(
-            value: "\(Int((fraction * 100).rounded()))",
+            value: "\(percent)",
             label: label,
             progress: min(fraction, 1),
-            metric: metric
+            metric: metric,
+            spokenValue: Text("\(percent) percent of target")
         )
     }
 }
@@ -181,9 +184,16 @@ struct TodayIntake: View {
     let entries: [FoodLogEntry]
     let calendar: Calendar
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
+        // At accessibility sizes the link goes under the header.
+        let header = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
+            : AnyLayout(HStackLayout())
+
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            HStack {
+            header {
                 VESSSectionHeader(title: "Intake today")
                 NavigationLink(destination: EnergyDetailView()) {
                     HStack(spacing: 2) {
@@ -357,7 +367,15 @@ struct TodayHydration: View {
     let onAddWater: () -> Void
     let onAddDrink: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
+        // At accessibility sizes the button goes under the sentence (J03),
+        // so the sentence keeps the full width.
+        let lastDrinkLayout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.sm))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: VESSSpacing.sm))
+
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             VESSSectionHeader(title: "Hydration", actionTitle: "Add drink", action: onAddDrink)
             VESSMacroBar(
@@ -371,7 +389,7 @@ struct TodayHydration: View {
             .accessibilityLabel("Water")
             .accessibilityValue(Text("\(VESSFormat.liters(fromMilliliters: hydration.consumedMilliliters)) of \(VESSFormat.liters(fromMilliliters: hydration.targetMilliliters)) liters"))
             .accessibilityIdentifier("today.water.value")
-            HStack(alignment: .center, spacing: VESSSpacing.sm) {
+            lastDrinkLayout {
                 Group {
                     if let lastDrink {
                         Text("Last drink \(lastDrink, format: .dateTime.hour().minute()).")
@@ -381,7 +399,10 @@ struct TodayHydration: View {
                 }
                 .vessTextStyle(.bodyS)
                 .foregroundStyle(VESSColor.secondaryText)
-                Spacer(minLength: 0)
+                .fixedSize(horizontal: false, vertical: true)
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Spacer(minLength: 0)
+                }
                 Button("+250 ml", action: onAddWater)
                     .buttonStyle(.vessQuick)
                     .fixedSize()

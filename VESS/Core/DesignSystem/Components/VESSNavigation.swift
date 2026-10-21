@@ -31,14 +31,24 @@ struct VESSSectionHeader: View {
     var actionTitle: LocalizedStringResource?
     var action: (() -> Void)?
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        // At accessibility sizes the action goes under the title, so neither
+        // breaks mid-word.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+
+        layout {
             Text(title)
                 .vessTextStyle(.labelCaps)
                 .foregroundStyle(VESSColor.secondaryText)
                 .accessibilityAddTraits(.isHeader)
 
-            Spacer(minLength: VESSSpacing.md)
+            if !dynamicTypeSize.isAccessibilitySize {
+                Spacer(minLength: VESSSpacing.md)
+            }
 
             if let actionTitle, let action {
                 Button(action: action) {

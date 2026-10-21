@@ -16,8 +16,15 @@ struct VESSSegmented<Value: Hashable>: View {
                 Button {
                     withAnimation(reduceMotion ? nil : VESSMotion.selection) { selection = option.value }
                 } label: {
+                    // Like the system segmented control, the labels stop
+                    // growing at accessibility sizes; a long press shows
+                    // the Large Content Viewer instead of a broken word.
                     Text(option.title)
                         .vessTextStyle(.bodyS)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                        .padding(.horizontal, VESSSpacing.xs)
                         .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
                         .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum - 6)
                         .background {
@@ -30,6 +37,7 @@ struct VESSSegmented<Value: Hashable>: View {
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .accessibilityShowsLargeContentViewer { Text(option.title) }
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }

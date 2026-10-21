@@ -84,15 +84,9 @@ struct StepsDetailView: View {
     }
 
     private func bigNumber(_ value: String, caption: Text) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.sm) {
-            Text(verbatim: value)
-                .vessTextStyle(.displayL)
-                .foregroundStyle(VESSColor.text)
-            caption
-                .vessTextStyle(.bodyM)
-                .foregroundStyle(VESSColor.secondaryText)
-        }
-        .accessibilityElement(children: .combine)
+        VESSMetric(value: Text(verbatim: value), context: caption, style: .displayL, contextStyle: .bodyM, spacing: VESSSpacing.sm)
+            .foregroundStyle(VESSColor.text)
+            .accessibilityElement(children: .combine)
     }
 }
 
@@ -153,6 +147,9 @@ struct ActivityDayBars: View {
                 .vessTextStyle(.caption)
                 .foregroundStyle(VESSColor.tertiaryText)
         }
+        // Chart labels stop growing at accessibility sizes, so the target
+        // label doesn't cover the bars; the numbers are in the text above.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityHidden(true)
         .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.chart) { grown = true } }
     }
@@ -230,15 +227,9 @@ struct WorkoutDetailView: View {
                         .foregroundStyle(VESSColor.secondaryText)
                 }
 
-                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                    Text("\(workout.durationMinutes ?? 0)")
-                        .vessTextStyle(.displayL)
-                        .foregroundStyle(VESSColor.text)
-                    Text("min")
-                        .vessTextStyle(.bodyM)
-                        .foregroundStyle(VESSColor.secondaryText)
-                }
-                .accessibilityElement(children: .combine)
+                VESSMetric(value: Text("\(workout.durationMinutes ?? 0)"), context: Text("min"), style: .displayL, contextStyle: .bodyM)
+                    .foregroundStyle(VESSColor.text)
+                    .accessibilityElement(children: .combine)
 
                 VESSRowGroup {
                     VESSListRow(
@@ -477,15 +468,9 @@ struct ActivityStatisticsView: View {
     }
 
     private func stat(_ value: String, caption: Text) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.sm) {
-            Text(verbatim: value)
-                .vessTextStyle(.displayL)
-                .foregroundStyle(VESSColor.text)
-            caption
-                .vessTextStyle(.bodyM)
-                .foregroundStyle(VESSColor.secondaryText)
-        }
-        .accessibilityElement(children: .combine)
+        VESSMetric(value: Text(verbatim: value), context: caption, style: .displayL, contextStyle: .bodyM, spacing: VESSSpacing.sm)
+            .foregroundStyle(VESSColor.text)
+            .accessibilityElement(children: .combine)
     }
 
     private func sentence(_ text: Text) -> some View {

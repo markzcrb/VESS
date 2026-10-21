@@ -15,6 +15,7 @@ struct AddFoodRequest: Identifiable {
 struct QuickAddForm: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let day: Date
     @Binding var meal: MealType
@@ -105,7 +106,7 @@ struct QuickAddForm: View {
             guard let field = focusedField else { return }
             try? await Task.sleep(for: .milliseconds(350))
             guard !Task.isCancelled else { return }
-            withAnimation(.snappy) { proxy.scrollTo(field, anchor: .center) }
+            withAnimation(reduceMotion ? nil : .snappy) { proxy.scrollTo(field, anchor: .center) }
         }
         }
         .vessScreenBackground()

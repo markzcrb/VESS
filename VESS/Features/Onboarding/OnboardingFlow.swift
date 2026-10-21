@@ -75,6 +75,9 @@ struct OnboardingFlow: View {
                 .vessTextStyle(.labelCaps)
                 .foregroundStyle(VESSColor.text)
                 .accessibilityAddTraits(.isHeader)
+                .multilineTextAlignment(.center)
+                // Clear of the back button and the counter on either side.
+                .padding(.horizontal, VESSSpacing.screenInset + VESSHitTarget.minimum)
                 .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
                 .overlay {
                 HStack {
@@ -88,6 +91,9 @@ struct OnboardingFlow: View {
                             .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Back")
+                    .accessibilityShowsLargeContentViewer {
+                        Label("Back", systemImage: "chevron.left")
+                    }
                     Spacer()
                     Text(verbatim: "\(index)/\(questions.count)")
                         .vessTextStyle(.caption)
@@ -103,6 +109,8 @@ struct OnboardingFlow: View {
                 .padding(.horizontal, VESSSpacing.screenInset)
         }
         .padding(.top, VESSSpacing.xs)
+        // Like a navigation bar, the header stops growing at large sizes.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
     }
 
     @ViewBuilder

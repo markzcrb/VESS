@@ -118,27 +118,38 @@ struct VESSListRow<Trailing: View>: View {
     var showsChevron = true
     @ViewBuilder var trailing: Trailing
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        VESSRow(title: title, subtitle: subtitle) {
-            if let systemImage { VESSRowIcon(systemImage: systemImage) }
-        } trailing: {
-            HStack(spacing: VESSSpacing.xs) {
-                value?
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
-                trailing
-                if showsChevron {
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(VESSColor.tertiaryText)
-                        .accessibilityHidden(true)
+        // Stacked rows move the value below the text; the chevron stays at
+        // the row's trailing edge.
+        let isStacked = dynamicTypeSize.isAccessibilitySize
+
+        HStack(spacing: VESSSpacing.xs) {
+            VESSRow(title: title, subtitle: subtitle) {
+                if let systemImage { VESSRowIcon(systemImage: systemImage) }
+            } trailing: {
+                HStack(spacing: VESSSpacing.xs) {
+                    value?
+                        .vessTextStyle(.bodyM)
+                        .foregroundStyle(VESSColor.secondaryText)
+                    trailing
+                    if showsChevron && !isStacked { chevron }
                 }
+                // The value keeps its natural width before the title shrinks,
+                // so "20.6 g protein" never breaks between number and unit.
+                .layoutPriority(1)
             }
-            // The value keeps its natural width before the title shrinks,
-            // so "20.6 g protein" never breaks between number and unit.
-            .layoutPriority(1)
+            if showsChevron && isStacked { chevron }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(VESSColor.tertiaryText)
+            .accessibilityHidden(true)
     }
 }
 

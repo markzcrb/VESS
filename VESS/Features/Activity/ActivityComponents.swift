@@ -57,7 +57,65 @@ struct ActivityWorkoutRow: View {
     var day: Text?
     var showsChevron = true
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                stacked
+            } else {
+                inline
+            }
+        }
+        .padding(.vertical, VESSSpacing.sm + 2)
+        .frame(minHeight: VESSSize.rowHeight)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenLabel)
+    }
+
+    /// "Strength, Monday, 45 min · hard effort, about 353 kcal, Entered":
+    /// the type first, and "about" rather than "≈".
+    private var spokenLabel: Text {
+        var parts = [titleText]
+        if let day { parts.append(day) }
+        parts.append(subtitle)
+        if let kcal = workout.activeEnergyKilocalories {
+            let value = VESSFormat.calories(kcal)
+            parts.append(workout.isRecorded ? Text("\(value) kcal") : Text("about \(value) kcal"))
+        }
+        parts.append(workout.isRecorded ? Text("Recorded") : Text("Entered"))
+        return parts.dropFirst().reduce(parts[0]) { Text("\($0), \($1)") }
+    }
+
+    /// Accessibility sizes: one column, so no word breaks mid-way.
+    private var stacked: some View {
+        HStack(spacing: VESSSpacing.md) {
+            VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                day?
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.tertiaryText)
+                title
+                tag
+                subtitle
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
+                Text("\(Self.energyValue(workout) ?? "—") kcal")
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
+    private var inline: some View {
         HStack(alignment: .center, spacing: VESSSpacing.md) {
             if let day {
                 day
@@ -93,22 +151,19 @@ struct ActivityWorkoutRow: View {
                     .accessibilityHidden(true)
             }
         }
-        .padding(.vertical, VESSSpacing.sm + 2)
-        .frame(minHeight: VESSSize.rowHeight)
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+    }
+
+    private var titleText: Text {
+        if let meters = workout.distanceMeters, meters > 0 {
+            return Text("\(Text(workout.type.title)) · \(VESSFormat.kilometers(fromMeters: meters)) km")
+        }
+        return Text(workout.type.title)
     }
 
     private var title: some View {
-        Group {
-            if let meters = workout.distanceMeters, meters > 0 {
-                Text("\(Text(workout.type.title)) · \(VESSFormat.kilometers(fromMeters: meters)) km")
-            } else {
-                Text(workout.type.title)
-            }
-        }
-        .vessTextStyle(.bodyMStrong)
-        .foregroundStyle(VESSColor.text)
+        titleText
+            .vessTextStyle(.bodyMStrong)
+            .foregroundStyle(VESSColor.text)
     }
 
     private var tag: some View {
@@ -216,13 +271,23 @@ struct ActivitySectionHeader: View {
     let linkTitle: LocalizedStringResource
     let route: ActivityRoute
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        // At accessibility sizes the link goes under the title (as in
+        // VESSSectionHeader), so neither breaks mid-word.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+
+        layout {
             Text(title)
                 .vessTextStyle(.labelCaps)
                 .foregroundStyle(VESSColor.secondaryText)
                 .accessibilityAddTraits(.isHeader)
-            Spacer(minLength: VESSSpacing.md)
+            if !dynamicTypeSize.isAccessibilitySize {
+                Spacer(minLength: VESSSpacing.md)
+            }
             NavigationLink(value: route) {
                 HStack(spacing: 2) {
                     Text(linkTitle)

@@ -114,7 +114,8 @@ struct ActivityView: View {
             .accessibilityHidden(false)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("Steps, last 7 days"))
-            .accessibilityValue(Text(days.map { VESSFormat.steps($0.value ?? 0) }.joined(separator: ", ")))
+            // "Wednesday 7,840, Thursday 5,210, …"
+            .accessibilityValue(Text(days.map { "\($0.day.formatted(.dateTime.weekday(.wide))) \(VESSFormat.steps($0.value ?? 0))" }.joined(separator: ", ")))
         }
 
         workoutsSection(workouts: data.workouts(since: data.day(offset: -6)), data: data)

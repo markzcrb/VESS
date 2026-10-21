@@ -85,7 +85,8 @@ struct RecipeView: View {
                                 Text("\(index + 1)")
                                     .vessTextStyle(.numberS)
                                     .foregroundStyle(VESSColor.text)
-                                    .frame(width: 28, height: 28)
+                                    // Grows with Dynamic Type instead of clipping the number.
+                                    .frame(minWidth: 28, minHeight: 28)
                                     .overlay(Circle().strokeBorder(VESSColor.divider))
                                 Text(step)
                                     .vessTextStyle(.bodyM)

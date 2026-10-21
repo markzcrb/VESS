@@ -112,6 +112,9 @@ struct VESSMetricStripItem: View {
     let label: LocalizedStringResource
     let progress: Double
     let metric: VESSMetricKind
+    /// What VoiceOver reads instead of the bare number, such as
+    /// "77 percent of target".
+    var spokenValue: Text?
 
     @ScaledMetric(relativeTo: .body) private var scaledDiameter = VESSSize.stripRing
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -120,6 +123,9 @@ struct VESSMetricStripItem: View {
 
     /// Capped so five rings always fit the width.
     private var diameter: CGFloat { min(scaledDiameter, 64) }
+    /// The ring beside "Fuel · 78" at accessibility sizes (J03, J04),
+    /// large enough for two digits inside the stroke.
+    private static let stackedDiameter: CGFloat = 44
 
     var body: some View {
         // At accessibility sizes: a small ring beside "Fuel · 78" (J04).
@@ -142,8 +148,8 @@ struct VESSMetricStripItem: View {
                     .padding(.horizontal, VESSSpacing.xxs)
                     .dynamicTypeSize(...DynamicTypeSize.large)
             }
-            .frame(width: dynamicTypeSize.isAccessibilitySize ? VESSSize.stripRing / 2 : diameter,
-                   height: dynamicTypeSize.isAccessibilitySize ? VESSSize.stripRing / 2 : diameter)
+            .frame(width: dynamicTypeSize.isAccessibilitySize ? Self.stackedDiameter : diameter,
+                   height: dynamicTypeSize.isAccessibilitySize ? Self.stackedDiameter : diameter)
             if dynamicTypeSize.isAccessibilitySize {
                 Text("\(Text(label)) · \(value)")
                     .vessTextStyle(.bodyM)
@@ -159,7 +165,7 @@ struct VESSMetricStripItem: View {
         .onChange(of: progress) { _, new in withAnimation(reduceMotion ? nil : VESSMotion.ringSweep) { shown = new } }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(label))
-        .accessibilityValue(Text(verbatim: value))
+        .accessibilityValue(spokenValue ?? Text(verbatim: value))
     }
 }
 

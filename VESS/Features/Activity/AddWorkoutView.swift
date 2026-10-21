@@ -98,15 +98,15 @@ struct AddWorkoutView: View {
         .vessBottomAction(background: VESSColor.background) {
             VStack(alignment: .leading, spacing: VESSSpacing.md) {
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                    HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.sm) {
-                        Text(verbatim: estimate.map { "≈ \(VESSFormat.calories($0))" } ?? "—")
-                            .vessTextStyle(.displayM)
-                            .foregroundStyle(VESSColor.text)
-                            .contentTransition(.numericText())
-                        Text("kcal active energy")
-                            .vessTextStyle(.bodyM)
-                            .foregroundStyle(VESSColor.secondaryText)
-                    }
+                    VESSMetric(
+                        value: Text(verbatim: estimate.map { "≈ \(VESSFormat.calories($0))" } ?? "—"),
+                        context: Text("kcal active energy"),
+                        style: .displayM,
+                        contextStyle: .bodyM,
+                        spacing: VESSSpacing.sm
+                    )
+                    .foregroundStyle(VESSColor.text)
+                    .contentTransition(.numericText())
                     .accessibilityElement(children: .combine)
                     ActivityFootnote(text: Text("Energy is estimated from duration and effort, not measured. VESS never estimates steps."))
                 }

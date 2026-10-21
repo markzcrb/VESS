@@ -155,14 +155,13 @@ struct ProfileWeightCard: View {
 
         VStack(alignment: .leading, spacing: VESSSpacing.md) {
             VESSSectionHeader(title: "Weight")
-            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                Text(verbatim: VESSFormat.quantity(latest?.kilograms ?? profile.weightKilograms))
-                    .vessTextStyle(.displayL)
-                    .foregroundStyle(VESSColor.text)
-                caption(latest)
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
-            }
+            VESSMetric(
+                value: Text(verbatim: VESSFormat.quantity(latest?.kilograms ?? profile.weightKilograms)),
+                context: caption(latest),
+                style: .displayL,
+                contextStyle: .bodyM
+            )
+            .foregroundStyle(VESSColor.text)
             .accessibilityElement(children: .combine)
             if weights.count >= 2, let first = weights.first, let last = weights.last {
                 ProfileWeightChart(weights: weights)
