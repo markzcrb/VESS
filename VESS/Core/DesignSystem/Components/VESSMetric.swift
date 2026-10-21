@@ -81,7 +81,7 @@ struct VESSTag: View {
     private var foreground: Color {
         switch tone {
         case .neutral: VESSColor.secondaryText
-        case .positive: VESSColor.statusOptimal
+        case .positive: VESSColor.statusOptimalText
         case .warning: VESSColor.statusPoor
         case .accent: VESSColor.accent
         }

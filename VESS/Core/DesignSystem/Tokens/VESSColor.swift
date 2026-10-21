@@ -61,6 +61,9 @@ enum VESSColor {
     // MARK: Status
 
     static let statusOptimal = Color(.vessStatusOptimal)
+    /// The optimal green for text (tags, kickers): darker in Light so it
+    /// reaches 4.5:1 on its tint; the same as `statusOptimal` in Dark.
+    static let statusOptimalText = Color(.vessStatusOptimalText)
     static let statusSufficient = Color(.vessStatusSufficient)
     static let statusPoor = Color(.vessStatusPoor)
     /// Soon: dots and lines.

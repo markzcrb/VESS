@@ -20,7 +20,7 @@ struct VESSInsightCard: View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             kicker?
                 .vessTextStyle(.labelCapsS)
-                .foregroundStyle(VESSColor.statusOptimal)
+                .foregroundStyle(VESSColor.statusOptimalText)
             text
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.text)

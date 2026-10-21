@@ -43,6 +43,16 @@ Approved 2026-10-20. Implemented in `StatusLevel` (`Domain/Rules/IntakeAnalysis.
 - **Comparisons:** "a typical Tuesday" is the median of the last four same weekdays, each up to the same clock time (the last sync); it needs all four. Within ±10 % is about the same (dot), otherwise ▲ / ▼. Week against the week before and 30 days against the 30 before, only when the earlier period has data on every day. The weekend/quietest-day pattern needs four full weeks. Nothing causal: the "20-minute walk adds 2,300 steps" line is dropped; the card states today against typical. Everything is hidden without enough data. `ActivityTrends`, tested in `ActivityTrendsTests`.
 - **Storage:** entered workouts in `StoredWorkout` (additive, payload pattern), deletable on the workout screen. Recorded workouts stay in Apple Health. Step goal: `UserProfile.stepsTarget`, 8,000 when unset.
 
+### You (11, E01–E10), decided 2026-10-21
+
+- **Notifications (#12):** on-device and opt-in. One reminder per main meal, 30 minutes after its usual time (`usualTime`, three days of history), only if nothing is logged for it that day, never between 22:00 and 07:00. Planned 7 days ahead and re-planned on launch, on return to the app and whenever today's log changes. Permission is asked when the first reminder is turned on. Supplement reminders (E04) repeat daily at the time the user sets. `MealReminders`, `ReminderService`; tested in `MealRemindersTests`. Water nudges, expiring food, weekly plan and insight notifications are not built.
+- **Apple Health (E05):** read-only status. The four types as plain rows, last sync, and how to change access in the Health app. No write section, no heart rate. Permission text approved: "VESS reads your steps, workouts, active energy and weight to show them in Activity and Today. It never writes to Apple Health, and this data stays on your iPhone."
+- **Privacy (#14, E07):** a plain statement of what is stored where, "Export my data" (one JSON document, ISO 8601 dates, via the share sheet; `LocalStore.exportData`) and Delete all data. No photo or analytics switches until those features exist.
+- **VESS+ (#13, E08):** DEBUG-only static screen; no row on You in Release until StoreKit 2 is approved.
+- **Targets (E01):** VESS never changes targets on its own. Goals shows the `NutritionTargetCalculator` suggestion for the current body and direction, applied only after confirmation.
+- **Weight (11):** the latest Apple Health weight, or the profile's, and the change over 12 weeks. No "steady" verdict and no target range: those rules aren't defined.
+- **Contrast:** the optimal green as text (tags, kickers) uses `statusOptimalText`, Light #1B7349 (4.6:1 on its tint), Dark unchanged.
+
 ## Already implemented in the codebase (reuse, don't reinvent)
 - Nutrition targets: `NutritionTargetCalculator` (Mifflin-St Jeor + activity).
 - Day totals: `DaySummary`.

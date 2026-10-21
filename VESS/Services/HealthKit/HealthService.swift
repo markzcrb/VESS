@@ -40,7 +40,8 @@ nonisolated struct HealthKitService: HealthService {
         async let energy = hourly(.activeEnergyBurned, unit: .kilocalorie(), from: start, to: end)
         async let workouts = workouts(from: start, to: end)
         async let weight = latestWeight()
-        let (hourlySteps, hourlyEnergy, recorded, latestWeight) = try await (steps, energy, workouts, weight)
+        async let weightHistory = weights(since: calendar.date(byAdding: .weekOfYear, value: -12, to: today) ?? today)
+        let (hourlySteps, hourlyEnergy, recorded, latestWeight, weights) = try await (steps, energy, workouts, weight, weightHistory)
 
         guard !hourlySteps.isEmpty || !hourlyEnergy.isEmpty || !recorded.isEmpty else { return nil }
         return HealthSnapshot(
@@ -51,7 +52,8 @@ nonisolated struct HealthKitService: HealthService {
             hourlySteps: hourlySteps,
             hourlyActiveEnergy: hourlyEnergy,
             workouts: recorded,
-            latestWeight: latestWeight
+            latestWeight: latestWeight,
+            weights: weights
         )
     }
 
@@ -98,6 +100,21 @@ nonisolated struct HealthKitService: HealthService {
             }
         } catch let error as HKError where error.code == .errorNoData {
             return nil
+        }
+    }
+
+    private func weights(since start: Date) async throws -> [BodyMassSample] {
+        let query = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: HKQuantityType(.bodyMass), predicate: HKQuery.predicateForSamples(withStart: start, end: nil))],
+            sortDescriptors: [SortDescriptor(\.endDate)],
+            limit: 500
+        )
+        do {
+            return try await query.result(for: store).map {
+                BodyMassSample(kilograms: $0.quantity.doubleValue(for: .gramUnit(with: .kilo)), measuredAt: $0.endDate)
+            }
+        } catch let error as HKError where error.code == .errorNoData {
+            return []
         }
     }
 

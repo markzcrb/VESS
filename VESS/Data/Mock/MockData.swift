@@ -240,7 +240,8 @@ nonisolated struct MockData: Sendable {
         health = HealthSnapshot(
             steps: 6420, stepsTarget: 8000, activeEnergyKilocalories: 412, updatedAt: at(16, 20),
             hourlySteps: history.steps, hourlyActiveEnergy: history.energy, workouts: [run],
-            latestWeight: BodyMassSample(kilograms: 78.4, measuredAt: at(7, 30))
+            latestWeight: BodyMassSample(kilograms: 78.4, measuredAt: at(7, 30)),
+            weights: zip([-84, -56, -28, 0], [79.0, 78.8, 78.6, 78.4]).map { BodyMassSample(kilograms: $1, measuredAt: at(7, 30, dayOffset: $0)) }
         )
 
         // MARK: Inventory

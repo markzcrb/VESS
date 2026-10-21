@@ -46,7 +46,7 @@ final class LocalStore {
     private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
         let schema = Schema([
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
-            StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self,
+            StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self, StoredSupplement.self,
         ])
         return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
     }
@@ -364,6 +364,72 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Supplements
+
+    /// The user's supplements, by name.
+    var supplements: [Supplement] {
+        _ = revision
+        return fetchDecoded(FetchDescriptor<StoredSupplement>(), as: Supplement.self) { $0.payload }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    func save(_ supplement: Supplement) throws {
+        let payload = try encoder.encode(supplement)
+        let id = supplement.id
+        if let existing = try context.fetch(FetchDescriptor<StoredSupplement>(predicate: #Predicate { $0.id == id })).first {
+            existing.payload = payload
+        } else {
+            context.insert(StoredSupplement(id: id, payload: payload))
+        }
+        try save()
+    }
+
+    func deleteSupplement(id: UUID) throws {
+        try context.delete(model: StoredSupplement.self, where: #Predicate { $0.id == id })
+        try save()
+    }
+
+    // MARK: Export
+
+    /// Everything VESS stores on this iPhone, as one JSON document (E07).
+    /// Dates are ISO 8601. Apple Health data isn't included: VESS doesn't
+    /// store it.
+    func exportData(now: Date) throws -> Data {
+        _ = revision
+        let document = ExportDocument(
+            app: "VESS",
+            exportedAt: now,
+            profile: profile,
+            foodLog: fetchDecoded(FetchDescriptor<StoredFoodLogEntry>(), as: FoodLogEntry.self) { $0.payload }
+                .sorted { $0.loggedAt < $1.loggedAt },
+            drinks: fetchDecoded(FetchDescriptor<StoredHydrationLog>(), as: HydrationLog.self) { $0.payload },
+            savedFoods: fetchDecoded(FetchDescriptor<StoredFood>(), as: Food.self) { $0.payload },
+            pantry: fetchDecoded(FetchDescriptor<StoredInventoryItem>(), as: InventoryItem.self) { $0.payload },
+            plannedMeals: fetchDecoded(FetchDescriptor<StoredPlannedMeal>(), as: PlannedMeal.self) { $0.payload },
+            grocery: groceryItems,
+            workouts: workouts,
+            supplements: supplements
+        )
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try encoder.encode(document)
+    }
+
+    private struct ExportDocument: Encodable {
+        let app: String
+        let exportedAt: Date
+        let profile: UserProfile?
+        let foodLog: [FoodLogEntry]
+        let drinks: [HydrationLog]
+        let savedFoods: [Food]
+        let pantry: [InventoryItem]
+        let plannedMeals: [PlannedMeal]
+        let grocery: [GroceryItem]
+        let workouts: [Workout]
+        let supplements: [Supplement]
+    }
+
     // MARK: Account data
 
     /// Deletes everything stored on this device and returns to onboarding.
@@ -376,6 +442,7 @@ final class LocalStore {
         try context.delete(model: StoredPlannedMeal.self)
         try context.delete(model: StoredGroceryItem.self)
         try context.delete(model: StoredWorkout.self)
+        try context.delete(model: StoredSupplement.self)
         try save()
         profile = nil
         insights = []
@@ -437,6 +504,7 @@ extension LocalStore {
         for entry in data.foodHistory + data.foodLog { try add(entry) }
         for log in data.hydrationLog { try add(log) }
         for workout in data.workouts where !workout.isRecorded { try save(workout) }
+        for supplement in data.supplements { try save(supplement) }
         for item in data.inventory + data.pantryExtras { try save(item) }
         for meal in data.plannedMeals { try save(meal) }
         insights = data.insights

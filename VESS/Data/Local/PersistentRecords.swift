@@ -115,6 +115,18 @@ final class StoredWorkout {
     }
 }
 
+/// A supplement the user takes, with its own reminder. Additive.
+@Model
+final class StoredSupplement {
+    @Attribute(.unique) var id: UUID
+    var payload: Data
+
+    init(id: UUID, payload: Data) {
+        self.id = id
+        self.payload = payload
+    }
+}
+
 /// What the user added to or changed on the grocery list. Additive.
 @Model
 final class StoredGroceryItem {

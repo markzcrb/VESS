@@ -558,6 +558,7 @@ extension View {
             .environment(FoodLookupService.preview(store: store))
             .environment(HealthDataStore(state: health ?? .available(MockData.preview.health)))
             .environment(FoodLogUndo())
+            .environment(ReminderService(center: nil, defaults: UserDefaults(suiteName: "preview") ?? .standard))
     }
 }
 #endif

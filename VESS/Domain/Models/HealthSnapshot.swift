@@ -18,6 +18,8 @@ nonisolated struct HealthSnapshot: Equatable, Sendable {
     var workouts: [Workout] = []
     /// The latest body mass in Apple Health.
     var latestWeight: BodyMassSample? = nil
+    /// Body mass over the last 12 weeks, oldest first.
+    var weights: [BodyMassSample] = []
 
     /// 0...1 of the step goal.
     var stepsFraction: Double {

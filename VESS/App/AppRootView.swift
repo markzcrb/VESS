@@ -8,6 +8,7 @@ struct AppRootView: View {
     @State private var lookup: FoodLookupService?
     @State private var health = Self.makeHealth()
     @State private var foodUndo = FoodLogUndo()
+    @State private var reminders = Self.makeReminders()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
 
@@ -33,6 +34,7 @@ struct AppRootView: View {
                 .environment(lookup)
                 .environment(health)
                 .environment(foodUndo)
+                .environment(reminders)
                 .animation(.default, value: store.profile == nil)
             } else {
                 StoreUnavailableView {
@@ -46,8 +48,16 @@ struct AppRootView: View {
         .preferredColorScheme(appearance.colorScheme)
         // Apple Health is read when the app opens and each time it returns.
         .onChange(of: scenePhase, initial: true) { _, phase in
-            guard phase == .active, let profile = store?.profile else { return }
-            Task { await health.refresh(stepsTarget: profile.dailyStepsTarget) }
+            guard phase == .active, let store, let profile = store.profile else { return }
+            Task {
+                await health.refresh(stepsTarget: profile.dailyStepsTarget)
+                await reminders.sync(store: store)
+            }
+        }
+        // A meal logged today drops its reminder.
+        .onChange(of: store?.foodEntries(on: AppClock.now, calendar: .current).count) {
+            guard let store else { return }
+            Task { await reminders.sync(store: store) }
         }
     }
 
@@ -110,6 +120,16 @@ struct AppRootView: View {
         }
         #endif
         return HealthDataStore(service: HealthKitService())
+    }
+
+    /// UI tests never schedule notifications.
+    private static func makeReminders() -> ReminderService {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-uiTesting") {
+            return ReminderService(center: nil)
+        }
+        #endif
+        return ReminderService()
     }
 
     /// Online lookups use Open Food Facts. UI tests (`-uiTesting`) never touch

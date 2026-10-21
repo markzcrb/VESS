@@ -178,8 +178,7 @@ final class VESSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Plan"].waitForExistence(timeout: 10))
 
         tabs.buttons["You"].tap()
-        XCTAssertTrue(app.navigationBars["You"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.descendants(matching: .any)["you.appearance"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["you.header"].waitForExistence(timeout: 10))
 
         tabs.buttons["Today"].tap()
         XCTAssertTrue(app.staticTexts["today.dayWord"].waitForExistence(timeout: 10))
