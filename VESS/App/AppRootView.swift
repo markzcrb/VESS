@@ -9,6 +9,7 @@ struct AppRootView: View {
     @State private var health = Self.makeHealth()
     @State private var foodUndo = FoodLogUndo()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let store = Self.makeStore()
@@ -43,6 +44,11 @@ struct AppRootView: View {
         // Chrome is greyscale; links and CTAs set the link accent themselves.
         .tint(VESSColor.text)
         .preferredColorScheme(appearance.colorScheme)
+        // Apple Health is read when the app opens and each time it returns.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            guard phase == .active, let profile = store?.profile else { return }
+            Task { await health.refresh(stepsTarget: profile.dailyStepsTarget) }
+        }
     }
 
     /// The live on-device store. Debug builds also accept two launch arguments:
@@ -78,9 +84,10 @@ struct AppRootView: View {
         }
     }
 
-    /// Apple Health starts disconnected. Debug builds accept two launch
-    /// arguments: `-seedSampleData` shows the demo snapshot, and
-    /// `-healthSyncing` shows the syncing state (S2).
+    /// Apple Health through the read-only HealthKit reader; disconnected
+    /// until the user connects. Debug builds use the demo snapshot with
+    /// `-seedSampleData`, and accept `-healthSyncing` (S2, D06),
+    /// `-healthNotConnected` (S4) and `-healthError` (D07, last known values).
     private static func makeHealth() -> HealthDataStore {
         #if DEBUG
         let arguments = ProcessInfo.processInfo.arguments
@@ -88,10 +95,21 @@ struct AppRootView: View {
             return HealthDataStore(state: .syncing)
         }
         if arguments.contains("-seedSampleData") {
-            return HealthDataStore(state: .available(MockData(now: AppClock.now, calendar: .current).health))
+            let demo = MockData(now: AppClock.now, calendar: .current).health
+            let service = DemoHealthService(snapshot: demo)
+            if arguments.contains("-healthNotConnected") {
+                return HealthDataStore(state: .notConnected, service: service, didRequestAccess: false)
+            }
+            if arguments.contains("-healthError") {
+                return HealthDataStore(state: .failed(lastKnown: demo), service: DemoHealthService(snapshot: demo, fails: true), didRequestAccess: true)
+            }
+            return HealthDataStore(state: .available(demo), service: service, didRequestAccess: false)
+        }
+        if arguments.contains("-uiTesting") {
+            return HealthDataStore()
         }
         #endif
-        return HealthDataStore()
+        return HealthDataStore(service: HealthKitService())
     }
 
     /// Online lookups use Open Food Facts. UI tests (`-uiTesting`) never touch

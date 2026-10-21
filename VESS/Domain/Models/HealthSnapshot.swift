@@ -9,6 +9,15 @@ nonisolated struct HealthSnapshot: Equatable, Sendable {
     var activeEnergyKilocalories: Double?
     /// When Health last delivered these values.
     var updatedAt: Date
+    /// Steps per hour, oldest first, for history and comparisons. Hours
+    /// without samples are absent, so a day with no entries has no data.
+    var hourlySteps: [HourlyValue] = []
+    /// Active energy (kcal) per hour, like `hourlySteps`.
+    var hourlyActiveEnergy: [HourlyValue] = []
+    /// Workouts recorded in Apple Health, newest first.
+    var workouts: [Workout] = []
+    /// The latest body mass in Apple Health.
+    var latestWeight: BodyMassSample? = nil
 
     /// 0...1 of the step goal.
     var stepsFraction: Double {
@@ -16,10 +25,24 @@ nonisolated struct HealthSnapshot: Equatable, Sendable {
     }
 }
 
+/// A sum over one hour, starting at `start`.
+nonisolated struct HourlyValue: Equatable, Sendable {
+    let start: Date
+    let value: Double
+}
+
+nonisolated struct BodyMassSample: Equatable, Sendable {
+    let kilograms: Double
+    let measuredAt: Date
+}
+
 /// The state of the Apple Health connection, as screens show it.
 nonisolated enum HealthSyncState: Equatable, Sendable {
     /// No permission yet: steps show "—" (S4).
     case notConnected
+    /// Asked, but Health shared nothing: either access was turned off or
+    /// there is no data. Health doesn't say which, so screens show "—".
+    case nothingShared
     /// The first read is in progress (S2).
     case syncing
     case available(HealthSnapshot)
@@ -31,7 +54,7 @@ nonisolated enum HealthSyncState: Equatable, Sendable {
         switch self {
         case .available(let snapshot): snapshot
         case .failed(let lastKnown): lastKnown
-        case .notConnected, .syncing: nil
+        case .notConnected, .nothingShared, .syncing: nil
         }
     }
 }

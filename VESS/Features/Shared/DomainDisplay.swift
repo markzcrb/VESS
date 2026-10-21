@@ -269,3 +269,56 @@ extension QuantityUnit {
         }
     }
 }
+
+extension WorkoutType {
+    var title: LocalizedStringResource {
+        switch self {
+        case .strength: "Strength"
+        case .running: "Run"
+        case .walking: "Walk"
+        case .cycling: "Cycle"
+        case .hiit: "Intervals"
+        case .yoga: "Yoga"
+        case .mobility: "Mobility"
+        case .swimming: "Swim"
+        case .other: "Workout"
+        }
+    }
+
+    /// Lowercase, for sentences: "Add 30-minute walk", "Walking most often".
+    var activityNoun: LocalizedStringResource {
+        switch self {
+        case .strength: "strength"
+        case .running: "running"
+        case .walking: "walking"
+        case .cycling: "cycling"
+        case .hiit: "intervals"
+        case .yoga: "yoga"
+        case .mobility: "mobility"
+        case .swimming: "swimming"
+        case .other: "other workouts"
+        }
+    }
+
+    /// The types offered when entering a workout (D03).
+    static let enterable: [WorkoutType] = [.walking, .running, .cycling, .strength, .yoga, .swimming, .other]
+}
+
+extension WorkoutEffort {
+    var title: LocalizedStringResource {
+        switch self {
+        case .easy: "Easy"
+        case .moderate: "Moderate"
+        case .hard: "Hard"
+        }
+    }
+
+    /// "moderate effort".
+    var phrase: LocalizedStringResource {
+        switch self {
+        case .easy: "easy effort"
+        case .moderate: "moderate effort"
+        case .hard: "hard effort"
+        }
+    }
+}

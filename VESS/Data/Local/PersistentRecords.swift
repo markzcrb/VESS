@@ -100,6 +100,21 @@ final class StoredPlannedMeal {
     }
 }
 
+/// A workout the user entered (recorded ones stay in Apple Health). Additive.
+@Model
+final class StoredWorkout {
+    @Attribute(.unique) var id: UUID
+    /// When it finished, for history queries.
+    var completedAt: Date
+    var payload: Data
+
+    init(id: UUID, completedAt: Date, payload: Data) {
+        self.id = id
+        self.completedAt = completedAt
+        self.payload = payload
+    }
+}
+
 /// What the user added to or changed on the grocery list. Additive.
 @Model
 final class StoredGroceryItem {

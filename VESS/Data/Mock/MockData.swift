@@ -203,33 +203,45 @@ nonisolated struct MockData: Sendable {
 
         self.hydrationLog = hydrationLog
 
-        // MARK: Health (DEBUG demo only; the real app shows "—" until Apple Health is connected)
-
-        health = HealthSnapshot(steps: 6420, stepsTarget: 8000, activeEnergyKilocalories: 412, updatedAt: at(16, 20))
-
-        // MARK: Workouts
+        // MARK: Workouts (DATA.md: Sunday's run recorded; cycle and strength entered)
 
         func exercise(_ name: String, sets: Int, reps: Int, kg: Double?) -> Exercise {
             Exercise(id: UUID(), name: name, sets: sets, reps: reps, weightKilograms: kg, durationSeconds: nil, notes: nil)
         }
+        let run = Workout(
+            id: UUID(), name: "Run", type: .running, durationMinutes: 32, exercises: [],
+            scheduledDate: nil, completedAt: at(9, 0, dayOffset: -2),
+            notes: "5.2 km · recorded by Apple Health", templateID: nil,
+            source: .recorded, startedAt: at(8, 28, dayOffset: -2),
+            activeEnergyKilocalories: 368, distanceMeters: 5_200, deviceName: "Apple Watch"
+        )
         workouts = [
-            Workout(
-                id: UUID(), name: "Run", type: .running, durationMinutes: 32, exercises: [],
-                scheduledDate: nil, completedAt: at(9, 0, dayOffset: -2),
-                notes: "5.2 km · recorded by Apple Health", templateID: nil
-            ),
+            run,
             Workout(
                 id: UUID(), name: "Cycle", type: .cycling, durationMinutes: 62, exercises: [],
                 scheduledDate: nil, completedAt: at(15, 0, dayOffset: -2),
-                notes: "Moderate · entered", templateID: nil
+                notes: "Moderate · entered", templateID: nil,
+                effort: .moderate, source: .entered, startedAt: at(13, 58, dayOffset: -2),
+                activeEnergyKilocalories: WorkoutEnergy.estimate(type: .cycling, effort: .moderate, minutes: 62, weightKilograms: 78.4)
             ),
             Workout(
                 id: UUID(), name: "Strength", type: .strength, durationMinutes: 45,
                 exercises: [exercise("Squat", sets: 4, reps: 8, kg: 70)],
                 scheduledDate: nil, completedAt: at(18, 30, dayOffset: -1),
-                notes: "Hard · entered", templateID: nil
+                notes: "Hard · entered", templateID: nil,
+                effort: .hard, source: .entered, startedAt: at(17, 45, dayOffset: -1),
+                activeEnergyKilocalories: WorkoutEnergy.estimate(type: .strength, effort: .hard, minutes: 45, weightKilograms: 78.4)
             ),
         ]
+
+        // MARK: Health (DEBUG demo only; the real app shows "—" until Apple Health is connected)
+
+        let history = Self.healthHistory(today: today, calendar: calendar, run: run)
+        health = HealthSnapshot(
+            steps: 6420, stepsTarget: 8000, activeEnergyKilocalories: 412, updatedAt: at(16, 20),
+            hourlySteps: history.steps, hourlyActiveEnergy: history.energy, workouts: [run],
+            latestWeight: BodyMassSample(kilograms: 78.4, measuredAt: at(7, 30))
+        )
 
         // MARK: Inventory
 
@@ -444,4 +456,56 @@ nonisolated extension MockData {
         ]
     }()
 }
+
+nonisolated extension MockData {
+    /// 61 days of hourly steps and active energy. The last seven days are
+    /// DATA.md's (7,840 · 5,210 · 8,930 · 11,240 · 4,380 · 9,120 · 6,420 by
+    /// 16:20 today); the four Tuesdays before average 8,000. Earlier days
+    /// follow a fixed weekly pattern, so the demo is the same on every run.
+    static func healthHistory(today: Date, calendar: Calendar, run: Workout) -> (steps: [HourlyValue], energy: [HourlyValue]) {
+        let lastWeek = [-6: 7_840.0, -5: 5_210, -4: 8_930, -3: 11_240, -2: 4_380, -1: 9_120]
+        let tuesdays = [-7: 7_600.0, -14: 8_400, -21: 7_900, -28: 8_100]
+        // Calendar weekday (1 = Sunday) to a usual day's steps.
+        let usual: [Int: Double] = [1: 9_400, 2: 8_600, 3: 8_000, 4: 7_700, 5: 5_600, 6: 8_800, 7: 11_000]
+        let wobble: [Double] = [0.97, 1.03, 0.99, 1.02, 0.96, 1.04, 1.0]
+        // Share of a day's steps per hour, 07:00–20:00.
+        let dayShape: [Double] = [2, 6, 4, 3, 5, 13, 5, 3, 4, 3, 9, 5, 3, 2]
+        // Today up to 16:20: 07:00–16:00.
+        let todayShape: [Double] = [2, 6, 4, 3, 5, 13, 5, 3, 4, 2]
+
+        var steps: [HourlyValue] = []
+        var energy: [HourlyValue] = []
+        func spread(_ total: Double, shape: [Double], on day: Date, kcalPerStep: Double, extraEnergy: [Int: Double] = [:]) {
+            let sum = shape.reduce(0, +)
+            var values = shape.map { (total * $0 / sum).rounded() }
+            var kcal = values.map { ($0 * kcalPerStep).rounded() }
+            // Rounding leftovers go to the busiest hour, so totals stay exact.
+            if let peak = shape.indices.max(by: { shape[$0] < shape[$1] }) {
+                values[peak] += total - values.reduce(0, +)
+                kcal[peak] += (total * kcalPerStep).rounded() - kcal.reduce(0, +)
+            }
+            for index in shape.indices {
+                guard let hour = calendar.date(byAdding: .hour, value: 7 + index, to: day) else { continue }
+                steps.append(HourlyValue(start: hour, value: values[index]))
+                energy.append(HourlyValue(start: hour, value: kcal[index] + (extraEnergy[7 + index] ?? 0)))
+            }
+        }
+
+        for offset in stride(from: -60, through: 0, by: 1) {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { continue }
+            if offset == 0 {
+                spread(6_420, shape: todayShape, on: day, kcalPerStep: 412.0 / 6_420)
+                continue
+            }
+            let weekday = calendar.component(.weekday, from: day)
+            let total = lastWeek[offset] ?? tuesdays[offset]
+                ?? ((usual[weekday] ?? 8_000) * wobble[(-offset / 7) % wobble.count]).rounded()
+            // Sunday's recorded run adds its 368 kcal in the 08:00 hour.
+            let extra: [Int: Double] = offset == -2 ? [8: run.activeEnergyKilocalories ?? 0] : [:]
+            spread(total, shape: dayShape, on: day, kcalPerStep: 0.05, extraEnergy: extra)
+        }
+        return (steps, energy)
+    }
+}
+
 #endif

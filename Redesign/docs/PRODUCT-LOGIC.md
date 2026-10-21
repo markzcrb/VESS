@@ -36,6 +36,13 @@ Approved 2026-10-20. Implemented in `StatusLevel` (`Domain/Rules/IntakeAnalysis.
 | Before noon | % of the day's kcal logged before 12:00 | no level: shown as a value only | | |
 | Whole foods | hidden: there is no food-quality source | | | |
 
+### Activity (#7, #8 and comparisons), decided 2026-10-21
+
+- **Apple Health (#7):** read-only: steps, workouts, active energy, weight. No heart rate, day distance, flights or walking time; those design rows are left out. A workout shows a distance only if the workout itself recorded one. Permission is asked from Activity ("Connect Apple Health"), never in onboarding. Health never says whether read access was granted, so if nothing at all comes back VESS shows "—" and how to allow access. Steps are never estimated. `HealthKitService` (`Services/HealthKit/`), `HealthDataStore`.
+- **Entered workout energy (#8):** MET × body weight (kg) × hours, with a fixed MET per type and effort from the Compendium of Physical Activities (`WorkoutEnergy`), always shown with "≈" and labelled an estimate. The estimate is stored with the workout when it's saved. Demo values therefore differ from the PNGs: 30 min moderate walk 137 (PNG 150), Sunday's cycle 551 (520), Monday's strength 353 (210).
+- **Comparisons:** "a typical Tuesday" is the median of the last four same weekdays, each up to the same clock time (the last sync); it needs all four. Within ±10 % is about the same (dot), otherwise ▲ / ▼. Week against the week before and 30 days against the 30 before, only when the earlier period has data on every day. The weekend/quietest-day pattern needs four full weeks. Nothing causal: the "20-minute walk adds 2,300 steps" line is dropped; the card states today against typical. Everything is hidden without enough data. `ActivityTrends`, tested in `ActivityTrendsTests`.
+- **Storage:** entered workouts in `StoredWorkout` (additive, payload pattern), deletable on the workout screen. Recorded workouts stay in Apple Health. Step goal: `UserProfile.stepsTarget`, 8,000 when unset.
+
 ## Already implemented in the codebase (reuse, don't reinvent)
 - Nutrition targets: `NutritionTargetCalculator` (Mifflin-St Jeor + activity).
 - Day totals: `DaySummary`.

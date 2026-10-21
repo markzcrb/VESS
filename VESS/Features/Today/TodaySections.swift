@@ -52,7 +52,7 @@ struct TodayMetricStrip: View {
             .buttonStyle(.plain)
             .accessibilityHint("Opens Macros")
             percentItem(summary.hydration.consumedMilliliters, of: summary.hydration.targetMilliliters, label: "Water", metric: .water)
-            NavigationLink(destination: ActivityView()) {
+            NavigationLink(value: ActivityRoute.activity) {
                 VESSMetricStripItem(
                     value: health.map { "\(Int((Double($0.steps) / Double(max($0.stepsTarget, 1)) * 100).rounded()))" } ?? "—",
                     label: "Steps",

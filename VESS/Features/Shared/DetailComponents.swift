@@ -48,7 +48,8 @@ struct VESSDayPicker: View {
 }
 
 /// Seven days as vertical bars against a dashed target line. Past days are
-/// grey; the last (today) is in the metric hue. Decorative for VoiceOver;
+/// grey; the last (today) is in the metric hue, and with `highlightsReached`
+/// so is every day at or above the target. Decorative for VoiceOver;
 /// callers give the summary as text.
 struct VESSWeekBars: View {
     struct Bar: Identifiable {
@@ -61,6 +62,7 @@ struct VESSWeekBars: View {
     let target: Double
     let targetLabel: String
     let tint: Color
+    var highlightsReached = false
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 120
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -89,7 +91,7 @@ struct VESSWeekBars: View {
                     HStack(alignment: .bottom, spacing: 0) {
                         ForEach(Array(bars.enumerated()), id: \.element.id) { index, bar in
                             Capsule()
-                                .fill(index == bars.count - 1 ? tint : VESSColor.chartMuted)
+                                .fill(index == bars.count - 1 || (highlightsReached && bar.value >= target) ? tint : VESSColor.chartMuted)
                                 .frame(width: 12, height: max(4, proxy.size.height * bar.value / scaleMax) * (grown ? 1 : 0.02))
                                 .frame(maxWidth: .infinity)
                         }

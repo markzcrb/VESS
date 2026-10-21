@@ -35,3 +35,15 @@ enum VESSFormat {
         return Double(trimmed.replacingOccurrences(of: ",", with: "."))
     }
 }
+
+extension VESSFormat {
+    /// Whole steps: "6,420".
+    static func steps(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(0)))
+    }
+
+    /// Kilometers with one decimal: "5.2".
+    static func kilometers(fromMeters value: Double) -> String {
+        (value / 1000).formatted(.number.precision(.fractionLength(1)))
+    }
+}

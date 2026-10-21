@@ -27,6 +27,12 @@ nonisolated struct UserProfile: Identifiable, Codable, Hashable, Sendable {
     /// Whether the user wants Apple Health. Recorded in onboarding; permission
     /// is requested later, in context, never during onboarding.
     var prefersAppleHealth: Bool? = nil
+    /// Daily steps goal; `nil` uses `defaultStepsTarget`.
+    var stepsTarget: Int? = nil
+
+    static let defaultStepsTarget = 8_000
+
+    var dailyStepsTarget: Int { stepsTarget ?? Self.defaultStepsTarget }
 
     func age(on date: Date, calendar: Calendar) -> Int? {
         guard let dateOfBirth else { return nil }

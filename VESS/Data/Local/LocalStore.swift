@@ -23,9 +23,8 @@ final class LocalStore {
     /// Bumped on every write so views that read logs re-render.
     private var revision = 0
 
-    // Not persisted yet: these arrive with Activity (Phase 4) and Insights
-    // (Phase 6). Empty in production; filled only by sample data.
-    private(set) var workouts: [Workout] = []
+    // Not persisted yet: Insights arrive in Phase 6. Empty in production;
+    // filled only by sample data.
     private(set) var insights: [Insight] = []
 
     init(container: ModelContainer) {
@@ -47,7 +46,7 @@ final class LocalStore {
     private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
         let schema = Schema([
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
-            StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self,
+            StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self,
         ])
         return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
     }
@@ -330,6 +329,41 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Workouts
+
+    /// Workouts the user entered, newest first. Recorded workouts come from
+    /// Apple Health through `HealthDataStore` and are never stored here.
+    var workouts: [Workout] {
+        _ = revision
+        let descriptor = FetchDescriptor<StoredWorkout>(sortBy: [SortDescriptor(\.completedAt, order: .reverse)])
+        return fetchDecoded(descriptor, as: Workout.self) { $0.payload }
+    }
+
+    func workout(id: UUID) -> Workout? {
+        _ = revision
+        let descriptor = FetchDescriptor<StoredWorkout>(predicate: #Predicate { $0.id == id })
+        return fetchDecoded(descriptor, as: Workout.self) { $0.payload }.first
+    }
+
+    /// Adds or updates an entered workout.
+    func save(_ workout: Workout) throws {
+        let payload = try encoder.encode(workout)
+        let id = workout.id
+        let completedAt = workout.completedAt ?? .now
+        if let existing = try context.fetch(FetchDescriptor<StoredWorkout>(predicate: #Predicate { $0.id == id })).first {
+            existing.completedAt = completedAt
+            existing.payload = payload
+        } else {
+            context.insert(StoredWorkout(id: id, completedAt: completedAt, payload: payload))
+        }
+        try save()
+    }
+
+    func deleteWorkout(id: UUID) throws {
+        try context.delete(model: StoredWorkout.self, where: #Predicate { $0.id == id })
+        try save()
+    }
+
     // MARK: Account data
 
     /// Deletes everything stored on this device and returns to onboarding.
@@ -341,9 +375,9 @@ final class LocalStore {
         try context.delete(model: StoredInventoryItem.self)
         try context.delete(model: StoredPlannedMeal.self)
         try context.delete(model: StoredGroceryItem.self)
+        try context.delete(model: StoredWorkout.self)
         try save()
         profile = nil
-        workouts = []
         insights = []
     }
 
@@ -402,7 +436,7 @@ extension LocalStore {
         for food in data.foods { try save(food) }
         for entry in data.foodHistory + data.foodLog { try add(entry) }
         for log in data.hydrationLog { try add(log) }
-        workouts = data.workouts
+        for workout in data.workouts where !workout.isRecorded { try save(workout) }
         for item in data.inventory + data.pantryExtras { try save(item) }
         for meal in data.plannedMeals { try save(meal) }
         insights = data.insights

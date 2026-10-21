@@ -24,6 +24,9 @@ struct TodayView: View {
         NavigationStack {
             if let profile = store.profile {
                 content(profile: profile, now: AppClock.now)
+                    // Activity's pushes (workouts, history, statistics) are
+                    // registered at the stack root so every link can find them.
+                    .activityDestinations()
             }
         }
     }
