@@ -28,10 +28,15 @@ struct QuickAddForm: View {
     @State private var fat = ""
     @State private var saveToMyFoods = true
     @State private var showError = false
+    /// The field to bring into view once the keyboard is up.
+    @State private var focusedField: Field?
+
+    private enum Field: Hashable { case name, servings, calories, protein, carbs, fat }
 
     private let calendar = Calendar.current
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                 Text("A label, or your best guess.")
@@ -39,14 +44,17 @@ struct QuickAddForm: View {
                     .foregroundStyle(VESSColor.text)
                     .fixedSize(horizontal: false, vertical: true)
 
-                VESSTextField("Food", text: $name, error: nameError)
+                VESSTextField("Food", text: $name, error: nameError) { focusedField = .name }
+                    .id(Field.name)
                     .textInputAutocapitalization(.sentences)
                     .accessibilityIdentifier("addFood.name")
 
-                VESSTextField("Serving", text: $servings, unit: "serving", error: servingsError)
+                VESSTextField("Serving", text: $servings, unit: "serving", error: servingsError) { focusedField = .servings }
+                    .id(Field.servings)
                     .keyboardType(.decimalPad)
 
-                VESSTextField("Calories", text: $calories, unit: "kcal", error: caloriesError)
+                VESSTextField("Calories", text: $calories, unit: "kcal", error: caloriesError) { focusedField = .calories }
+                    .id(Field.calories)
                     .keyboardType(.numberPad)
                     .accessibilityIdentifier("addFood.calories")
 
@@ -91,6 +99,15 @@ struct QuickAddForm: View {
             .padding(.bottom, VESSSpacing.xl)
         }
         .scrollDismissesKeyboard(.interactively)
+        // Wait for the keyboard to finish appearing, then centre the field
+        // in what's left of the screen (small iPhones and AX sizes too).
+        .task(id: focusedField) {
+            guard let field = focusedField else { return }
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
+            withAnimation(.snappy) { proxy.scrollTo(field, anchor: .center) }
+        }
+        }
         .vessScreenBackground()
         .vessBottomAction(background: VESSColor.background) {
             Button(action: add) {
@@ -110,11 +127,14 @@ struct QuickAddForm: View {
             ? AnyLayout(VStackLayout(spacing: VESSSpacing.md))
             : AnyLayout(HStackLayout(alignment: .top, spacing: VESSSpacing.sm))
         return layout {
-            VESSTextField("Protein", text: $protein, unit: "g", error: NutrientInput.grams(protein) == nil ? Text("0–1,000 g") : nil)
+            VESSTextField("Protein", text: $protein, unit: "g", error: NutrientInput.grams(protein) == nil ? Text("0–1,000 g") : nil) { focusedField = .protein }
+                .id(Field.protein)
                 .keyboardType(.decimalPad)
-            VESSTextField("Carbs", text: $carbs, unit: "g", error: NutrientInput.grams(carbs) == nil ? Text("0–1,000 g") : nil)
+            VESSTextField("Carbs", text: $carbs, unit: "g", error: NutrientInput.grams(carbs) == nil ? Text("0–1,000 g") : nil) { focusedField = .carbs }
+                .id(Field.carbs)
                 .keyboardType(.decimalPad)
-            VESSTextField("Fat", text: $fat, unit: "g", error: NutrientInput.grams(fat) == nil ? Text("0–1,000 g") : nil)
+            VESSTextField("Fat", text: $fat, unit: "g", error: NutrientInput.grams(fat) == nil ? Text("0–1,000 g") : nil) { focusedField = .fat }
+                .id(Field.fat)
                 .keyboardType(.decimalPad)
         }
     }

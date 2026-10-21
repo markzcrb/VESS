@@ -7,6 +7,7 @@ struct EnergyDetailView: View {
     @Environment(LocalStore.self) private var store
     @State private var day = AppClock.now
     @State private var showInfo = false
+    @State private var showInsights = false
 
     private let calendar = Calendar.current
 
@@ -25,6 +26,7 @@ struct EnergyDetailView: View {
             }
         }
         .sheet(isPresented: $showInfo) { EnergyInfoSheet() }
+        .navigationDestination(isPresented: $showInsights) { InsightsView() }
     }
 
     private func content(profile: UserProfile, now: Date) -> some View {
@@ -102,7 +104,8 @@ struct EnergyDetailView: View {
                 if let beforeNoon {
                     VESSInsightCard(
                         text: Text("\(percent(beforeNoon)) of \(isToday ? String(localized: "today's") : String(localized: "the day's")) energy came before noon."),
-                        linkTitle: nil
+                        linkTitle: "What moves your Fuel",
+                        action: { showInsights = true }
                     )
                 }
 

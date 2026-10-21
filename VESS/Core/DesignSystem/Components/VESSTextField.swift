@@ -16,6 +16,8 @@ struct VESSTextField: View {
     var unit: LocalizedStringKey?
     /// A calm, amber message below the field, such as "Add calories to save."
     var error: Text?
+    /// Called when the field gains focus, so a form can scroll it into view.
+    var onFocus: (() -> Void)?
 
     @FocusState private var isFocused: Bool
 
@@ -24,13 +26,15 @@ struct VESSTextField: View {
         text: Binding<String>,
         prompt: Text? = nil,
         unit: LocalizedStringKey? = nil,
-        error: Text? = nil
+        error: Text? = nil,
+        onFocus: (() -> Void)? = nil
     ) {
         self.title = title
         self._text = text
         self.prompt = prompt
         self.unit = unit
         self.error = error
+        self.onFocus = onFocus
     }
 
     var body: some View {
@@ -64,6 +68,9 @@ struct VESSTextField: View {
             .overlay(shape.strokeBorder(borderColor, lineWidth: error != nil || isFocused ? 1.5 : 1))
             .contentShape(shape)
             .onTapGesture { isFocused = true }
+            .onChange(of: isFocused) { _, focused in
+                if focused { onFocus?() }
+            }
             .accessibilityHint(error ?? Text(verbatim: ""))
 
             if let error {

@@ -123,6 +123,8 @@ struct VESSImpactRow: View {
     /// Percent that fills half the bar.
     var maxPercent: Int = 26
     var isNew = false
+    /// An example row (S3): "+?%" and no value for VoiceOver.
+    var isPlaceholder = false
 
     @ScaledMetric(relativeTo: .body) private var barHeight: CGFloat = 6
 
@@ -140,7 +142,7 @@ struct VESSImpactRow: View {
                     .vessTextStyle(.labelCaps)
                     .foregroundStyle(VESSColor.text)
                 Spacer(minLength: VESSSpacing.xs)
-                Text(verbatim: isPositive ? "+\(impactPercent)%" : "−\(abs(impactPercent))%")
+                Text(verbatim: isPlaceholder ? (isPositive ? "+?%" : "−?%") : (isPositive ? "+\(impactPercent)%" : "−\(abs(impactPercent))%"))
                     .vessTextStyle(.numberS)
                     .foregroundStyle(tint)
             }
