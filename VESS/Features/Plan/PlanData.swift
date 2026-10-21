@@ -84,7 +84,7 @@ extension PlannedMeal.Item {
     var amountText: String? {
         guard let quantity else { return nil }
         guard let unit, unit != .piece else { return VESSFormat.quantity(quantity) }
-        return "\(VESSFormat.quantity(quantity)) \(String(localized: unit.abbreviation))"
+        return unit.amountText(quantity)
     }
 }
 

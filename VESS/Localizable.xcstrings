@@ -1,0 +1,3178 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "—" : {
+
+    },
+    ", and %@ of it came after noon" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@  %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@ kcal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@ kcal"
+          }
+        }
+      }
+    },
+    "%@ · %@ · counts as %@ ml" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · counts as %3$@ ml"
+          }
+        }
+      }
+    },
+    "%@ · %@ kcal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ kcal"
+          }
+        }
+      }
+    },
+    "%@ · %@ kcal left" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ kcal left"
+          }
+        }
+      }
+    },
+    "%@ · %@ km" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ km"
+          }
+        }
+      }
+    },
+    "%@ · %@–%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@–%3$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld"
+          }
+        }
+      }
+    },
+    "%@ · %lld %%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld %%"
+          }
+        }
+      }
+    },
+    "%@ · Apple Health" : {
+
+    },
+    "%@ · eaten" : {
+
+    },
+    "%@ · no date" : {
+
+    },
+    "%@ · no reminder" : {
+
+    },
+    "%@ · open" : {
+
+    },
+    "%@ · use by %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · use by %2$@"
+          }
+        }
+      }
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ %@ is light on protein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ is light on protein."
+          }
+        }
+      }
+    },
+    "%@ × %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ × %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%@ × %@ (%@ %@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ × %2$@ (%3$@ %4$@)"
+          }
+        }
+      }
+    },
+    "%@ above" : {
+
+    },
+    "%@ above target" : {
+
+    },
+    "%@ capsules" : {
+      "comment" : "A fractional count of capsules, such as 1.5 capsules.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ capsules"
+          }
+        }
+      }
+    },
+    "%@ counts at %@. An estimate you can change." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ counts at %2$@. An estimate you can change."
+          }
+        }
+      }
+    },
+    "%@ cups" : {
+      "comment" : "A fractional count of cups, such as 1.5 cups.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ cups"
+          }
+        }
+      }
+    },
+    "%@ g" : {
+
+    },
+    "%@ is still selected. Your plan hasn't changed." : {
+
+    },
+    "%@ kcal" : {
+
+    },
+    "%@ kcal · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ kcal · %2$@"
+          }
+        }
+      }
+    },
+    "%@ kcal · %@ g protein" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ kcal · %2$@ g protein"
+          }
+        }
+      }
+    },
+    "%@ kcal above your target" : {
+
+    },
+    "%@ kcal left" : {
+
+    },
+    "%@ kcal. No daily target set." : {
+
+    },
+    "%@ kg" : {
+
+    },
+    "%@ kg in ^[%lld week](inflect: true)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ kg in ^[%2$lld week](inflect: true)"
+          }
+        }
+      }
+    },
+    "%@ km" : {
+
+    },
+    "%@ L" : {
+
+    },
+    "%@ left" : {
+
+    },
+    "%@ mg" : {
+
+    },
+    "%@ ml" : {
+
+    },
+    "%@ of %@ energy came before noon." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ energy came before noon."
+          }
+        }
+      }
+    },
+    "%@ of %@ grams" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ grams"
+          }
+        }
+      }
+    },
+    "%@ of %@ kcal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ kcal"
+          }
+        }
+      }
+    },
+    "%@ of %@ kcal. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ kcal. %3$@"
+          }
+        }
+      }
+    },
+    "%@ of %@ liters" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ liters"
+          }
+        }
+      }
+    },
+    "%@ packs" : {
+      "comment" : "A fractional count of packs, such as 1.5 packs.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ packs"
+          }
+        }
+      }
+    },
+    "%@ pieces" : {
+      "comment" : "A fractional count of pieces, such as 1.5 pieces.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ pieces"
+          }
+        }
+      }
+    },
+    "%@ servings" : {
+      "comment" : "A fractional count of servings, such as 1.5 servings.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ servings"
+          }
+        }
+      }
+    },
+    "%@ slices" : {
+      "comment" : "A fractional count of slices, such as 1.5 slices.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ slices"
+          }
+        }
+      }
+    },
+    "%@ steps" : {
+
+    },
+    "%@ steps so far. By this time on a typical %@, you're at about %@. Last synced %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ steps so far. By this time on a typical %2$@, you're at about %3$@. Last synced %4$@."
+          }
+        }
+      }
+    },
+    "%@ tablets" : {
+      "comment" : "A fractional count of tablets, such as 1.5 tablets.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tablets"
+          }
+        }
+      }
+    },
+    "%@ to go" : {
+
+    },
+    "%@ under target" : {
+
+    },
+    "%@ Your quietest day is usually %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ Your quietest day is usually %2$@."
+          }
+        }
+      }
+    },
+    "%@–%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@–%2$@"
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, via Apple Health" : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld capsule" : {
+      "comment" : "A whole count of capsules, such as 1 capsule or 2 capsules.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld capsule"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld capsules"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cup" : {
+      "comment" : "A whole count of cups, such as 1 cup or 2 cups.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cup"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cups"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld from your pantry · %lld to buy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld from your pantry · %2$lld to buy"
+          }
+        }
+      }
+    },
+    "%lld min" : {
+
+    },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld meals planned · ^[%lld open slot](inflect: true)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld meals planned · ^[%3$lld open slot](inflect: true)"
+          }
+        }
+      }
+    },
+    "%lld of %lld selected · You can change any later" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld selected · You can change any later"
+          }
+        }
+      }
+    },
+    "%lld on" : {
+
+    },
+    "%lld pack" : {
+      "comment" : "A whole count of packs, such as 1 pack or 2 packs.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pack"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld packs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld percent higher Fuel on these days" : {
+
+    },
+    "%lld percent lower Fuel on these days" : {
+
+    },
+    "%lld piece" : {
+      "comment" : "A whole count of pieces, such as 1 piece or 2 pieces.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld piece"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pieces"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld serving" : {
+      "comment" : "A whole count of servings, such as 1 serving or 2 servings.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serving"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld servings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld slice" : {
+      "comment" : "A whole count of slices, such as 1 slice or 2 slices.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld slice"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld slices"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld tablet" : {
+      "comment" : "A whole count of tablets, such as 1 tablet or 2 tablets.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tablet"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tablets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld to buy" : {
+
+    },
+    "%lld to buy · kept in step with this plan" : {
+
+    },
+    "%lld to use in the next few days." : {
+
+    },
+    "^[%lld glass](inflect: true) · last at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld glass](inflect: true) · last at %2$@"
+          }
+        }
+      }
+    },
+    "^[%lld item](inflect: true)" : {
+
+    },
+    "^[%lld item](inflect: true) at home" : {
+
+    },
+    "^[%lld item](inflect: true) at home · %lld to use soon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld item](inflect: true) at home · %2$lld to use soon"
+          }
+        }
+      }
+    },
+    "^[%lld meal](inflect: true) logged" : {
+
+    },
+    "^[%lld meal](inflect: true) logged, about %@ kcal a day." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld meal](inflect: true) logged, about %2$@ kcal a day."
+          }
+        }
+      }
+    },
+    "^[%lld more](inflect: true) to go" : {
+
+    },
+    "^[%lld open slot](inflect: true), considered." : {
+
+    },
+    "^[%lld slot](inflect: true) left open: nothing fits %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld slot](inflect: true) left open: nothing fits %2$@."
+          }
+        }
+      }
+    },
+    "^[%lld slot](inflect: true) left open: nothing you've saved fits them yet." : {
+
+    },
+    "+250 ml" : {
+
+    },
+    "0–1,000 g" : {
+
+    },
+    "8 to 14 digits" : {
+
+    },
+    "30 minutes after a main meal's usual time, only if it isn't logged" : {
+
+    },
+    "100 %@" : {
+
+    },
+    "a day" : {
+
+    },
+    "A full day, right at your target." : {
+
+    },
+    "A full day. A little above is still a steady day." : {
+
+    },
+    "A guide, not a grade." : {
+
+    },
+    "A label, or your best guess." : {
+
+    },
+    "A lighter day so far." : {
+
+    },
+    "A little about you" : {
+
+    },
+    "A little clarity." : {
+
+    },
+    "A little more water." : {
+
+    },
+    "A nudge, when it helps." : {
+
+    },
+    "A protein-led dinner closes the gap." : {
+
+    },
+    "A record of your movement." : {
+
+    },
+    "A reminder you set for %@." : {
+
+    },
+    "A separate daily rhythm." : {
+
+    },
+    "A steady day." : {
+
+    },
+    "About Activity" : {
+
+    },
+    "About the same as the 30 days before." : {
+
+    },
+    "About the same as the week before." : {
+
+    },
+    "About usual" : {
+
+    },
+    "About you" : {
+
+    },
+    "Active" : {
+
+    },
+    "Active energy" : {
+
+    },
+    "Activity" : {
+
+    },
+    "Activity level" : {
+
+    },
+    "Add" : {
+
+    },
+    "Add %@ ml" : {
+
+    },
+    "Add %lld-minute %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add %1$lld-minute %2$@"
+          }
+        }
+      }
+    },
+    "Add ^[%lld meal](inflect: true) to plan" : {
+
+    },
+    "Add 250 milliliters of water" : {
+
+    },
+    "Add a drink" : {
+
+    },
+    "Add a name so you can find it again." : {
+
+    },
+    "Add a snack" : {
+
+    },
+    "Add an item yourself" : {
+
+    },
+    "Add breakfast" : {
+
+    },
+    "Add calories to save." : {
+
+    },
+    "Add dinner" : {
+
+    },
+    "Add drink" : {
+
+    },
+    "Add item" : {
+
+    },
+    "Add lunch" : {
+
+    },
+    "Add manually" : {
+
+    },
+    "Add meal" : {
+
+    },
+    "Add supplement" : {
+
+    },
+    "Add to %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add to %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Add to breakfast" : {
+
+    },
+    "Add to dinner" : {
+
+    },
+    "Add to favorites" : {
+
+    },
+    "Add to grocery list" : {
+
+    },
+    "Add to list" : {
+
+    },
+    "Add to lunch" : {
+
+    },
+    "Add to pantry" : {
+
+    },
+    "Add to snacks" : {
+
+    },
+    "Add what you have at home, or check off groceries and tap Done shopping to move them here." : {
+
+    },
+    "Add workout" : {
+
+    },
+    "Added %@ ml of water" : {
+
+    },
+    "Added ^[%lld item](inflect: true) to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Added ^[%1$lld item](inflect: true) to %2$@"
+          }
+        }
+      }
+    },
+    "Added by you" : {
+
+    },
+    "Adding to %@" : {
+
+    },
+    "Adds %lld to grocery" : {
+
+    },
+    "Adds it to %@" : {
+
+    },
+    "Age" : {
+
+    },
+    "Aisle" : {
+
+    },
+    "All at home" : {
+
+    },
+    "Amount" : {
+
+    },
+    "Amount in %@" : {
+
+    },
+    "Amount in milliliters" : {
+
+    },
+    "Anything else, optional" : {
+
+    },
+    "Anything you avoid?" : {
+
+    },
+    "Appearance" : {
+
+    },
+    "Apple Health" : {
+
+    },
+    "Apple Health hasn't shared steps or workouts with VESS. You can allow access in the Health app, under your profile › Apps › VESS. Until then, only workouts you enter appear." : {
+
+    },
+    "Apple Health isn't available on this device, so only workouts you enter appear." : {
+
+    },
+    "Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10 % counts as about usual." : {
+
+    },
+    "Avoid" : {
+
+    },
+    "Back" : {
+
+    },
+    "Bakery" : {
+
+    },
+    "Barcode" : {
+
+    },
+    "Barcode detected" : {
+
+    },
+    "Before noon" : {
+
+    },
+    "Black coffee" : {
+
+    },
+    "Body" : {
+
+    },
+    "Body settings help estimate your needs. Changing them doesn't change your targets; Goals shows a suggestion you can use." : {
+
+    },
+    "Body settings help estimate your needs. Your weight is read from Apple Health. Changing these doesn't change your targets; Goals shows a suggestion you can use." : {
+
+    },
+    "Brand" : {
+
+    },
+    "Break down my day" : {
+
+    },
+    "Breakfast" : {
+
+    },
+    "Budget" : {
+
+    },
+    "Build muscle" : {
+
+    },
+    "Building" : {
+
+    },
+    "Caffeine %@ mg" : {
+
+    },
+    "calories" : {
+
+    },
+    "Calories" : {
+
+    },
+    "Calories not reported" : {
+
+    },
+    "Camera preview" : {
+
+    },
+    "capsule" : {
+
+    },
+    "carbs" : {
+
+    },
+    "Carbs" : {
+
+    },
+    "Carbs and fat are lighter so far." : {
+
+    },
+    "Carbs and fat are on pace." : {
+
+    },
+    "Carbs are on pace; fat is lighter so far." : {
+
+    },
+    "Checked" : {
+
+    },
+    "Checked · %lld ready to store" : {
+
+    },
+    "Checking doesn't add it to your pantry." : {
+
+    },
+    "Checking items does not add them to Pantry. Tap Done shopping to move these %lld checked items into Pantry." : {
+
+    },
+    "Checking items does not add them to Pantry. Tap Done shopping to move this checked item into Pantry." : {
+
+    },
+    "Choose the one that matters most right now." : {
+
+    },
+    "Clear search" : {
+
+    },
+    "Close" : {
+
+    },
+    "cm" : {
+
+    },
+    "Coach" : {
+
+    },
+    "Community data from Open Food Facts · not verified" : {
+
+    },
+    "Connect Apple Health" : {
+
+    },
+    "Connect Apple Health to see steps and recorded workouts here and on Today. Until then, only workouts you enter appear." : {
+
+    },
+    "Connected" : {
+
+    },
+    "Contains %@" : {
+
+    },
+    "Context for your Margin Notes" : {
+
+    },
+    "Continue" : {
+
+    },
+    "Copy this week's plan" : {
+
+    },
+    "Couldn't look it up" : {
+
+    },
+    "Couldn't reach Apple Health. Showing known data from %@." : {
+
+    },
+    "Couldn't reach Apple Health. Your entered workouts are still here." : {
+
+    },
+    "Couldn't sync" : {
+
+    },
+    "Count everyday movement as well as exercise." : {
+
+    },
+    "Counter" : {
+
+    },
+    "Counts as %@ ml toward water." : {
+
+    },
+    "Create a food" : {
+
+    },
+    "cup" : {
+
+    },
+    "Cupboard" : {
+
+    },
+    "Custom" : {
+
+    },
+    "Cycle" : {
+
+    },
+    "cycling" : {
+
+    },
+    "Daily" : {
+
+    },
+    "Daily goals" : {
+
+    },
+    "Daily reminder" : {
+
+    },
+    "Daily targets" : {
+
+    },
+    "Dairy & eggs" : {
+
+    },
+    "Dark" : {
+
+    },
+    "Dashed line is your %@ kcal target." : {
+
+    },
+    "Dashed line is your %@ kcal target. Today is still in progress." : {
+
+    },
+    "Day" : {
+
+    },
+    "Day shows what you've logged today. Week and Month show daily averages over the days with at least one meal logged." : {
+
+    },
+    "Days at %@ or more" : {
+
+    },
+    "Days logged" : {
+
+    },
+    "Debug builds only. The Coach screen (12) is a static design until its backend is approved." : {
+
+    },
+    "Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved." : {
+
+    },
+    "Debug only" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete all data" : {
+
+    },
+    "Delete all data?" : {
+
+    },
+    "Delete entry" : {
+
+    },
+    "Delete last glass" : {
+
+    },
+    "Delete this item?" : {
+
+    },
+    "Delete this supplement?" : {
+
+    },
+    "Delete this workout?" : {
+
+    },
+    "Describe it" : {
+
+    },
+    "Details" : {
+
+    },
+    "Diary" : {
+
+    },
+    "Diet" : {
+
+    },
+    "Dinner" : {
+
+    },
+    "Dinner after 21:00" : {
+
+    },
+    "Direction" : {
+
+    },
+    "Distance" : {
+
+    },
+    "Done" : {
+
+    },
+    "Done shopping · store ^[%lld item](inflect: true)" : {
+
+    },
+    "Dose" : {
+
+    },
+    "Drank 2 L or more" : {
+
+    },
+    "Drink" : {
+
+    },
+    "Drinks" : {
+
+    },
+    "Duration" : {
+
+    },
+    "Each meal near its usual time adds to this part" : {
+
+    },
+    "Earlier today" : {
+
+    },
+    "Easy" : {
+
+    },
+    "easy effort" : {
+
+    },
+    "Eat healthier" : {
+
+    },
+    "Eaten" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit or delete" : {
+
+    },
+    "Effort" : {
+
+    },
+    "egg-free" : {
+
+    },
+    "Eggs" : {
+
+    },
+    "Energy" : {
+
+    },
+    "Energy for entered workouts is an estimate from duration and effort, not a measurement. VESS never estimates steps." : {
+
+    },
+    "Energy for workouts you enter is estimated from type, duration, effort and your weight, so it's shown with ≈. Recorded workouts use Apple Health's measurement." : {
+
+    },
+    "Energy is at %@ of %@ kcal, %@ above your guide. One day doesn't define a pattern." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Energy is at %1$@ of %2$@ kcal, %3$@ above your guide. One day doesn't define a pattern."
+          }
+        }
+      }
+    },
+    "Energy is at %@ of %@ kcal, right at your guide." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Energy is at %1$@ of %2$@ kcal, right at your guide."
+          }
+        }
+      }
+    },
+    "Energy is estimated from duration and effort, not measured. VESS never estimates steps." : {
+
+    },
+    "Energy through the day" : {
+
+    },
+    "Energy vs. target" : {
+
+    },
+    "Enough days logged" : {
+
+    },
+    "Enter a number of servings, up to 100." : {
+
+    },
+    "Enter between 0 and 5,000 kcal." : {
+
+    },
+    "Enter between 1 and %@ ml" : {
+
+    },
+    "Entered" : {
+
+    },
+    "Entered by you" : {
+
+    },
+    "Entered in VESS. Energy is estimated from type, duration and effort, not measured." : {
+
+    },
+    "Entered workouts are saved" : {
+
+    },
+    "Estimate" : {
+
+    },
+    "Everything" : {
+
+    },
+    "Everything above, as a JSON file" : {
+
+    },
+    "Everything here comes from what you log. It describes your logging, not your health." : {
+
+    },
+    "Everything is in your pantry" : {
+
+    },
+    "Everything you log: meals, drinks, workouts, pantry, plans, supplements and your profile." : {
+
+    },
+    "Exercise 3–5 days a week" : {
+
+    },
+    "Expired %lld days ago" : {
+
+    },
+    "Expired yesterday" : {
+
+    },
+    "Expires" : {
+
+    },
+    "Explains how Fuel is calculated. A summary of today's logging, not a health measurement." : {
+
+    },
+    "Export my data" : {
+
+    },
+    "fat" : {
+
+    },
+    "Fat" : {
+
+    },
+    "Fat is on pace; carbs are lighter so far." : {
+
+    },
+    "Favorites" : {
+
+    },
+    "Favourites and foods you create appear here." : {
+
+    },
+    "Female" : {
+
+    },
+    "Fewer than the 30 days before." : {
+
+    },
+    "Fewer than the week before." : {
+
+    },
+    "Fibre" : {
+
+    },
+    "Fish" : {
+
+    },
+    "Fitness" : {
+
+    },
+    "Flat white" : {
+
+    },
+    "Focus" : {
+
+    },
+    "Food" : {
+
+    },
+    "Food database" : {
+
+    },
+    "Food that fits your life." : {
+
+    },
+    "Food waste" : {
+
+    },
+    "Foods from the built-in list show typical values. Products from Open Food Facts are community data, and VESS says so. What you enter yourself is used as you entered it." : {
+
+    },
+    "Foods that don't report a macro add nothing to it, so totals can read low." : {
+
+    },
+    "Foods you create appear here." : {
+
+    },
+    "Foods you log appear here. Search above to find one." : {
+
+    },
+    "For ^[%lld planned meal](inflect: true)" : {
+
+    },
+    "For ^[%lld planned meal](inflect: true) through Sunday" : {
+
+    },
+    "For example, overnight oats" : {
+
+    },
+    "For example, pescatarian" : {
+
+    },
+    "Freezer" : {
+
+    },
+    "Fresh start" : {
+
+    },
+    "Fridge" : {
+
+    },
+    "From" : {
+
+    },
+    "From Apple Health · %@" : {
+
+    },
+    "From Apple Health. VESS never estimates steps." : {
+
+    },
+    "From Open Food Facts · check against the label" : {
+
+    },
+    "From the product database · check against the label" : {
+
+    },
+    "From your body and direction, VESS would suggest %@ kcal, %@ g protein, %@ g carbs and %@ g fat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "From your body and direction, VESS would suggest %1$@ kcal, %2$@ g protein, %3$@ g carbs and %4$@ g fat."
+          }
+        }
+      }
+    },
+    "Fuel" : {
+
+    },
+    "Fuel compares what you've logged with your full-day targets, like the rings above it. It builds as you log through the day, so a low number in the morning is expected." : {
+
+    },
+    "Fuel is a summary of what you've logged today against your own targets. It is not a health measurement and says nothing about how healthy you are." : {
+
+    },
+    "Fuel is a summary of what you've logged today, from 0 to 100. It only rises as you log, and it isn't a health measurement." : {
+
+    },
+    "Fuel shows — until you log something to eat." : {
+
+    },
+    "Full day" : {
+
+    },
+    "Full marks at 100–105 % of your target, a little less above" : {
+
+    },
+    "g" : {
+
+    },
+    "Gain weight" : {
+
+    },
+    "Gaining weight" : {
+
+    },
+    "Get started" : {
+
+    },
+    "Getting started" : {
+
+    },
+    "Getting today's steps and recorded workouts from Apple Health." : {
+
+    },
+    "Gluten" : {
+
+    },
+    "gluten-free" : {
+
+    },
+    "Goal" : {
+
+    },
+    "Goals" : {
+
+    },
+    "Good afternoon" : {
+
+    },
+    "Good afternoon, %@" : {
+
+    },
+    "Good evening" : {
+
+    },
+    "Good evening, %@" : {
+
+    },
+    "Good fits for this slot" : {
+
+    },
+    "Good morning" : {
+
+    },
+    "Good morning, %@" : {
+
+    },
+    "Grey is what you logged that day. Colour is what this adds." : {
+
+    },
+    "Grey is what you've logged today. Colour is what this adds." : {
+
+    },
+    "Grocery" : {
+
+    },
+    "Grocery list" : {
+
+    },
+    "Hard" : {
+
+    },
+    "hard effort" : {
+
+    },
+    "Hard exercise 6–7 days a week" : {
+
+    },
+    "Has entries" : {
+
+    },
+    "Height" : {
+
+    },
+    "Help" : {
+
+    },
+    "High protein" : {
+
+    },
+    "Higher than usual" : {
+
+    },
+    "History" : {
+
+    },
+    "Hit target on %lld of %lld days. Average %@ g." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hit target on %1$lld of %2$lld days. Average %3$@ g."
+          }
+        }
+      }
+    },
+    "Hold steady. It scans on its own." : {
+
+    },
+    "How active is a typical week?" : {
+
+    },
+    "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100 %; two hours away or more scores 0 %." : {
+
+    },
+    "How do you like to eat?" : {
+
+    },
+    "How energy is measured" : {
+
+    },
+    "How estimates work" : {
+
+    },
+    "How Fuel is calculated" : {
+
+    },
+    "How macros are measured" : {
+
+    },
+    "How this is measured" : {
+
+    },
+    "Hydration" : {
+
+    },
+    "Hydration · %@ of %@ L %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hydration · %1$@ of %2$@ L %3$@"
+          }
+        }
+      }
+    },
+    "Hydration contribution" : {
+
+    },
+    "I already have it" : {
+
+    },
+    "Improve consistency" : {
+
+    },
+    "Improve energy" : {
+
+    },
+    "in %lld days" : {
+
+    },
+    "In %lld days" : {
+
+    },
+    "In 3 days" : {
+
+    },
+    "In a month" : {
+
+    },
+    "In a week" : {
+
+    },
+    "In pantry" : {
+
+    },
+    "Ingredients" : {
+
+    },
+    "Insights need about %lld days of logging so a pattern isn't just one odd week. Keep logging and they'll show up here." : {
+
+    },
+    "Intake today" : {
+
+    },
+    "interval session" : {
+
+    },
+    "intervals" : {
+
+    },
+    "Intervals" : {
+
+    },
+    "iOS decides what VESS can read. To change access, open the Health app, tap your profile, then Apps › VESS." : {
+
+    },
+    "It only goes up as you log. The one thing that lowers it is going well past your energy target." : {
+
+    },
+    "It's removed from your pantry and not counted as used or thrown away." : {
+
+    },
+    "Item" : {
+
+    },
+    "IU" : {
+
+    },
+    "Journal insights" : {
+
+    },
+    "Juice" : {
+
+    },
+    "kcal" : {
+
+    },
+    "kcal · %@" : {
+
+    },
+    "kcal · %@ g protein" : {
+
+    },
+    "kcal a day" : {
+
+    },
+    "kcal active energy" : {
+
+    },
+    "kcal average · %@" : {
+
+    },
+    "kcal per portion" : {
+
+    },
+    "Keep it here" : {
+
+    },
+    "Keeps your targets current" : {
+
+    },
+    "kg" : {
+
+    },
+    "kg · %@, Apple Health" : {
+
+    },
+    "kg · from your profile" : {
+
+    },
+    "kg · weighed this morning" : {
+
+    },
+    "kg · weighed today" : {
+
+    },
+    "Known values are kept until the next successful sync." : {
+
+    },
+    "L" : {
+
+    },
+    "Lactose" : {
+
+    },
+    "lactose-free" : {
+
+    },
+    "Language" : {
+
+    },
+    "Last 7 days" : {
+
+    },
+    "Last drink %@." : {
+
+    },
+    "Last sync" : {
+
+    },
+    "Later" : {
+
+    },
+    "Learned from when you log, once there are three days. Used for meal regularity and reminders." : {
+
+    },
+    "Leave a macro empty if the label doesn't list it." : {
+
+    },
+    "Leave one empty if you don't know it. It shows as not reported, not as zero." : {
+
+    },
+    "Less" : {
+
+    },
+    "Light" : {
+
+    },
+    "Light so far" : {
+
+    },
+    "Log %@" : {
+
+    },
+    "Log a meal" : {
+
+    },
+    "Log a workout" : {
+
+    },
+    "Log as %@" : {
+
+    },
+    "Log calories without a product" : {
+
+    },
+    "Log your first meal and your Fuel score starts building." : {
+
+    },
+    "Logged as" : {
+
+    },
+    "Logged at %@" : {
+
+    },
+    "Longer" : {
+
+    },
+    "Look up" : {
+
+    },
+    "Looking up on %@…" : {
+
+    },
+    "Lose weight" : {
+
+    },
+    "Losing weight" : {
+
+    },
+    "Low" : {
+
+    },
+    "Low · Sufficient · Optimal" : {
+
+    },
+    "Low carb" : {
+
+    },
+    "Lower than usual" : {
+
+    },
+    "Lunch" : {
+
+    },
+    "Macros" : {
+
+    },
+    "Main meals logged" : {
+
+    },
+    "Maintain" : {
+
+    },
+    "Maintain weight" : {
+
+    },
+    "Maintaining" : {
+
+    },
+    "Make VESS feel familiar." : {
+
+    },
+    "Male" : {
+
+    },
+    "Manual entry" : {
+
+    },
+    "Margin note" : {
+
+    },
+    "Meal" : {
+
+    },
+    "Meal planning" : {
+
+    },
+    "Meal regularity" : {
+
+    },
+    "Meal reminders" : {
+
+    },
+    "Meal: %@" : {
+
+    },
+    "Meals" : {
+
+    },
+    "Meals you log appear here." : {
+
+    },
+    "mg" : {
+
+    },
+    "min" : {
+
+    },
+    "ml" : {
+
+    },
+    "mobility" : {
+
+    },
+    "Mobility" : {
+
+    },
+    "mobility session" : {
+
+    },
+    "Moderate" : {
+
+    },
+    "moderate effort" : {
+
+    },
+    "Month" : {
+
+    },
+    "More" : {
+
+    },
+    "More than the 30 days before." : {
+
+    },
+    "More than the week before." : {
+
+    },
+    "Most active" : {
+
+    },
+    "Most active %@. Known values are kept until the next successful sync." : {
+
+    },
+    "Most often: %@, then %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Most often: %1$@, then %2$@."
+          }
+        }
+      }
+    },
+    "Most often: %@." : {
+
+    },
+    "Mostly sitting, little exercise" : {
+
+    },
+    "Move / change meal" : {
+
+    },
+    "Move in your own way." : {
+
+    },
+    "Move meal" : {
+
+    },
+    "Move to %@" : {
+
+    },
+    "Movement" : {
+
+    },
+    "Movement, hour by hour." : {
+
+    },
+    "Moves to %@." : {
+
+    },
+    "My foods" : {
+
+    },
+    "Name" : {
+
+    },
+    "Needed for" : {
+
+    },
+    "New" : {
+
+    },
+    "Next day" : {
+
+    },
+    "Next week" : {
+
+    },
+    "No daily target set." : {
+
+    },
+    "No date" : {
+
+    },
+    "No drinks logged yet." : {
+
+    },
+    "No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
+
+    },
+    "No other products found." : {
+
+    },
+    "No product found" : {
+
+    },
+    "No product with this barcode on Open Food Facts. You can create it as your own food." : {
+
+    },
+    "No restrictions" : {
+
+    },
+    "No saved or common foods match “%@”." : {
+
+    },
+    "No source connected" : {
+
+    },
+    "No supplements yet." : {
+
+    },
+    "No workouts in the last 7 days." : {
+
+    },
+    "Not checked" : {
+
+    },
+    "Not connected" : {
+
+    },
+    "Not now" : {
+
+    },
+    "Not reported" : {
+
+    },
+    "Nothing else" : {
+
+    },
+    "Nothing fits this slot yet. Meals you log and foods you save show up here." : {
+
+    },
+    "Nothing fits yet. Log a few meals or save some foods, and suggestions will follow." : {
+
+    },
+    "Nothing is shared now. VESS asks for each type only when you first use a feature that needs it, and you can change your choice anytime in Settings." : {
+
+    },
+    "Nothing logged" : {
+
+    },
+    "Nothing logged for %@ yet. Add it when you're ready." : {
+
+    },
+    "Nothing logged yet today." : {
+
+    },
+    "Nothing needs using in the next few days." : {
+
+    },
+    "Nothing on Open Food Facts for %@. You can add it yourself." : {
+
+    },
+    "Nothing planned yet" : {
+
+    },
+    "Nothing shared" : {
+
+    },
+    "Nothing to buy" : {
+
+    },
+    "Nothing was logged on this day." : {
+
+    },
+    "Nothing was logged this week." : {
+
+    },
+    "Notifications" : {
+
+    },
+    "Notifications are off for VESS. You can turn them on in Settings." : {
+
+    },
+    "Now" : {
+
+    },
+    "Now · %@" : {
+
+    },
+    "nut-free" : {
+
+    },
+    "Nutrition" : {
+
+    },
+    "Nutrition per" : {
+
+    },
+    "Nutrition preferences" : {
+
+    },
+    "Nuts" : {
+
+    },
+    "of %@" : {
+
+    },
+    "of %@ · Apple Health" : {
+
+    },
+    "of %@ · last updated %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "of %1$@ · last updated %2$@"
+          }
+        }
+      }
+    },
+    "of %@ kcal · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "of %1$@ kcal · %2$@"
+          }
+        }
+      }
+    },
+    "OK" : {
+
+    },
+    "on target" : {
+
+    },
+    "On this iPhone" : {
+
+    },
+    "On track" : {
+
+    },
+    "On your feet some of the day, or light exercise 1–3 days a week" : {
+
+    },
+    "Open Food Facts" : {
+
+    },
+    "Open Food Facts didn't respond. Foods on this iPhone are still available above." : {
+
+    },
+    "Open Food Facts didn't respond. Try again in a moment." : {
+
+    },
+    "Open Food Facts didn't respond. Try again later." : {
+
+    },
+    "Open Settings" : {
+
+    },
+    "Opens Activity" : {
+
+    },
+    "Opens Energy" : {
+
+    },
+    "Opens Macros" : {
+
+    },
+    "Opens Nutrition" : {
+
+    },
+    "Opens Settings" : {
+
+    },
+    "Optimal" : {
+
+    },
+    "Optional" : {
+
+    },
+    "Other" : {
+
+    },
+    "Other drink" : {
+
+    },
+    "Other ways to add" : {
+
+    },
+    "other workouts" : {
+
+    },
+    "pack" : {
+
+    },
+    "Pantry" : {
+
+    },
+    "Pantry staples" : {
+
+    },
+    "pcs" : {
+
+    },
+    "Per 100 %@" : {
+
+    },
+    "Pescatarian" : {
+
+    },
+    "Photo" : {
+
+    },
+    "Photo estimate" : {
+
+    },
+    "Physical job or training twice a day" : {
+
+    },
+    "Plan" : {
+
+    },
+    "Plan a few dinners and VESS builds the grocery list from them." : {
+
+    },
+    "Plan a few meals and VESS builds the list, leaving out what's already at home." : {
+
+    },
+    "Plan meals" : {
+
+    },
+    "Plan suggestions skip anything you avoid." : {
+
+    },
+    "Plan your week's meals from saved foods and meals. Suggestions follow your diet and what you avoid, and prefer what's in your pantry and expires soon." : {
+
+    },
+    "Plan, grocery and pantry" : {
+
+    },
+    "Point at a barcode" : {
+
+    },
+    "Portions" : {
+
+    },
+    "Prefer not to say" : {
+
+    },
+    "Preferences" : {
+
+    },
+    "Previous day" : {
+
+    },
+    "Previous week" : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Privacy and data" : {
+
+    },
+    "Produce" : {
+
+    },
+    "Product found" : {
+
+    },
+    "Products you've looked up before also work offline." : {
+
+    },
+    "protein" : {
+
+    },
+    "Protein" : {
+
+    },
+    "Protein %@, carbs %@, fat %@ of target. %@ kcal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Protein %1$@, carbs %2$@, fat %3$@ of target. %4$@ kcal."
+          }
+        }
+      }
+    },
+    "Protein and water are the ones to watch." : {
+
+    },
+    "Protein at breakfast" : {
+
+    },
+    "Protein has reached your target." : {
+
+    },
+    "Protein is %@ g short of your target." : {
+
+    },
+    "Protein is %@ g short with dinner still to come." : {
+
+    },
+    "Protein is at %@ of %@ g" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Protein is at %1$@ of %2$@ g"
+          }
+        }
+      }
+    },
+    "Protein is the one to watch." : {
+
+    },
+    "Protein this week" : {
+
+    },
+    "Protein, carbs, fat · optional" : {
+
+    },
+    "Quantity" : {
+
+    },
+    "Quick add" : {
+
+    },
+    "Quick add · %@ g protein" : {
+
+    },
+    "Quiet hours" : {
+
+    },
+    "Read from Health" : {
+
+    },
+    "Read only: steps, workouts, active energy and weight. VESS shows them but doesn't keep a copy." : {
+
+    },
+    "Read-only, on your terms." : {
+
+    },
+    "Reading barcode" : {
+
+    },
+    "Recent" : {
+
+    },
+    "Recorded" : {
+
+    },
+    "Recorded workouts come from Apple Health. Entered energy is approximate; steps always come from a connected source." : {
+
+    },
+    "Reflects how much you move" : {
+
+    },
+    "Reminder for %@" : {
+
+    },
+    "Reminders" : {
+
+    },
+    "Remove %@ from selection" : {
+
+    },
+    "Remove from favorites" : {
+
+    },
+    "Remove from list" : {
+
+    },
+    "Remove from plan" : {
+
+    },
+    "Replace meal" : {
+
+    },
+    "Rest day" : {
+
+    },
+    "Retry" : {
+
+    },
+    "ride" : {
+
+    },
+    "run" : {
+
+    },
+    "Run" : {
+
+    },
+    "running" : {
+
+    },
+    "Save" : {
+
+    },
+    "Save changes" : {
+
+    },
+    "Save food" : {
+
+    },
+    "Save to My foods" : {
+
+    },
+    "Save your own food or recipe" : {
+
+    },
+    "Saved" : {
+
+    },
+    "Scan a barcode" : {
+
+    },
+    "Scan again" : {
+
+    },
+    "Scan barcode" : {
+
+    },
+    "Scanning isn't available here" : {
+
+    },
+    "Scheduled on this iPhone, never on a server." : {
+
+    },
+    "Search" : {
+
+    },
+    "Search foods or brands" : {
+
+    },
+    "Search meals and foods" : {
+
+    },
+    "Searching…" : {
+
+    },
+    "Sedentary" : {
+
+    },
+    "See step history" : {
+
+    },
+    "Select %@" : {
+
+    },
+    "Select all that apply, or continue if none do." : {
+
+    },
+    "serving" : {
+
+    },
+    "Serving" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Sex" : {
+
+    },
+    "Share of energy" : {
+
+    },
+    "Share of energy counts 4 kcal per gram of protein and carbs and 9 kcal per gram of fat. The target split comes from your daily targets." : {
+
+    },
+    "Shorter" : {
+
+    },
+    "Sleep" : {
+
+    },
+    "slice" : {
+
+    },
+    "Snack" : {
+
+    },
+    "So you don't log them twice" : {
+
+    },
+    "Sodium" : {
+
+    },
+    "Soft drink" : {
+
+    },
+    "some" : {
+
+    },
+    "Some" : {
+
+    },
+    "Some foods don't report %@, so those totals may be low." : {
+
+    },
+    "Something else" : {
+
+    },
+    "Something went wrong" : {
+
+    },
+    "Source · %@. Energy is a recorded measurement, not an estimate entered in VESS." : {
+
+    },
+    "Soy" : {
+
+    },
+    "soy-free" : {
+
+    },
+    "Sparkling water" : {
+
+    },
+    "Started at" : {
+
+    },
+    "Starting estimates from your answers, not medical advice. Targets are a guide, not a grade." : {
+
+    },
+    "Statistics" : {
+
+    },
+    "Status" : {
+
+    },
+    "Step %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Steps" : {
+
+    },
+    "Steps · last 7 days" : {
+
+    },
+    "Steps and active energy" : {
+
+    },
+    "steps on %@" : {
+
+    },
+    "Steps only" : {
+
+    },
+    "steps today" : {
+
+    },
+    "Steps, active energy and recorded workouts come from Apple Health. VESS only reads them; it never writes to Health." : {
+
+    },
+    "Steps, last 7 days" : {
+
+    },
+    "Stored in" : {
+
+    },
+    "strength" : {
+
+    },
+    "Strength" : {
+
+    },
+    "strength session" : {
+
+    },
+    "Sufficient" : {
+
+    },
+    "Sugars" : {
+
+    },
+    "Suggest meals for ^[%lld open slot](inflect: true)" : {
+
+    },
+    "Suggest meals for the week" : {
+
+    },
+    "Suggested" : {
+
+    },
+    "Suggestions" : {
+
+    },
+    "Supplement" : {
+
+    },
+    "Supplement reminders" : {
+
+    },
+    "Supplements" : {
+
+    },
+    "swim" : {
+
+    },
+    "Swim" : {
+
+    },
+    "swimming" : {
+
+    },
+    "Switch on to get a reminder at its time." : {
+
+    },
+    "Syncing with Apple Health" : {
+
+    },
+    "Syncing with Apple Health…" : {
+
+    },
+    "Syncing your movement." : {
+
+    },
+    "Syncing…" : {
+
+    },
+    "System" : {
+
+    },
+    "tablet" : {
+
+    },
+    "Take a photo" : {
+
+    },
+    "Tap + to log a meal or a drink: search, scan a barcode, or enter it yourself. Today shows how your day is going against your own targets." : {
+
+    },
+    "Tap the heart on a food to keep it here." : {
+
+    },
+    "Target" : {
+
+    },
+    "Target split is %@ / %@ / %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Target split is %1$@ / %2$@ / %3$@."
+          }
+        }
+      }
+    },
+    "tbsp" : {
+
+    },
+    "Tea" : {
+
+    },
+    "that day" : {
+
+    },
+    "That doesn't look like a barcode. Check the digits." : {
+
+    },
+    "The average covers days with at least one meal logged." : {
+
+    },
+    "The camera is off for VESS" : {
+
+    },
+    "The context behind your targets." : {
+
+    },
+    "the day's" : {
+
+    },
+    "The grocery list is built from the meals you've planned, minus what you already have. Checking an item doesn't store it; Done shopping moves checked items into your pantry." : {
+
+    },
+    "The last 30 days." : {
+
+    },
+    "The last seven days." : {
+
+    },
+    "The number under the barcode." : {
+
+    },
+    "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
+
+    },
+    "These use what's in your pantry first. Check use-by dates before cooking." : {
+
+    },
+    "This device can't scan barcodes. Type the number under the barcode instead." : {
+
+    },
+    "This product doesn't list calories, so it can't be logged. Create it as your own food instead." : {
+
+    },
+    "This week averages %@ kcal and %@ g protein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This week averages %1$@ kcal and %2$@ g protein."
+          }
+        }
+      }
+    },
+    "Threw it away" : {
+
+    },
+    "Through the day" : {
+
+    },
+    "Time" : {
+
+    },
+    "To" : {
+
+    },
+    "To buy" : {
+
+    },
+    "To scan, allow camera access in Settings. You can also type the number under the barcode." : {
+
+    },
+    "today" : {
+
+    },
+    "Today" : {
+
+    },
+    "Today · %@" : {
+
+    },
+    "Today %@" : {
+
+    },
+    "Today vs. a typical %@" : {
+
+    },
+    "Today vs. prior 30 days" : {
+
+    },
+    "today's" : {
+
+    },
+    "Tomorrow" : {
+
+    },
+    "Tonight" : {
+
+    },
+    "Too many lookups in a short time. Try again in a minute." : {
+
+    },
+    "Too many searches in a short time. Try again in a minute." : {
+
+    },
+    "Total" : {
+
+    },
+    "Try again" : {
+
+    },
+    "tsp" : {
+
+    },
+    "Turn light off" : {
+
+    },
+    "Turn light on" : {
+
+    },
+    "Type" : {
+
+    },
+    "Type at least 3 letters to search packaged products online." : {
+
+    },
+    "Type barcode number" : {
+
+    },
+    "Typical values from USDA FoodData Central" : {
+
+    },
+    "Typical values: about %@ kcal and %@ mg caffeine." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Typical values: about %1$@ kcal and %2$@ mg caffeine."
+          }
+        }
+      }
+    },
+    "Undo" : {
+
+    },
+    "Unit" : {
+
+    },
+    "Unit, %@" : {
+
+    },
+    "Unit: %@" : {
+
+    },
+    "Up to %@ ml at a time." : {
+
+    },
+    "Up to your protein target" : {
+
+    },
+    "Up to your water target" : {
+
+    },
+    "Updated from your plan. %lld things you already have at home were left off." : {
+
+    },
+    "Updated from your plan. 1 thing you already have at home was left off." : {
+
+    },
+    "Use Apple Health" : {
+
+    },
+    "Use by" : {
+
+    },
+    "Use soon" : {
+
+    },
+    "Use soon · %@" : {
+
+    },
+    "Use soon · ^[%lld item](inflect: true)" : {
+
+    },
+    "Use suggested targets" : {
+
+    },
+    "Use suggested targets?" : {
+
+    },
+    "Use this for %@ from now on" : {
+
+    },
+    "Used it all" : {
+
+    },
+    "Used only for the energy estimate." : {
+
+    },
+    "Used only to estimate energy needs" : {
+
+    },
+    "Used only to estimate your starting targets. You can change them anytime." : {
+
+    },
+    "Uses %@ before it expires" : {
+
+    },
+    "Uses %@ before they expire" : {
+
+    },
+    "Usual meal times" : {
+
+    },
+    "Usually around %@" : {
+
+    },
+    "Vegan" : {
+
+    },
+    "Vegetarian" : {
+
+    },
+    "Very active" : {
+
+    },
+    "VESS %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "VESS %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "VESS can use what Apple Health already knows, so you log less." : {
+
+    },
+    "VESS couldn't open your data on this iPhone. Your data hasn't been changed." : {
+
+    },
+    "VESS data export" : {
+
+    },
+    "VESS doesn't guess your steps." : {
+
+    },
+    "VESS has no account, no analytics and no ads." : {
+
+    },
+    "VESS never estimates steps." : {
+
+    },
+    "VESS never estimates steps. Without Apple Health, steps show —." : {
+
+    },
+    "VESS reads movement and body data from Apple Health to show it in Activity, Today and You. It never writes to Health." : {
+
+    },
+    "VESS reads steps, workouts, active energy and weight from Apple Health. It never writes to Health." : {
+
+    },
+    "VESS records the dose you choose. It doesn't recommend supplements or doses." : {
+
+    },
+    "VESS shapes your daily targets from these. It never changes them without asking." : {
+
+    },
+    "VESS will bring these forward. Choose any." : {
+
+    },
+    "View or correct this product on Open Food Facts" : {
+
+    },
+    "walk" : {
+
+    },
+    "Walk" : {
+
+    },
+    "walking" : {
+
+    },
+    "Water" : {
+
+    },
+    "Water is at %@ of %@ L so far today." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Water is at %1$@ of %2$@ L so far today."
+          }
+        }
+      }
+    },
+    "Water is the one to watch." : {
+
+    },
+    "Water target reached." : {
+
+    },
+    "Week" : {
+
+    },
+    "Week start and language follow your iPhone's settings. Units are metric." : {
+
+    },
+    "Week starts on" : {
+
+    },
+    "Weekends and weekdays are about the same." : {
+
+    },
+    "Weight" : {
+
+    },
+    "Weight and height" : {
+
+    },
+    "Welcome" : {
+
+    },
+    "What brings you to VESS?" : {
+
+    },
+    "What matters to you?" : {
+
+    },
+    "What moves your Fuel" : {
+
+    },
+    "What should we call you?" : {
+
+    },
+    "What you eat and drink, how you move, and what's at home, understood together." : {
+
+    },
+    "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105 %." : {
+
+    },
+    "When" : {
+
+    },
+    "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent." : {
+
+    },
+    "Where these numbers come from" : {
+
+    },
+    "Without 3 days of history there's no regularity yet, so the other three parts make up the whole score." : {
+
+    },
+    "workout" : {
+
+    },
+    "Workout" : {
+
+    },
+    "Workouts" : {
+
+    },
+    "Workouts you enter are kept in VESS. Their energy is an estimate from type, duration and effort, so it's shown with ≈." : {
+
+    },
+    "Year of birth" : {
+
+    },
+    "years" : {
+
+    },
+    "Yesterday" : {
+
+    },
+    "Yesterday · %@" : {
+
+    },
+    "yoga" : {
+
+    },
+    "Yoga" : {
+
+    },
+    "yoga session" : {
+
+    },
+    "You" : {
+
+    },
+    "You can change your targets, diet and what to avoid at any time under You." : {
+
+    },
+    "You move most on weekdays." : {
+
+    },
+    "You move most on weekends." : {
+
+    },
+    "You usually have %@ around %@. Log it and your Fuel score starts building." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "You usually have %1$@ around %2$@. Log it and your Fuel score starts building."
+          }
+        }
+      }
+    },
+    "You're offline, and this product isn't saved on this iPhone yet." : {
+
+    },
+    "You're offline. Foods on this iPhone are still available above." : {
+
+    },
+    "You're offline. Packaged products can be searched again once you're connected." : {
+
+    },
+    "You've logged enough days. Insights will appear here once VESS can compare them carefully." : {
+
+    },
+    "Your body. Better understood." : {
+
+    },
+    "Your calorie, protein, carb and fat targets change. Water and steps stay as they are." : {
+
+    },
+    "Your change wasn't saved. Please try again." : {
+
+    },
+    "Your data stays on this iPhone." : {
+
+    },
+    "Your data stays yours." : {
+
+    },
+    "Your day, item by item." : {
+
+    },
+    "Your entered workouts are saved while Health data refreshes." : {
+
+    },
+    "Your food" : {
+
+    },
+    "Your last caffeine was at %@." : {
+
+    },
+    "Your month in motion." : {
+
+    },
+    "Your movement is still here." : {
+
+    },
+    "Your own food, saved on this iPhone." : {
+
+    },
+    "Your own supplements and doses, kept apart from food. VESS never suggests one." : {
+
+    },
+    "Your pantry is empty" : {
+
+    },
+    "Your profile, meals, drinks, workouts, pantry, plans and supplements will be removed from this iPhone. This can't be undone." : {
+
+    },
+    "Your week in motion." : {
+
+    },
+    "µg" : {
+
+    }
+  },
+  "version" : "1.0"
+}

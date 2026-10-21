@@ -54,6 +54,8 @@ struct OnboardingFlow: View {
             .clipped()
             .vessKeyboardDoneButton()
 
+            // Docked above the keyboard. (Hiding it while the keyboard is up
+            // moved the layout under taps when focus changed between fields.)
             footer
                 .padding(.horizontal, VESSSpacing.screenInset)
                 .padding(.top, VESSSpacing.sm)
@@ -65,25 +67,41 @@ struct OnboardingFlow: View {
         let questions = OnboardingStep.questions
         let index = (questions.firstIndex(of: step) ?? 0) + 1
 
-        return HStack(spacing: VESSSpacing.md) {
-            Button {
-                if let previous = step.previous { go(to: previous) }
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(VESSColor.text)
-                    .frame(width: VESSHitTarget.minimum, height: VESSHitTarget.minimum)
-            }
-            .accessibilityLabel("Back")
+        // Back · centred tracked-caps title · step counter at the 20 pt
+        // margin, then a neutral progress line (progress isn't a link).
+        return VStack(spacing: VESSSpacing.sm) {
+            // The title is centred on the screen, not between the controls.
+            Text(step.headerTitle)
+                .vessTextStyle(.labelCaps)
+                .foregroundStyle(VESSColor.text)
+                .accessibilityAddTraits(.isHeader)
+                .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
+                .overlay {
+                HStack {
+                    Button {
+                        if let previous = step.previous { go(to: previous) }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(VESSColor.text)
+                            .frame(width: VESSHitTarget.minimum, height: VESSHitTarget.minimum)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Back")
+                    Spacer()
+                    Text(verbatim: "\(index)/\(questions.count)")
+                        .vessTextStyle(.caption)
+                        .foregroundStyle(VESSColor.secondaryText)
+                        .monospacedDigit()
+                        .accessibilityLabel(Text("Step \(index) of \(questions.count)"))
+                }
+                .padding(.leading, VESSSpacing.screenInset - (VESSHitTarget.minimum - 17) / 2)
+                .padding(.trailing, VESSSpacing.screenInset)
+                }
 
-            VESSVesselLine(value: Double(index) / Double(questions.count))
-
-            Text(verbatim: "\(index)/\(questions.count)")
-                .vessTextStyle(.label)
-                .monospacedDigit()
-                .accessibilityLabel(Text("Step \(index) of \(questions.count)"))
+            VESSVesselLine(value: Double(index) / Double(questions.count), tint: VESSColor.text)
+                .padding(.horizontal, VESSSpacing.screenInset)
         }
-        .padding(.horizontal, VESSSpacing.sm)
         .padding(.top, VESSSpacing.xs)
     }
 
@@ -153,6 +171,22 @@ struct OnboardingFlow: View {
             try store.saveProfile(profile)
         } catch {
             showError = true
+        }
+    }
+}
+
+private extension OnboardingStep {
+    /// The centred caps title above each question.
+    var headerTitle: LocalizedStringResource {
+        switch self {
+        case .welcome: "Welcome"
+        case .goal: "Goal"
+        case .basics: "About you"
+        case .activity: "Activity"
+        case .diet: "Diet"
+        case .restrictions: "Avoid"
+        case .focus: "Focus"
+        case .appleHealth: "Apple Health"
         }
     }
 }

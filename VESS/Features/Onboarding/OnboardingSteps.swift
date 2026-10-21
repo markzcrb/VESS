@@ -16,7 +16,7 @@ private struct QuestionScaffold<Content: View>: View {
                     .accessibilityAddTraits(.isHeader)
                 if let subtitle {
                     Text(subtitle)
-                        .font(.body)
+                        .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -34,13 +34,14 @@ struct GoalStep: View {
 
     var body: some View {
         QuestionScaffold(title: "What brings you to VESS?", subtitle: "Choose the one that matters most right now.") {
-            VStack(spacing: VESSSpacing.sm) {
+            VESSRowGroup {
                 ForEach(WellnessGoal.allCases, id: \.self) { goal in
                     VESSOptionRow(title: goal.title, isSelected: draft.goal == goal) {
                         draft.goal = goal
                     }
                 }
             }
+            .vessHairlineBottom()
         }
     }
 }
@@ -68,7 +69,8 @@ struct BasicsStep: View {
 
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                     Text("Sex")
-                        .vessTextStyle(.label)
+                        .vessTextStyle(.labelCaps)
+                        .foregroundStyle(VESSColor.secondaryText)
                     VESSChipFlow {
                         ForEach(Sex.allCases, id: \.self) { sex in
                             VESSChip(title: sex.title, isSelected: draft.sex == sex) {
@@ -77,7 +79,8 @@ struct BasicsStep: View {
                         }
                     }
                     Text("Used only for the energy estimate.")
-                        .vessTextStyle(.label)
+                        .vessTextStyle(.caption)
+                        .foregroundStyle(VESSColor.tertiaryText)
                 }
 
                 let layout = dynamicTypeSize.isAccessibilitySize
@@ -103,13 +106,14 @@ struct ActivityStep: View {
 
     var body: some View {
         QuestionScaffold(title: "How active is a typical week?", subtitle: "Count everyday movement as well as exercise.") {
-            VStack(spacing: VESSSpacing.sm) {
+            VESSRowGroup {
                 ForEach(ActivityLevel.allCases, id: \.self) { level in
                     VESSOptionRow(title: level.title, detail: level.detail, isSelected: draft.activityLevel == level) {
                         draft.activityLevel = level
                     }
                 }
             }
+            .vessHairlineBottom()
         }
     }
 }
@@ -121,15 +125,17 @@ struct DietStep: View {
 
     var body: some View {
         QuestionScaffold(title: "How do you like to eat?") {
-            VStack(spacing: VESSSpacing.sm) {
-                ForEach(DietaryPreference.allCases, id: \.self) { diet in
-                    VESSOptionRow(title: diet.title, isSelected: draft.dietaryPreference == diet) {
-                        draft.dietaryPreference = diet
+            VStack(alignment: .leading, spacing: VESSSpacing.lg) {
+                VESSRowGroup {
+                    ForEach(DietaryPreference.allCases, id: \.self) { diet in
+                        VESSOptionRow(title: diet.title, isSelected: draft.dietaryPreference == diet) {
+                            draft.dietaryPreference = diet
+                        }
                     }
                 }
+                .vessHairlineBottom()
                 if draft.dietaryPreference == .custom {
                     VESSTextField("Describe it", text: $draft.customDiet, prompt: Text("For example, pescatarian"))
-                        .padding(.top, VESSSpacing.xs)
                 }
             }
         }
@@ -191,9 +197,11 @@ struct AppleHealthStep: View {
                 reason("Workouts", detail: "So you don't log them twice", systemImage: "dumbbell")
                 reason("Sleep", detail: "Context for your Margin Notes", systemImage: "bed.double")
             }
+            .vessHairlineBottom()
 
             Text("Nothing is shared now. VESS asks for each type only when you first use a feature that needs it, and you can change your choice anytime in Settings.")
-                .vessTextStyle(.label)
+                .vessTextStyle(.caption)
+                .foregroundStyle(VESSColor.tertiaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -202,13 +210,7 @@ struct AppleHealthStep: View {
         VESSRow(
             title: Text(title),
             subtitle: Text(detail),
-            leading: {
-                Image(systemName: systemImage)
-                    .font(.body)
-                    .foregroundStyle(VESSColor.accent)
-                    .frame(width: 28)
-                    .accessibilityHidden(true)
-            },
+            leading: { VESSRowIcon(systemImage: systemImage) },
             trailing: { EmptyView() }
         )
         .accessibilityElement(children: .combine)

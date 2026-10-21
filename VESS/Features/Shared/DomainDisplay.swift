@@ -239,11 +239,10 @@ extension Food {
 extension Portion {
     /// "1 medium (118 g)", "1.5 × 1 slice (48 g)" or "150 g".
     func text(unit: QuantityUnit) -> String {
-        let unitText = String(localized: unit.abbreviation)
         if option.isBaseUnit {
-            return "\(VESSFormat.quantity(count)) \(unitText)"
+            return unit.amountText(count)
         }
-        let total = "\(VESSFormat.quantity(baseAmount)) \(unitText)"
+        let total = unit.amountText(baseAmount)
         if count == 1 {
             return "\(option.label) (\(total))"
         }
@@ -319,6 +318,34 @@ extension WorkoutEffort {
         case .easy: "easy effort"
         case .moderate: "moderate effort"
         case .hard: "hard effort"
+        }
+    }
+}
+
+extension QuantityUnit {
+    /// Units counted as things, not measured: they take a plural.
+    var isCountable: Bool { [.piece, .pack, .slice, .cup, .serving].contains(self) }
+
+    /// "1 piece", "2 pieces", "1.5 slices", "150 g". Whole counts use the
+    /// string catalog's plural rules; fractions take the plural form.
+    func amountText(_ amount: Double) -> String {
+        guard isCountable else { return "\(VESSFormat.quantity(amount)) \(String(localized: abbreviation))" }
+        if let count = Int(exactly: amount) {
+            switch self {
+            case .piece: return String(localized: "\(count) piece")
+            case .pack: return String(localized: "\(count) pack")
+            case .slice: return String(localized: "\(count) slice")
+            case .cup: return String(localized: "\(count) cup")
+            default: return String(localized: "\(count) serving")
+            }
+        }
+        let number = VESSFormat.quantity(amount)
+        switch self {
+        case .piece: return String(localized: "\(number) pieces")
+        case .pack: return String(localized: "\(number) packs")
+        case .slice: return String(localized: "\(number) slices")
+        case .cup: return String(localized: "\(number) cups")
+        default: return String(localized: "\(number) servings")
         }
     }
 }

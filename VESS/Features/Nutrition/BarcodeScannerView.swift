@@ -148,7 +148,8 @@ struct BarcodeScannerView: View {
             }
         case .notFound(let code):
             message(
-                Text("Nothing on Open Food Facts for \(Self.grouped(code)). You can add it yourself."),
+                // Non-breaking spaces keep the number on one line.
+                Text("Nothing on Open Food Facts for \(Self.grouped(code).replacingOccurrences(of: " ", with: "\u{00A0}")). You can add it yourself."),
                 primary: ("Add manually", onAddManually),
                 secondary: ("Scan again", { phase = .scanning })
             )
@@ -211,7 +212,8 @@ struct BarcodeScannerView: View {
 
     private func start() async {
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-demoBarcode") {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-demoBarcode") || arguments.contains("-demoBarcodeNotFound") {
             await runDemoScan()
             return
         }
@@ -248,9 +250,17 @@ struct BarcodeScannerView: View {
     #if DEBUG
     /// `-demoBarcode`: the simulator has no camera, so captures of F01–F03
     /// step through a fixed scan of the DEBUG demo product.
+    /// `-demoBarcodeNotFound` ends in "No product found" (F05) instead.
     private func runDemoScan() async {
         phase = .scanning
         try? await Task.sleep(for: .seconds(3))
+        if ProcessInfo.processInfo.arguments.contains("-demoBarcodeNotFound") {
+            let code = "4000000000006"
+            phase = .reading(code)
+            try? await Task.sleep(for: .seconds(2))
+            phase = .notFound(code)
+            return
+        }
         guard let code = MockData.barcodeDemo.barcode else { return }
         phase = .reading(code)
         try? await Task.sleep(for: .seconds(3))

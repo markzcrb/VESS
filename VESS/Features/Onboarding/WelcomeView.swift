@@ -51,7 +51,7 @@ struct WelcomeView: View {
                     .vessTextStyle(.label)
             }
         }
-        .padding(.horizontal, VESSSpacing.screenInset + VESSSpacing.xs)
+        .padding(.horizontal, VESSSpacing.screenInset)
         .padding(.bottom, VESSSpacing.md)
     }
 }

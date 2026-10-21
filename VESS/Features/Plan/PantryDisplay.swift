@@ -7,7 +7,7 @@ extension InventoryItem {
         guard let quantity else { return String(localized: "some") }
         switch unit {
         case .piece: return VESSFormat.quantity(quantity)
-        default: return "\(VESSFormat.quantity(quantity)) \(String(localized: unit.abbreviation))"
+        default: return unit.amountText(quantity)
         }
     }
 

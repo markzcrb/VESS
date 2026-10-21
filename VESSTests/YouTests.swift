@@ -105,3 +105,17 @@ struct YouDataTests {
         #expect(decoded.dailyStepsTarget == 8_000)
     }
 }
+
+@Suite("Unit plurals")
+struct UnitPluralTests {
+    @Test("Countable units take a plural from the string catalog; measured units don't")
+    func plurals() {
+        #expect(QuantityUnit.piece.amountText(1) == "1 piece")
+        #expect(QuantityUnit.piece.amountText(2) == "2 pieces")
+        #expect(QuantityUnit.slice.amountText(1.5).hasSuffix("slices"))
+        #expect(QuantityUnit.pack.amountText(3) == "3 packs")
+        #expect(QuantityUnit.gram.amountText(150) == "150 g")
+        #expect(SupplementUnit.capsule.amountText(1) == "1 capsule")
+        #expect(SupplementUnit.tablet.amountText(2) == "2 tablets")
+    }
+}

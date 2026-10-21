@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// A full-width selectable option, used for single-choice questions.
-/// Selection shows a filled check *and* a stronger outline.
+/// A selectable option for single-choice questions: a hairline row (place it
+/// in a `VESSRowGroup`) with a checkmark when selected. The check and the
+/// selected trait carry the meaning, not colour.
 struct VESSOptionRow: View {
     let title: LocalizedStringResource
     var detail: LocalizedStringResource?
@@ -9,31 +10,31 @@ struct VESSOptionRow: View {
     let action: () -> Void
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: VESSRadius.control, style: .continuous)
-
         Button(action: action) {
             HStack(spacing: VESSSpacing.sm) {
-                VStack(alignment: .leading, spacing: VESSSpacing.xxs / 2) {
+                VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
                     Text(title)
-                        .vessTextStyle(.body)
+                        .vessTextStyle(.bodyM)
+                        .foregroundStyle(VESSColor.text)
                     if let detail {
                         Text(detail)
-                            .vessTextStyle(.secondary)
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(isSelected ? VESSColor.text : VESSColor.tertiaryText)
-                    .accessibilityHidden(true)
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(VESSColor.text)
+                        .accessibilityHidden(true)
+                }
             }
-            .padding(.horizontal, VESSSpacing.lg)
-            .padding(.vertical, VESSSpacing.md)
-            .frame(minHeight: 56)
-            .background(isSelected ? VESSColor.accentPale : VESSColor.card, in: shape)
-            .overlay(shape.strokeBorder(isSelected ? VESSColor.text : VESSColor.divider, lineWidth: 1))
-            .contentShape(shape)
+            .padding(.vertical, VESSSpacing.sm)
+            .frame(minHeight: VESSSize.rowHeight)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

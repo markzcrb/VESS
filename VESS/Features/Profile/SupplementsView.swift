@@ -269,7 +269,7 @@ struct NotificationsDeniedNote: View {
 extension Supplement {
     /// "1,000 IU · 08:00" or "5 g · no reminder".
     var summary: Text {
-        let dose = Text("\(VESSFormat.quantity(dosage)) \(Text(unit.abbreviation))")
+        let dose = Text(verbatim: unit.amountText(dosage))
         guard let time = reminderTime,
               let date = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1, hour: time.hour, minute: time.minute))
         else { return Text("\(dose) · no reminder") }
@@ -278,6 +278,22 @@ extension Supplement {
 }
 
 extension SupplementUnit {
+    /// "1 capsule", "2 tablets", "1,000 IU".
+    func amountText(_ amount: Double) -> String {
+        if let count = Int(exactly: amount) {
+            switch self {
+            case .capsule: return String(localized: "\(count) capsule")
+            case .tablet: return String(localized: "\(count) tablet")
+            default: break
+            }
+        }
+        switch self {
+        case .capsule: return String(localized: "\(VESSFormat.quantity(amount)) capsules")
+        case .tablet: return String(localized: "\(VESSFormat.quantity(amount)) tablets")
+        default: return "\(VESSFormat.quantity(amount)) \(String(localized: abbreviation))"
+        }
+    }
+
     var abbreviation: LocalizedStringResource {
         switch self {
         case .milligram: "mg"

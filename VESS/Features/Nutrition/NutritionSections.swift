@@ -199,15 +199,12 @@ struct MealDiarySection: View {
         }
         if let label = entry.portionLabel, entry.portionAmount != nil {
             let count = entry.portionCount
-            let total = Text("\(VESSFormat.quantity(entry.quantity)) \(Text(entry.servingUnit.abbreviation))")
+            let total = Text(verbatim: entry.servingUnit.amountText(entry.quantity))
             return count == 1
                 ? Text("\(label) · \(total)")
                 : Text("\(VESSFormat.quantity(count)) × \(label) · \(total)")
         }
-        if entry.servingUnit == .piece {
-            return Text("^[\(VESSFormat.quantity(entry.quantity)) piece](inflect: true)")
-        }
-        return Text("\(VESSFormat.quantity(entry.quantity)) \(Text(entry.servingUnit.abbreviation))")
+        return Text(verbatim: entry.servingUnit.amountText(entry.quantity))
     }
 }
 

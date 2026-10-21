@@ -68,7 +68,7 @@ struct SuggestionsView: View {
                 if !suggestions.isEmpty {
                     VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                         if suggestions.count < openSlots.count {
-                            Text("^[\(openSlots.count - suggestions.count) slot](inflect: true) had nothing that fits yet. Add them from the plan when you're ready.")
+                            unfilledText(openSlots.count - suggestions.count)
                         }
                         Text("\(selected.count) of \(suggestions.count) selected · You can change any later")
                     }
@@ -97,6 +97,27 @@ struct SuggestionsView: View {
         .vessErrorAlert(isPresented: $showError)
     }
 
+    /// "3 slots left open: nothing fits pescatarian and nut-free." The
+    /// reason names the profile's diet and what it avoids.
+    private func unfilledText(_ count: Int) -> Text {
+        let rules = Self.dietRules(store.profile)
+        guard !rules.isEmpty else {
+            return Text("^[\(count) slot](inflect: true) left open: nothing you've saved fits them yet.")
+        }
+        return Text("^[\(count) slot](inflect: true) left open: nothing fits \(rules.formatted(.list(type: .and))).")
+    }
+
+    /// ["pescatarian", "nut-free"] from the profile.
+    static func dietRules(_ profile: UserProfile?) -> [String] {
+        guard let profile else { return [] }
+        var rules: [String] = []
+        if profile.dietaryPreference != .everything {
+            rules.append(String(localized: profile.dietTitle).lowercased())
+        }
+        rules += Allergen.allCases.filter { profile.allergies.contains($0) }.map { String(localized: $0.freeFrom) }
+        return rules
+    }
+
     private func suggestions(now: Date) -> [MealSuggestions.Suggestion] {
         guard let profile = store.profile else { return [] }
         return MealSuggestions.suggest(
@@ -122,6 +143,19 @@ struct SuggestionsView: View {
             dismiss()
         } catch {
             showError = true
+        }
+    }
+}
+
+private extension Allergen {
+    /// "nut-free", for the reason a slot stays open.
+    var freeFrom: LocalizedStringResource {
+        switch self {
+        case .gluten: "gluten-free"
+        case .lactose: "lactose-free"
+        case .nuts: "nut-free"
+        case .soy: "soy-free"
+        case .eggs: "egg-free"
         }
     }
 }
