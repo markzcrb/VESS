@@ -97,7 +97,8 @@ struct AppRootView: View {
     /// Apple Health through the read-only HealthKit reader; disconnected
     /// until the user connects. Debug builds use the demo snapshot with
     /// `-seedSampleData`, and accept `-healthSyncing` (S2, D06),
-    /// `-healthNotConnected` (S4) and `-healthError` (D07, last known values).
+    /// `-healthNotConnected` (S4), `-healthNothingShared` and `-healthError`
+    /// (D07, last known values).
     private static func makeHealth() -> HealthDataStore {
         #if DEBUG
         let arguments = ProcessInfo.processInfo.arguments
@@ -107,6 +108,9 @@ struct AppRootView: View {
         if arguments.contains("-seedSampleData") {
             let demo = MockData(now: AppClock.now, calendar: .current).health
             let service = DemoHealthService(snapshot: demo)
+            if arguments.contains("-healthNothingShared") {
+                return HealthDataStore(state: .nothingShared, service: service, didRequestAccess: false)
+            }
             if arguments.contains("-healthNotConnected") {
                 return HealthDataStore(state: .notConnected, service: service, didRequestAccess: false)
             }
@@ -136,7 +140,9 @@ struct AppRootView: View {
     /// the network, so they behave as if offline.
     private static func makeLookup(store: LocalStore) -> FoodLookupService {
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-uiTesting") {
+        let arguments = ProcessInfo.processInfo.arguments
+        // `-foodOffline` shows the offline search state in captures.
+        if arguments.contains("-uiTesting") || arguments.contains("-foodOffline") {
             return FoodLookupService(store: store, provider: OfflineFoodProvider())
         }
         #endif

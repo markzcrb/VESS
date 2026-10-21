@@ -353,7 +353,7 @@ private struct FoodSearchHome: View {
                         foodList(remaining)
                     }
                 case .failed(let error):
-                    Text(Self.message(for: error))
+                    Text(Self.message(for: error, hasLocalResults: !localIDs.isEmpty))
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("foodSearch.onlineMessage")
                 }
@@ -386,11 +386,14 @@ private struct FoodSearchHome: View {
         }
     }
 
-    static func message(for error: FoodProviderError) -> LocalizedStringResource {
-        switch error {
-        case .offline: "You're offline. Foods on this iPhone are still available above."
-        case .rateLimited: "Too many searches in a short time. Try again in a minute."
-        default: "Open Food Facts didn't respond. Foods on this iPhone are still available above."
+    /// Points to the foods above only when there are some.
+    static func message(for error: FoodProviderError, hasLocalResults: Bool) -> LocalizedStringResource {
+        switch (error, hasLocalResults) {
+        case (.offline, true): "You're offline. Foods on this iPhone are still available above."
+        case (.offline, false): "You're offline. Packaged products can be searched again once you're connected."
+        case (.rateLimited, _): "Too many searches in a short time. Try again in a minute."
+        case (_, true): "Open Food Facts didn't respond. Foods on this iPhone are still available above."
+        case (_, false): "Open Food Facts didn't respond. Try again in a moment."
         }
     }
 
