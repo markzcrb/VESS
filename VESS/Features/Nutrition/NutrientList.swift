@@ -25,7 +25,7 @@ struct NutrientList: View {
                 row(.carbohydrates, nutrition.carbohydrateGrams, tint: VESSColor.carbs)
                 row(.fat, nutrition.fatGrams, tint: VESSColor.fat)
                 if let fiber = nutrition.fiberGrams {
-                    optionalRow("Fiber", value: "\(VESSFormat.quantity(fiber)) g")
+                    optionalRow("Fibre", value: "\(VESSFormat.quantity(fiber)) g")
                 }
                 if let sugar = nutrition.sugarGrams {
                     optionalRow("Sugars", value: "\(VESSFormat.quantity(sugar)) g")

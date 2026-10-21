@@ -194,7 +194,8 @@ private struct FoodSearchHome: View {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(VESSColor.secondaryText)
                 .accessibilityHidden(true)
-            TextField("Search foods or brands", text: $query)
+            // An explicit prompt colour: the system placeholder is under 4.5:1.
+            TextField("Search foods or brands", text: $query, prompt: Text("Search foods or brands").foregroundStyle(VESSColor.tertiaryText))
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.text)
                 .focused($isSearchFocused)

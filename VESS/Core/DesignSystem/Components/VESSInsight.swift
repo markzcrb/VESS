@@ -132,6 +132,8 @@ struct VESSImpactRow: View {
         let shape = RoundedRectangle(cornerRadius: VESSRadius.thumbnail, style: .continuous)
         let isPositive = impactPercent >= 0
         let tint = isPositive ? VESSColor.statusOptimal : VESSColor.statusPoor
+        // The percent is text, so it uses the text variants (4.5:1 in Light).
+        let textTint = isPositive ? VESSColor.statusOptimalText : VESSColor.warningText
 
         VStack(alignment: .leading, spacing: VESSSpacing.sm + 2) {
             HStack(spacing: VESSSpacing.xs) {
@@ -144,7 +146,7 @@ struct VESSImpactRow: View {
                 Spacer(minLength: VESSSpacing.xs)
                 Text(verbatim: isPlaceholder ? (isPositive ? "+?%" : "−?%") : (isPositive ? "+\(impactPercent)%" : "−\(abs(impactPercent))%"))
                     .vessTextStyle(.numberS)
-                    .foregroundStyle(tint)
+                    .foregroundStyle(textTint)
             }
             GeometryReader { proxy in
                 let half = proxy.size.width / 2

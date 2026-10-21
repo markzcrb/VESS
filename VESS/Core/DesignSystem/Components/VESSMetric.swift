@@ -82,7 +82,7 @@ struct VESSTag: View {
         switch tone {
         case .neutral: VESSColor.secondaryText
         case .positive: VESSColor.statusOptimalText
-        case .warning: VESSColor.statusPoor
+        case .warning: VESSColor.warningText
         case .accent: VESSColor.accent
         }
     }

@@ -320,6 +320,8 @@ struct ProfilePage<Content: View>: View {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                 content
             }
+            // Full width, so short pages (Help articles) aren't centred.
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, VESSSpacing.screenInset)
             .padding(.top, VESSSpacing.xs)
             .padding(.bottom, VESSSpacing.huge)

@@ -210,7 +210,7 @@ struct FoodDetailView: View {
                 VESSListRow(systemImage: "info.circle", title: Text(per100.title), value: per100.value, showsChevron: false)
             }
             if let fiber = nutrition.fiberGrams {
-                VESSListRow(title: Text("Fiber"), value: Text("\(VESSFormat.quantity(fiber)) g"), showsChevron: false)
+                VESSListRow(title: Text("Fibre"), value: Text("\(VESSFormat.quantity(fiber)) g"), showsChevron: false)
             }
             if let sugar = nutrition.sugarGrams {
                 VESSListRow(title: Text("Sugars"), value: Text("\(VESSFormat.quantity(sugar)) g"), showsChevron: false)

@@ -7,6 +7,11 @@ import SwiftUI
 struct InsightsView: View {
     @Environment(LocalStore.self) private var store
 
+    #if DEBUG
+    /// Previews only: force the demo list (`true`) or S3 (`false`).
+    var forcesDemo: Bool? = nil
+    #endif
+
     /// Days of logging the design asks for before showing patterns.
     static let daysNeeded = 30
     private static let windowDays = 90
@@ -17,7 +22,7 @@ struct InsightsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.section) {
                 #if DEBUG
-                if Self.showsDemo {
+                if forcesDemo ?? Self.showsDemo {
                     demo
                 } else {
                     notEnoughData
@@ -174,10 +179,17 @@ struct InsightsView: View {
     #endif
 }
 
-#Preview {
+#Preview("04 demo") {
     NavigationStack {
         InsightsView()
     }
     .previewEnvironment(LocalStore.preview())
     .preferredColorScheme(.dark)
+}
+
+#Preview("S3") {
+    NavigationStack {
+        InsightsView(forcesDemo: false)
+    }
+    .previewEnvironment(LocalStore.preview())
 }

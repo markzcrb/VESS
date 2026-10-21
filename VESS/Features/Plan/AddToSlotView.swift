@@ -31,7 +31,7 @@ struct AddToSlotView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(VESSColor.secondaryText)
                             .accessibilityHidden(true)
-                        TextField("Search meals and foods", text: $query)
+                        TextField("Search meals and foods", text: $query, prompt: Text("Search meals and foods").foregroundStyle(VESSColor.tertiaryText))
                             .vessTextStyle(.bodyM)
                             .autocorrectionDisabled()
                             .accessibilityIdentifier("addToSlot.search")
