@@ -151,7 +151,9 @@ struct GroceryContent: View {
 
             if !list.checked.isEmpty {
                 section(Text("Checked · \(list.checked.count) ready to store"), lines: list.checked, detail: .meals, model: model, now: now)
-                note(Text("Checking items does not add them to Pantry. Tap Done shopping to move ^[these \(list.checked.count) checked item](inflect: true) into Pantry."))
+                note(list.checked.count == 1
+                     ? Text("Checking items does not add them to Pantry. Tap Done shopping to move this checked item into Pantry.")
+                     : Text("Checking items does not add them to Pantry. Tap Done shopping to move these \(list.checked.count) checked items into Pantry."))
                 Button {
                     do {
                         try model.doneShopping(list, now: now)
@@ -301,6 +303,7 @@ struct GroceryItemView: View {
         }
         .vessScreenBackground()
         .vessDetailTitle("Grocery")
+        .toolbar(.hidden, for: .tabBar)
         .vessErrorAlert(isPresented: $showError)
     }
 

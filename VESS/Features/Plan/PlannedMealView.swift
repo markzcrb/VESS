@@ -20,6 +20,7 @@ struct PlannedMealView: View {
             if let meal = store.plannedMeal(id: mealID) {
                 content(meal)
                     .vessDetailTitle(title(for: meal))
+                    .toolbar(.hidden, for: .tabBar)
                     .sheet(isPresented: $showMove) {
                         MoveMealSheet(meal: meal, onMoved: { dismiss() })
                     }

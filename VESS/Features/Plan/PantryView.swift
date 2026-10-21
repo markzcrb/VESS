@@ -30,6 +30,7 @@ struct PantryView: View {
         }
         .vessScreenBackground()
         .vessDetailTitle("Pantry")
+        .toolbar(.hidden, for: .tabBar)
         .sheet(item: $addRequest) { request in
             AddPantryItemSheet(product: request.product)
         }

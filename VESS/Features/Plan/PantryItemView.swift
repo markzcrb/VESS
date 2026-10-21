@@ -25,6 +25,7 @@ struct PantryItemView: View {
         }
         .vessScreenBackground()
         .vessDetailTitle("Pantry")
+        .toolbar(.hidden, for: .tabBar)
         .onAppear { if draft == nil { draft = store.inventoryItem(id: itemID) } }
         .vessErrorAlert(isPresented: $showError)
         .confirmationDialog("Delete this item?", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {

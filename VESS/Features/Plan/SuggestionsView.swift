@@ -83,6 +83,7 @@ struct SuggestionsView: View {
         }
         .vessScreenBackground()
         .vessDetailTitle("Suggestions")
+        .toolbar(.hidden, for: .tabBar)
         .vessBottomAction(background: VESSColor.background) {
             Button {
                 add(selected.map { suggestions[$0] })

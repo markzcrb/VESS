@@ -84,6 +84,7 @@ struct AddToSlotView: View {
         .scrollDismissesKeyboard(.immediately)
         .vessScreenBackground()
         .vessDetailTitle(title)
+        .toolbar(.hidden, for: .tabBar)
         .vessErrorAlert(isPresented: $showError)
     }
 
