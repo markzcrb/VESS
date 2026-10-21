@@ -162,7 +162,7 @@ struct AddDrinkSheet: View {
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.text)
                 }
-                .tint(VESSColor.accentFill)
+                .toggleStyle(.vess)
             }
 
             if let typical = typicalValuesText {

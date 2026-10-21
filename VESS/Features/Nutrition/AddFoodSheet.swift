@@ -65,7 +65,7 @@ struct QuickAddForm: View {
                             .vessTextStyle(.bodyM)
                             .foregroundStyle(VESSColor.text)
                     }
-                    .tint(VESSColor.accentFill)
+                    .toggleStyle(.vess)
                     .frame(minHeight: VESSSize.rowHeight)
                     .accessibilityIdentifier("addFood.saveToMyFoods")
 
