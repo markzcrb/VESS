@@ -1,11 +1,13 @@
 import SwiftUI
 
 extension InventoryItem {
-    /// "150 g", "1 kg", or a plain count for pieces ("2").
+    /// "150 g", "1 kg", a plain count for pieces ("2"), or "some" when
+    /// the amount isn't known.
     var quantityText: String {
+        guard let quantity else { return String(localized: "some") }
         switch unit {
-        case .piece: VESSFormat.quantity(quantity)
-        default: "\(VESSFormat.quantity(quantity)) \(String(localized: unit.abbreviation))"
+        case .piece: return VESSFormat.quantity(quantity)
+        default: return "\(VESSFormat.quantity(quantity)) \(String(localized: unit.abbreviation))"
         }
     }
 

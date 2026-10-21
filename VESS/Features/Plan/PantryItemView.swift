@@ -123,9 +123,11 @@ struct PantryItemView: View {
         let step: Double = [.gram, .milliliter].contains(value.unit) ? 50 : 1
         return HStack {
             VESSIconButton(systemImage: "minus", label: "Less") {
-                item.wrappedValue.quantity = max(step, ((value.quantity / step).rounded() - 1) * step)
+                if let quantity = value.quantity {
+                    item.wrappedValue.quantity = max(step, ((quantity / step).rounded() - 1) * step)
+                }
             }
-            .disabled(value.quantity <= step)
+            .disabled((value.quantity ?? 0) <= step)
             Spacer()
             Text(value.quantityText)
                 .vessTextStyle(.displayM)
@@ -133,7 +135,8 @@ struct PantryItemView: View {
                 .contentTransition(.numericText())
             Spacer()
             VESSIconButton(systemImage: "plus", label: "More") {
-                item.wrappedValue.quantity = ((value.quantity / step).rounded() + 1) * step
+                // From "some", the first tap sets an amount.
+                item.wrappedValue.quantity = value.quantity.map { (($0 / step).rounded() + 1) * step } ?? step
             }
         }
         .accessibilityElement(children: .contain)

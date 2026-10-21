@@ -5,26 +5,60 @@ import Foundation
 nonisolated enum GroceryAisle: String, Codable, CaseIterable, Sendable {
     case produce, fish, dairyEggs, bakery, pantryStaples, other
 
-    /// A first guess from the item's name, from a small fixed word list.
-    /// The user can change it per item; unknown names go to `.other`.
+    /// A first guess from the item's name, from a fixed list of phrases
+    /// and words for a pescatarian kitchen. Phrases win over single words
+    /// ("coconut milk" is a tin, "green beans" are produce). The user can
+    /// change it per item; unknown names go to `.other`.
     static func guess(for name: String) -> GroceryAisle {
-        let words = Set(FoodSearch.normalized(name).split(separator: " ").map(String.init))
+        let normalized = FoodSearch.normalized(name)
+        for (phrase, aisle) in phraseTable where normalized.contains(phrase) {
+            return aisle
+        }
+        let words = Set(normalized.split(separator: " ").map(String.init))
         for (aisle, keywords) in keywordTable where !words.isDisjoint(with: keywords) {
             return aisle
         }
         return .other
     }
 
+    private static let phraseTable: [(String, GroceryAisle)] = [
+        ("coconut milk", .pantryStaples), ("coconut cream", .pantryStaples),
+        ("green beans", .produce), ("broad beans", .produce), ("runner beans", .produce),
+        ("frozen peas", .produce), ("sweet potato", .produce), ("spring onion", .produce),
+        ("tinned tomatoes", .pantryStaples), ("chopped tomatoes", .pantryStaples), ("tomato puree", .pantryStaples),
+        ("fish sauce", .pantryStaples), ("soy sauce", .pantryStaples), ("pumpkin seeds", .pantryStaples),
+        ("rye crackers", .pantryStaples), ("rice cakes", .pantryStaples),
+    ]
+
     private static let keywordTable: [(GroceryAisle, Set<String>)] = [
-        (.fish, ["salmon", "cod", "fish", "prawn", "prawns", "tuna", "trout", "mackerel", "haddock", "shrimp", "seafood"]),
-        (.dairyEggs, ["milk", "yogurt", "yoghurt", "skyr", "cheese", "butter", "cream", "egg", "eggs", "feta", "kefir"]),
-        (.bakery, ["bread", "rye", "wrap", "wraps", "tortilla", "tortillas", "bagel", "sourdough", "pitta", "rolls"]),
-        (.pantryStaples, ["pasta", "rice", "beans", "lentils", "chickpeas", "oil", "miso", "mirin", "honey", "oats", "flour", "stock", "sauce", "tin", "noodles"]),
+        (.fish, [
+            "salmon", "cod", "fish", "prawn", "prawns", "tuna", "trout", "mackerel", "haddock", "shrimp", "seafood",
+            "sardines", "sardine", "anchovies", "anchovy", "mussels", "clams", "scallops", "squid", "calamari", "crab",
+            "lobster", "hake", "pollock", "bass", "bream", "plaice", "halibut", "kippers", "herring", "monkfish", "sole",
+        ]),
+        (.dairyEggs, [
+            "milk", "yogurt", "yoghurt", "skyr", "cheese", "butter", "cream", "egg", "eggs", "feta", "kefir",
+            "mozzarella", "parmesan", "halloumi", "ricotta", "quark", "mascarpone", "paneer", "cottage", "creme",
+        ]),
+        (.bakery, ["bread", "rye", "wrap", "wraps", "tortilla", "tortillas", "bagel", "bagels", "sourdough", "pitta", "rolls", "baguette", "naan"]),
+        (.pantryStaples, [
+            // Grains.
+            "pasta", "rice", "oats", "flour", "noodles", "quinoa", "couscous", "bulgur", "barley", "buckwheat",
+            "polenta", "semolina", "granola", "muesli", "cereal", "spaghetti", "penne", "lasagne", "crackers",
+            // Tins and pulses.
+            "beans", "lentils", "chickpeas", "tin", "tins", "tinned", "canned",
+            // Cupboard.
+            "oil", "miso", "mirin", "honey", "stock", "broth", "sauce", "vinegar", "tahini", "seeds", "coffee", "tea",
+            "cocoa", "sugar", "salt", "spices", "cumin", "paprika", "turmeric", "curry", "paste", "mustard", "jam",
+        ]),
         (.produce, [
             "broccoli", "cucumber", "potato", "potatoes", "tomato", "tomatoes", "cabbage", "lime", "limes", "lemon", "lemons",
             "basil", "spinach", "choy", "onion", "onions", "carrot", "carrots", "apple", "apples", "banana", "bananas",
             "berries", "blueberries", "pepper", "peppers", "garlic", "ginger", "avocado", "lettuce", "herbs", "parsley",
-            "coriander", "courgette", "mushrooms", "greens", "kale", "leek", "celery",
+            "coriander", "courgette", "mushrooms", "greens", "kale", "leek", "celery", "edamame", "peas", "asparagus",
+            "sweetcorn", "corn", "aubergine", "cauliflower", "sprouts", "beetroot", "radish", "rocket", "chard", "squash",
+            "orange", "oranges", "pear", "pears", "grapes", "mango", "pineapple", "melon", "kiwi", "strawberries",
+            "raspberries", "plums", "dill", "mint", "chives", "thyme", "rosemary", "salad", "tofu", "tempeh",
         ]),
     ]
 }
@@ -158,13 +192,13 @@ nonisolated struct GroceryList: Sendable {
     }
 
     /// Done shopping: the pantry items for the checked lines. Fresh aisles
-    /// go to the fridge, the rest to the cupboard; no use-by date is
-    /// guessed.
+    /// go to the fridge, the rest to the cupboard; no use-by date and no
+    /// amount are guessed.
     func pantryItems(now: Date) -> [InventoryItem] {
         checked.map { line in
             InventoryItem(
                 id: UUID(), name: line.name,
-                quantity: line.quantity ?? 1, unit: line.quantity == nil ? .piece : (line.unit ?? .piece),
+                quantity: line.quantity, unit: line.unit ?? .piece,
                 purchaseDate: now, expirationDate: nil, category: .other,
                 location: [.produce, .fish, .dairyEggs].contains(line.aisle) ? .fridge : .pantry,
                 notes: nil, status: .available, reminderSnoozedUntil: nil

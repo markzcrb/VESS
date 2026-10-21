@@ -4,7 +4,9 @@ import Foundation
 nonisolated struct InventoryItem: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     var name: String
-    var quantity: Double
+    /// `nil` when the amount isn't known (shown as "some"), such as a
+    /// recipe ingredient bought without an amount.
+    var quantity: Double?
     var unit: QuantityUnit
     var purchaseDate: Date?
     var expirationDate: Date?

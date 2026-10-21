@@ -77,6 +77,15 @@ struct GroceryListTests {
         #expect(items.first?.quantity == 2)
     }
 
+    @Test("Done shopping never invents an amount: an ingredient without one has none")
+    func noAmount() throws {
+        let now = try TestClock.date(2026, 10, 6, 18, 40)
+        let end = try TestClock.date(2026, 10, 12, 0)
+        let planned = [meal("Pasta", on: try TestClock.date(2026, 10, 9), items: [("Basil", nil, nil)])]
+        let list = GroceryList(planned: planned, pantry: [], states: [state("Basil", checked: true, at: now)], from: now, to: end, calendar: calendar)
+        #expect(list.pantryItems(now: now).first?.quantity == nil)
+    }
+
     @Test("Aisles are guessed from a fixed word list, else Other")
     func aisles() {
         #expect(GroceryAisle.guess(for: "Salmon fillet") == .fish)
@@ -85,6 +94,12 @@ struct GroceryListTests {
         #expect(GroceryAisle.guess(for: "White beans") == .pantryStaples)
         #expect(GroceryAisle.guess(for: "Red cabbage") == .produce)
         #expect(GroceryAisle.guess(for: "Coffee beans") == .pantryStaples)
+        #expect(GroceryAisle.guess(for: "Edamame") == .produce)
+        #expect(GroceryAisle.guess(for: "Sardines") == .fish)
+        #expect(GroceryAisle.guess(for: "Quinoa") == .pantryStaples)
+        #expect(GroceryAisle.guess(for: "Coconut milk") == .pantryStaples, "A phrase beats the word milk")
+        #expect(GroceryAisle.guess(for: "Green beans") == .produce, "A phrase beats the word beans")
+        #expect(GroceryAisle.guess(for: "Halloumi") == .dairyEggs)
         #expect(GroceryAisle.guess(for: "Dish soap") == .other)
     }
 }

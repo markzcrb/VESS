@@ -369,8 +369,8 @@ struct GroceryItemView: View {
     /// − 350 g +, by 50 g or ml, or one at a time.
     private func quantity(_ line: GroceryList.Line, model: GroceryModel, now: Date) -> some View {
         let unit = line.unit ?? .piece
-        let value = line.quantity ?? 1
         let step: Double = [.gram, .milliliter].contains(unit) ? 50 : 1
+        let value = line.quantity ?? 0
         return HStack {
             VESSIconButton(systemImage: "minus", label: "Less") {
                 update(line, model: model, now: now) {
@@ -380,7 +380,7 @@ struct GroceryItemView: View {
             }
             .disabled(value <= step)
             Spacer()
-            Text(PlannedMeal.Item(name: line.name, quantity: value, unit: unit).amountText ?? "")
+            Text(PlannedMeal.Item(name: line.name, quantity: line.quantity, unit: unit).amountText ?? String(localized: "Some"))
                 .vessTextStyle(.displayM)
                 .foregroundStyle(VESSColor.text)
                 .contentTransition(.numericText())
