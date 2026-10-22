@@ -18,10 +18,34 @@ nonisolated struct HydrationLog: Identifiable, Codable, Hashable, Sendable {
     var sugarGrams: Double
     var caffeineMilligrams: Double
     var loggedAt: Date
+    /// Grams of pure alcohol. `nil` for drinks without alcohol and for logs
+    /// saved before alcohol was tracked (they decode without it).
+    var alcoholGrams: Double? = nil
 
     /// The estimated amount counted toward the daily water target.
     var hydrationMilliliters: Double {
         volumeMilliliters * min(max(hydrationContributionPercent, 0), 100) / 100
+    }
+
+    var isAlcoholic: Bool { drinkType == .alcohol }
+
+    /// kcal that count in the day's energy total: alcoholic drinks only.
+    /// Other drinks' kcal are recorded but, as before, not added to energy.
+    var energyCalories: Double { isAlcoholic ? calories : 0 }
+
+    /// Standard drinks (10 g of alcohol each).
+    var standardDrinks: Double? {
+        alcoholGrams.map(StandardDrink.count(alcoholGrams:))
+    }
+}
+
+nonisolated extension Sequence where Element == HydrationLog {
+    /// Alcoholic drinks as energy items for the Energy screen's chart,
+    /// before-noon share and daily totals.
+    var alcoholEnergy: [IntakeAnalysis.EnergyItem] {
+        compactMap { log in
+            log.energyCalories > 0 ? IntakeAnalysis.EnergyItem(date: log.loggedAt, calories: log.energyCalories) : nil
+        }
     }
 }
 

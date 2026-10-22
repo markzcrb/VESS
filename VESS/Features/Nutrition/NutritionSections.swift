@@ -288,14 +288,21 @@ struct DrinksDiarySection: View {
             return Text("^[\(group.logs.count) glass](inflect: true) · last at \(time)")
         }
         let volume = Text("\(VESSFormat.milliliters(latest.volumeMilliliters)) ml")
+        // "330 ml · 18:40 · 13 g alcohol · 1.3 drinks"
+        if latest.isAlcoholic, let grams = latest.alcoholGrams {
+            return Text("\(volume) · \(time) · \(VESSFormat.grams(grams)) g alcohol · \(DrinkFacts.drinksText(StandardDrink.count(alcoholGrams: grams)))")
+        }
         if latest.hydrationContributionPercent < 100 {
             return Text("\(volume) · \(time) · counts as \(VESSFormat.milliliters(latest.hydrationMilliliters)) ml")
         }
         return Text("\(volume) · \(time)")
     }
 
-    /// Caffeine when the drink has any; otherwise the volume (litres for a group).
+    /// kcal for alcohol (they count in the day's energy); caffeine when the
+    /// drink has any; otherwise the volume (litres for a group).
     private func value(for group: DrinkGroup) -> String {
+        let alcoholCalories = group.logs.reduce(0) { $0 + $1.energyCalories }
+        if group.logs.contains(where: \.isAlcoholic) { return "\(VESSFormat.calories(alcoholCalories)) kcal" }
         let caffeine = group.logs.reduce(0) { $0 + $1.caffeineMilligrams }
         if caffeine > 0 { return "\(VESSFormat.grams(caffeine)) mg" }
         let volume = group.logs.reduce(0) { $0 + $1.volumeMilliliters }

@@ -16,7 +16,10 @@ nonisolated enum DayWord: Hashable, Sendable {
 /// Everything Today and Nutrition need to describe a day, derived from logs.
 /// Pure and deterministic: the same inputs always produce the same summary.
 nonisolated struct DaySummary: Sendable {
+    /// The day's food, plus the kcal of alcoholic drinks in `calories`.
     let consumed: NutritionFacts
+    /// kcal from alcoholic drinks, included in `consumed.calories`.
+    let alcoholCalories: Double
     let targets: NutritionTargets
     let hydration: HydrationProgress
     let dayWord: DayWord
@@ -44,7 +47,11 @@ nonisolated struct DaySummary: Sendable {
         calendar: Calendar
     ) {
         let dayEntries = entries.filter { calendar.isDate($0.loggedAt, inSameDayAs: day) }
-        let consumed = dayEntries.totalNutrition
+        let alcoholCalories = hydrationLogs
+            .filter { calendar.isDate($0.loggedAt, inSameDayAs: day) }
+            .reduce(0) { $0 + $1.energyCalories }
+        var consumed = dayEntries.totalNutrition
+        consumed.calories += alcoholCalories
         let hydration = HydrationProgress(
             logs: hydrationLogs,
             targetMilliliters: waterTargetMilliliters,
@@ -54,6 +61,7 @@ nonisolated struct DaySummary: Sendable {
         let pace = Self.expectedPace(day: day, now: now, calendar: calendar)
 
         self.consumed = consumed
+        self.alcoholCalories = alcoholCalories
         self.targets = targets
         self.hydration = hydration
         self.expectedPace = pace
@@ -79,6 +87,9 @@ nonisolated struct DaySummary: Sendable {
 
     /// Target minus consumed. Negative when above target.
     var caloriesRemaining: Double { targets.calories - consumed.calories }
+
+    /// kcal from food only. Fuel uses this, so drinking never raises it.
+    var foodCalories: Double { consumed.calories - alcoholCalories }
 
     /// The day's eating window runs 07:00–21:00. Past days are complete.
     static func expectedPace(day: Date, now: Date, calendar: Calendar) -> Double {

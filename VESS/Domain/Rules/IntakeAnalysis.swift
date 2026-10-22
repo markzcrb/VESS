@@ -3,15 +3,27 @@ import Foundation
 /// How a day's intake is spread over time and across macronutrients.
 /// Pure and deterministic.
 nonisolated enum IntakeAnalysis {
+    /// Energy that isn't a food entry but counts in the day's total:
+    /// alcoholic drinks (`HydrationLog.alcoholEnergy`).
+    struct EnergyItem: Equatable, Sendable {
+        let date: Date
+        let calories: Double
+    }
+
     /// Share of the day's energy logged before 12:00, 0...1. `nil` when
     /// nothing with energy is logged.
-    static func beforeNoonShare(_ entries: [FoodLogEntry], calendar: Calendar) -> Double? {
-        let total = entries.reduce(0) { $0 + $1.nutrition.calories }
+    static func beforeNoonShare(_ entries: [FoodLogEntry], extra: [EnergyItem] = [], calendar: Calendar) -> Double? {
+        let items = Self.items(entries, extra: extra)
+        let total = items.reduce(0) { $0 + $1.calories }
         guard total > 0 else { return nil }
-        let morning = entries
-            .filter { calendar.component(.hour, from: $0.loggedAt) < 12 }
-            .reduce(0) { $0 + $1.nutrition.calories }
+        let morning = items
+            .filter { calendar.component(.hour, from: $0.date) < 12 }
+            .reduce(0) { $0 + $1.calories }
         return morning / total
+    }
+
+    private static func items(_ entries: [FoodLogEntry], extra: [EnergyItem]) -> [EnergyItem] {
+        entries.map { EnergyItem(date: $0.loggedAt, calories: $0.nutrition.calories) } + extra
     }
 
     /// One step of the running total through the day.
@@ -23,11 +35,11 @@ nonisolated enum IntakeAnalysis {
 
     /// Running energy total at each logging time, oldest first. Entries at
     /// the same minute are combined.
-    static func cumulative(_ entries: [FoodLogEntry], calendar: Calendar) -> [CumulativePoint] {
+    static func cumulative(_ entries: [FoodLogEntry], extra: [EnergyItem] = [], calendar: Calendar) -> [CumulativePoint] {
         var byMinute: [Int: Double] = [:]
-        for entry in entries {
-            let parts = calendar.dateComponents([.hour, .minute], from: entry.loggedAt)
-            byMinute[(parts.hour ?? 0) * 60 + (parts.minute ?? 0), default: 0] += entry.nutrition.calories
+        for item in items(entries, extra: extra) {
+            let parts = calendar.dateComponents([.hour, .minute], from: item.date)
+            byMinute[(parts.hour ?? 0) * 60 + (parts.minute ?? 0), default: 0] += item.calories
         }
         var running = 0.0
         return byMinute.keys.sorted().map { minute in
@@ -44,12 +56,17 @@ nonisolated enum IntakeAnalysis {
         let hasEntries: Bool
     }
 
-    static func dailyTotals(_ entries: [FoodLogEntry], endingOn day: Date, days: Int, calendar: Calendar) -> [DayTotal] {
+    /// `extra` energy (alcohol) adds to each day's calories, and a day with
+    /// only extra energy still counts as logged.
+    static func dailyTotals(_ entries: [FoodLogEntry], extra: [EnergyItem] = [], endingOn day: Date, days: Int, calendar: Calendar) -> [DayTotal] {
         let last = calendar.startOfDay(for: day)
         return (0..<days).reversed().compactMap { offset in
             guard let date = calendar.date(byAdding: .day, value: -offset, to: last) else { return nil }
             let dayEntries = entries.filter { calendar.isDate($0.loggedAt, inSameDayAs: date) }
-            return DayTotal(day: date, nutrition: dayEntries.totalNutrition, hasEntries: !dayEntries.isEmpty)
+            let dayExtra = extra.filter { calendar.isDate($0.date, inSameDayAs: date) }
+            var nutrition = dayEntries.totalNutrition
+            nutrition.calories += dayExtra.reduce(0) { $0 + $1.calories }
+            return DayTotal(day: date, nutrition: nutrition, hasEntries: !dayEntries.isEmpty || !dayExtra.isEmpty)
         }
     }
 

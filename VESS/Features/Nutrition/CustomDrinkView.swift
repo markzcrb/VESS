@@ -127,8 +127,7 @@ struct CustomDrinkView: View {
             VESSSectionHeader(title: "Drink")
             DrinkChoice(preset: preset) { option in
                 preset = option
-                contributionPercent = store.profile?.hydrationContributionPercent(for: option)
-                    ?? option.defaultHydrationContributionPercent
+                contributionPercent = DrinkFacts.contributionPercent(option, profile: store.profile)
                 saveAsDefault = false
             }
         }
@@ -154,30 +153,34 @@ struct CustomDrinkView: View {
                     .strokeBorder(VESSColor.divider)
             )
 
-            HStack {
-                Text("\(Text(preset.title)) counts at \(Text(contributionPercent / 100, format: .percent.precision(.fractionLength(0)))). An estimate you can change.")
+            // Alcohol always counts 0 %, so there's nothing to adjust.
+            if preset.type != .alcohol {
+                HStack {
+                    Text("\(Text(preset.title)) counts at \(Text(contributionPercent / 100, format: .percent.precision(.fractionLength(0)))). An estimate you can change.")
+                        .vessTextStyle(.caption)
+                        .foregroundStyle(VESSColor.tertiaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: VESSSpacing.sm)
+                    Stepper("Hydration contribution", value: $contributionPercent, in: 0...100, step: 5)
+                        .labelsHidden()
+                        .accessibilityValue(Text(contributionPercent / 100, format: .percent.precision(.fractionLength(0))))
+                }
+
+                if contributionPercent != currentDefault {
+                    Toggle(isOn: $saveAsDefault) {
+                        Text("Use this for \(Text(preset.title)) from now on")
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.text)
+                    }
+                    .toggleStyle(.vess)
+                }
+            }
+
+            if let volume, let typical = DrinkFacts.typicalValues(preset, volume: volume) {
+                typical
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.tertiaryText)
                     .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: VESSSpacing.sm)
-                Stepper("Hydration contribution", value: $contributionPercent, in: 0...100, step: 5)
-                    .labelsHidden()
-                    .accessibilityValue(Text(contributionPercent / 100, format: .percent.precision(.fractionLength(0))))
-            }
-
-            if contributionPercent != currentDefault {
-                Toggle(isOn: $saveAsDefault) {
-                    Text("Use this for \(Text(preset.title)) from now on")
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.text)
-                }
-                .toggleStyle(.vess)
-            }
-
-            if let typical = typicalValuesText {
-                Text(typical)
-                    .vessTextStyle(.caption)
-                    .foregroundStyle(VESSColor.tertiaryText)
             }
         }
     }
@@ -230,16 +233,7 @@ struct CustomDrinkView: View {
     }
 
     private var currentDefault: Double {
-        store.profile?.hydrationContributionPercent(for: preset) ?? preset.defaultHydrationContributionPercent
-    }
-
-    private var typicalValuesText: String? {
-        guard let volume else { return nil }
-        let drink = preset.drink(name: "")
-        let calories = drink.caloriesPer100Milliliters * volume / 100
-        let caffeine = drink.caffeineMilligramsPer100Milliliters * volume / 100
-        guard calories > 0 || caffeine > 0 else { return nil }
-        return String(localized: "Typical values: about \(VESSFormat.calories(calories)) kcal and \(VESSFormat.grams(caffeine)) mg caffeine.")
+        DrinkFacts.contributionPercent(preset, profile: store.profile)
     }
 
     // MARK: Actions

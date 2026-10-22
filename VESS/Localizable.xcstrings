@@ -40,6 +40,16 @@
         }
       }
     },
+    "%@ · %@ · %@ g alcohol · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@ g alcohol · %4$@"
+          }
+        }
+      }
+    },
     "%@ · %@ · %@ kcal" : {
       "localizations" : {
         "en" : {
@@ -233,6 +243,9 @@
         }
       }
     },
+    "%@ drinks" : {
+
+    },
     "%@ g" : {
 
     },
@@ -297,6 +310,19 @@
 
     },
     "%@ ml" : {
+
+    },
+    "%@ ml · %@ drinks" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ml · %2$@ drinks"
+          }
+        }
+      }
+    },
+    "%@ ml · 1 drink" : {
 
     },
     "%@ ml · counts %@" : {
@@ -808,6 +834,9 @@
     "0–1,000 g" : {
 
     },
+    "1 drink" : {
+
+    },
     "8 to 14 digits" : {
 
     },
@@ -1054,7 +1083,13 @@
     "Aisle" : {
 
     },
+    "Alcohol" : {
+
+    },
     "All at home" : {
+
+    },
+    "Americano" : {
 
     },
     "Amount" : {
@@ -1102,10 +1137,13 @@
     "Barcode detected" : {
 
     },
+    "Beer" : {
+
+    },
     "Before noon" : {
 
     },
-    "Black coffee" : {
+    "Black tea" : {
 
     },
     "Body" : {
@@ -1156,6 +1194,9 @@
     "Can" : {
 
     },
+    "Cappuccino" : {
+
+    },
     "capsule" : {
 
     },
@@ -1204,7 +1245,16 @@
     "Coach" : {
 
     },
+    "Cocktail" : {
+
+    },
     "Coffee" : {
+
+    },
+    "Cola" : {
+
+    },
+    "Cold brew" : {
 
     },
     "Community data from Open Food Facts · not verified" : {
@@ -1262,6 +1312,9 @@
 
     },
     "Custom amount" : {
+
+    },
+    "Custom amount, %@ ml" : {
 
     },
     "Cycle" : {
@@ -1384,6 +1437,9 @@
     "Drinks through the day" : {
 
     },
+    "Drip coffee" : {
+
+    },
     "Duration" : {
 
     },
@@ -1421,6 +1477,9 @@
 
     },
     "Energy" : {
+
+    },
+    "Energy drink" : {
 
     },
     "Energy for entered workouts is an estimate from duration and effort, not a measurement. VESS never estimates steps." : {
@@ -1480,6 +1539,9 @@
 
     },
     "Entered workouts are saved" : {
+
+    },
+    "Espresso" : {
 
     },
     "Estimate" : {
@@ -1702,6 +1764,9 @@
     "Good morning, %@" : {
 
     },
+    "Green tea" : {
+
+    },
     "Grey is what you logged that day. Colour is what this adds." : {
 
     },
@@ -1730,6 +1795,9 @@
 
     },
     "Help" : {
+
+    },
+    "Herbal tea" : {
 
     },
     "Hides the time picker" : {
@@ -1927,6 +1995,9 @@
 
     },
     "Later" : {
+
+    },
+    "Latte" : {
 
     },
     "Learned from when you log, once there are three days. Used for meal regularity and reminders." : {
@@ -2699,6 +2770,9 @@
     "Sparkling water" : {
 
     },
+    "Spirit" : {
+
+    },
     "Started at" : {
 
     },
@@ -2975,6 +3049,19 @@
     "Typical values from USDA FoodData Central" : {
 
     },
+    "Typical values: %@ g alcohol (%@), about %@ kcal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Typical values: %1$@ g alcohol (%2$@), about %3$@ kcal."
+          }
+        }
+      }
+    },
+    "Typical values: %@ mg caffeine." : {
+
+    },
     "Typical values: about %@ kcal and %@ mg caffeine." : {
       "localizations" : {
         "en" : {
@@ -2984,6 +3071,9 @@
           }
         }
       }
+    },
+    "Typical values: about %@ kcal." : {
+
     },
     "Undo" : {
 
@@ -3189,6 +3279,9 @@
 
     },
     "Where these numbers come from" : {
+
+    },
+    "Wine" : {
 
     },
     "Without 3 days of history there's no regularity yet, so the other three parts make up the whole score." : {

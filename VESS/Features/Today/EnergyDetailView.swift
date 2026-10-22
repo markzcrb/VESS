@@ -37,9 +37,14 @@ struct EnergyDetailView: View {
             from: calendar.date(byAdding: .day, value: -MealRegularity.historyDays, to: calendar.startOfDay(for: day)) ?? day,
             to: calendar.startOfDay(for: day)
         )
+        let drinks = store.hydrationLogs(on: day, calendar: calendar)
+        // Alcohol's kcal count in the day's energy (ring, rows, chart, week),
+        // never in Fuel.
+        let alcohol = drinks.alcoholEnergy
+        let hasEnergy = !entries.isEmpty || !alcohol.isEmpty
         let summary = DaySummary(
             entries: entries,
-            hydrationLogs: store.hydrationLogs(on: day, calendar: calendar),
+            hydrationLogs: drinks,
             targets: profile.nutritionTargets,
             waterTargetMilliliters: profile.waterTargetMilliliters,
             day: day,
@@ -52,12 +57,12 @@ struct EnergyDetailView: View {
         let allMainMeals = MealType.mainMeals.allSatisfy { !entries.entries(for: $0).isEmpty }
         let pace = allMainMeals ? 1 : max(summary.expectedPace, DaySummary.minimumPace)
         let regularity = MealRegularity.score(today: entries, history: history, calendar: calendar)
-        let beforeNoon = IntakeAnalysis.beforeNoonShare(entries, calendar: calendar)
+        let beforeNoon = IntakeAnalysis.beforeNoonShare(entries, extra: alcohol, calendar: calendar)
+        let weekStart = calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: day)) ?? day
+        let weekEnd = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: day)) ?? clock
         let week = IntakeAnalysis.dailyTotals(
-            store.foodEntries(
-                from: calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: day)) ?? day,
-                to: calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: day)) ?? clock
-            ),
+            store.foodEntries(from: weekStart, to: weekEnd),
+            extra: store.hydrationLogs(from: weekStart, to: weekEnd).alcoholEnergy,
             endingOn: day, days: 7, calendar: calendar
         )
 
@@ -66,8 +71,8 @@ struct EnergyDetailView: View {
                 VStack(spacing: VESSSpacing.xl) {
                     VESSDayPicker(day: $day, today: now, calendar: calendar)
                     VESSScoreRing(
-                        value: entries.isEmpty ? "—" : "\(Int((share * 100).rounded()))",
-                        unit: entries.isEmpty ? nil : "%",
+                        value: hasEnergy ? "\(Int((share * 100).rounded()))" : "—",
+                        unit: hasEnergy ? "%" : nil,
                         label: "Energy",
                         sublabel: Text("\(VESSFormat.calories(consumed)) of \(VESSFormat.calories(target)) kcal"),
                         progress: min(share, 1),
@@ -81,8 +86,8 @@ struct EnergyDetailView: View {
                         VESSStatusRow(
                             systemImage: "flame",
                             label: "Energy vs. target",
-                            value: entries.isEmpty ? "—" : percent(share),
-                            level: entries.isEmpty ? nil : StatusLevel.energy(ratio: target > 0 ? consumed / (target * pace) : 0).vessLevel
+                            value: hasEnergy ? percent(share) : "—",
+                            level: !hasEnergy ? nil : StatusLevel.energy(ratio: target > 0 ? consumed / (target * pace) : 0).vessLevel
                         )
                         VESSStatusRow(
                             systemImage: "clock",
@@ -122,7 +127,7 @@ struct EnergyDetailView: View {
                             nowLabel(now: now, isToday: isToday)
                         }
                     }
-                    EnergyThroughDayChart(entries: entries, target: target, now: isToday ? now : nil, calendar: calendar)
+                    EnergyThroughDayChart(entries: entries, extra: alcohol, target: target, now: isToday ? now : nil, calendar: calendar)
                 }
 
                 lastSevenDays(week: week, target: target, isToday: isToday)
@@ -196,7 +201,11 @@ private struct LineDrawReveal: ViewModifier {
     func body(content: Content) -> some View {
         content
             .mask(alignment: .leading) {
-                Rectangle().scaleEffect(x: drawn || reduceMotion ? 1 : 0, anchor: .leading)
+                // Taller than the plot: annotations above it (the "Target"
+                // label, meal icons) must not be clipped, only revealed.
+                Rectangle()
+                    .scaleEffect(x: drawn || reduceMotion ? 1 : 0, anchor: .leading)
+                    .padding(.vertical, -VESSSpacing.huge)
             }
             .onAppear {
                 withAnimation(reduceMotion ? nil : VESSMotion.chart) { drawn = true }
@@ -206,6 +215,8 @@ private struct LineDrawReveal: ViewModifier {
 
 private struct EnergyThroughDayChart: View {
     let entries: [FoodLogEntry]
+    /// Alcoholic drinks, which add to the line but have no meal icon.
+    let extra: [IntakeAnalysis.EnergyItem]
     let target: Double
     /// `nil` for past days.
     let now: Date?
@@ -214,7 +225,7 @@ private struct EnergyThroughDayChart: View {
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 200
 
     var body: some View {
-        let points = IntakeAnalysis.cumulative(entries, calendar: calendar)
+        let points = IntakeAnalysis.cumulative(entries, extra: extra, calendar: calendar)
         let total = points.last?.calories ?? 0
         let endMinute = now.map(minute) ?? 1440
         let line = [IntakeAnalysis.CumulativePoint(minute: 0, calories: 0)] + points

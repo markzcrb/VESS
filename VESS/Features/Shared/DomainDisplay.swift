@@ -155,23 +155,30 @@ extension DrinkPreset {
         switch self {
         case .water: "Water"
         case .sparklingWater: "Sparkling water"
-        case .blackCoffee: "Black coffee"
+        case .espresso: "Espresso"
+        case .americano: "Americano"
+        case .cappuccino: "Cappuccino"
+        case .latte: "Latte"
         case .flatWhite: "Flat white"
-        case .tea: "Tea"
+        case .blackCoffee: "Drip coffee"
+        case .coldBrew: "Cold brew"
+        case .tea: "Black tea"
+        case .greenTea: "Green tea"
+        case .herbalTea: "Herbal tea"
         case .juice: "Juice"
         case .softDrink: "Soft drink"
+        case .cola: "Cola"
+        case .energyDrink: "Energy drink"
         case .other: "Other drink"
+        case .beer: "Beer"
+        case .wine: "Wine"
+        case .spirit: "Spirit"
+        case .cocktail: "Cocktail"
         }
     }
 
-    var symbol: String {
-        switch self {
-        case .water, .sparklingWater: "drop"
-        case .blackCoffee, .flatWhite: "cup.and.saucer"
-        case .tea: "mug"
-        case .juice, .softDrink, .other: "takeoutbag.and.cup.and.straw"
-        }
-    }
+    /// Outline SF Symbols only.
+    var symbol: String { type.symbol }
 }
 
 extension DrinkCategory {
@@ -181,17 +188,21 @@ extension DrinkCategory {
         case .tea: "Tea"
         case .coffee: "Coffee"
         case .other: "Other"
+        case .alcohol: "Alcohol"
         }
     }
 }
 
 extension DrinkType {
+    /// Outline SF Symbols only.
     var symbol: String {
         switch self {
         case .water: "drop"
         case .coffee: "cup.and.saucer"
         case .tea: "mug"
-        case .juice, .softDrink, .energyDrink, .alcohol, .custom: "takeoutbag.and.cup.and.straw"
+        case .energyDrink: "bolt"
+        case .alcohol: "wineglass"
+        case .juice, .softDrink, .custom: "takeoutbag.and.cup.and.straw"
         }
     }
 }

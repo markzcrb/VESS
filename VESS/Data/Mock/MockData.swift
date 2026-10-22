@@ -183,7 +183,7 @@ nonisolated struct MockData: Sendable {
 
         let water = DrinkPreset.water.drink(name: "Water")
         let sparkling = DrinkPreset.sparklingWater.drink(name: "Sparkling water")
-        let greenTea = DrinkPreset.tea.drink(name: "Green tea")
+        let greenTea = DrinkPreset.greenTea.drink(name: "Green tea")
         drinks = [water, sparkling, greenTea]
 
         var hydrationLog = [

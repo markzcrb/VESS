@@ -11,7 +11,8 @@ struct AddDrinkSheet: View {
 
     let day: Date
     @State private var preset: DrinkPreset = .water
-    @State private var size: DrinkSize = .mug
+    /// The amount to add: a card's size, or a drink's typical serving.
+    @State private var volume: Double = DrinkSize.mug.milliliters
     @State private var time = AppClock.now
     @State private var showTime = false
     @State private var showCustom = false
@@ -27,7 +28,10 @@ struct AddDrinkSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                     header(logs: logs)
-                    DrinkChoice(preset: preset) { preset = $0 }
+                    DrinkChoice(preset: preset) { option in
+                        preset = option
+                        volume = option.defaultVolumeMilliliters
+                    }
                     VStack(alignment: .leading, spacing: VESSSpacing.sm) {
                         sizeCards
                         DrinkTimeRow(time: $time, isExpanded: $showTime, range: DrinkTime.range(on: day, calendar: calendar))
@@ -47,7 +51,7 @@ struct AddDrinkSheet: View {
             .safeAreaInset(edge: .bottom) { addButton }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showCustom) {
-                CustomDrinkView(day: day, preset: preset, volume: size.milliliters, time: time, onClose: { dismiss() })
+                CustomDrinkView(day: day, preset: preset, volume: volume, time: time, onClose: { dismiss() })
             }
             .vessErrorAlert(isPresented: $showError, retry: add)
             .onAppear {
@@ -111,9 +115,9 @@ struct AddDrinkSheet: View {
     }
 
     private func sizeCard(_ option: DrinkSize) -> some View {
-        let isSelected = option == size
+        let isSelected = option.milliliters == volume
         return Button {
-            size = option
+            volume = option.milliliters
         } label: {
             DrinkCardLabel(symbol: option.symbol, isSelected: isSelected) {
                 HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xxs) {
@@ -137,18 +141,32 @@ struct AddDrinkSheet: View {
         .sensoryFeedback(.selection, trigger: isSelected)
     }
 
+    /// Selected, with its amount, when the volume isn't one of the cards
+    /// (an espresso's 30 ml, a spirit's 40 ml).
     private var customCard: some View {
-        Button {
+        let isSelected = !DrinkSize.allCases.contains { $0.milliliters == volume }
+        return Button {
             showCustom = true
         } label: {
-            DrinkCardLabel(symbol: "slider.horizontal.3", isSelected: false) {
+            DrinkCardLabel(symbol: "slider.horizontal.3", isSelected: isSelected) {
+                if isSelected {
+                    HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xxs) {
+                        Text(verbatim: VESSFormat.milliliters(volume))
+                            .vessTextStyle(.numberRow)
+                            .foregroundStyle(VESSColor.text)
+                        Text("ml")
+                            .vessTextStyle(.caption)
+                            .foregroundStyle(VESSColor.tertiaryText)
+                    }
+                }
                 Text("Custom")
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Custom amount")
+        .accessibilityLabel(isSelected ? Text("Custom amount, \(VESSFormat.milliliters(volume)) ml") : Text("Custom amount"))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityIdentifier("addDrink.custom")
     }
 
@@ -170,18 +188,23 @@ struct AddDrinkSheet: View {
     }
 
     /// The selected drink's share, which differs per drink (drip coffee 90 %,
-    /// flat white 79 %), so it's stated for the drink rather than in general.
+    /// flat white 79 %), so it's stated for the drink rather than in general;
+    /// then its typical values for this amount.
     private var footnote: some View {
-        Text("\(Text(preset.title)) counts at \(Text(contributionPercent / 100, format: .percent.precision(.fractionLength(0)))) toward water. An estimate.")
-            .vessTextStyle(.caption)
-            .foregroundStyle(VESSColor.tertiaryText)
-            .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+            Text("\(Text(preset.title)) counts at \(Text(contributionPercent / 100, format: .percent.precision(.fractionLength(0)))) toward water. An estimate.")
+            DrinkFacts.typicalValues(preset, volume: volume)
+        }
+        .vessTextStyle(.caption)
+        .foregroundStyle(VESSColor.tertiaryText)
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
     }
 
     private var addButton: some View {
         Button(action: add) {
             // A non-breaking space keeps "250 ml" together when it wraps.
-            Text("Add \(VESSFormat.milliliters(size.milliliters))\u{00A0}ml \(String(localized: preset.title).localizedLowercase)")
+            Text("Add \(VESSFormat.milliliters(volume))\u{00A0}ml \(String(localized: preset.title).localizedLowercase)")
         }
         .buttonStyle(.vessPrimary)
         .padding(.horizontal, VESSSpacing.screenInset)
@@ -202,14 +225,13 @@ struct AddDrinkSheet: View {
     }
 
     private var contributionPercent: Double {
-        store.profile?.hydrationContributionPercent(for: preset) ?? preset.defaultHydrationContributionPercent
+        DrinkFacts.contributionPercent(preset, profile: store.profile)
     }
 
     // MARK: Actions
 
     private func add() {
         guard let profile = store.profile else { return }
-        let volume = size.milliliters
         let drink = preset.drink(name: String(localized: preset.title), hydrationContributionPercent: contributionPercent)
         let log = drink.log(userID: profile.id, volumeMilliliters: volume, at: time)
         do {
@@ -318,6 +340,41 @@ struct DrinkChoice: View {
                 }
             }
         }
+    }
+}
+
+/// What VESS says about a drink: its share toward water and its typical values.
+enum DrinkFacts {
+    /// The user's own share, or the drink's default. Alcohol always counts 0 %.
+    static func contributionPercent(_ preset: DrinkPreset, profile: UserProfile?) -> Double {
+        guard preset.type != .alcohol else { return 0 }
+        return profile?.hydrationContributionPercent(for: preset) ?? preset.defaultHydrationContributionPercent
+    }
+
+    /// "Typical values: about 110 kcal and 130 mg caffeine." For alcohol:
+    /// "Typical values: 13 g alcohol (1.3 drinks), about 142 kcal."
+    /// `nil` for drinks with neither (water).
+    static func typicalValues(_ preset: DrinkPreset, volume: Double) -> Text? {
+        let drink = preset.drink(name: "")
+        let factor = volume / 100
+        let kcal = drink.caloriesPer100Milliliters * factor
+        let caffeine = drink.caffeineMilligramsPer100Milliliters * factor
+        let alcohol = drink.alcoholGramsPer100Milliliters * factor
+        if alcohol > 0 {
+            return Text("Typical values: \(VESSFormat.grams(alcohol)) g alcohol (\(drinksText(StandardDrink.count(alcoholGrams: alcohol)))), about \(VESSFormat.calories(kcal)) kcal.")
+        }
+        switch (kcal >= 1, caffeine >= 1) {
+        case (true, true): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal and \(VESSFormat.grams(caffeine)) mg caffeine.")
+        case (true, false): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal.")
+        case (false, true): return Text("Typical values: \(VESSFormat.grams(caffeine)) mg caffeine.")
+        case (false, false): return nil
+        }
+    }
+
+    /// "1 drink", "1.3 drinks" (10 g of alcohol each).
+    static func drinksText(_ count: Double) -> Text {
+        let number = VESSFormat.quantity(count)
+        return number == VESSFormat.quantity(1) ? Text("1 drink") : Text("\(number) drinks")
     }
 }
 
@@ -437,9 +494,16 @@ struct DrinkLogRow: View {
             .foregroundStyle(VESSColor.text)
     }
 
-    /// "500 ml", or "300 ml · counts 270" for a partial share.
+    /// "500 ml", "300 ml · counts 270" for a partial share, or
+    /// "330 ml · 1.3 drinks" for alcohol.
     private var amount: String {
         let volume = VESSFormat.milliliters(log.volumeMilliliters)
+        if log.isAlcoholic, let drinks = log.standardDrinks {
+            let number = VESSFormat.quantity(drinks)
+            return number == VESSFormat.quantity(1)
+                ? String(localized: "\(volume) ml · 1 drink")
+                : String(localized: "\(volume) ml · \(number) drinks")
+        }
         guard log.hydrationContributionPercent < 100 else { return String(localized: "\(volume) ml") }
         return String(localized: "\(volume) ml · counts \(VESSFormat.milliliters(log.hydrationMilliliters))")
     }
