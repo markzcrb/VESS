@@ -13,3 +13,9 @@ DerivedData/
 # Local configuration and secrets (see README)
 Config/Secrets.xcconfig
 *.xcconfig.local
+
+# Screenshots, comparison sheets and clips from the redesign: kept on disk,
+# not in git. Notes (*.md) stay tracked. Reference designs are in Redesign/Design/.
+Redesign/Captures/**
+!Redesign/Captures/**/
+!Redesign/Captures/**/*.md

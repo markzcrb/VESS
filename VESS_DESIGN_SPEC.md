@@ -1,3 +1,5 @@
+> **Visual sections superseded by Redesign/**
+
 # VESS — Design Specification
 
 Status: **Draft for approval** (written after Phase 0, before Phase 1)
