@@ -64,6 +64,7 @@ struct NutritionView: View {
                 }
 
                 DrinksDiarySection(
+                    day: selectedDay,
                     logs: drinks,
                     onAdd: { addDrinkDay = selectedDay },
                     onDelete: { delete(log: $0) }

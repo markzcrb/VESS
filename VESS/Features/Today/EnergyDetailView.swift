@@ -193,8 +193,8 @@ struct EnergyDetailView: View {
 /// The running energy total through the day as a step line, the target as a
 /// dashed line, meal icons at their times and, for today, a "now" marker.
 /// Reveals a chart's plot area from the left over 0.6 s on first appear.
-/// Shown at once with Reduce Motion.
-private struct LineDrawReveal: ViewModifier {
+/// Shown at once with Reduce Motion. Used by Energy and Caffeine.
+struct LineDrawReveal: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var drawn = false
 

@@ -214,6 +214,7 @@ struct MealDiarySection: View {
 /// 17:05"); other drinks show volume, time and how much counts toward
 /// hydration, with caffeine as the value when they have any.
 struct DrinksDiarySection: View {
+    let day: Date
     let logs: [HydrationLog]
     let onAdd: () -> Void
     let onDelete: (HydrationLog) -> Void
@@ -222,10 +223,7 @@ struct DrinksDiarySection: View {
         let caffeine = logs.reduce(0) { $0 + $1.caffeineMilligrams }
 
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            DiaryHeader(
-                title: "Drinks",
-                detail: caffeine > 0 ? Text("Caffeine \(VESSFormat.grams(caffeine)) mg") : nil
-            )
+            DiaryHeader(title: "Drinks")
 
             if !logs.isEmpty {
                 VESSRowGroup {
@@ -236,11 +234,20 @@ struct DrinksDiarySection: View {
                 .vessHairlineBottom()
             }
 
-            if let lastCaffeine = logs.last(where: { $0.caffeineMilligrams > 0 }) {
-                Text("Your last caffeine was at \(lastCaffeine.loggedAt, format: .dateTime.hour().minute()).")
-                    .vessTextStyle(.bodyS)
-                    .foregroundStyle(VESSColor.secondaryText)
+            // To the caffeine screen: the day's total against the limit.
+            NavigationLink {
+                CaffeineView(day: day)
+            } label: {
+                VESSListRow(
+                    systemImage: "cup.and.saucer",
+                    title: Text("Caffeine"),
+                    subtitle: logs.last(where: { $0.caffeineMilligrams > 0 }).map { Text("Last at \($0.loggedAt, format: .dateTime.hour().minute())") },
+                    value: Text("\(VESSFormat.grams(caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams)) mg")
+                )
             }
+            .buttonStyle(.plain)
+            .vessHairlineBottom()
+            .accessibilityIdentifier("nutrition.caffeine")
 
             Button("Add a drink", action: onAdd)
                 .buttonStyle(.vessSecondary)

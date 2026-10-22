@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "—" : {
 
     },
@@ -309,6 +312,16 @@
     "%@ mg" : {
 
     },
+    "%@ mg above the %@ mg daily limit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ mg above the %2$@ mg daily limit."
+          }
+        }
+      }
+    },
     "%@ ml" : {
 
     },
@@ -318,6 +331,26 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ ml · %2$@ drinks"
+          }
+        }
+      }
+    },
+    "%@ ml · %@ mg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ml · %2$@ mg"
+          }
+        }
+      }
+    },
+    "%@ ml · %@ mg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ml · %2$@ mg"
           }
         }
       }
@@ -381,6 +414,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ of %2$@ liters"
+          }
+        }
+      }
+    },
+    "%@ of %@ mg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ mg"
           }
         }
       }
@@ -505,6 +548,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@ ml"
+          }
+        }
+      }
+    },
+    "%@, %@ ml, %@ mg caffeine" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@ ml, %3$@ mg caffeine"
           }
         }
       }
@@ -831,6 +884,16 @@
     "+250 ml" : {
 
     },
+    "≈ %@ mg in your system at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "≈ %1$@ mg in your system at %2$@"
+          }
+        }
+      }
+    },
     "0–1,000 g" : {
 
     },
@@ -838,6 +901,9 @@
 
     },
     "8 to 14 digits" : {
+
+    },
+    "22:00" : {
 
     },
     "30 minutes after a main meal's usual time, only if it isn't logged" : {
@@ -892,6 +958,9 @@
 
     },
     "about %@ kcal" : {
+
+    },
+    "about %@ mg at 22:00" : {
 
     },
     "About Activity" : {
@@ -1101,6 +1170,9 @@
     "Amount in milliliters" : {
 
     },
+    "An estimate: caffeine halves about every %@ hours, and this differs from person to person." : {
+
+    },
     "Anything else, optional" : {
 
     },
@@ -1176,7 +1248,7 @@
     "Building" : {
 
     },
-    "Caffeine %@ mg" : {
+    "Caffeine" : {
 
     },
     "calories" : {
@@ -1547,6 +1619,9 @@
     "Estimate" : {
 
     },
+    "Estimated caffeine in your system through the day" : {
+
+    },
     "Everything" : {
 
     },
@@ -1892,6 +1967,9 @@
     "In pantry" : {
 
     },
+    "In your system" : {
+
+    },
     "Ingredients" : {
 
     },
@@ -1988,6 +2066,9 @@
     "Last 7 days" : {
 
     },
+    "Last at %@" : {
+
+    },
     "Last drink %@." : {
 
     },
@@ -2030,6 +2111,9 @@
     "Log as %@" : {
 
     },
+    "Log caffeine" : {
+
+    },
     "Log calories without a product" : {
 
     },
@@ -2040,6 +2124,9 @@
 
     },
     "Logged at %@" : {
+
+    },
+    "Logs it" : {
 
     },
     "Longer" : {
@@ -2331,6 +2418,9 @@
     "Now · %@" : {
 
     },
+    "Now about %@ mg; " : {
+
+    },
     "nut-free" : {
 
     },
@@ -2374,6 +2464,16 @@
     },
     "of %@ L" : {
 
+    },
+    "of %@ mg %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "of %1$@ mg %2$@"
+          }
+        }
+      }
     },
     "OK" : {
 
@@ -2922,6 +3022,9 @@
     "That day" : {
 
     },
+    "That day's caffeine" : {
+
+    },
     "That doesn't look like a barcode. Check the digits." : {
 
     },
@@ -3010,6 +3113,9 @@
     "today's" : {
 
     },
+    "Today's caffeine" : {
+
+    },
     "Tomorrow" : {
 
     },
@@ -3044,6 +3150,9 @@
 
     },
     "Type barcode number" : {
+
+    },
+    "Typical values for a standard serving." : {
 
     },
     "Typical values from USDA FoodData Central" : {
@@ -3376,9 +3485,6 @@
 
     },
     "Your food" : {
-
-    },
-    "Your last caffeine was at %@." : {
 
     },
     "Your month in motion." : {

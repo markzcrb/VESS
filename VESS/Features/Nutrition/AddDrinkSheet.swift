@@ -16,6 +16,7 @@ struct AddDrinkSheet: View {
     @State private var time = AppClock.now
     @State private var showTime = false
     @State private var showCustom = false
+    @State private var showCaffeine = false
     @State private var showError = false
     @State private var hasLoaded = false
 
@@ -41,6 +42,7 @@ struct AddDrinkSheet: View {
                         HydrationTimeline(logs: logs, now: isToday ? AppClock.now : nil, calendar: calendar)
                     }
                     todayList(logs)
+                    caffeineLink(logs)
                     footnote
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
@@ -50,6 +52,9 @@ struct AddDrinkSheet: View {
             .background(VESSColor.card)
             .safeAreaInset(edge: .bottom) { addButton }
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $showCaffeine) {
+                CaffeineView(day: day)
+            }
             .navigationDestination(isPresented: $showCustom) {
                 CustomDrinkView(day: day, preset: preset, volume: volume, time: time, onClose: { dismiss() })
             }
@@ -185,6 +190,21 @@ struct AddDrinkSheet: View {
             }
             .vessHairlineBottom()
         }
+    }
+
+    /// "Caffeine · 36 of 400 mg ›", to the caffeine screen.
+    private func caffeineLink(_ logs: [HydrationLog]) -> some View {
+        let total = CaffeineModel.total(logs, on: day, calendar: calendar)
+        return Button { showCaffeine = true } label: {
+            VESSListRow(
+                systemImage: "cup.and.saucer",
+                title: Text("Caffeine"),
+                value: Text("\(VESSFormat.grams(total)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams)) mg")
+            )
+        }
+        .buttonStyle(.plain)
+        .vessHairlineBottom()
+        .accessibilityIdentifier("addDrink.caffeine")
     }
 
     /// The selected drink's share, which differs per drink (drip coffee 90 %,
@@ -446,7 +466,11 @@ struct DrinkTimeRow: View {
 /// One drink: time, icon, name, and its volume with "counts N" when only a
 /// share counts toward water.
 struct DrinkLogRow: View {
+    enum Value { case volume, caffeine }
+
     let log: HydrationLog
+    /// What the right-hand side shows: the volume (and share), or caffeine.
+    var value: Value = .volume
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -470,8 +494,9 @@ struct DrinkLogRow: View {
                     }
                     .vessTextStyle(.caption)
                     .monospacedDigit()
+                    // The screen's one data hue: water here, caffeine on Caffeine.
                     Image(systemName: log.drinkType.symbol)
-                        .foregroundStyle(VESSColor.water)
+                        .foregroundStyle(value == .caffeine ? VESSColor.carbs : VESSColor.water)
                         .frame(width: VESSSize.rowIcon)
                     name
                     Spacer(minLength: VESSSpacing.sm)
@@ -498,6 +523,9 @@ struct DrinkLogRow: View {
     /// "330 ml · 1.3 drinks" for alcohol.
     private var amount: String {
         let volume = VESSFormat.milliliters(log.volumeMilliliters)
+        if value == .caffeine {
+            return String(localized: "\(volume) ml · \(VESSFormat.grams(log.caffeineMilligrams)) mg")
+        }
         if log.isAlcoholic, let drinks = log.standardDrinks {
             let number = VESSFormat.quantity(drinks)
             return number == VESSFormat.quantity(1)
