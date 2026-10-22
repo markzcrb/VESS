@@ -65,5 +65,16 @@ J01 AX3 light (numbered VoiceOver order) · J02 AX3 dark · J03 AX5 light · J04
 ## L · Light checks
 L01 Today light · L06 Food detail light. Every other screen uses the same tokens; verify Light on at least the Today, Nutrition, Plan and Profile roots.
 
+## K · Cycle and Habits (new, Figma section "New · Cycle and Habits")
+| File | Screen | Tab | Reached from | Key components |
+|---|---|---|---|---|
+| 13-cycle | Cycle tracking: cycle-day ring, editorial estimate, month calendar, log today, recent cycles | — | Today cycle row (only when "Cycle tracking" is on in You) | ScoreRing (metric/cycle), CalendarDay (Default/Muted/Logged/Estimated/Today), Chip, ListRow, Button Secondary |
+| 15-cycle-log-sheet | Log or edit one day: date, flow, symptoms, note, Save / Delete this day | — | Tap a calendar day, "Period started today", Add sheet | Chip, ListRow, text field, Button Primary + Quiet |
+| 14-habits | Habits: week of mini rings, "4/6" hero ring (neutral), today's list with 7-day dots, 4-week grid, pattern card | — | You › Habits, Today habits row | MetricStripItem, ScoreRing, HabitRow (Done Yes/No), InsightCard |
+| 16-add-habit-sheet | Add a habit: auto-tracked suggestions, own name, how often, category, reminder | — | + in the Habits nav bar, "Add a habit" | ListRow, SegmentedControl, Chip, Button Primary |
+| L13-cycle-light · L14-habits-light | Light versions of 13 and 14 | | | |
+
+Notes: new tokens `metric/cycle`, `atmos/cycle`, `tint/cycle` (Dark + Light). Habit dot colour = the metric of its category (water, protein, activity, energy); others use text/primary. No streaks anywhere. Cycle copy always says estimates can be off, not medical advice, not contraception. No fertile window or ovulation.
+
 ## Not designed yet (ask Mark before building)
 Plan › Recipes tab list · Add food search results / no results · edit a logged meal · weight entry + measurements · onboarding.
