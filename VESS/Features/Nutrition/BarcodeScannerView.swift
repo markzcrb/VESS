@@ -35,7 +35,8 @@ struct BarcodeScannerView: View {
 
     @State private var phase: Phase = .starting
     @State private var found: Food?
-    @State private var isTorchOn = false
+    /// The torch and scanner restarts; torch state comes from the hardware.
+    @State private var controller = ScannerController()
 
     var body: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.xl) {
@@ -61,7 +62,7 @@ struct BarcodeScannerView: View {
         .sheet(item: $found, onDismiss: { phase = .scanning }) { food in
             ProductFoundSheet(food: food, day: day, meal: $meal, onLogged: onLogged)
         }
-        .onDisappear { setTorch(false) }
+        .onDisappear { controller.setTorch(false) }
     }
 
     // MARK: Sections
@@ -71,14 +72,17 @@ struct BarcodeScannerView: View {
             VESSIconButton(systemImage: "xmark", label: "Close") { dismiss() }
                 .accessibilityIdentifier("scanner.close")
             Spacer()
-            if phase == .scanning || isReading {
+            if (phase == .scanning || isReading) && controller.hasTorch {
                 VESSIconButton(
-                    systemImage: isTorchOn ? "bolt.fill" : "bolt",
-                    label: isTorchOn ? "Turn light off" : "Turn light on",
-                    isFilled: isTorchOn
+                    systemImage: controller.isTorchOn ? "bolt.fill" : "bolt",
+                    label: controller.isTorchOn ? "Turn light off" : "Turn light on",
+                    isFilled: controller.isTorchOn
                 ) {
-                    setTorch(!isTorchOn)
+                    controller.setTorch(!controller.isTorchOn)
                 }
+                // Off while the system holds the torch back (for example heat).
+                .disabled(!controller.isTorchAvailable && !controller.isTorchOn)
+                .accessibilityIdentifier("scanner.torch")
             }
         }
     }
@@ -100,7 +104,7 @@ struct BarcodeScannerView: View {
             RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
                 .fill(VESSColor.card)
             if showsCamera {
-                BarcodeDataScanner { code in detected(code) }
+                BarcodeDataScanner(controller: controller) { code in detected(code) }
                     .clipShape(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
                     .accessibilityHidden(true)
             } else if phase == .cameraDenied || phase == .unsupported {
@@ -278,18 +282,6 @@ struct BarcodeScannerView: View {
         }
     }
 
-    private func setTorch(_ on: Bool) {
-        guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
-        do {
-            try device.lockForConfiguration()
-            device.torchMode = on ? .on : .off
-            device.unlockForConfiguration()
-            isTorchOn = on
-        } catch {
-            isTorchOn = false
-        }
-    }
-
     private func openSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
     }
@@ -302,8 +294,10 @@ struct BarcodeScannerView: View {
     }
 }
 
-/// VisionKit's live scanner, limited to product barcodes.
+/// VisionKit's live scanner, limited to product barcodes. `ScannerController`
+/// starts it, restarts it when it stops, and owns the torch.
 private struct BarcodeDataScanner: UIViewControllerRepresentable {
+    let controller: ScannerController
     let onCode: (String) -> Void
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
@@ -317,25 +311,31 @@ private struct BarcodeDataScanner: UIViewControllerRepresentable {
             isHighlightingEnabled: false
         )
         scanner.delegate = context.coordinator
+        controller.attach(scanner)
         return scanner
     }
 
     func updateUIViewController(_ scanner: DataScannerViewController, context: Context) {
         context.coordinator.onCode = onCode
-        if !scanner.isScanning { try? scanner.startScanning() }
     }
 
     static func dismantleUIViewController(_ scanner: DataScannerViewController, coordinator: Coordinator) {
-        scanner.stopScanning()
+        coordinator.controller.detach()
     }
 
-    func makeCoordinator() -> Coordinator { Coordinator(onCode: onCode) }
+    func makeCoordinator() -> Coordinator { Coordinator(controller: controller, onCode: onCode) }
 
     final class Coordinator: NSObject, DataScannerViewControllerDelegate {
+        let controller: ScannerController
         var onCode: (String) -> Void
 
-        init(onCode: @escaping (String) -> Void) {
+        init(controller: ScannerController, onCode: @escaping (String) -> Void) {
+            self.controller = controller
             self.onCode = onCode
+        }
+
+        func dataScanner(_ dataScanner: DataScannerViewController, becameUnavailableWithError error: DataScannerViewController.ScanningUnavailable) {
+            controller.scannerBecameUnavailable(error)
         }
 
         func dataScanner(_ dataScanner: DataScannerViewController, didAdd addedItems: [RecognizedItem], allItems: [RecognizedItem]) {
