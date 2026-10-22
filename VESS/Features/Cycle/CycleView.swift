@@ -11,6 +11,8 @@ struct CycleView: View {
     @State private var showInfo = false
     @State private var showHistory = false
     @State private var showError = false
+    /// Each inline change to today's log: one light tap.
+    @State private var inlineChanges = 0
 
     private let calendar = Calendar.current
 
@@ -66,6 +68,7 @@ struct CycleView: View {
         .navigationDestination(isPresented: $showHistory) {
             CycleHistoryView()
         }
+        .sensoryFeedback(.impact(weight: .light), trigger: inlineChanges)
         .vessErrorAlert(isPresented: $showError)
     }
 
@@ -85,7 +88,7 @@ struct CycleView: View {
         return VESSScoreRing(
             value: summary.cycleDay.map { $0.formatted() } ?? "—",
             label: "Cycle day",
-            // The long "Log two periods…" line is the editorial below.
+            // The long "Log three period starts…" line is the editorial below.
             sublabel: summary.estimate == nil ? Text("No estimate yet") : CycleCopy.nextText(summary),
             progress: progress,
             metric: .cycle
@@ -104,6 +107,8 @@ struct CycleView: View {
                     } else {
                         Text("Next period likely \(CycleCopy.window(estimate, calendar: calendar)).")
                     }
+                } else if CycleCopy.isAllExcluded(summary) {
+                    Text("No estimate yet.")
                 } else {
                     Text("\(Text(CycleCopy.needsMore)).")
                 }
@@ -121,6 +126,8 @@ struct CycleView: View {
                     } else {
                         Text("An estimate from your last ^[\(estimate.cycleCount) cycle](inflect: true), which average \(estimate.averageDays) days. It can be off.")
                     }
+                } else if CycleCopy.isAllExcluded(summary) {
+                    Text(CycleCopy.allExcluded)
                 } else {
                     Text("Tap a day in the calendar to log it, or use Period started today.")
                 }
@@ -204,7 +211,12 @@ struct CycleView: View {
                 var day = store.cycleDay(on: now, calendar: calendar)
                     ?? CycleDay(id: UUID(), day: calendar.startOfDay(for: now), flow: .none, symptoms: [], note: nil)
                 day[keyPath: keyPath] = newValue
-                do { try store.save(day, calendar: calendar) } catch { showError = true }
+                do {
+                    try store.save(day, calendar: calendar)
+                    inlineChanges += 1
+                } catch {
+                    showError = true
+                }
             }
         )
     }
@@ -379,6 +391,13 @@ struct CycleHistoryView: View {
                     }
                     .vessHairlineBottom()
                 }
+                if summary.estimate == nil {
+                    CycleCopy.noEstimateText(summary)
+                        .vessTextStyle(.bodyS)
+                        .foregroundStyle(VESSColor.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, VESSSpacing.xs)
+                }
             }
             ForEach(months(since: days.first?.day ?? now, now: now), id: \.self) { month in
                 VStack(alignment: .leading, spacing: VESSSpacing.sm) {
@@ -437,14 +456,17 @@ struct CycleInfoSheet: View {
             .padding(.vertical, VESSSpacing.xl)
         }
         .background(VESSColor.card)
-        .presentationDetents([.medium, .large])
+        // Full height: at half height the last paragraphs were cut off.
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(VESSRadius.sheet)
     }
 
     private static let paragraphs: [LocalizedStringResource] = [
         "A cycle runs from the first day of one period to the first day of the next. VESS uses your last six completed cycles.",
-        "The window runs from your shortest to your longest of those cycles. It needs two completed cycles, and it says when they vary by more than a week.",
+        "The window runs from your shortest to your longest of those cycles. It says when they vary by more than a week.",
+        "Log three period starts to see an estimate: that's two completed cycles.",
+        "Cycles shorter than 15 or longer than 60 days are left out, as they usually mean a period wasn't logged. If every cycle is left out, there's no estimate yet.",
         "VESS doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy.",
     ]
 }

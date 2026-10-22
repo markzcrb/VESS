@@ -109,6 +109,7 @@ struct CycleDayForm: View {
                 kicker
                     .vessTextStyle(.labelCaps)
                     .foregroundStyle(VESSColor.secondaryText)
+                    .accessibilityElement(children: .combine)
                 Text(date, format: .dateTime.day().month(.wide))
                     .vessTextStyle(.displayM)
                     .foregroundStyle(VESSColor.text)
@@ -116,20 +117,33 @@ struct CycleDayForm: View {
             }
             Spacer(minLength: VESSSpacing.md)
             if showsClose {
-                VESSIconButton(systemImage: "xmark", label: "Close") { dismiss() }
+                // Closes the whole sheet, also when pushed in the Add sheet.
+                VESSIconButton(systemImage: "xmark", label: "Close") { finish() }
             }
         }
         .accessibilityElement(children: .contain)
     }
 
-    private var kicker: Text {
+    /// "CYCLE DAY 1 · EDITING"; at accessibility sizes the two parts stack
+    /// without the separator.
+    @ViewBuilder
+    private var kicker: some View {
         let days = store.cycleDays.filter { $0.id != existing?.id } + (flow.isPeriod ? [draft] : [])
         let cycleDay = CyclePrediction.summary(days, today: date, calendar: calendar).cycleDay
-        switch (cycleDay, existing != nil) {
-        case (let day?, true): return Text("Cycle day \(day) · Editing")
-        case (let day?, false): return Text("Cycle day \(day)")
-        case (nil, true): return Text("Editing")
-        case (nil, false): return Text("Log a day")
+        let first = cycleDay.map { Text("Cycle day \($0)") } ?? (existing == nil ? Text("Log a day") : nil)
+        let second = existing == nil ? nil : Text("Editing")
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 0) {
+                first
+                second
+            }
+        } else {
+            switch (first, second) {
+            case (let first?, let second?): Text("\(first) · \(second)")
+            case (let first?, nil): first
+            case (nil, let second?): second
+            case (nil, nil): EmptyView()
+            }
         }
     }
 

@@ -125,6 +125,20 @@ struct CyclePredictionTests {
         #expect(summary.estimate?.longestDays == 30)
     }
 
+    @Test("When every cycle is outside 15–60 days there's no estimate, though the cycles are listed")
+    func allExcluded() throws {
+        let summary = CyclePrediction.summary(
+            history(lengths: [70, 90, 12], lastStart: try TestClock.date(2026, 10, 1)),
+            today: try TestClock.date(2026, 10, 6),
+            calendar: calendar
+        )
+        #expect(summary.completedCycles.count == 3)
+        #expect(summary.estimate == nil)
+        #expect(summary.daysUntilExpected == nil)
+        #expect(!summary.isPastWindow)
+        #expect(summary.cycleDay == 6)
+    }
+
     @Test("After the window, the summary says so and the expected day is in the past")
     func late() throws {
         let summary = CyclePrediction.summary(

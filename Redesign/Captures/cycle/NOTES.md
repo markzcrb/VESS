@@ -21,6 +21,6 @@ The demo clock is Tue 6 Oct, reference 13 is 22 Oct. The current period started 
 ## Deviations from the references
 - The symptom chips on 13 show all seven (the PNG shows five), the same list as 15.
 - Calendar always shows six weeks, so the height never jumps.
-- The empty-state ring says "No estimate yet"; the editorial line carries "Log two periods to see an estimate."
+- The empty-state ring says "No estimate yet"; the editorial line carries "Log three period starts to see an estimate."
 - At AX5 the legend stacks, and on the day sheet only Save is pinned (Delete moves to the end of the form).
 - The (i) button is the system bar size (36 pt tall, like Back).

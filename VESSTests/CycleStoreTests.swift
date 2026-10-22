@@ -73,6 +73,18 @@ struct CycleStoreTests {
         #expect(store.cycleDay(on: second, calendar: calendar)?.flow == .medium)
     }
 
+    @Test("Delete cycle data removes cycle days only")
+    func deleteCycleData() throws {
+        let store = try LocalStore.inMemory()
+        let now = try TestClock.date(2026, 10, 6, 18)
+        try store.saveProfile(MockData(now: now, calendar: calendar).profile)
+        try store.save(cycleDay(now, .medium), calendar: calendar)
+
+        try store.deleteCycleData()
+        #expect(store.cycleDays.isEmpty)
+        #expect(store.profile != nil)
+    }
+
     @Test("Export includes cycle days; Delete all data removes them")
     func exportAndDelete() throws {
         let store = try LocalStore.inMemory()

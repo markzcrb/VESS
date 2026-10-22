@@ -436,6 +436,12 @@ final class LocalStore {
         try save()
     }
 
+    /// Every cycle day, when tracking is switched off with "Delete cycle data".
+    func deleteCycleData() throws {
+        try context.delete(model: StoredCycleDay.self)
+        try save()
+    }
+
     // MARK: Export
 
     /// Everything VESS stores on this iPhone, as one JSON document (E07).

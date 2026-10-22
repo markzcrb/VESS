@@ -7,6 +7,8 @@ struct ProfileView: View {
     @Environment(HealthDataStore.self) private var health
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @State private var showError = false
+    @State private var confirmCycleOff = false
+    @State private var confirmCycleDelete = false
 
     private let calendar = Calendar.current
 
@@ -84,18 +86,49 @@ struct ProfileView: View {
                     isOn: Binding(get: { profile.isCycleTrackingOn }, set: { setCycleTracking($0, profile: profile) })
                 )
                 .accessibilityIdentifier("you.cycleTracking")
+                .confirmationDialog("Turn off cycle tracking?", isPresented: $confirmCycleOff, titleVisibility: .visible) {
+                    Button("Keep data on this iPhone") { saveCycleTracking(false) }
+                        .keyboardShortcut(.defaultAction)
+                    Button("Delete cycle data", role: .destructive) { confirmCycleDelete = true }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("Kept data stays hidden and comes back when you turn tracking on again.")
+                }
+                .alert("Delete cycle data?", isPresented: $confirmCycleDelete) {
+                    Button("Delete", role: .destructive, action: deleteCycleData)
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("Every logged cycle day will be removed from this iPhone. This can't be undone.")
+                }
             }
             .vessHairlineBottom()
         }
     }
 
-    /// Turning it off hides cycle tracking everywhere and keeps what was
-    /// logged, so turning it back on restores it. Delete all data removes it.
+    /// Switching off with logged days asks first: keep them (hidden, and
+    /// restored when switched on again) or delete them after a second confirm.
     private func setCycleTracking(_ isOn: Bool, profile: UserProfile) {
-        var updated = profile
+        if !isOn, !store.cycleDays.isEmpty {
+            confirmCycleOff = true
+            return
+        }
+        saveCycleTracking(isOn)
+    }
+
+    private func saveCycleTracking(_ isOn: Bool) {
+        guard var updated = store.profile else { return }
         updated.cycleTrackingEnabled = isOn
         do {
             try store.saveProfile(updated)
+        } catch {
+            showError = true
+        }
+    }
+
+    private func deleteCycleData() {
+        do {
+            try store.deleteCycleData()
+            saveCycleTracking(false)
         } catch {
             showError = true
         }

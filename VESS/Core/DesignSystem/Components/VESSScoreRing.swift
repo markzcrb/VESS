@@ -62,7 +62,8 @@ struct VESSScoreRing: View {
     }
 
     private var accessibilityValue: Text {
-        let value = Text(verbatim: "\(value)\(unit ?? "")")
+        // "—" is read as "em dash"; say what it means instead.
+        let value = self.value == Self.empty ? Text("No value yet") : Text(verbatim: "\(self.value)\(unit ?? "")")
         guard let sublabel else { return value }
         return Text("\(value), \(sublabel)")
     }
@@ -72,12 +73,20 @@ struct VESSScoreRing: View {
             VESSRingShape(progress: shown, tint: metric.tint, lineWidth: VESSRing.lineWidth(diameter: diameter))
             VStack(spacing: VESSSpacing.xxs) {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    // Rolls up from 0 in the sweep's 0.8 s transaction.
-                    Text(verbatim: hasCounted || reduceMotion ? value : Self.zero(for: value))
-                        .vessTextStyle(value.count > 3 ? .displayL : .displayHero)
-                        .contentTransition(.numericText(countsDown: false))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                    if value == Self.empty {
+                        // No value yet: a thin en dash, not a heavy bar.
+                        Text(verbatim: "\u{2013}")
+                            .vessTextStyle(.displayHero)
+                            .fontWeight(.ultraLight)
+                            .foregroundStyle(VESSColor.secondaryText)
+                    } else {
+                        // Rolls up from 0 in the sweep's 0.8 s transaction.
+                        Text(verbatim: hasCounted || reduceMotion ? value : Self.zero(for: value))
+                            .vessTextStyle(value.count > 3 ? .displayL : .displayHero)
+                            .contentTransition(.numericText(countsDown: false))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                    }
                     if let unit {
                         Text(verbatim: unit)
                             .vessTextStyle(.titleL)
@@ -88,7 +97,8 @@ struct VESSScoreRing: View {
                 Text(label)
                     .vessTextStyle(.labelCaps)
                     .foregroundStyle(VESSColor.text)
-                if let sublabel {
+                // At accessibility sizes the caption is shown once, below the ring.
+                if let sublabel, !dynamicTypeSize.isAccessibilitySize {
                     sublabel
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.secondaryText)
@@ -110,6 +120,9 @@ struct VESSScoreRing: View {
 
     /// "0" before the count for whole numbers in this locale's format
     /// ("78", "6,420"); anything else ("—") is shown from the start.
+    /// The value before there is one.
+    private static let empty = "—"
+
     private static func zero(for text: String) -> String {
         guard let number = try? Int(text, format: .number), number.formatted() == text else { return text }
         return 0.formatted()

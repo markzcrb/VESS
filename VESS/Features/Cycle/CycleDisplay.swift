@@ -33,8 +33,10 @@ enum CycleCopy {
     static let disclaimer: LocalizedStringResource = "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone."
     /// Shown under the day form.
     static let storage: LocalizedStringResource = "Saved only on this iPhone. Not shared with Apple Health."
-    /// Fewer than two completed cycles.
-    static let needsMore: LocalizedStringResource = "Log two periods to see an estimate"
+    /// Fewer than two completed cycles (three period starts).
+    static let needsMore: LocalizedStringResource = "Log three period starts to see an estimate"
+    /// Enough cycles, but every one is outside 15–60 days.
+    static let allExcluded: LocalizedStringResource = "Your logged cycles are shorter than 15 or longer than 60 days, which usually means a period wasn't logged."
     /// The Today row and Cycle screen icon.
     static let symbol = "calendar"
 
@@ -52,10 +54,22 @@ enum CycleCopy {
 
     /// The Today row and the ring caption.
     static func nextText(_ summary: CyclePrediction.Summary) -> Text {
-        guard summary.estimate != nil, let days = summary.daysUntilExpected else { return Text(needsMore) }
+        guard summary.estimate != nil, let days = summary.daysUntilExpected else {
+            return isAllExcluded(summary) ? Text("No estimate yet") : Text(needsMore)
+        }
         if summary.isPastWindow { return Text("Later than the estimate") }
         if days <= 0 { return Text("Next period likely around now") }
         return Text("Next period in about ^[\(days) day](inflect: true)")
+    }
+
+    /// Enough completed cycles, but none inside 15–60 days.
+    static func isAllExcluded(_ summary: CyclePrediction.Summary) -> Bool {
+        summary.estimate == nil && summary.completedCycles.count >= CyclePrediction.minCycles
+    }
+
+    /// Why there's no estimate, for the screen and History.
+    static func noEstimateText(_ summary: CyclePrediction.Summary) -> Text {
+        isAllExcluded(summary) ? Text(allExcluded) : Text("\(Text(needsMore)).")
     }
 }
 
@@ -66,7 +80,8 @@ struct CycleFlowChips: View {
     var body: some View {
         VESSChipFlow {
             ForEach(CycleFlow.allCases, id: \.self) { option in
-                VESSChip(title: option.title, isSelected: flow == option) { flow = option }
+                // Tapping the selected flow again clears it.
+                VESSChip(title: option.title, isSelected: flow == option) { flow = flow == option ? .none : option }
                     .accessibilityIdentifier("cycle.flow.\(option.rawValue)")
             }
         }

@@ -1316,6 +1316,9 @@
     "Can" : {
 
     },
+    "Cancel" : {
+
+    },
     "Cappuccino" : {
 
     },
@@ -1460,13 +1463,13 @@
     "Cycle day %lld" : {
 
     },
-    "Cycle day %lld · Editing" : {
-
-    },
     "Cycle history" : {
 
     },
     "Cycle tracking" : {
+
+    },
+    "Cycles shorter than 15 or longer than 60 days are left out, as they usually mean a period wasn't logged. If every cycle is left out, there's no estimate yet." : {
 
     },
     "cycling" : {
@@ -1530,6 +1533,12 @@
 
     },
     "Delete all data?" : {
+
+    },
+    "Delete cycle data" : {
+
+    },
+    "Delete cycle data?" : {
 
     },
     "Delete entry" : {
@@ -1734,6 +1743,9 @@
 
     },
     "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone." : {
+
+    },
+    "Every logged cycle day will be removed from this iPhone. This can't be undone." : {
 
     },
     "Everything" : {
@@ -2162,7 +2174,13 @@
     "kcal per portion" : {
 
     },
+    "Keep data on this iPhone" : {
+
+    },
     "Keep it here" : {
+
+    },
+    "Kept data stays hidden and comes back when you turn tracking on again." : {
 
     },
     "kg" : {
@@ -2261,10 +2279,13 @@
     "Log periods and see an estimate. Stays on this iPhone." : {
 
     },
-    "Log today" : {
+    "Log three period starts to see an estimate" : {
 
     },
-    "Log two periods to see an estimate" : {
+    "Log three period starts to see an estimate: that's two completed cycles." : {
+
+    },
+    "Log today" : {
 
     },
     "Log your first meal and your Fuel score starts building." : {
@@ -2496,6 +2517,9 @@
     "No estimate yet" : {
 
     },
+    "No estimate yet." : {
+
+    },
     "No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
 
     },
@@ -2518,6 +2542,9 @@
 
     },
     "No supplements yet." : {
+
+    },
+    "No value yet" : {
 
     },
     "No workouts in the last 7 days." : {
@@ -3277,7 +3304,7 @@
     "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
 
     },
-    "The window runs from your shortest to your longest of those cycles. It needs two completed cycles, and it says when they vary by more than a week." : {
+    "The window runs from your shortest to your longest of those cycles. It says when they vary by more than a week." : {
 
     },
     "These use what's in your pantry first. Check use-by dates before cooking." : {
@@ -3372,6 +3399,9 @@
 
     },
     "Turn light on" : {
+
+    },
+    "Turn off cycle tracking?" : {
 
     },
     "Type" : {
@@ -3719,6 +3749,9 @@
 
     },
     "Your food" : {
+
+    },
+    "Your logged cycles are shorter than 15 or longer than 60 days, which usually means a period wasn't logged." : {
 
     },
     "Your month in motion." : {

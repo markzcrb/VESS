@@ -63,7 +63,9 @@ struct FoodSearchSheet: View {
             )
             .vessDetailTitle("Photo")
         case .cycleDay:
-            CycleDayForm(date: day, showsClose: false, onDone: { dismiss() })
+            // Its own X closes the Add sheet; no Back chevron (h1).
+            CycleDayForm(date: day, showsClose: true, onDone: { dismiss() })
+                .navigationBarBackButtonHidden(true)
         }
     }
 

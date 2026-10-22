@@ -43,3 +43,4 @@ The Figma icons (`Icon/*`) are stand-ins drawn to look like SF Symbols. In the a
 | arrowUp | `arrow.up` | Send (Coach) |
 | moon | `moon` | Sleep (future) |
 | — | `camera`, `camera.viewfinder` | Photo estimate |
+| cycle | `calendar` (placeholder) | Cycle row on Today, Cycle in the Add sheet. One constant, `CycleCopy.symbol`, so it can be swapped later. |
