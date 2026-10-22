@@ -4,7 +4,8 @@ import SwiftUI
 enum FoodRoute: Hashable {
     case food(Food)
     case quickAdd
-    case createFood
+    /// A scanned code that wasn't found is saved with the new food.
+    case createFood(barcode: String?)
     case barcode
     /// DEBUG only (`VESSFeatureFlags.photoEstimate`): static photo-estimate screens.
     case photo
@@ -46,9 +47,9 @@ struct FoodSearchSheet: View {
             FoodDetailView(food: food, day: day, meal: $meal, onLogged: { dismiss() })
         case .quickAdd:
             QuickAddForm(day: day, meal: $meal, onLogged: { dismiss() })
-        case .createFood:
+        case .createFood(let barcode):
             // Replace the form with the new food, so Back returns to search.
-            CustomFoodForm(onSaved: { food in path = [.food(food)] })
+            CustomFoodForm(barcode: barcode, onSaved: { food in path = [.food(food)] })
         case .barcode:
             BarcodeLookupView(onFound: { food in path.append(.food(food)) })
         case .photo:
@@ -93,7 +94,8 @@ private struct FoodSearchHome: View {
     @FocusState private var isSearchFocused: Bool
 
     private enum AfterScanner {
-        case logged, typeNumber, addManually
+        case logged, typeNumber
+        case addManually(barcode: String)
     }
 
     private let calendar = Calendar.current
@@ -141,7 +143,7 @@ private struct FoodSearchHome: View {
                 meal: $meal,
                 onLogged: { closeScanner(then: .logged) },
                 onTypeNumber: { closeScanner(then: .typeNumber) },
-                onAddManually: { closeScanner(then: .addManually) }
+                onAddManually: { code in closeScanner(then: .addManually(barcode: code)) }
             )
         }
     }
@@ -155,7 +157,7 @@ private struct FoodSearchHome: View {
         switch afterScanner {
         case .logged: dismiss()
         case .typeNumber: path.append(.barcode)
-        case .addManually: path.append(.createFood)
+        case .addManually(let code): path.append(.createFood(barcode: code))
         case nil: break
         }
         afterScanner = nil
@@ -271,7 +273,7 @@ private struct FoodSearchHome: View {
             VESSSectionHeader(title: "Other ways to add")
             VESSRowGroup {
                 actionRow("Quick add", detail: "Log calories without a product", symbol: "bolt", route: .quickAdd, identifier: "foodSearch.quickAdd")
-                actionRow("Create a food", detail: "Save your own food or recipe", symbol: "square.and.pencil", route: .createFood, identifier: "foodSearch.createFood")
+                actionRow("Create a food", detail: "Save your own food or recipe", symbol: "square.and.pencil", route: .createFood(barcode: nil), identifier: "foodSearch.createFood")
                 if VESSFeatureFlags.photoEstimate {
                     actionRow("Take a photo", detail: "Debug only", symbol: "camera", route: .photo, identifier: "foodSearch.photo")
                 }

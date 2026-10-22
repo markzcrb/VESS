@@ -78,7 +78,10 @@ struct ActivityView: View {
 
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             VESSRowGroup {
+                // VoiceOver hears Steps once: from the ring above, with its
+                // target. The comparison is in the sentence below.
                 VESSMetricRow(systemImage: "figure.walk", label: "Steps", value: VESSFormat.steps(Double(snapshot.steps)), trend: stepsTrend)
+                    .accessibilityHidden(true)
                 VESSMetricRow(
                     systemImage: "bolt",
                     label: "Active energy",

@@ -183,8 +183,8 @@ struct FocusStep: View {
 
 // MARK: - Step 8: Apple Health
 
-/// Explains what VESS could read from Apple Health and why. No permission is
-/// requested here; VESS asks for each type in context, when it's first needed.
+/// Explains what VESS reads from Apple Health and why. No permission is
+/// requested here; VESS asks when the user connects in Activity or Settings.
 struct AppleHealthStep: View {
     var body: some View {
         QuestionScaffold(
@@ -192,14 +192,14 @@ struct AppleHealthStep: View {
             subtitle: "VESS can use what Apple Health already knows, so you log less."
         ) {
             VESSRowGroup {
-                reason("Weight and height", detail: "Keeps your targets current", systemImage: "scalemass")
+                // Exactly the four types HealthKitService reads.
                 reason("Steps and active energy", detail: "Reflects how much you move", systemImage: "figure.walk")
                 reason("Workouts", detail: "So you don't log them twice", systemImage: "dumbbell")
-                reason("Sleep", detail: "Context for your Margin Notes", systemImage: "bed.double")
+                reason("Weight", detail: "Shown in You, with its trend", systemImage: "scalemass")
             }
             .vessHairlineBottom()
 
-            Text("Nothing is shared now. VESS asks for each type only when you first use a feature that needs it, and you can change your choice anytime in Settings.")
+            Text("Nothing is shared now. VESS asks once, when you connect Apple Health in Activity or Settings. It only reads, never writes, and you can change access anytime in the Health app.")
                 .vessTextStyle(.caption)
                 .foregroundStyle(VESSColor.tertiaryText)
                 .fixedSize(horizontal: false, vertical: true)

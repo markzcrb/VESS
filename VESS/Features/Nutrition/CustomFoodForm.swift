@@ -6,6 +6,9 @@ struct CustomFoodForm: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    /// A scanned code Open Food Facts didn't know. Saved with the food, so
+    /// scanning it again finds this food.
+    var barcode: String? = nil
     let onSaved: (Food) -> Void
 
     @State private var name = ""
@@ -32,6 +35,11 @@ struct CustomFoodForm: View {
                     .textInputAutocapitalization(.sentences)
                     .accessibilityIdentifier("customFood.name")
                 VESSTextField("Brand", text: $brand, prompt: Text("Optional"))
+                if let barcode {
+                    VESSListRow(title: Text("Barcode"), value: Text(verbatim: barcode), showsChevron: false)
+                        .vessHairlineBottom()
+                        .accessibilityIdentifier("customFood.barcode")
+                }
 
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                     VESSSectionHeader(title: "Nutrition per")
@@ -103,7 +111,7 @@ struct CustomFoodForm: View {
             id: UUID(),
             name: trimmedName,
             brand: trimmedBrand.isEmpty ? nil : trimmedBrand,
-            barcode: nil,
+            barcode: barcode,
             servingSize: amount,
             servingUnit: basisUnit,
             nutrition: NutrientInput.facts(calories: kcal, protein: proteinGrams, carbs: carbGrams, fat: fatGrams),

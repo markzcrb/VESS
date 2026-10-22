@@ -70,7 +70,7 @@ struct SuggestionsView: View {
                         if suggestions.count < openSlots.count {
                             unfilledText(openSlots.count - suggestions.count)
                         }
-                        Text("\(selected.count) of \(suggestions.count) selected · You can change any later")
+                        Text("\(selected.count) of \(suggestions.count) selected · You can change these later.")
                     }
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)

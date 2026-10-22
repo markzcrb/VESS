@@ -320,6 +320,23 @@ struct FoodLookupServiceTests {
         #expect(try result.get().name == "Cached")
     }
 
+    @Test("A food created after 'Add manually' keeps its barcode, so scanning it again finds it")
+    func userFoodWithBarcode() async throws {
+        let store = try LocalStore.inMemory()
+        let now = Fixture.retrievedAt
+        let own = Food(
+            id: UUID(), name: "Market granola", brand: nil, barcode: "4000000000006",
+            servingSize: 100, servingUnit: .gram,
+            nutrition: NutritionFacts(calories: 450, proteinGrams: 10, carbohydrateGrams: 60, fatGrams: 18),
+            ingredients: [], allergens: [], quality: nil, source: .userCreated,
+            createdAt: now, updatedAt: now
+        )
+        try store.save(own)
+        let service = FoodLookupService(store: store, provider: StubFoodProvider(product: .failure(.notFound)))
+
+        #expect(try await service.lookUp(barcode: "4000000000006", now: now).get().name == "Market granola")
+    }
+
     @Test("A stale cached product is refreshed when online, and kept when offline")
     func staleCache() async throws {
         let now = Fixture.retrievedAt

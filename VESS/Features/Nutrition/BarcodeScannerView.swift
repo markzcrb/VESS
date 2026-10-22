@@ -17,7 +17,8 @@ struct BarcodeScannerView: View {
     /// Food was logged: close the whole Add flow.
     let onLogged: () -> Void
     let onTypeNumber: () -> Void
-    let onAddManually: () -> Void
+    /// Not found: add it yourself. Receives the scanned code.
+    let onAddManually: (String) -> Void
     /// When set (Pantry), a found product is handed back and the scanner
     /// closes, instead of opening Product found for logging.
     var onProduct: ((Food) -> Void)?
@@ -150,7 +151,7 @@ struct BarcodeScannerView: View {
             message(
                 // Non-breaking spaces keep the number on one line.
                 Text("Nothing on Open Food Facts for \(Self.grouped(code).replacingOccurrences(of: " ", with: "\u{00A0}")). You can add it yourself."),
-                primary: ("Add manually", onAddManually),
+                primary: ("Add manually", { onAddManually(code) }),
                 secondary: ("Scan again", { phase = .scanning })
             )
         case .failed(_, let error):

@@ -76,6 +76,9 @@ struct WeekPlanTests {
         #expect(MealSuggestions.fits(diets: [.pescatarian], profile: pescatarian))
         #expect(MealSuggestions.fits(diets: [.vegetarian], profile: pescatarian))
         #expect(MealSuggestions.fits(diets: nil, profile: pescatarian), "The user's own meals always fit")
+        #expect(!MealSuggestions.fits(diets: [], profile: pescatarian), "Meat dishes carry no diet and are left out")
+        // Typed in onboarding's "Something else", in any case.
+        #expect(!MealSuggestions.fits(diets: [], profile: profile(description: "pescatarian, mostly")))
         let vegetarian = profile(diet: .vegetarian, description: nil)
         #expect(!MealSuggestions.fits(diets: [.pescatarian], profile: vegetarian))
 

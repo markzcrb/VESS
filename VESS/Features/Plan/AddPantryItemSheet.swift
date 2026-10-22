@@ -113,7 +113,7 @@ struct AddPantryItemSheet: View {
                     meal: .constant(.dinner),
                     onLogged: { showScanner = false },
                     onTypeNumber: { showScanner = false },
-                    onAddManually: { showScanner = false },
+                    onAddManually: { _ in showScanner = false },
                     onProduct: fill
                 )
             }

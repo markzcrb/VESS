@@ -213,7 +213,10 @@ struct VESSMealRow: View {
         .padding(.vertical, VESSSpacing.sm + 2)
         .opacity(isPlanned ? 0.5 : 1)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        // "Breakfast, Greek yogurt, oats, blueberries, 674 kcal, 7:45 AM":
+        // kcal in one phrase with its number, the time after the meal.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(title), \(detail), \(calories) kcal, \(time, format: .dateTime.hour().minute())"))
     }
 
     private var regular: some View {

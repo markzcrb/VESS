@@ -453,6 +453,16 @@
         }
       }
     },
+    "%@, %@, %@ kcal, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$@ kcal, %4$@"
+          }
+        }
+      }
+    },
     "%@, via Apple Health" : {
 
     },
@@ -538,12 +548,12 @@
         }
       }
     },
-    "%lld of %lld selected · You can change any later" : {
+    "%lld of %lld selected · You can change these later." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$lld of %2$lld selected · You can change any later"
+            "value" : "%1$lld of %2$lld selected · You can change these later."
           }
         }
       }
@@ -1121,9 +1131,6 @@
 
     },
     "Contains %@" : {
-
-    },
-    "Context for your Margin Notes" : {
 
     },
     "Continue" : {
@@ -1779,9 +1786,6 @@
     "Keep it here" : {
 
     },
-    "Keeps your targets current" : {
-
-    },
     "kg" : {
 
     },
@@ -2098,7 +2102,7 @@
     "Nothing fits yet. Log a few meals or save some foods, and suggestions will follow." : {
 
     },
-    "Nothing is shared now. VESS asks for each type only when you first use a feature that needs it, and you can change your choice anytime in Settings." : {
+    "Nothing is shared now. VESS asks once, when you connect Apple Health in Activity or Settings. It only reads, never writes, and you can change access anytime in the Health app." : {
 
     },
     "Nothing logged" : {
@@ -2531,7 +2535,7 @@
     "Shorter" : {
 
     },
-    "Sleep" : {
+    "Shown in You, with its trend" : {
 
     },
     "slice" : {
@@ -3033,9 +3037,6 @@
 
     },
     "Weight" : {
-
-    },
-    "Weight and height" : {
 
     },
     "Welcome" : {

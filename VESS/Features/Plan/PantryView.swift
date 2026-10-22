@@ -44,7 +44,7 @@ struct PantryView: View {
                 meal: .constant(.dinner),
                 onLogged: { showScanner = false },
                 onTypeNumber: { showScanner = false; addRequest = AddPantryRequest() },
-                onAddManually: { showScanner = false; addRequest = AddPantryRequest() },
+                onAddManually: { _ in showScanner = false; addRequest = AddPantryRequest() },
                 onProduct: { scanned = $0 }
             )
         }
