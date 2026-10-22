@@ -29,10 +29,14 @@ nonisolated struct UserProfile: Identifiable, Codable, Hashable, Sendable {
     var prefersAppleHealth: Bool? = nil
     /// Daily steps goal; `nil` uses `defaultStepsTarget`.
     var stepsTarget: Int? = nil
+    /// Cycle tracking, opt-in from You. `nil` (every profile from earlier
+    /// builds) is off.
+    var cycleTrackingEnabled: Bool? = nil
 
     static let defaultStepsTarget = 8_000
 
     var dailyStepsTarget: Int { stepsTarget ?? Self.defaultStepsTarget }
+    var isCycleTrackingOn: Bool { cycleTrackingEnabled ?? false }
 
     func age(on date: Date, calendar: Calendar) -> Int? {
         guard let dateOfBirth else { return nil }

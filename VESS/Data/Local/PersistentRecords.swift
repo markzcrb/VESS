@@ -127,6 +127,22 @@ final class StoredSupplement {
     }
 }
 
+/// A logged cycle day (opt-in cycle tracking). One per calendar day; stays
+/// on this iPhone. Additive.
+@Model
+final class StoredCycleDay {
+    @Attribute(.unique) var id: UUID
+    /// The start of the logged day, for month queries.
+    var day: Date
+    var payload: Data
+
+    init(id: UUID, day: Date, payload: Data) {
+        self.id = id
+        self.day = day
+        self.payload = payload
+    }
+}
+
 /// What the user added to or changed on the grocery list. Additive.
 @Model
 final class StoredGroceryItem {

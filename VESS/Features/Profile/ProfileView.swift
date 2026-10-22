@@ -6,6 +6,7 @@ struct ProfileView: View {
     @Environment(LocalStore.self) private var store
     @Environment(HealthDataStore.self) private var health
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
+    @State private var showError = false
 
     private let calendar = Calendar.current
 
@@ -27,6 +28,7 @@ struct ProfileView: View {
                 .vessScreenBackground()
                 .toolbar(.hidden, for: .navigationBar)
                 .profileDestinations()
+                .vessErrorAlert(isPresented: $showError)
             }
         }
     }
@@ -76,8 +78,26 @@ struct ProfileView: View {
                 link(.nutrition, title: "Diet", value: Text(profile.dietTitle))
                 link(.settings, title: "Appearance", value: Text(appearance.title))
                 link(.appleHealth, title: "Apple Health", value: Text(health.state.statusTitle))
+                ProfileToggleRow(
+                    title: Text("Cycle tracking"),
+                    subtitle: Text("Log periods and see an estimate. Stays on this iPhone."),
+                    isOn: Binding(get: { profile.isCycleTrackingOn }, set: { setCycleTracking($0, profile: profile) })
+                )
+                .accessibilityIdentifier("you.cycleTracking")
             }
             .vessHairlineBottom()
+        }
+    }
+
+    /// Turning it off hides cycle tracking everywhere and keeps what was
+    /// logged, so turning it back on restores it. Delete all data removes it.
+    private func setCycleTracking(_ isOn: Bool, profile: UserProfile) {
+        var updated = profile
+        updated.cycleTrackingEnabled = isOn
+        do {
+            try store.saveProfile(updated)
+        } catch {
+            showError = true
         }
     }
 

@@ -86,6 +86,17 @@ struct AppRootView: View {
                     if arguments.contains("-seedFullDay") {
                         for entry in data.fullDayExtras { try store.add(entry) }
                     }
+                    // 13: cycle tracking on, with six cycles of history
+                    // (`-cycleOn`) or nothing logged yet (`-cycleOnEmpty`).
+                    if arguments.contains("-cycleOn") || arguments.contains("-cycleOnEmpty"), var profile = store.profile {
+                        profile.cycleTrackingEnabled = true
+                        try store.saveProfile(profile)
+                        if arguments.contains("-cycleOn") {
+                            for day in MockData.cycleDays(now: AppClock.now, calendar: .current) {
+                                try store.save(day, calendar: .current)
+                            }
+                        }
+                    }
                 }
                 return store
             }

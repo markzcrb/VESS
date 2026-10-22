@@ -61,7 +61,7 @@ struct VESSSectionHeader: View {
                             .accessibilityHidden(true)
                     }
                     .foregroundStyle(VESSColor.secondaryText)
-                    .frame(minHeight: VESSHitTarget.minimum)
+                    .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum, alignment: .trailing)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

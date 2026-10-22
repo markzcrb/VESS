@@ -9,6 +9,8 @@ enum FoodRoute: Hashable {
     case barcode
     /// DEBUG only (`VESSFeatureFlags.photoEstimate`): static photo-estimate screens.
     case photo
+    /// Log the day's flow and symptoms (15). Only while cycle tracking is on.
+    case cycleDay
 }
 
 /// Find a food and log it to a meal. Local results (starter catalog, your
@@ -60,6 +62,8 @@ struct FoodSearchSheet: View {
                 description: Text("Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved.")
             )
             .vessDetailTitle("Photo")
+        case .cycleDay:
+            CycleDayForm(date: day, showsClose: false, onDone: { dismiss() })
         }
     }
 
@@ -277,6 +281,9 @@ private struct FoodSearchHome: View {
                 actionRow("Create a food", detail: "Save your own food or recipe", symbol: "square.and.pencil", route: .createFood(barcode: nil), identifier: "foodSearch.createFood")
                 if VESSFeatureFlags.photoEstimate {
                     actionRow("Take a photo", detail: "Debug only", symbol: "camera", route: .photo, identifier: "foodSearch.photo")
+                }
+                if store.profile?.isCycleTrackingOn == true {
+                    actionRow("Cycle", detail: "Log flow or symptoms", symbol: CycleCopy.symbol, route: .cycleDay, identifier: "foodSearch.cycle")
                 }
             }
             .vessHairlineBottom()

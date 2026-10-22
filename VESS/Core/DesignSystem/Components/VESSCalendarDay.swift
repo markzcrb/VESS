@@ -26,15 +26,19 @@ struct VESSCalendarDay: View {
     private var diameter: CGFloat { min(scaledDiameter, 46) }
 
     var body: some View {
+        // The whole cell is the target: at least 44 pt, even when the
+        // circle is 40 pt.
+        let cell = circle
+            .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
+            .contentShape(Rectangle())
         Group {
             if let action {
-                Button(action: action) { circle }
+                Button(action: action) { cell }
                     .buttonStyle(.plain)
             } else {
-                circle
+                cell
             }
         }
-        .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(date, format: .dateTime.day().month(.wide)))
         .accessibilityValue(spokenState)

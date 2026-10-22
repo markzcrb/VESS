@@ -43,12 +43,24 @@ final class LocalStore {
         LocalStore(container: try makeContainer(inMemory: true))
     }
 
-    private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
-        let schema = Schema([
+    /// A store in a file at `url`. Used by tests that open a store written
+    /// by an earlier build.
+    static func onDisk(at url: URL) throws -> LocalStore {
+        LocalStore(container: try ModelContainer(for: schema, configurations: ModelConfiguration(url: url)))
+    }
+
+    /// Every entity. New entities are added at the end and are always
+    /// additive, so stores from earlier builds open unchanged.
+    static var schema: Schema {
+        Schema([
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
             StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self, StoredSupplement.self,
+            StoredCycleDay.self,
         ])
-        return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
+    }
+
+    private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
+        try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
     }
 
     // MARK: Profile
@@ -389,6 +401,41 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Cycle
+
+    /// Every logged cycle day, oldest first. Kept when cycle tracking is
+    /// turned off, so turning it back on restores the history.
+    var cycleDays: [CycleDay] {
+        _ = revision
+        return fetchDecoded(FetchDescriptor<StoredCycleDay>(sortBy: [SortDescriptor(\.day)]), as: CycleDay.self) { $0.payload }
+    }
+
+    func cycleDay(on day: Date, calendar: Calendar) -> CycleDay? {
+        let (start, end) = Self.bounds(of: day, calendar: calendar)
+        let descriptor = FetchDescriptor<StoredCycleDay>(predicate: #Predicate { $0.day >= start && $0.day < end })
+        _ = revision
+        return fetchDecoded(descriptor, as: CycleDay.self) { $0.payload }.first
+    }
+
+    /// Saves the day, replacing whatever was logged for that calendar day.
+    /// An empty day (no flow, symptoms or note) is removed instead.
+    func save(_ cycleDay: CycleDay, calendar: Calendar) throws {
+        var value = cycleDay
+        value.day = calendar.startOfDay(for: cycleDay.day)
+        let (start, end) = Self.bounds(of: value.day, calendar: calendar)
+        let id = value.id
+        try context.delete(model: StoredCycleDay.self, where: #Predicate { ($0.day >= start && $0.day < end) || $0.id == id })
+        if !value.isEmpty {
+            context.insert(StoredCycleDay(id: value.id, day: value.day, payload: try encoder.encode(value)))
+        }
+        try save()
+    }
+
+    func deleteCycleDay(id: UUID) throws {
+        try context.delete(model: StoredCycleDay.self, where: #Predicate { $0.id == id })
+        try save()
+    }
+
     // MARK: Export
 
     /// Everything VESS stores on this iPhone, as one JSON document (E07).
@@ -408,7 +455,8 @@ final class LocalStore {
             plannedMeals: fetchDecoded(FetchDescriptor<StoredPlannedMeal>(), as: PlannedMeal.self) { $0.payload },
             grocery: groceryItems,
             workouts: workouts,
-            supplements: supplements
+            supplements: supplements,
+            cycleDays: cycleDays
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -428,6 +476,8 @@ final class LocalStore {
         let grocery: [GroceryItem]
         let workouts: [Workout]
         let supplements: [Supplement]
+        /// Cycle tracking, if it was ever used.
+        let cycleDays: [CycleDay]
     }
 
     // MARK: Account data
@@ -443,6 +493,7 @@ final class LocalStore {
         try context.delete(model: StoredGroceryItem.self)
         try context.delete(model: StoredWorkout.self)
         try context.delete(model: StoredSupplement.self)
+        try context.delete(model: StoredCycleDay.self)
         try save()
         profile = nil
         insights = []

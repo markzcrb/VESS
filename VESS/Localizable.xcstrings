@@ -585,6 +585,9 @@
     "%@, via Apple Health" : {
 
     },
+    "%@." : {
+
+    },
     "%lld" : {
 
     },
@@ -813,6 +816,9 @@
     "%lld to use in the next few days." : {
 
     },
+    "^[%lld day](inflect: true)" : {
+
+    },
     "^[%lld drink](inflect: true), last at %@" : {
       "localizations" : {
         "en" : {
@@ -912,6 +918,9 @@
     "100 %@" : {
 
     },
+    "A cycle runs from the first day of one period to the first day of the next. VESS uses your last six completed cycles." : {
+
+    },
     "a day" : {
 
     },
@@ -972,6 +981,9 @@
     "About the same as the week before." : {
 
     },
+    "About these estimates" : {
+
+    },
     "About usual" : {
 
     },
@@ -1026,6 +1038,9 @@
 
     },
     "Add a name so you can find it again." : {
+
+    },
+    "Add a note (optional)" : {
 
     },
     "Add a snack" : {
@@ -1155,7 +1170,13 @@
     "Alcohol" : {
 
     },
+    "All" : {
+
+    },
     "All at home" : {
+
+    },
+    "All cycles" : {
 
     },
     "Americano" : {
@@ -1168,6 +1189,19 @@
 
     },
     "Amount in milliliters" : {
+
+    },
+    "An estimate from your last ^[%lld cycle](inflect: true), which average %lld days. It can be off." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "An estimate from your last ^[%1$lld cycle](inflect: true), which average %2$lld days. It can be off."
+          }
+        }
+      }
+    },
+    "An estimate from your last ^[%lld cycle](inflect: true), which vary by more than a week, so it's less certain than usual. It can be off." : {
 
     },
     "An estimate: caffeine halves about every %@ hours, and this differs from person to person." : {
@@ -1194,10 +1228,23 @@
     "Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10 % counts as about usual." : {
 
     },
+    "Average %lld days · range %lld–%lld days over ^[%lld cycle](inflect: true)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Average %1$lld days · range %2$lld–%3$lld days over ^[%4$lld cycle](inflect: true)."
+          }
+        }
+      }
+    },
     "Avoid" : {
 
     },
     "Back" : {
+
+    },
+    "Back pain" : {
 
     },
     "Bakery" : {
@@ -1216,6 +1263,9 @@
 
     },
     "Black tea" : {
+
+    },
+    "Bloating" : {
 
     },
     "Body" : {
@@ -1308,6 +1358,9 @@
     "Clear search" : {
 
     },
+    "Cleared %@" : {
+
+    },
     "Close" : {
 
     },
@@ -1371,6 +1424,12 @@
     "Counts as %@ ml toward water." : {
 
     },
+    "Cramps" : {
+
+    },
+    "Cravings" : {
+
+    },
     "Create a food" : {
 
     },
@@ -1393,6 +1452,21 @@
 
     },
     "Cycle" : {
+
+    },
+    "Cycle day" : {
+
+    },
+    "Cycle day %lld" : {
+
+    },
+    "Cycle day %lld · Editing" : {
+
+    },
+    "Cycle history" : {
+
+    },
+    "Cycle tracking" : {
 
     },
     "cycling" : {
@@ -1422,7 +1496,13 @@
     "Dashed line is your %@ kcal target. Today is still in progress." : {
 
     },
+    "Date" : {
+
+    },
     "Day" : {
+
+    },
+    "Day %lld" : {
 
     },
     "Day shows what you've logged today. Week and Month show daily averages over the days with at least one meal logged." : {
@@ -1458,6 +1538,9 @@
     "Delete last glass" : {
 
     },
+    "Delete this day" : {
+
+    },
     "Delete this item?" : {
 
     },
@@ -1465,6 +1548,9 @@
 
     },
     "Delete this workout?" : {
+
+    },
+    "Deleted %@" : {
 
     },
     "Describe it" : {
@@ -1494,10 +1580,26 @@
     "Done" : {
 
     },
+    "Done on %lld of %lld days so far" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Done on %1$lld of %2$lld days so far"
+          }
+        }
+      }
+    },
     "Done shopping · store ^[%lld item](inflect: true)" : {
 
     },
+    "Done, from your log" : {
+
+    },
     "Dose" : {
+
+    },
+    "Double-tap to change" : {
 
     },
     "Drank 2 L or more" : {
@@ -1540,6 +1642,9 @@
 
     },
     "Edit or delete" : {
+
+    },
+    "Editing" : {
 
     },
     "Effort" : {
@@ -1622,7 +1727,13 @@
     "Estimate" : {
 
     },
+    "Estimated" : {
+
+    },
     "Estimated caffeine in your system through the day" : {
+
+    },
+    "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone." : {
 
     },
     "Everything" : {
@@ -1637,7 +1748,7 @@
     "Everything is in your pantry" : {
 
     },
-    "Everything you log: meals, drinks, workouts, pantry, plans, supplements and your profile." : {
+    "Everything you log: meals, drinks, workouts, pantry, plans, supplements, cycle days and your profile." : {
 
     },
     "Exercise 3–5 days a week" : {
@@ -1667,6 +1778,9 @@
     "Fat is on pace; carbs are lighter so far." : {
 
     },
+    "Fatigue" : {
+
+    },
     "Favorites" : {
 
     },
@@ -1685,6 +1799,9 @@
     "Fibre" : {
 
     },
+    "Filled days are logged, dashed days are estimated, and the outlined day is today" : {
+
+    },
     "Fish" : {
 
     },
@@ -1692,6 +1809,9 @@
 
     },
     "Flat white" : {
+
+    },
+    "Flow" : {
 
     },
     "Focus" : {
@@ -1869,6 +1989,12 @@
     "Has entries" : {
 
     },
+    "Headache" : {
+
+    },
+    "Heavy" : {
+
+    },
     "Height" : {
 
     },
@@ -1876,6 +2002,9 @@
 
     },
     "Herbal tea" : {
+
+    },
+    "Hides the calendar" : {
 
     },
     "Hides the time picker" : {
@@ -2081,6 +2210,9 @@
     "Later" : {
 
     },
+    "Later than the estimate" : {
+
+    },
     "Latte" : {
 
     },
@@ -2105,6 +2237,9 @@
     "Log %@" : {
 
     },
+    "Log a day" : {
+
+    },
     "Log a meal" : {
 
     },
@@ -2120,7 +2255,22 @@
     "Log calories without a product" : {
 
     },
+    "Log flow or symptoms" : {
+
+    },
+    "Log periods and see an estimate. Stays on this iPhone." : {
+
+    },
+    "Log today" : {
+
+    },
+    "Log two periods to see an estimate" : {
+
+    },
     "Log your first meal and your Fuel score starts building." : {
+
+    },
+    "Logged" : {
 
     },
     "Logged as" : {
@@ -2154,6 +2304,9 @@
 
     },
     "Low carb" : {
+
+    },
+    "Low mood" : {
 
     },
     "Lower than usual" : {
@@ -2208,6 +2361,9 @@
 
     },
     "Meals you log appear here." : {
+
+    },
+    "Medium" : {
 
     },
     "mg" : {
@@ -2307,6 +2463,15 @@
     "Next day" : {
 
     },
+    "Next period in about ^[%lld day](inflect: true)" : {
+
+    },
+    "Next period likely %@." : {
+
+    },
+    "Next period likely around now" : {
+
+    },
     "Next week" : {
 
     },
@@ -2326,6 +2491,9 @@
 
     },
     "No drinks yet today." : {
+
+    },
+    "No estimate yet" : {
 
     },
     "No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
@@ -2355,16 +2523,28 @@
     "No workouts in the last 7 days." : {
 
     },
+    "None" : {
+
+    },
     "Not checked" : {
 
     },
     "Not connected" : {
 
     },
+    "Not done" : {
+
+    },
+    "Not done yet, from your log" : {
+
+    },
     "Not now" : {
 
     },
     "Not reported" : {
+
+    },
+    "Note" : {
 
     },
     "Nothing else" : {
@@ -2386,6 +2566,12 @@
 
     },
     "Nothing logged yet today." : {
+
+    },
+    "Nothing logged yet." : {
+
+    },
+    "Nothing logged yet. Tap a day in the calendar, or Period started today." : {
 
     },
     "Nothing needs using in the next few days." : {
@@ -2478,6 +2664,9 @@
         }
       }
     },
+    "Off unless you turn it on. Cycle days stay on this iPhone: they're never sent anywhere and never shared with Apple Health." : {
+
+    },
     "OK" : {
 
     },
@@ -2554,6 +2743,15 @@
 
     },
     "Per 100 %@" : {
+
+    },
+    "Period ^[%lld day](inflect: true)" : {
+
+    },
+    "Period ^[%lld day](inflect: true) · current" : {
+
+    },
+    "Period started today" : {
 
     },
     "Pescatarian" : {
@@ -2699,6 +2897,9 @@
     "Recent" : {
 
     },
+    "Recent cycles" : {
+
+    },
     "Recorded" : {
 
     },
@@ -2765,6 +2966,12 @@
     "Saved" : {
 
     },
+    "Saved %@" : {
+
+    },
+    "Saved only on this iPhone. Not shared with Apple Health." : {
+
+    },
     "Scan a barcode" : {
 
     },
@@ -2828,6 +3035,9 @@
     "Shown in You, with its trend" : {
 
     },
+    "Shows a calendar" : {
+
+    },
     "Shows the time picker" : {
 
     },
@@ -2874,6 +3084,12 @@
 
     },
     "Spirit" : {
+
+    },
+    "Spotting" : {
+
+    },
+    "Started %@" : {
 
     },
     "Starting estimates from your answers, not medical advice. Targets are a guide, not a grade." : {
@@ -2970,6 +3186,9 @@
     "Switch on to get a reminder at its time." : {
 
     },
+    "Symptoms" : {
+
+    },
     "Syncing with Apple Health" : {
 
     },
@@ -2992,6 +3211,9 @@
 
     },
     "Tap + to log a meal or a drink: search, scan a barcode, or enter it yourself. Today shows how your day is going against your own targets." : {
+
+    },
+    "Tap a day in the calendar to log it, or use Period started today." : {
 
     },
     "Tap the heart on a food to keep it here." : {
@@ -3055,6 +3277,9 @@
     "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
 
     },
+    "The window runs from your shortest to your longest of those cycles. It needs two completed cycles, and it says when they vary by more than a week." : {
+
+    },
     "These use what's in your pantry first. Check use-by dates before cooking." : {
 
     },
@@ -3062,6 +3287,9 @@
 
     },
     "This product doesn't list calories, so it can't be logged. Create it as your own food instead." : {
+
+    },
+    "This week" : {
 
     },
     "This week averages %@ kcal and %@ g protein." : {
@@ -3108,6 +3336,9 @@
 
     },
     "Today vs. prior 30 days" : {
+
+    },
+    "Today, %@" : {
 
     },
     "today's" : {
@@ -3285,6 +3516,9 @@
 
     },
     "VESS data export" : {
+
+    },
+    "VESS doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy." : {
 
     },
     "VESS doesn't guess your steps." : {
@@ -3502,7 +3736,10 @@
     "Your pantry is empty" : {
 
     },
-    "Your profile, meals, drinks, workouts, pantry, plans and supplements will be removed from this iPhone. This can't be undone." : {
+    "Your period may come later than estimated." : {
+
+    },
+    "Your profile, meals, drinks, workouts, pantry, plans, supplements and cycle days will be removed from this iPhone. This can't be undone." : {
 
     },
     "Your week in motion." : {
