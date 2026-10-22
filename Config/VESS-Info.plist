@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- Merged with the generated Info.plist. The launch screen uses the app
-     background colour (dark in Dark mode, cream in Light), so launching
-     never flashes white. -->
 <plist version="1.0">
 <dict>
 	<key>UILaunchScreen</key>
