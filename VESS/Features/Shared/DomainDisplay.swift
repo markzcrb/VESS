@@ -306,6 +306,21 @@ extension WorkoutType {
         }
     }
 
+    /// Outline SF Symbols. Strength uses ICONS.md's `dumbbell`.
+    var symbol: String {
+        switch self {
+        case .walking: "figure.walk"
+        case .running: "figure.run"
+        case .cycling: "figure.outdoor.cycle"
+        case .strength: "dumbbell"
+        case .yoga: "figure.yoga"
+        case .swimming: "figure.pool.swim"
+        case .hiit: "figure.highintensity.intervaltraining"
+        case .mobility: "figure.flexibility"
+        case .other: "figure.mixed.cardio"
+        }
+    }
+
     /// Lowercase, for sentences: "Add 30-minute walk", "Walking most often".
     var activityNoun: LocalizedStringResource {
         switch self {

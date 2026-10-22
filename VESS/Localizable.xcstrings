@@ -1006,12 +1006,12 @@
         }
       }
     },
-    "Add %lld-minute %@" : {
+    "Add %lld‑minute %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Add %1$lld-minute %2$@"
+            "value" : "Add %1$lld‑minute %2$@"
           }
         }
       }
@@ -1387,6 +1387,9 @@
 
     },
     "Custom amount, %@ ml" : {
+
+    },
+    "Custom, %lld min" : {
 
     },
     "Cycle" : {
@@ -2021,7 +2024,7 @@
     "kcal a day" : {
 
     },
-    "kcal active energy" : {
+    "kcal active energy · estimate" : {
 
     },
     "kcal average · %@" : {
@@ -2871,9 +2874,6 @@
 
     },
     "Spirit" : {
-
-    },
-    "Started at" : {
 
     },
     "Starting estimates from your answers, not medical advice. Targets are a guide, not a grade." : {

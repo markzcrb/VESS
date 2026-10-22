@@ -28,7 +28,9 @@ private struct VESSBottomActionModifier<Action: View>: ViewModifier {
                         .padding(.horizontal, VESSSpacing.screenInset)
                         .padding(.vertical, VESSSpacing.sm)
                         .frame(maxWidth: .infinity)
-                        .background(background)
+                        // Down to the screen edge, so scrolled content never
+                        // shows below the action (home indicator area).
+                        .background(background.ignoresSafeArea(edges: .bottom))
                 }
             }
             #if canImport(UIKit)

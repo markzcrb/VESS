@@ -419,6 +419,7 @@ struct DrinkTimeRow: View {
     @Binding var time: Date
     @Binding var isExpanded: Bool
     let range: ClosedRange<Date>
+    var identifier = "addDrink.time"
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -451,7 +452,7 @@ struct DrinkTimeRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityHint(isExpanded ? "Hides the time picker" : "Shows the time picker")
-            .accessibilityIdentifier("addDrink.time")
+            .accessibilityIdentifier(identifier)
             if isExpanded {
                 DatePicker("Time", selection: $time, in: range, displayedComponents: .hourAndMinute)
                     .datePickerStyle(.wheel)
