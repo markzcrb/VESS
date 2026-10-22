@@ -39,6 +39,7 @@ struct VESSScoreRing: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var shown: Double = 0
+    @State private var hasCounted = false
 
     var body: some View {
         // The ring keeps its size; at accessibility sizes the caption is
@@ -71,9 +72,10 @@ struct VESSScoreRing: View {
             VESSRingShape(progress: shown, tint: metric.tint, lineWidth: VESSRing.lineWidth(diameter: diameter))
             VStack(spacing: VESSSpacing.xxs) {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text(verbatim: value)
+                    // Rolls up from 0 in the sweep's 0.8 s transaction.
+                    Text(verbatim: hasCounted || reduceMotion ? value : Self.zero(for: value))
                         .vessTextStyle(value.count > 3 ? .displayL : .displayHero)
-                        .contentTransition(.numericText())
+                        .contentTransition(.numericText(countsDown: false))
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                     if let unit {
@@ -100,7 +102,17 @@ struct VESSScoreRing: View {
     }
 
     private func animate(to value: Double) {
-        withAnimation(reduceMotion ? nil : VESSMotion.ringSweep) { shown = value }
+        withAnimation(reduceMotion ? nil : VESSMotion.ringSweep) {
+            shown = value
+            hasCounted = true
+        }
+    }
+
+    /// "0" before the count for whole numbers in this locale's format
+    /// ("78", "6,420"); anything else ("—") is shown from the start.
+    private static func zero(for text: String) -> String {
+        guard let number = try? Int(text, format: .number), number.formatted() == text else { return text }
+        return 0.formatted()
     }
 }
 

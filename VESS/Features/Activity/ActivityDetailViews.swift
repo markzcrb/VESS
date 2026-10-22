@@ -102,7 +102,6 @@ struct ActivityDayBars: View {
     let calendar: Calendar
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 130
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var grown = false
 
     var body: some View {
@@ -126,6 +125,7 @@ struct ActivityDayBars: View {
                             Capsule()
                                 .fill(isHighlighted(index) ? VESSColor.activity : VESSColor.chartMuted)
                                 .frame(width: barWidth, height: max(4, proxy.size.height * values[index] / scaleMax) * (grown ? 1 : 0.02))
+                                .vessBarGrow(index: index, isGrown: grown)
                                 .frame(maxWidth: .infinity)
                         }
                     }
@@ -151,7 +151,7 @@ struct ActivityDayBars: View {
         // label doesn't cover the bars; the numbers are in the text above.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityHidden(true)
-        .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.chart) { grown = true } }
+        .onAppear { grown = true }
     }
 
     /// Days with data; with a target, only the last day and days that reached it.

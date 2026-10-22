@@ -14,6 +14,7 @@ struct AddFoodRequest: Identifiable {
 /// saved as "not reported", never as zero. Optionally saved to My foods.
 struct QuickAddForm: View {
     @Environment(LocalStore.self) private var store
+    @Environment(FoodLogUndo.self) private var undo
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -207,13 +208,17 @@ struct QuickAddForm: View {
                 )
                 try store.save(food)
                 let portion = Portion(option: .baseUnit(.serving), count: count)
-                try store.add(FoodLogEntry(userID: profile.id, food: food, portion: portion, mealType: meal, loggedAt: logTime))
+                let entry = FoodLogEntry(userID: profile.id, food: food, portion: portion, mealType: meal, loggedAt: logTime)
+                try store.add(entry)
+                undo.show([entry], meal: meal)
             } else {
-                try store.add(FoodLogEntry(
+                let entry = FoodLogEntry(
                     id: UUID(), userID: profile.id, foodID: nil, foodName: trimmedName, mealType: meal,
                     quantity: count, servingUnit: .serving, nutrition: nutrition.scaled(by: count),
                     loggedAt: logTime, source: .userCreated
-                ))
+                )
+                try store.add(entry)
+                undo.show([entry], meal: meal)
             }
             onLogged()
         } catch {

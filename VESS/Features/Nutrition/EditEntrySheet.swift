@@ -76,6 +76,8 @@ struct EditEntrySheet: View {
             .vessErrorAlert(isPresented: $showError)
             .vessKeyboardDoneButton()
         }
+        .presentationCornerRadius(VESSRadius.sheet)
+        .presentationDragIndicator(.visible)
     }
 
     /// Portions are edited as a count ("1.5 slices"); everything else in its unit.

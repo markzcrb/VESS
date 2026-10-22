@@ -7,13 +7,20 @@ import SwiftUI
 struct VESSRowGroup<Content: View>: View {
     /// Leading inset of the separators, so they align with row text.
     var dividerInset: CGFloat = 0
+    /// Rows fade and rise in one after another (MOTION.md: metric and
+    /// status lists only).
+    var staggered = false
     @ViewBuilder let content: Content
 
     var body: some View {
         Group(subviews: content) { subviews in
             VStack(spacing: 0) {
-                ForEach(subviews) { subview in
-                    subview
+                ForEach(Array(subviews.enumerated()), id: \.element.id) { index, subview in
+                    if staggered {
+                        subview.vessRowAppear(index: index)
+                    } else {
+                        subview
+                    }
                     if subview.id != subviews.last?.id {
                         VESSHairline()
                             .padding(.leading, dividerInset)

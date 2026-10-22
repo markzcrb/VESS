@@ -4,6 +4,7 @@ import SwiftUI
 /// estimate from `WorkoutEnergy` (MET × weight × hours), shown with "≈".
 struct AddWorkoutView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(FoodLogUndo.self) private var undo
     @Environment(\.dismiss) private var dismiss
 
     private enum When: Hashable { case now, earlier }
@@ -13,7 +14,6 @@ struct AddWorkoutView: View {
     @State private var effort: WorkoutEffort = .moderate
     @State private var when: When = .now
     @State private var startTime = AppClock.now.addingTimeInterval(-3600)
-    @State private var savedCount = 0
     @State private var showError = false
 
     private let calendar = Calendar.current
@@ -117,7 +117,6 @@ struct AddWorkoutView: View {
                 .accessibilityIdentifier("addWorkout.save")
             }
         }
-        .sensoryFeedback(.success, trigger: savedCount)
         .vessErrorAlert(isPresented: $showError)
     }
 
@@ -139,7 +138,9 @@ struct AddWorkoutView: View {
         )
         do {
             try store.save(workout)
-            savedCount += 1
+            undo.show(Text("Added \(minutes)-minute \(Text(type.sessionNoun))")) { store in
+                try store.deleteWorkout(id: workout.id)
+            }
             dismiss()
         } catch {
             showError = true

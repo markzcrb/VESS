@@ -37,6 +37,7 @@ struct FoodSearchSheet: View {
                 }
                 .toolbar { closeButton }
         }
+        .presentationCornerRadius(VESSRadius.sheet)
         .presentationDragIndicator(.visible)
     }
 
@@ -134,7 +135,7 @@ private struct FoodSearchHome: View {
         .safeAreaInset(edge: .bottom) {
             if !selected.isEmpty { selectionBar }
         }
-        .animation(reduceMotion ? .easeInOut(duration: 0.2) : VESSMotion.selection, value: selected.count)
+        .animation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.selection, value: selected.count)
         .task(id: trimmedQuery) { await searchOnline() }
         .vessErrorAlert(isPresented: $showError, retry: addSelected)
         .fullScreenCover(isPresented: $showScanner, onDismiss: continueAfterScanner) {

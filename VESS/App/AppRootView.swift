@@ -11,6 +11,7 @@ struct AppRootView: View {
     @State private var reminders = Self.makeReminders()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init() {
         let store = Self.makeStore()
@@ -35,7 +36,9 @@ struct AppRootView: View {
                 .environment(health)
                 .environment(foodUndo)
                 .environment(reminders)
-                .animation(.default, value: store.profile == nil)
+                .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
+                // One light tap for every log, wherever it came from.
+                .sensoryFeedback(.impact(weight: .light), trigger: foodUndo.loggedCount)
             } else {
                 StoreUnavailableView {
                     store = Self.makeStore()

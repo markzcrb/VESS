@@ -1,18 +1,35 @@
 import SwiftUI
 
-/// The last batch of foods logged from the Add sheet, so the screen that
-/// opened the sheet can offer Undo for a few seconds after it closes.
+/// The last thing logged (foods from the Add sheet, a drink, a workout), so
+/// the screen behind can offer Undo for five seconds after the sheet or
+/// push closes (MOTION.md: logging).
 @Observable
 final class FoodLogUndo {
-    private(set) var entries: [FoodLogEntry] = []
-    private(set) var meal: MealType?
+    struct Item: Identifiable {
+        let id = UUID()
+        let message: Text
+        let undo: (LocalStore) throws -> Void
+    }
+
+    private(set) var item: Item?
+    /// Counts every log, so the light haptic fires each time.
+    private(set) var loggedCount = 0
     private var dismissal: Task<Void, Never>?
 
-    /// Offers Undo for `entries` for five seconds.
+    /// "Added 2 items to Dinner", undone by deleting the entries.
     func show(_ entries: [FoodLogEntry], meal: MealType) {
+        show(Text("Added ^[\(entries.count) item](inflect: true) to \(Text(meal.title))")) { store in
+            for entry in entries {
+                try store.deleteFoodEntry(id: entry.id)
+            }
+        }
+    }
+
+    /// Offers Undo for five seconds.
+    func show(_ message: Text, undo: @escaping (LocalStore) throws -> Void) {
         dismissal?.cancel()
-        self.entries = entries
-        self.meal = meal
+        item = Item(message: message, undo: undo)
+        loggedCount += 1
         dismissal = Task { [weak self] in
             try? await Task.sleep(for: .seconds(5))
             guard !Task.isCancelled else { return }
@@ -20,25 +37,22 @@ final class FoodLogUndo {
         }
     }
 
-    /// Deletes the batch from the store.
+    /// Reverses the last log.
     func undo(in store: LocalStore) throws {
-        let batch = entries
+        guard let item else { return }
         clear()
-        for entry in batch {
-            try store.deleteFoodEntry(id: entry.id)
-        }
+        try item.undo(store)
     }
 
     private func clear() {
         dismissal?.cancel()
-        entries = []
-        meal = nil
+        item = nil
     }
 }
 
 extension View {
-    /// Shows "Added N items to Dinner · Undo" above the bottom edge after a
-    /// batch is logged from the Add sheet.
+    /// Shows "Added 2 items to Dinner · Undo" above the bottom edge after
+    /// something is logged.
     func vessFoodUndoToast() -> some View {
         modifier(FoodUndoToastModifier())
     }
@@ -53,14 +67,14 @@ private struct FoodUndoToastModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .bottom) {
-                if let meal = undo.meal, !undo.entries.isEmpty {
-                    VESSUndoToast(message: Text("Added ^[\(undo.entries.count) item](inflect: true) to \(Text(meal.title))")) {
+                if let item = undo.item {
+                    VESSUndoToast(message: item.message) {
                         do { try undo.undo(in: store) } catch { showError = true }
                     }
                     .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .animation(reduceMotion ? nil : .snappy, value: undo.entries.count)
+            .animation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.toast, value: undo.item?.id)
             .vessErrorAlert(isPresented: $showError)
     }
 }

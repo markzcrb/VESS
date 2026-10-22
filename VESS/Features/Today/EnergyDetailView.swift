@@ -77,7 +77,7 @@ struct EnergyDetailView: View {
                 }
 
                 VStack(spacing: VESSSpacing.sm + 2) {
-                    VESSRowGroup {
+                    VESSRowGroup(staggered: true) {
                         VESSStatusRow(
                             systemImage: "flame",
                             label: "Energy vs. target",
@@ -187,6 +187,23 @@ struct EnergyDetailView: View {
 
 /// The running energy total through the day as a step line, the target as a
 /// dashed line, meal icons at their times and, for today, a "now" marker.
+/// Reveals a chart's plot area from the left over 0.6 s on first appear.
+/// Shown at once with Reduce Motion.
+private struct LineDrawReveal: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var drawn = false
+
+    func body(content: Content) -> some View {
+        content
+            .mask(alignment: .leading) {
+                Rectangle().scaleEffect(x: drawn || reduceMotion ? 1 : 0, anchor: .leading)
+            }
+            .onAppear {
+                withAnimation(reduceMotion ? nil : VESSMotion.chart) { drawn = true }
+            }
+    }
+}
+
 private struct EnergyThroughDayChart: View {
     let entries: [FoodLogEntry]
     let target: Double
@@ -242,6 +259,8 @@ private struct EnergyThroughDayChart: View {
         }
         .chartXScale(domain: 0...1440)
         .chartYScale(domain: 0...yMax)
+        // The line draws left to right (MOTION.md); axes stay in place.
+        .chartPlotStyle { plot in plot.modifier(LineDrawReveal()) }
         .chartXAxis {
             AxisMarks(values: [0, 360, 720, 1080, 1440]) { value in
                 AxisValueLabel {

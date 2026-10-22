@@ -55,13 +55,72 @@ enum VESSRing {
 
 /// Motion tokens (`Redesign/docs/MOTION.md`). Callers pass `nil` instead
 /// when Reduce Motion is on.
+/// Timings from Redesign/docs/MOTION.md. With Reduce Motion, every one of
+/// them becomes an instant change or `reducedCrossfade`.
 enum VESSMotion {
+    /// Rings sweep from 0, and hero numbers count up with them.
     static let ringSweep = Animation.easeOut(duration: 0.8)
+    /// Metric and status rows fade and rise `rowRise`, 40 ms apart.
     static let rowStagger: Double = 0.04
     static let rowAppear = Animation.easeOut(duration: 0.35)
+    static let rowRise: CGFloat = 6
+    /// Lines draw left to right; bars grow from the baseline, 20 ms apart.
     static let chart = Animation.easeOut(duration: 0.6)
+    static let barStagger: Double = 0.02
+    /// The insight card's border brightens once, 0.9 s after it appears.
+    static let insightBrighten = Animation.easeInOut(duration: 0.6).delay(0.9)
+    /// Segmented pills, tabs, chips and switches.
     static let selection = Animation.snappy(duration: 0.25)
-    static let sheet = Animation.spring(response: 0.38, dampingFraction: 0.86)
+    /// The Undo toast after logging.
+    static let toast = Animation.spring(response: 0.38, dampingFraction: 0.86)
+    /// What replaces movement under Reduce Motion.
+    static let reducedCrossfade = Animation.easeInOut(duration: 0.2)
+}
+
+extension View {
+    /// MOTION.md row stagger: fades in and rises 6 pt on first appear, 40 ms
+    /// after the row before it. Instant with Reduce Motion.
+    func vessRowAppear(index: Int) -> some View {
+        modifier(VESSRowAppearModifier(index: index))
+    }
+}
+
+extension View {
+    /// MOTION.md chart bars: grow from the baseline over 0.6 s, 20 ms after
+    /// the bar before. Set `isGrown` to true on appear, without animation;
+    /// with Reduce Motion the bars appear at full height at once.
+    func vessBarGrow(index: Int, isGrown: Bool) -> some View {
+        modifier(VESSBarGrowModifier(index: index, isGrown: isGrown))
+    }
+}
+
+private struct VESSBarGrowModifier: ViewModifier {
+    let index: Int
+    let isGrown: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content.animation(
+            reduceMotion ? nil : VESSMotion.chart.delay(Double(index) * VESSMotion.barStagger),
+            value: isGrown
+        )
+    }
+}
+
+private struct VESSRowAppearModifier: ViewModifier {
+    let index: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var shown = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown || reduceMotion ? 1 : 0)
+            .offset(y: shown || reduceMotion ? 0 : VESSMotion.rowRise)
+            .onAppear {
+                guard !shown, !reduceMotion else { return }
+                withAnimation(VESSMotion.rowAppear.delay(Double(index) * VESSMotion.rowStagger)) { shown = true }
+            }
+    }
 }
 
 /// Minimum interactive sizes, per Apple's Human Interface Guidelines.

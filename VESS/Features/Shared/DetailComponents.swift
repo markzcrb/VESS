@@ -65,7 +65,6 @@ struct VESSWeekBars: View {
     var highlightsReached = false
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 120
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var grown = false
 
     var body: some View {
@@ -93,6 +92,7 @@ struct VESSWeekBars: View {
                             Capsule()
                                 .fill(index == bars.count - 1 || (highlightsReached && bar.value >= target) ? tint : VESSColor.chartMuted)
                                 .frame(width: 12, height: max(4, proxy.size.height * bar.value / scaleMax) * (grown ? 1 : 0.02))
+                                .vessBarGrow(index: index, isGrown: grown)
                                 .frame(maxWidth: .infinity)
                         }
                     }
@@ -113,7 +113,7 @@ struct VESSWeekBars: View {
         // label doesn't cover the bars; the numbers are in the text above.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityHidden(true)
-        .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.chart) { grown = true } }
+        .onAppear { grown = true }
     }
 }
 

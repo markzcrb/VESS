@@ -197,6 +197,8 @@ private struct ProfileWeightChart: View {
     let weights: [BodyMassSample]
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 110
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var drawn = false
 
     var body: some View {
         let values = weights.map(\.kilograms)
@@ -213,18 +215,24 @@ private struct ProfileWeightChart: View {
                         y: proxy.size.height * (1 - (sample.kilograms - low) / max(high - low, 0.1))
                     )
                 }
+                // Draws left to right (MOTION.md); the end dot follows.
                 Path { path in
                     path.addLines(points)
                 }
+                .trim(from: 0, to: drawn ? 1 : 0)
                 .stroke(VESSColor.text, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                 if let last = points.last {
                     Circle()
                         .fill(VESSColor.text)
                         .frame(width: 10, height: 10)
                         .position(last)
+                        .opacity(drawn ? 1 : 0)
                 }
             }
             .frame(height: height)
+            .onAppear {
+                withAnimation(reduceMotion ? nil : VESSMotion.chart) { drawn = true }
+            }
             HStack {
                 Text(weights.first?.measuredAt ?? .now, format: .dateTime.month(.abbreviated))
                 Spacer()

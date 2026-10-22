@@ -5,6 +5,7 @@ import SwiftUI
 /// estimate taken from the drink's default (or the user's own).
 struct AddDrinkSheet: View {
     @Environment(LocalStore.self) private var store
+    @Environment(FoodLogUndo.self) private var undo
     @Environment(\.dismiss) private var dismiss
 
     let day: Date
@@ -281,6 +282,9 @@ struct AddDrinkSheet: View {
         let log = drink.log(userID: profile.id, volumeMilliliters: volume, at: time)
         do {
             try store.add(log)
+            undo.show(Text("Added \(VESSFormat.milliliters(volume)) ml of \(drink.name)")) { store in
+                try store.deleteHydrationLog(id: log.id)
+            }
             if saveAsDefault && contributionPercent != currentDefault {
                 var overrides = profile.hydrationContributionOverrides ?? [:]
                 overrides[preset] = contributionPercent

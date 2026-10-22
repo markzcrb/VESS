@@ -5,6 +5,7 @@ import SwiftUI
 struct FoodDetailView: View {
     @Environment(LocalStore.self) private var store
     @Environment(FoodLookupService.self) private var lookup
+    @Environment(FoodLogUndo.self) private var undo
 
     let food: Food
     let day: Date
@@ -369,6 +370,7 @@ struct FoodDetailView: View {
         do {
             try store.add(entry)
             lookup.cache(food)
+            undo.show([entry], meal: meal)
             onLogged()
         } catch {
             showError = true

@@ -131,7 +131,7 @@ struct TodayBreakdown: View {
 
     var body: some View {
         VStack(spacing: VESSSpacing.sm + 2) {
-            VESSRowGroup {
+            VESSRowGroup(staggered: true) {
                 NavigationLink(destination: EnergyDetailView()) {
                     VESSMetricRow(systemImage: "flame", label: "Energy", value: value(VESSFormat.calories(summary.consumed.calories)), trend: mark(trends.energy))
                         .contentShape(Rectangle())
@@ -252,7 +252,6 @@ private struct IntakeChart: View {
     let calendar: Calendar
 
     @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 64
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var grown = false
 
     var body: some View {
@@ -265,10 +264,11 @@ private struct IntakeChart: View {
                     Line()
                         .stroke(VESSColor.decorative, style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
                         .frame(height: 1)
-                    ForEach(bars, id: \.minute) { bar in
+                    ForEach(Array(bars.enumerated()), id: \.element.minute) { index, bar in
                         Capsule()
                             .fill(VESSColor.calories)
                             .frame(width: 3, height: max(4, chartHeight * bar.calories / largest) * (grown ? 1 : 0.02))
+                            .vessBarGrow(index: index, isGrown: grown)
                             .offset(x: proxy.size.width * Double(bar.minute) / 1440 - 1.5)
                     }
                 }
@@ -285,7 +285,7 @@ private struct IntakeChart: View {
             }
         }
         .accessibilityHidden(true)
-        .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.chart) { grown = true } }
+        .onAppear { grown = true }
     }
 
     private struct Bar {

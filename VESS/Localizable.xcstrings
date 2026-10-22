@@ -943,8 +943,28 @@
     "Add workout" : {
 
     },
+    "Added %@ ml of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Added %1$@ ml of %2$@"
+          }
+        }
+      }
+    },
     "Added %@ ml of water" : {
 
+    },
+    "Added %lld-minute %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Added %1$lld-minute %2$@"
+          }
+        }
+      }
     },
     "Added ^[%lld item](inflect: true) to %@" : {
       "localizations" : {

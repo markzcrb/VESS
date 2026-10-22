@@ -152,7 +152,7 @@ struct TodayView: View {
                 .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .snappy, value: undoLog?.id)
+        .animation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.toast, value: undoLog?.id)
         .sensoryFeedback(.impact(weight: .light), trigger: waterAddCount)
         .sheet(item: $addFood) { request in
             FoodSearchSheet(request: request)

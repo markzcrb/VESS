@@ -199,7 +199,6 @@ struct ActivityHourBars: View {
     var tint: Color = VESSColor.activity
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 140
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var grown = false
 
     var body: some View {
@@ -219,6 +218,7 @@ struct ActivityHourBars: View {
                             Capsule()
                                 .fill(tint)
                                 .frame(width: 6, height: hours[index] > 0 ? max(6, proxy.size.height * hours[index] / scaleMax) * (grown ? 1 : 0.02) : 0)
+                                .vessBarGrow(index: index, isGrown: grown)
                                 .frame(maxWidth: .infinity)
                         }
                     }
@@ -235,7 +235,7 @@ struct ActivityHourBars: View {
             .foregroundStyle(VESSColor.tertiaryText)
         }
         .accessibilityHidden(true)
-        .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.chart) { grown = true } }
+        .onAppear { grown = true }
     }
 
     /// 24 values, one per hour of `day`; missing hours are 0.

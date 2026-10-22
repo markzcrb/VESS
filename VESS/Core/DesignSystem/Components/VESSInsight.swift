@@ -49,8 +49,8 @@ struct VESSInsightCard: View {
                 .opacity(isBright ? 1 : 0.85)
         }
         .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 0.6).delay(0.9)) { isBright = true }
+            // Reduce Motion: the final state at once.
+            withAnimation(reduceMotion ? nil : VESSMotion.insightBrighten) { isBright = true }
         }
     }
 }
