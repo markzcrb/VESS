@@ -69,6 +69,19 @@ nonisolated enum DrinkType: String, Codable, CodingKeyRepresentable, CaseIterabl
     }
 }
 
+/// The groups on the drink sheet's chips (reference 10).
+nonisolated enum DrinkCategory: String, CaseIterable, Sendable {
+    case water
+    case tea
+    case coffee
+    case other
+
+    /// The drinks in this group, in the order they're offered.
+    var presets: [DrinkPreset] {
+        DrinkPreset.allCases.filter { $0.category == self }
+    }
+}
+
 /// Built-in drinks offered when logging. Nutrition values are typical
 /// figures for a standard preparation and are labeled as such in the UI.
 nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseIterable, Sendable {
@@ -89,6 +102,15 @@ nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseItera
         case .juice: .juice
         case .softDrink: .softDrink
         case .other: .custom
+        }
+    }
+
+    var category: DrinkCategory {
+        switch self {
+        case .water, .sparklingWater: .water
+        case .tea: .tea
+        case .blackCoffee, .flatWhite: .coffee
+        case .juice, .softDrink, .other: .other
         }
     }
 

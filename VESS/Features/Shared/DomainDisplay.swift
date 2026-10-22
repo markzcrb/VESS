@@ -174,6 +174,17 @@ extension DrinkPreset {
     }
 }
 
+extension DrinkCategory {
+    var title: LocalizedStringResource {
+        switch self {
+        case .water: "Water"
+        case .tea: "Tea"
+        case .coffee: "Coffee"
+        case .other: "Other"
+        }
+    }
+}
+
 extension DrinkType {
     var symbol: String {
         switch self {

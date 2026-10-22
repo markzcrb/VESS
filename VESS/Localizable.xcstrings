@@ -202,6 +202,16 @@
         }
       }
     },
+    "%@ counts at %@ toward water. An estimate." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ counts at %2$@ toward water. An estimate."
+          }
+        }
+      }
+    },
     "%@ counts at %@. An estimate you can change." : {
       "localizations" : {
         "en" : {
@@ -288,6 +298,16 @@
     },
     "%@ ml" : {
 
+    },
+    "%@ ml · counts %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ml · counts %2$@"
+          }
+        }
+      }
     },
     "%@ of %@ energy came before noon." : {
       "localizations" : {
@@ -449,6 +469,26 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@ ml" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@ ml"
+          }
+        }
+      }
+    },
+    "%@, %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$@"
           }
         }
       }
@@ -694,6 +734,16 @@
     "%lld to use in the next few days." : {
 
     },
+    "^[%lld drink](inflect: true), last at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld drink](inflect: true), last at %2$@"
+          }
+        }
+      }
+    },
     "^[%lld glass](inflect: true) · last at %@" : {
       "localizations" : {
         "en" : {
@@ -847,6 +897,16 @@
     },
     "Add %@ ml" : {
 
+    },
+    "Add %@ ml %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add %1$@ ml %2$@"
+          }
+        }
+      }
     },
     "Add %lld-minute %@" : {
       "localizations" : {
@@ -1057,6 +1117,9 @@
     "Body settings help estimate your needs. Your weight is read from Apple Health. Changing these doesn't change your targets; Goals shows a suggestion you can use." : {
 
     },
+    "Bottle" : {
+
+    },
     "Brand" : {
 
     },
@@ -1088,6 +1151,9 @@
 
     },
     "Camera preview" : {
+
+    },
+    "Can" : {
 
     },
     "capsule" : {
@@ -1136,6 +1202,9 @@
 
     },
     "Coach" : {
+
+    },
+    "Coffee" : {
 
     },
     "Community data from Open Food Facts · not verified" : {
@@ -1190,6 +1259,9 @@
 
     },
     "Custom" : {
+
+    },
+    "Custom amount" : {
 
     },
     "Cycle" : {
@@ -1307,6 +1379,9 @@
 
     },
     "Drinks" : {
+
+    },
+    "Drinks through the day" : {
 
     },
     "Duration" : {
@@ -1591,6 +1666,9 @@
     "Getting today's steps and recorded workouts from Apple Health." : {
 
     },
+    "Glass" : {
+
+    },
     "Gluten" : {
 
     },
@@ -1652,6 +1730,9 @@
 
     },
     "Help" : {
+
+    },
+    "Hides the time picker" : {
 
     },
     "High protein" : {
@@ -2047,6 +2128,9 @@
     "Moves to %@." : {
 
     },
+    "Mug" : {
+
+    },
     "My foods" : {
 
     },
@@ -2072,6 +2156,15 @@
 
     },
     "No drinks logged yet." : {
+
+    },
+    "No drinks that day." : {
+
+    },
+    "No drinks yet" : {
+
+    },
+    "No drinks yet today." : {
 
     },
     "No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
@@ -2207,6 +2300,9 @@
           }
         }
       }
+    },
+    "of %@ L" : {
+
     },
     "OK" : {
 
@@ -2558,6 +2654,9 @@
     "Shown in You, with its trend" : {
 
     },
+    "Shows the time picker" : {
+
+    },
     "slice" : {
 
     },
@@ -2744,6 +2843,9 @@
 
     },
     "that day" : {
+
+    },
+    "That day" : {
 
     },
     "That doesn't look like a barcode. Check the digits." : {
