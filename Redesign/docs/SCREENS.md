@@ -76,5 +76,23 @@ L01 Today light · L06 Food detail light. Every other screen uses the same token
 
 Notes: new tokens `metric/cycle`, `atmos/cycle`, `tint/cycle` (Dark + Light). Habit dot colour = the metric of its category (water, protein, activity, energy); others use text/primary. No streaks anywhere. Cycle copy always says estimates can be off, not medical advice, not contraception. No fertile window or ovulation.
 
+## M · Plan calendar and Drinks sheet (new, Figma section "New · Plan calendar and Drinks")
+| File | Screen | Tab | Reached from | Key components |
+|---|---|---|---|---|
+| 17-plan-week-calendar | Plan › Week with the week strip under the date title; day sections below | Plan | Plan tab | SegmentedControl, PlanDay (new), IconButton, Button Primary, ListRow, SectionHeader, TabBar |
+| 18-plan-month-open | Same screen with the month grid open (tap the title or its chevron); a day in another week is selected, so the "Today" chip shows | Plan | Title chevron on 17 | PlanDay (Show weekday off), Chip, IconButton |
+| 19-drinks-coffee | Drinks sheet, Coffee › Latte: category chips, drink tabs, size cards, time, caffeine, today timeline and list, pinned add button | — | Today hydration row, Add sheet | Chip, ListRow, Button Primary |
+| 20-drinks-alcohol | Drinks sheet, Alcohol › Wine: size cards, time, strength (ABV), kcal note | — | Same sheet | Chip, ListRow, Button Primary |
+| L17-plan-week-calendar-light · L19-drinks-coffee-light | Light versions of 17 and 19 | | | |
+
+Notes:
+- New component `PlanDay`: State Default / Selected / Today / Muted × Dot None / Some / All, text props Weekday and Day, boolean Show weekday. Neutral colours only, never a metric colour. Selected wins over Today; Today shows as a ring only when not selected. Dot: filled = all main meals planned or logged, hollow = some, none = nothing.
+- 17 also fixes the day rows: "Nothing logged" / "Nothing planned yet" start at the same leading edge as the day header. Past days say "Nothing logged", today and future days say "Nothing planned yet".
+- Week strip: 7 equal columns, tap a day to scroll the list to it; arrows and horizontal swipe change week. Month grid: always six rows so the height never jumps.
+- Drinks sheet layout rule: nothing is wider than the sheet. Every row starts at the 20 pt margin. The category chips fit in one row at default text size (they scroll at larger sizes). The drink tabs row is a horizontal scroller that starts at the margin and bleeds off the right edge of the sheet only (the cut-off "Fl…" is the scroll hint, not a bug).
+- Size cards: always 3 presets + Custom, equal widths, per drink (Latte 250/350/450, Wine 125/150/250, Water 250/330/500).
+- The second row lists the drinks of the chosen category; it is hidden when a category has a single drink.
+- Alcohol: kcal count toward energy, not toward Fuel and not toward water. Neutral copy, no advice.
+
 ## Not designed yet (ask Mark before building)
 Plan › Recipes tab list · Add food search results / no results · edit a logged meal · weight entry + measurements · onboarding.
