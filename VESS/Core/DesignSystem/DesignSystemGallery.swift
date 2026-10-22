@@ -50,6 +50,10 @@ private struct DesignSystemGallery: View {
                         buttons
                         typeScale
                     }
+                    if shows(4) {
+                        calendarDays
+                        habitRows
+                    }
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
                 .padding(.bottom, 140)
@@ -216,6 +220,43 @@ private struct DesignSystemGallery: View {
         (.editorialL, "A steady day."), (.editorialM, "Holding steady inside your range."),
     ]
 
+    /// CalendarDay: Default, Muted, Logged, Estimated, Today, and a logged today.
+    private var calendarDays: some View {
+        let day = AppClock.now
+        let other = calendar.date(byAdding: .month, value: -1, to: day) ?? day
+        return VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+            VESSSectionHeader(title: "Calendar day")
+            HStack(spacing: 0) {
+                VESSCalendarDay(date: day)
+                VESSCalendarDay(date: other, state: .muted)
+                VESSCalendarDay(date: day, state: .logged)
+                VESSCalendarDay(date: day, state: .estimated)
+                VESSCalendarDay(date: day, isToday: true)
+                VESSCalendarDay(date: day, state: .logged, isToday: true)
+            }
+            VESSScoreRing(value: "14", label: "Cycle day", sublabel: Text(verbatim: "Next period in about 13 days"), progress: 14 / 29, metric: .cycle)
+                .frame(maxWidth: .infinity)
+        }
+    }
+
+    /// HabitRow: done and not done, auto-tracked and manual, every dot state.
+    private var habitRows: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+            VESSSectionHeader(title: "Habit row")
+            VESSRowGroup {
+                VESSHabitRow(title: Text(verbatim: "Protein at breakfast"), subtitle: Text(verbatim: "Daily · from your log"), isDone: true,
+                             dots: [.done, .done, .missed, .done, .future, .future, .future], hue: VESSColor.protein)
+                VESSHabitRow(title: Text(verbatim: "Walk after lunch"), subtitle: Text(verbatim: "Weekdays · 15 min"), isDone: true,
+                             dots: [.missed, .done, .done, .done, .future, .future, .future], hue: VESSColor.activity, onToggle: {})
+                VESSHabitRow(title: Text(verbatim: "Water 2.2 L"), subtitle: Text(verbatim: "1.6 of 2.2 L · from your log"), isDone: false,
+                             dots: [.done, .missed, .done, .open, .future, .future, .future], hue: VESSColor.water)
+                VESSHabitRow(title: Text(verbatim: "Screens off by 23:00"), subtitle: Text(verbatim: "Daily · evening"), isDone: false,
+                             dots: [.done, .done, .missed, .open, .future, .future, .future], onToggle: {})
+            }
+            .vessHairlineBottom()
+        }
+    }
+
     private func time(_ hour: Int, _ minute: Int) -> Date {
         calendar.date(bySettingHour: hour, minute: minute, second: 0, of: AppClock.now) ?? AppClock.now
     }
@@ -259,6 +300,22 @@ private struct DesignSystemGallery: View {
 
 #Preview("AX5 · 3") {
     DesignSystemGallery(page: 2)
+        .preferredColorScheme(.dark)
+        .dynamicTypeSize(.accessibility5)
+}
+
+#Preview("Dark · 5 (cycle, habits)") {
+    DesignSystemGallery(page: 4)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Light · 5 (cycle, habits)") {
+    DesignSystemGallery(page: 4)
+        .preferredColorScheme(.light)
+}
+
+#Preview("AX5 · 5 (cycle, habits)") {
+    DesignSystemGallery(page: 4)
         .preferredColorScheme(.dark)
         .dynamicTypeSize(.accessibility5)
 }

@@ -57,6 +57,8 @@ enum VESSColor {
     static let fat = Color(.vessFat)
     static let water = Color(.vessWater)
     static let activity = Color(.vessActivity)
+    /// Cycle tracking: logged and estimated period days, the cycle ring.
+    static let cycle = Color(.vessCycle)
 
     // MARK: Status
 
@@ -89,6 +91,7 @@ enum VESSColor {
     static let atmosWater = Color(.vessAtmosWater)
     static let atmosActivity = Color(.vessAtmosActivity)
     static let atmosProtein = Color(.vessAtmosProtein)
+    static let atmosCycle = Color(.vessAtmosCycle)
 
     // MARK: Tints, strokes, materials
 
@@ -98,6 +101,8 @@ enum VESSColor {
     static let tintLink = Color(.vessAccentSoft)
     static let tintWater = Color(.vessTintWater)
     static let tintRange = Color(.vessTintRange)
+    /// The cycle hue at 16 % (Dark) or 12 % (Light): estimated days.
+    static let tintCycle = Color(.vessTintCycle)
     static let strokeLink = Color(.vessStrokeLink)
     static let strokeWater = Color(.vessStrokeWater)
     static let surfaceGlass = Color(.vessSurfaceGlass)
@@ -118,7 +123,7 @@ enum VESSColor {
 
 /// Which metric a view is about. Drives its hue and screen atmosphere.
 enum VESSMetricKind {
-    case fuel, energy, protein, carbs, fat, water, activity
+    case fuel, energy, protein, carbs, fat, water, activity, cycle
 
     var tint: Color {
         switch self {
@@ -129,6 +134,7 @@ enum VESSMetricKind {
         case .fat: VESSColor.fat
         case .water: VESSColor.water
         case .activity: VESSColor.activity
+        case .cycle: VESSColor.cycle
         }
     }
 
@@ -139,6 +145,7 @@ enum VESSMetricKind {
         case .protein: VESSColor.atmosProtein
         case .water: VESSColor.atmosWater
         case .activity: VESSColor.atmosActivity
+        case .cycle: VESSColor.atmosCycle
         }
     }
 }
