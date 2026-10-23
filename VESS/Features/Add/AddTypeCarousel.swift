@@ -1,3 +1,4 @@
+import OSLog
 import SwiftUI
 
 extension AddType {
@@ -98,6 +99,9 @@ struct AddTypeCarousel: View {
             }
         }
         .accessibilityIdentifier("add.types")
+        #if DEBUG
+        .onChange(of: selection) { _, new in Self.log.debug("selection \(new.rawValue)") }
+        #endif
     }
 
     private var tiles: some View {
@@ -152,7 +156,10 @@ struct AddTypeCarousel: View {
                 } action: { _, index in
                     centred = types[min(max(index, 0), types.count - 1)]
                 }
-                .onScrollPhaseChange { _, phase in
+                .onScrollPhaseChange { old, phase in
+                    #if DEBUG
+                    Self.log.debug("phase \(String(describing: old)) → \(String(describing: phase)), centred \(centred?.rawValue ?? "-")")
+                    #endif
                     // Fallback: whatever is centred once everything stops.
                     if isReady, phase == .idle, let centred, centred != selection { selection = centred }
                 }
@@ -185,7 +192,8 @@ struct AddTypeCarousel: View {
                 }
             }
 
-            // The name crossfades to the new type and its colour.
+            // The old name fades out, then the new one fades in with its
+            // colour: never two names on top of each other.
             ZStack {
                 Text(selection.title)
                     .vessTextStyle(.bodyMStrong)
@@ -193,9 +201,11 @@ struct AddTypeCarousel: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.center)
                     .id(selection)
-                    .transition(.opacity)
+                    .transition(.asymmetric(
+                        insertion: AnyTransition.opacity.animation(VESSMotion.addLabelIn),
+                        removal: AnyTransition.opacity.animation(VESSMotion.addLabelOut)
+                    ))
             }
-            .animation(reduceMotion ? VESSMotion.addSwapReduced : VESSMotion.addLabel, value: selection)
         }
         // Once per settled change. The chips of the text row play their own.
         .vessHaptic(.selection, trigger: selection)
@@ -217,17 +227,25 @@ struct AddTypeCarousel: View {
         }
     }
 
+    #if DEBUG
+    /// Carousel timing, for checking selection against the snap.
+    private static let log = Logger(subsystem: "VESS", category: "AddCarousel")
+    #endif
+
     /// (width − slot) / 2 on both sides.
     private var margin: CGFloat { max(0, (width - Self.slot) / 2) }
 
     /// The tile a swipe will settle on: selected as the finger lifts.
     private func land(on index: Int) {
+        #if DEBUG
+        Self.log.debug("land \(index), ready \(isReady)")
+        #endif
         guard isReady else { return }
         let type = types[min(max(index, 0), types.count - 1)]
-        Task { @MainActor in
-            centred = type
-            if type != selection { selection = type }
-        }
+        // At once, not in a Task: a main-actor task waits for the scroll's
+        // deceleration to finish (0.8–1.7 s late in the logs).
+        centred = type
+        if type != selection { selection = type }
     }
 
     private func index(of type: AddType) -> Int {

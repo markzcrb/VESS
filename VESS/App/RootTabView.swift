@@ -17,6 +17,10 @@ enum AppTab: Hashable {
 struct RootTabView: View {
     @State private var selection: AppTab = .today
     @State private var addRequest: AddFoodRequest?
+    /// The Add sheet is on its way down: a new "+" waits for it to finish.
+    @State private var isAddDismissing = false
+    /// A "+" made while the sheet was going down, shown once it's gone.
+    @State private var pendingAdd: AddFoodRequest?
     /// Counts taps on Add; see `tabSelection`.
     @State private var addTaps = 0
     /// Builds the Add sheet once, off screen, soon after launch.
@@ -63,9 +67,22 @@ struct RootTabView: View {
         .vessHaptic(.add, trigger: addTaps)
         // Entry points elsewhere open the same sheet on their type.
         .environment(\.vessOpenAdd, VESSOpenAddAction { type in
-            addRequest = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now, type: type)
+            requestAdd(type)
         })
-        .sheet(item: $addRequest) { request in
+        .sheet(item: Binding(
+            get: { addRequest },
+            set: { new in
+                // Dismissal starts here; it finishes in onDismiss.
+                if new == nil, addRequest != nil { isAddDismissing = true }
+                addRequest = new
+            }
+        ), onDismiss: {
+            isAddDismissing = false
+            if let pendingAdd {
+                self.pendingAdd = nil
+                addRequest = pendingAdd
+            }
+        }) { request in
             AddSheet(request: request)
         }
         // Pre-warm (first "+" took 1–1.5 s): once the first frame is on
@@ -119,6 +136,17 @@ struct RootTabView: View {
         return Image(uiImage: base.withTintColor(UIColor(VESSColor.tertiaryText), renderingMode: .alwaysOriginal))
     }
 
+    /// Opens the Add sheet, or, while the last one is still going down,
+    /// opens it the moment that finishes, so a "+" is never lost.
+    private func requestAdd(_ type: AddType?) {
+        let request = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now, type: type)
+        if isAddDismissing || addRequest != nil {
+            pendingAdd = request
+        } else {
+            addRequest = request
+        }
+    }
+
     /// Selecting Add presents the sheet and leaves the current tab selected.
     ///
     /// The tab bar selects the (empty) Add tab before asking the binding,
@@ -138,7 +166,7 @@ struct RootTabView: View {
                 addTaps += 1
                 AddSheetTiming.tapped()
                 Task { @MainActor in
-                    addRequest = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now)
+                    requestAdd(nil)
                 }
             }
         )

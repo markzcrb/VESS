@@ -233,6 +233,30 @@ final class VESSUITests: XCTestCase {
         XCTAssertTrue(tabs.buttons["Today"].isSelected)
     }
 
+    /// Regression: "+" tapped while the sheet was still going down was lost.
+    /// It must open the sheet again, every time.
+    @MainActor
+    func testAddRightAfterClosingOpensAgain() throws {
+        let app = launch(seeded: true)
+        let add = app.tabBars.buttons["Add"]
+        XCTAssertTrue(app.staticTexts["today.dayWord"].waitForExistence(timeout: 10))
+        let types = app.otherElements["add.types"]
+
+        for attempt in 1...3 {
+            add.tap()
+            XCTAssertTrue(types.waitForExistence(timeout: 5), "The Add sheet opens (attempt \(attempt))")
+            app.buttons["Close"].firstMatch.tap()
+            // At once, while the sheet is still going down.
+            add.tap()
+            // The old sheet is gone well within 1.5 s, so the carousel still
+            // being there means the new "+" opened it.
+            Thread.sleep(forTimeInterval: 1.5)
+            XCTAssertTrue(types.waitForExistence(timeout: 5), "It opens again after closing (attempt \(attempt))")
+            app.buttons["Close"].firstMatch.tap()
+            waitFor(types, "exists == false")
+        }
+    }
+
     @MainActor
     func testActivityOpensFromToday() throws {
         let app = launch(seeded: true)

@@ -20,14 +20,14 @@ Motion should feel calm and confident. When **Reduce Motion** is on, every anima
 
 | What | Spec | Reduce Motion |
 |---|---|---|
-| Carousel tiles | Every tile is 72 pt; the scale goes from 1 at the centre to 0.78 one slot (74 pt) away and beyond, and opacity from 1 to 0.85, continuously with the drag (`visualEffect` on the distance from the scroll view's centre) | No scaling animation: the centred tile is 1, the others 0.78 |
-| Snapping | Whole 74 pt slots (a custom `ScrollTargetBehavior`, same feel as `.viewAligned`), with (width − slot) / 2 margins on both sides so the first and last tiles can centre. The landing tile is selected as the finger lifts, not when the deceleration ends (about 0.2 s after release); a fast flick keeps its momentum across several tiles. Taps and VoiceOver centre a tile with a one-shot `ScrollViewReader.scrollTo` (a bound `scrollPosition` re-applies itself on re-render and pulls against the finger) | Same; no scaling |
-| Tap a tile | Scrolls it to the centre with `spring(response: 0.35, dampingFraction: 0.85)`; the selection follows when the scroll settles | Jumps there; selects at once |
-| Type name under the carousel | Crossfades to the new name and colour, `easeInOut(0.2)` | Crossfade, 0.15 s |
-| Content swap | When the landing tile is known: the old content slides 24 pt towards the side it leaves and fades out in `easeIn(0.14)`, the new content comes in 24 pt from the swipe side and fades in, `easeOut(0.28)`, so the two barely overlap. The swap happens inside a clipped full-height container, so the sheet doesn't jump | Crossfade only, `easeInOut(0.15)` |
+| Carousel tiles | Every tile is 72 pt; the scale goes from 1 at the centre to 0.78 one slot (74 pt) away and beyond, and opacity from 1 to 0.85, continuously with the drag (`visualEffect` on the distance from the scroll view's centre) | No scaling animation: the centred tile is 1, the others 0.78, swapped instantly |
+| Snapping | Whole 74 pt slots (a custom `ScrollTargetBehavior`), with (width − slot) / 2 margins on both sides so the first and last tiles can centre. Momentum is kept: a flick can cross several tiles, and the selection is wherever it settles. The landing tile is selected when the drag ends (set synchronously; a main-actor `Task` waited for the deceleration and came 0.8–1.7 s late) | Same: selection on drag end |
+| Tap a tile | Scrolls it to the centre with `spring(response: 0.35, dampingFraction: 0.85)` (a one-shot `ScrollViewReader.scrollTo`; a bound `scrollPosition` re-applies itself and pulls against the finger) and selects it at once | Jumps there; selects at once |
+| Type name under the carousel | The old name fades out (`easeIn(0.1)`), then the new one fades in with its colour (`easeOut(0.12)`, delayed 0.1 s): never two names at once | Same |
+| Content swap | Paged: the old content moves out by the full width towards the swipe (or the tapped tile's side), the new content comes in from the other side, both opaque, side by side, clipped to the sheet. `spring(response: 0.32, dampingFraction: 0.9)`, about 0.3 s. Non-adjacent taps slide the same way | The old content fades out (0.075 s), then the new one fades in (0.075 s); no slide, no overlap |
 | Haptic | Selection, once per settled change (not per tile passed) | Same |
 
-Tokens: `VESSMotion.addTileScroll`, `addLabel`, `addSwap`, `addSwapReduced`, `addSwapOffset`.
+Tokens: `VESSMotion.addTileScroll`, `addSwap`, `addSwapReduced`, `addFadeOut`, `addFadeIn`, `addLabelOut`, `addLabelIn`.
 
 ## Haptics
 

@@ -77,17 +77,20 @@ enum VESSMotion {
     static let toast = Animation.spring(response: 0.38, dampingFraction: 0.86)
     /// What replaces movement under Reduce Motion.
     static let reducedCrossfade = Animation.easeInOut(duration: 0.2)
-    /// Add sheet (21): content swaps when the carousel settles, sliding
-    /// `addSwapOffset` from the swipe side; Reduce Motion crossfades only.
-    static let addSwap = Animation.easeOut(duration: 0.28)
-    static let addSwapReduced = Animation.easeInOut(duration: 0.15)
-    /// The outgoing content of a swap leaves faster than the new one arrives.
-    static let addSwapOut = Animation.easeIn(duration: 0.14)
-    static let addSwapOffset: CGFloat = 24
+    /// Add sheet (21): content pages by the full width when the selection
+    /// changes (about 0.3 s). Reduce Motion: old fades out, then new fades in.
+    static let addSwap = Animation.spring(response: 0.32, dampingFraction: 0.9)
+    static let addSwapReduced = Animation.linear(duration: 0.15)
+    static let addFadeOutDuration: Double = 0.075
+    static let addFadeOut = Animation.easeIn(duration: addFadeOutDuration)
+    static let addFadeIn = Animation.easeOut(duration: 0.075)
     /// A tapped tile springs to the centre.
     static let addTileScroll = Animation.spring(response: 0.35, dampingFraction: 0.85)
-    /// The type name under the carousel crossfades to the new name and colour.
-    static let addLabel = Animation.easeInOut(duration: 0.2)
+    /// The type name under the carousel: the old one fades out, then the new
+    /// one fades in with its colour, never both at once.
+    static let addLabelOutDuration: Double = 0.1
+    static let addLabelOut = Animation.easeIn(duration: addLabelOutDuration)
+    static let addLabelIn = Animation.easeOut(duration: 0.12).delay(addLabelOutDuration)
 }
 
 extension View {

@@ -64,8 +64,9 @@ struct AddSheet: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            // The old type slides 24 pt away and fades as the new one comes in
-            // from the side it was swiped from (MOTION.md, Add sheet).
+            // Paged: the old type moves out by the full width towards the
+            // swipe, the new one comes in from the other side, both opaque,
+            // side by side, never on top of each other (MOTION.md, Add sheet).
             ZStack {
                 content(current)
                     .id(current)
@@ -124,13 +125,17 @@ struct AddSheet: View {
     }
 
     private var swapTransition: AnyTransition {
-        guard !reduceMotion else { return .opacity }
-        // The old content leaves in the first part of the swap, so the two
-        // layouts barely overlap; the new one takes the full 0.28 s.
+        // Reduce Motion: old out, then new in; never both at once.
+        guard !reduceMotion else {
+            return .asymmetric(
+                insertion: AnyTransition.opacity.animation(VESSMotion.addFadeIn.delay(VESSMotion.addFadeOutDuration)),
+                removal: AnyTransition.opacity.animation(VESSMotion.addFadeOut)
+            )
+        }
+        let forward = direction > 0
         return .asymmetric(
-            insertion: .offset(x: direction * VESSMotion.addSwapOffset).combined(with: .opacity),
-            removal: AnyTransition.offset(x: -direction * VESSMotion.addSwapOffset).combined(with: .opacity)
-                .animation(VESSMotion.addSwapOut)
+            insertion: .move(edge: forward ? .trailing : .leading),
+            removal: .move(edge: forward ? .leading : .trailing)
         )
     }
 
