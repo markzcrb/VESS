@@ -50,7 +50,9 @@ struct PlanView: View {
             }
             // Strip and grid days, arrows and swipes all move the selection.
             .vessHaptic(.selection, trigger: selectedDay)
-            .vessScreenBackground()
+            // Content fades under the title and segments instead of a hard cut.
+            .vessScreenBackground(clipsUnderBar: false)
+            .scrollEdgeEffectStyle(.soft, for: .top)
             .vessTabBarFade()
             .vessDetailTitle("Plan")
             .vessErrorAlert(isPresented: $showError)

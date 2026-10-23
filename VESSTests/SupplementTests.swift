@@ -62,6 +62,24 @@ struct SupplementTests {
         #expect(SupplementRules.search("  ", mine: mine).presets.isEmpty)
     }
 
+    @Test("Aliases are the same supplement: a preset and the user's own never both show")
+    func aliases() {
+        #expect(SupplementRules.canonical("Vitamin D") == SupplementRules.canonical("Vitamin D3"))
+        #expect(SupplementRules.canonical("Omega 3") == SupplementRules.canonical("Omega-3"))
+        #expect(SupplementRules.canonical("Mag") == SupplementRules.canonical("Magnesium"))
+        #expect(SupplementRules.canonical("Zinc") != SupplementRules.canonical("Iron"))
+
+        let mine = [supplement("Vitamin D", category: .vitamins), supplement("Mag", category: .minerals)]
+        let vitamins = SupplementRules.presets(in: .vitamins, mine: mine)
+        #expect(vitamins.first?.preset.name == "Vitamin D3" && vitamins.first?.existing?.name == "Vitamin D")
+        #expect(SupplementRules.ownOnly(in: .vitamins, mine: mine).isEmpty, "Not listed a second time")
+        #expect(SupplementRules.presets(in: .minerals, mine: mine).first?.existing?.name == "Mag")
+        #expect(SupplementRules.ownOnly(in: .minerals, mine: mine).isEmpty)
+        let found = SupplementRules.search("vit", mine: mine)
+        #expect(found.mine.map(\.name) == ["Vitamin D"])
+        #expect(!found.presets.map(\.name).contains("Vitamin D3"))
+    }
+
     @Test("Supplements saved before categories decode, with no category or time of day")
     func oldSupplement() throws {
         let json = #"{"id":"6A1B2C3D-0000-0000-0000-000000000001","name":"Vitamin D","dosage":1000,"unit":"internationalUnit","schedule":{"daily":{}},"reminderEnabled":false}"#

@@ -85,15 +85,15 @@ nonisolated enum SupplementRules {
     /// name come first ("Recent"); matching ignores case and spacing.
     static func presets(in category: SupplementCategory, mine: [Supplement]) -> [(preset: Preset, existing: Supplement?)] {
         let list = presets.filter { $0.category == category }.map { preset in
-            (preset: preset, existing: mine.first { key($0.name) == key(preset.name) })
+            (preset: preset, existing: mine.first { canonical($0.name) == canonical(preset.name) })
         }
         return list.filter { $0.existing != nil } + list.filter { $0.existing == nil }
     }
 
     /// The user's supplements with no matching preset, shown in their category.
     static func ownOnly(in category: SupplementCategory, mine: [Supplement]) -> [Supplement] {
-        let presetKeys = Set(presets.map { key($0.name) })
-        return mine.filter { ($0.category ?? .other) == category && !presetKeys.contains(key($0.name)) }
+        let presetKeys = Set(presets.map { canonical($0.name) })
+        return mine.filter { ($0.category ?? .other) == category && !presetKeys.contains(canonical($0.name)) }
     }
 
     /// Search across every preset and the user's own supplements.
@@ -101,11 +101,30 @@ nonisolated enum SupplementRules {
         let needle = key(query)
         guard !needle.isEmpty else { return ([], []) }
         let mineMatches = mine.filter { key($0.name).contains(needle) }
-        let mineKeys = Set(mineMatches.map { key($0.name) })
-        return (presets.filter { key($0.name).contains(needle) && !mineKeys.contains(key($0.name)) }, mineMatches)
+        let mineKeys = Set(mineMatches.map { canonical($0.name) })
+        return (presets.filter { key($0.name).contains(needle) && !mineKeys.contains(canonical($0.name)) }, mineMatches)
     }
 
     /// "Omega 3", "omega-3" and "Omega3" match.
+    /// The same supplement under another name: "Vitamin D" is Vitamin D3,
+    /// "Mag" is Magnesium. Keys as from `key(_:)`.
+    private static let aliases: [String: String] = [
+        "vitamind": "vitamind3", "vitd": "vitamind3", "vitd3": "vitamind3", "d3": "vitamind3", "cholecalciferol": "vitamind3",
+        "b12": "vitaminb12", "vitb12": "vitaminb12", "cobalamin": "vitaminb12", "methylcobalamin": "vitaminb12",
+        "multi": "multivitamin", "multivitamins": "multivitamin",
+        "mag": "magnesium", "magnesiumcitrate": "magnesium", "magnesiumglycinate": "magnesium",
+        "omega": "omega3", "fishoil": "omega3", "algaeoil": "omega3",
+        "creatinemonohydrate": "creatine",
+        "protein": "proteinpowder", "wheyprotein": "proteinpowder", "whey": "proteinpowder",
+    ]
+
+    /// The key with aliases resolved, for telling whether two names are
+    /// the same supplement.
+    static func canonical(_ name: String) -> String {
+        let key = key(name)
+        return aliases[key] ?? key
+    }
+
     static func key(_ name: String) -> String {
         name.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
             .filter { $0.isLetter || $0.isNumber }
