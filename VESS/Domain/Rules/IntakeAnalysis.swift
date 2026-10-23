@@ -4,7 +4,7 @@ import Foundation
 /// Pure and deterministic.
 nonisolated enum IntakeAnalysis {
     /// Energy that isn't a food entry but counts in the day's total:
-    /// alcoholic drinks (`HydrationLog.alcoholEnergy`).
+    /// drinks with kcal (`HydrationLog.drinkEnergy`).
     struct EnergyItem: Equatable, Sendable {
         let date: Date
         let calories: Double

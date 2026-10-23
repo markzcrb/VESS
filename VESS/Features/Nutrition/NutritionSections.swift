@@ -308,7 +308,7 @@ struct DrinksDiarySection: View {
     /// kcal for alcohol (they count in the day's energy); caffeine when the
     /// drink has any; otherwise the volume (litres for a group).
     private func value(for group: DrinkGroup) -> String {
-        let alcoholCalories = group.logs.reduce(0) { $0 + $1.energyCalories }
+        let alcoholCalories = group.logs.reduce(0) { $0 + $1.alcoholCalories }
         if group.logs.contains(where: \.isAlcoholic) { return "\(VESSFormat.calories(alcoholCalories)) kcal" }
         let caffeine = group.logs.reduce(0) { $0 + $1.caffeineMilligrams }
         if caffeine > 0 { return "\(VESSFormat.grams(caffeine)) mg" }

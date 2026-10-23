@@ -29,9 +29,12 @@ nonisolated struct HydrationLog: Identifiable, Codable, Hashable, Sendable {
 
     var isAlcoholic: Bool { drinkType == .alcohol }
 
-    /// kcal that count in the day's energy total: alcoholic drinks only.
-    /// Other drinks' kcal are recorded but, as before, not added to energy.
-    var energyCalories: Double { isAlcoholic ? calories : 0 }
+    /// kcal that count in the day's energy total: every drink's (decided
+    /// 2026-10-23; milky coffees, juice, soft drinks and the rest count).
+    var energyCalories: Double { calories }
+
+    /// kcal from alcohol: in the day's energy, never in Fuel.
+    var alcoholCalories: Double { isAlcoholic ? calories : 0 }
 
     /// Standard drinks (10 g of alcohol each).
     var standardDrinks: Double? {
@@ -56,9 +59,9 @@ nonisolated struct HydrationLog: Identifiable, Codable, Hashable, Sendable {
 }
 
 nonisolated extension Sequence where Element == HydrationLog {
-    /// Alcoholic drinks as energy items for the Energy screen's chart,
+    /// Drinks with kcal as energy items for the Energy screen's chart,
     /// before-noon share and daily totals.
-    var alcoholEnergy: [IntakeAnalysis.EnergyItem] {
+    var drinkEnergy: [IntakeAnalysis.EnergyItem] {
         compactMap { log in
             log.energyCalories > 0 ? IntakeAnalysis.EnergyItem(date: log.loggedAt, calories: log.energyCalories) : nil
         }

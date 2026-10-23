@@ -3798,17 +3798,17 @@
     "Typical values: %@ mg caffeine." : {
 
     },
-    "Typical values: about %@ kcal and %@ mg caffeine." : {
+    "Typical values: about %@ kcal and %@ mg caffeine. The kcal count in your energy." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Typical values: about %1$@ kcal and %2$@ mg caffeine."
+            "value" : "Typical values: about %1$@ kcal and %2$@ mg caffeine. The kcal count in your energy."
           }
         }
       }
     },
-    "Typical values: about %@ kcal." : {
+    "Typical values: about %@ kcal, counted in your energy." : {
 
     },
     "Undo" : {

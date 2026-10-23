@@ -40,7 +40,7 @@ struct EnergyDetailView: View {
         let drinks = store.hydrationLogs(on: day, calendar: calendar)
         // Alcohol's kcal count in the day's energy (ring, rows, chart, week),
         // never in Fuel.
-        let alcohol = drinks.alcoholEnergy
+        let alcohol = drinks.drinkEnergy
         let hasEnergy = !entries.isEmpty || !alcohol.isEmpty
         let summary = DaySummary(
             entries: entries,
@@ -62,7 +62,7 @@ struct EnergyDetailView: View {
         let weekEnd = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: day)) ?? clock
         let week = IntakeAnalysis.dailyTotals(
             store.foodEntries(from: weekStart, to: weekEnd),
-            extra: store.hydrationLogs(from: weekStart, to: weekEnd).alcoholEnergy,
+            extra: store.hydrationLogs(from: weekStart, to: weekEnd).drinkEnergy,
             endingOn: day, days: 7, calendar: calendar
         )
 

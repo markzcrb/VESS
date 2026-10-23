@@ -55,10 +55,12 @@ struct DrinkCatalogTests {
         let spirit = DrinkPreset.spirit.drink(name: "Spirit").log(userID: userID, volumeMilliliters: 40, at: now)
         #expect(abs((spirit.alcoholGrams ?? 0) - 12.6) < 0.05)
         let water = DrinkPreset.water.drink(name: "Water").log(userID: userID, volumeMilliliters: 500, at: now)
-        #expect(water.alcoholGrams == nil && water.energyCalories == 0)
+        #expect(water.alcoholGrams == nil && water.energyCalories == 0 && water.alcoholCalories == 0)
+        let latte = DrinkPreset.latte.drink(name: "Latte").log(userID: userID, volumeMilliliters: 300, at: now)
+        #expect(latte.energyCalories == latte.calories && latte.alcoholCalories == 0)
     }
 
-    @Test("Alcohol's kcal count in the day's energy but never raise Fuel")
+    @Test("Every drink's kcal count in the day's energy; alcohol's never raise Fuel, other drinks' do")
     func energyNotFuel() throws {
         let now = try TestClock.date(2026, 10, 6, 20, 0)
         let lunch = FoodLogEntry(
@@ -74,9 +76,10 @@ struct DrinkCatalogTests {
             DaySummary(entries: [lunch], hydrationLogs: drinks, targets: targets, waterTargetMilliliters: 2000, day: now, now: now, calendar: calendar)
         }
         let both = summary([wine, latte])
-        #expect(abs(both.consumed.calories - (1200 + wine.calories)) < 0.001, "Wine counts; a latte's kcal still don't")
+        #expect(abs(both.consumed.calories - (1200 + wine.calories + latte.calories)) < 0.001, "Wine and the latte both count in energy")
         #expect(both.alcoholCalories == wine.calories)
-        #expect(both.foodCalories == 1200)
+        #expect(abs(both.drinkCalories - (wine.calories + latte.calories)) < 0.001)
+        #expect(abs(both.fuelCalories - (1200 + latte.calories)) < 0.001, "Fuel counts the latte, not the wine")
 
         // The latte's water share raises hydration (as drinks always have),
         // so Fuel is compared with and without the wine alone.
@@ -84,6 +87,11 @@ struct DrinkCatalogTests {
         let fuelWithWine = try #require(FuelScore(summary: summary([wine]), hasLoggedFood: true, regularity: nil))
         #expect(fuelWithWine.value == fuelWithout.value, "Drinking never raises Fuel")
         #expect(fuelWithWine.components.energy == fuelWithout.components.energy)
+
+        // A non-alcoholic drink's kcal do raise Fuel's energy part.
+        let juice = DrinkPreset.juice.drink(name: "Juice").log(userID: userID, volumeMilliliters: 1000, at: now)
+        let fuelWithJuice = try #require(FuelScore(summary: summary([juice]), hasLoggedFood: true, regularity: nil))
+        #expect(fuelWithJuice.components.energy > fuelWithout.components.energy)
     }
 
     @Test("The Energy screen's chart, before-noon share and week include alcohol")
@@ -97,13 +105,13 @@ struct DrinkCatalogTests {
         )
         let beer = DrinkPreset.beer.drink(name: "Beer").log(userID: userID, volumeMilliliters: 330, at: try TestClock.date(2026, 10, 6, 19, 0))
         let yesterdayWine = DrinkPreset.wine.drink(name: "Wine").log(userID: userID, volumeMilliliters: 150, at: try TestClock.date(2026, 10, 5, 20, 0))
-        let extra = [beer, yesterdayWine].alcoholEnergy
+        let extra = [beer, yesterdayWine].drinkEnergy
 
-        let points = IntakeAnalysis.cumulative([breakfast], extra: [beer].alcoholEnergy, calendar: calendar)
+        let points = IntakeAnalysis.cumulative([breakfast], extra: [beer].drinkEnergy, calendar: calendar)
         #expect(points.map(\.minute) == [8 * 60, 19 * 60])
         #expect(abs((points.last?.calories ?? 0) - (400 + beer.calories)) < 0.001)
 
-        let share = try #require(IntakeAnalysis.beforeNoonShare([breakfast], extra: [beer].alcoholEnergy, calendar: calendar))
+        let share = try #require(IntakeAnalysis.beforeNoonShare([breakfast], extra: [beer].drinkEnergy, calendar: calendar))
         #expect(abs(share - 400 / (400 + beer.calories)) < 0.0001)
 
         let week = IntakeAnalysis.dailyTotals([breakfast], extra: extra, endingOn: day, days: 2, calendar: calendar)

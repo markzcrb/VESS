@@ -48,7 +48,7 @@ nonisolated struct FuelScore: Equatable, Sendable {
         guard hasLoggedFood else { return nil }
 
         // Food only: alcohol's kcal count in the day's energy, never in Fuel.
-        let energy = Self.energyScore(Self.ratio(summary.foodCalories, of: summary.targets.calories))
+        let energy = Self.energyScore(Self.ratio(summary.fuelCalories, of: summary.targets.calories))
         let protein = min(Self.ratio(summary.consumed.proteinGrams, of: summary.targets.proteinGrams), 1)
         let hydration = min(Self.ratio(summary.hydration.consumedMilliliters, of: summary.hydration.targetMilliliters), 1)
         let regularity = regularity.map { min(max($0, 0), 1) }

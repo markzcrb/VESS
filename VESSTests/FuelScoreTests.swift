@@ -113,9 +113,12 @@ struct FuelScoreSampleDayTests {
         let regularity = MealRegularity.dayProgress(today: data.foodLog, history: data.foodHistory, calendar: TestClock.utc)
         let fuel = try #require(FuelScore(summary: summary, hasLoggedFood: true, regularity: regularity))
 
-        // Energy 1,840 of 2,400; protein 108 of 140 g; water 1.6 of 2.2 L;
-        // three of four meal slots logged, each within minutes of usual.
-        #expect(fuel.components.energy.isApproximately(1840.0 / 2400))
+        // Energy 1,840 of 2,400 from food, plus the day's drinks (their kcal
+        // count since 2026-10-23: the green tea's 3); protein 108 of 140 g;
+        // water 1.6 of 2.2 L; three of four meal slots logged on time.
+        let drinkKcal = data.hydrationLog.filter { TestClock.utc.isDate($0.loggedAt, inSameDayAs: now) }.reduce(0) { $0 + $1.calories }
+        #expect(drinkKcal < 10, "The sample drinks are almost kcal-free")
+        #expect(fuel.components.energy.isApproximately((1840.0 + drinkKcal) / 2400))
         #expect(fuel.components.protein.isApproximately(108.0 / 140))
         #expect(fuel.components.hydration.isApproximately(1600.0 / 2200))
         #expect(fuel.components.regularity?.isApproximately(0.74, tolerance: 0.005) == true)
