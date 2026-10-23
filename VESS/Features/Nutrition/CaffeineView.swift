@@ -18,7 +18,9 @@ struct CaffeineView: View {
     private let calendar = Calendar.current
 
     /// Every drink with caffeine, in catalog order.
-    private static let caffeinated = DrinkPreset.allCases.filter { $0.caffeineMilligramsPer100Milliliters > 0 }
+    /// The offered drinks with caffeine, in the sheet's order (cola is no
+    /// longer offered, so it doesn't repeat the soft drink).
+    private static let caffeinated = DrinkCategory.allCases.flatMap(\.presets).filter { $0.caffeineMilligramsPer100Milliliters > 0 }
 
     var body: some View {
         let now = AppClock.now

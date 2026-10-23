@@ -160,7 +160,7 @@ extension DrinkPreset {
         case .cappuccino: "Cappuccino"
         case .latte: "Latte"
         case .flatWhite: "Flat white"
-        case .blackCoffee: "Drip coffee"
+        case .blackCoffee: "Filter coffee"
         case .coldBrew: "Cold brew"
         case .tea: "Black tea"
         case .greenTea: "Green tea"

@@ -1794,9 +1794,6 @@
     "Drinks through the day" : {
 
     },
-    "Drip coffee" : {
-
-    },
     "Duration" : {
 
     },
@@ -1837,6 +1834,9 @@
 
     },
     "Edit or delete" : {
+
+    },
+    "Edit, or delete" : {
 
     },
     "Editing" : {
@@ -2004,6 +2004,9 @@
 
     },
     "Filter" : {
+
+    },
+    "Filter coffee" : {
 
     },
     "Fish" : {

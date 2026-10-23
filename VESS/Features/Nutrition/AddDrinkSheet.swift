@@ -247,14 +247,10 @@ struct AddDrinkSheet: View {
         } else {
             VESSRowGroup {
                 ForEach(logs.sorted { $0.loggedAt > $1.loggedAt }) { log in
-                    VESSSwipeToDelete(background: VESSColor.card, onDelete: { delete(log) }) {
-                        Button { editing = log } label: {
-                            DrinkLogRow(log: log)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityHint("Edit or delete")
+                    VESSSwipeToDelete(background: VESSColor.card, onTap: { editing = log }, onDelete: { delete(log) }) {
+                        DrinkLogRow(log: log)
                     }
+                    .accessibilityHint("Edit, or delete")
                 }
             }
             .vessHairlineBottom()
@@ -335,7 +331,7 @@ struct AddDrinkSheet: View {
         let log = drink.log(userID: profile.id, volumeMilliliters: volume, at: time)
         do {
             try store.add(log)
-            undo.show(Text("Added \(VESSFormat.milliliters(volume)) ml of \(drink.name)")) { store in
+            undo.show(Text("Added \(VESSFormat.milliliters(volume)) ml of \(drink.name.localizedLowercase)")) { store in
                 try store.deleteHydrationLog(id: log.id)
             }
             dismiss()
@@ -417,16 +413,21 @@ struct DrinkChoice: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            BleedingRow {
-                HStack(spacing: VESSSpacing.xs) {
-                    ForEach(DrinkCategory.allCases, id: \.self) { category in
-                        VESSChip(title: category.title, isSelected: preset.category == category) {
-                            guard preset.category != category, let first = category.presets.first else { return }
-                            onSelect(first)
+            ScrollViewReader { proxy in
+                BleedingRow {
+                    HStack(spacing: VESSSpacing.xs) {
+                        ForEach(DrinkCategory.allCases, id: \.self) { category in
+                            VESSChip(title: category.title, isSelected: preset.category == category) {
+                                guard preset.category != category, let first = category.presets.first else { return }
+                                onSelect(first)
+                            }
+                            .accessibilityIdentifier("addDrink.category.\(category.rawValue)")
+                            .id(category)
                         }
-                        .accessibilityIdentifier("addDrink.category.\(category.rawValue)")
                     }
                 }
+                // A chip partly off screen (Alcohol on the SE) comes into view.
+                .onChange(of: preset.category) { _, category in proxy.scrollTo(category) }
             }
             let options = preset.category.presets
             if options.count > 1 {
@@ -437,7 +438,7 @@ struct DrinkChoice: View {
 }
 
 /// A horizontal scroller that starts at the screen margin and runs off the
-/// right edge of the sheet, without making its parent any wider.
+/// sheet's edges, without making its parent any wider.
 private struct BleedingRow<Content: View>: View {
     @ViewBuilder let content: Content
 
@@ -446,8 +447,10 @@ private struct BleedingRow<Content: View>: View {
             content
         }
         .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
-        .contentMargins(.trailing, VESSSpacing.screenInset, for: .scrollContent)
-        .padding(.trailing, -VESSSpacing.screenInset)
+        // At rest the row starts at the margin; scrolled, it runs off both
+        // sheet edges instead of being cut at the margin.
+        .contentMargins(.horizontal, VESSSpacing.screenInset, for: .scrollContent)
+        .padding(.horizontal, -VESSSpacing.screenInset)
     }
 }
 
@@ -473,7 +476,7 @@ private struct DrinkTabs: View {
                                     .fill(isSelected ? VESSColor.water : Color.clear)
                                     .frame(height: 2)
                             }
-                            .frame(minHeight: VESSHitTarget.minimum, alignment: .bottom)
+                            .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum, alignment: .bottom)
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -498,22 +501,36 @@ private struct DrinkCompactTimeRow: View {
     @Binding var time: Date
     let range: ClosedRange<Date>
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(spacing: VESSSpacing.xs) {
+        // At accessibility sizes the picker goes under the label, so
+        // "Time" and "Now" never break mid-word.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xs))
+            : AnyLayout(HStackLayout(spacing: VESSSpacing.xs))
+        layout {
             Text("Time")
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.text)
-            Spacer(minLength: VESSSpacing.sm)
-            if abs(time.timeIntervalSince(AppClock.now)) < 60 {
-                Text("Now")
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
+                .fixedSize()
+            if !dynamicTypeSize.isAccessibilitySize {
+                Spacer(minLength: VESSSpacing.sm)
             }
-            DatePicker("Time", selection: $time, in: range, displayedComponents: .hourAndMinute)
-                .datePickerStyle(.compact)
-                .labelsHidden()
-                .tint(VESSColor.text)
+            HStack(spacing: VESSSpacing.xs) {
+                if abs(time.timeIntervalSince(AppClock.now)) < 60 {
+                    Text("Now")
+                        .vessTextStyle(.bodyM)
+                        .foregroundStyle(VESSColor.secondaryText)
+                        .fixedSize()
+                }
+                DatePicker("Time", selection: $time, in: range, displayedComponents: .hourAndMinute)
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                    .tint(VESSColor.text)
+            }
         }
+        .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? VESSSpacing.sm : 0)
         .frame(minHeight: VESSSize.rowHeight)
         .vessHairlineBottom()
         .accessibilityElement(children: .contain)
