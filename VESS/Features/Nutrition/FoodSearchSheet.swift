@@ -528,6 +528,7 @@ extension View {
             .environment(FoodLogUndo())
             .environment(ReminderService(center: nil, defaults: UserDefaults(suiteName: "preview") ?? .standard))
             .environment(AccountStore(config: nil, transport: URLSessionTransport(), store: MemorySessionStore()))
+            .environment(AIConsentStore(defaults: UserDefaults(suiteName: "preview") ?? .standard))
     }
 }
 #endif

@@ -131,8 +131,10 @@ struct NotificationsView: View {
 struct PrivacyView: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.vessHaptics) private var haptics
+    @Environment(AIConsentStore.self) private var consent
 
     @State private var confirmDelete = false
+    @State private var asking: AIFeature?
     @State private var showError = false
 
     var body: some View {
@@ -153,6 +155,22 @@ struct PrivacyView: View {
                 fact("Nothing else", "VESS has no account, no analytics and no ads.")
             }
             .vessHairlineBottom()
+
+            VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                VESSSectionHeader(title: "AI features")
+                VESSRowGroup {
+                    consentToggle(.coach, title: "Coach", detail: "Sends your question and a summary of recent logs.")
+                    consentToggle(.photo, title: "Photo estimates", detail: "Sends the photo you take or pick.")
+                }
+                .vessHairlineBottom()
+                Text("Processed by \(AIProcessor.displayName) through VESS's server. VESS doesn't store it. \(AIProcessor.company) processes it under its API terms.")
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .sheet(item: $asking) { feature in
+                AIConsentSheet(feature: feature, onAllow: {})
+            }
 
             if let export {
                 ShareLink(item: export, preview: SharePreview(Text("VESS data export"))) {
@@ -175,6 +193,19 @@ struct PrivacyView: View {
                 }
         }
         .vessErrorAlert(isPresented: $showError, retry: deleteAll)
+    }
+
+    /// On means allowed. Turning it on asks with the consent sheet first.
+    private func consentToggle(_ feature: AIFeature, title: LocalizedStringResource, detail: LocalizedStringResource) -> some View {
+        ProfileToggleRow(
+            title: Text(title),
+            subtitle: Text(detail),
+            isOn: Binding(
+                get: { consent.isGranted(feature) },
+                set: { on in if on { asking = feature } else { consent.revoke(feature) } }
+            )
+        )
+        .accessibilityIdentifier("privacy.consent.\(feature.rawValue)")
     }
 
     private func fact(_ title: LocalizedStringResource, _ detail: LocalizedStringResource) -> some View {

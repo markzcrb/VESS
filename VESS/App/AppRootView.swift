@@ -11,6 +11,7 @@ struct AppRootView: View {
     @State private var reminders = Self.makeReminders()
     @State private var haptics = VESSHaptics()
     @State private var account = AccountStore.make()
+    @State private var consent = AIConsentStore.make()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -39,6 +40,7 @@ struct AppRootView: View {
                 .environment(foodUndo)
                 .environment(reminders)
                 .environment(account)
+                .environment(consent)
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 // One success tap for every log, wherever it came from.
                 .vessHaptic(.success, trigger: foodUndo.loggedCount)

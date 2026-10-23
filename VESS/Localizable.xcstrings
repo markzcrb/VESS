@@ -644,6 +644,9 @@
         }
       }
     },
+    "%@, through VESS's server." : {
+
+    },
     "%@, today" : {
 
     },
@@ -1348,6 +1351,9 @@
     "Age" : {
 
     },
+    "AI features" : {
+
+    },
     "Aisle" : {
 
     },
@@ -1367,6 +1373,9 @@
 
     },
     "All main meals" : {
+
+    },
+    "Allow" : {
 
     },
     "Americano" : {
@@ -1603,6 +1612,9 @@
 
     },
     "Coach and photo estimates use this account. Your log stays on this iPhone." : {
+
+    },
+    "Coach answers with AI." : {
 
     },
     "Cocktail" : {
@@ -2520,6 +2532,9 @@
     "Kept data stays hidden and comes back when you turn tracking on again." : {
 
     },
+    "Kept?" : {
+
+    },
     "kg" : {
 
     },
@@ -2870,6 +2885,9 @@
 
     },
     "Needed for" : {
+
+    },
+    "Needs an account. You can turn this off any time in You › Privacy and data." : {
 
     },
     "New" : {
@@ -3238,6 +3256,12 @@
     "Photo estimate" : {
 
     },
+    "Photo estimates" : {
+
+    },
+    "Photo estimates use AI." : {
+
+    },
     "Physical job or training twice a day" : {
 
     },
@@ -3294,6 +3318,16 @@
     },
     "Privacy and data" : {
 
+    },
+    "Processed by %@ through VESS's server. VESS doesn't store it. %@ processes it under its API terms." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Processed by %1$@ through VESS's server. VESS doesn't store it. %2$@ processes it under its API terms."
+          }
+        }
+      }
     },
     "Produce" : {
 
@@ -3517,6 +3551,12 @@
 
     },
     "Sending…" : {
+
+    },
+    "Sends the photo you take or pick." : {
+
+    },
+    "Sends your question and a summary of recent logs." : {
 
     },
     "serving" : {
@@ -3873,6 +3913,9 @@
     "The number under the barcode." : {
 
     },
+    "The photo, made smaller and without location or other details from the camera." : {
+
+    },
     "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
 
     },
@@ -3941,6 +3984,9 @@
 
     },
     "To snacks" : {
+
+    },
+    "To whom" : {
 
     },
     "today" : {
@@ -4172,6 +4218,9 @@
     "VESS doesn't guess your steps." : {
 
     },
+    "VESS doesn't store it. %@ processes it under its API terms." : {
+
+    },
     "VESS has no account, no analytics and no ads." : {
 
     },
@@ -4263,6 +4312,9 @@
     "What brings you to VESS?" : {
 
     },
+    "What is sent" : {
+
+    },
     "What matters to you?" : {
 
     },
@@ -4270,6 +4322,9 @@
 
     },
     "What should we call you?" : {
+
+    },
+    "What stays here" : {
 
     },
     "What you eat and drink, how you move, and what's at home, understood together." : {
@@ -4403,6 +4458,9 @@
     "Your food" : {
 
     },
+    "Your log, profile and history stay on this iPhone." : {
+
+    },
     "Your logged cycles are shorter than 15 or longer than 60 days, which usually means a period wasn't logged." : {
 
     },
@@ -4425,6 +4483,9 @@
 
     },
     "Your profile, meals, drinks, workouts, pantry, plans, supplements, habits and cycle days will be removed from this iPhone. This can't be undone." : {
+
+    },
+    "Your question, the conversation so far, and a summary of your recent logs: targets, today's totals, 7-day averages, today's meals, habits, workouts and supplements. Cycle data only if you turn on sharing." : {
 
     },
     "Your week fills in as you go." : {
