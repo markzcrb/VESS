@@ -477,12 +477,14 @@ struct CycleInfoSheet: View {
 struct TodayCycleRow: View {
     @Environment(LocalStore.self) private var store
     let now: Date
+    /// "Log ›": the Add sheet on Cycle.
+    var onLog: (() -> Void)?
     let action: () -> Void
 
     var body: some View {
         let summary = CyclePrediction.summary(store.cycleDays, today: now, calendar: .current)
         VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-            VESSSectionHeader(title: "Cycle")
+            VESSSectionHeader(title: "Cycle", actionTitle: onLog == nil ? nil : "Log", action: onLog)
             Button {
                 action()
             } label: {

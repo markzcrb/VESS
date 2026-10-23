@@ -1,16 +1,19 @@
 import SwiftUI
 
-/// A request to open the food sheet for a meal on a day.
+/// A request to open the Add sheet (21) for a meal on a day.
 struct AddFoodRequest: Identifiable {
     let id = UUID()
     var meal: MealType
     var day: Date
-    /// Which saved foods the Add sheet opens on.
+    /// Which saved foods Food opens on.
     var collection: FoodCollection = .recent
+    /// The type an entry point asks for (Add drink, Habits +, …); `nil`
+    /// opens on Food, or on the type used last within the past hour.
+    var type: AddType?
 }
 
 /// H01–H03, manual entry: log a food from its label or a best guess,
-/// without a product. Shown inside `FoodSearchSheet`. A macro left empty is
+/// without a product. Quick add in the Add sheet. A macro left empty is
 /// saved as "not reported", never as zero. Optionally saved to My foods.
 struct QuickAddForm: View {
     @Environment(LocalStore.self) private var store
@@ -20,6 +23,8 @@ struct QuickAddForm: View {
 
     let day: Date
     @Binding var meal: MealType
+    /// Inside the Add sheet (21), which has its own title and X.
+    var embedded = false
     let onLogged: () -> Void
 
     @State private var name = ""
@@ -119,7 +124,7 @@ struct QuickAddForm: View {
             .disabled(nutrition == nil)
             .accessibilityIdentifier("addFood.submit")
         }
-        .vessDetailTitle("Manual entry")
+        .vessStandaloneTitle("Manual entry", embedded: embedded, hidesTabBar: false)
         .vessErrorAlert(isPresented: $showError, retry: add)
         .vessKeyboardDoneButton()
     }

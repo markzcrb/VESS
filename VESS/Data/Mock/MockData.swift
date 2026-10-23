@@ -305,16 +305,17 @@ nonisolated struct MockData: Sendable {
         let vitaminD = Supplement(
             id: UUID(), name: "Vitamin D", dosage: 1000, unit: .internationalUnit,
             schedule: .daily, reminderTime: DateComponents(hour: 8, minute: 0),
-            reminderEnabled: true, notes: nil
+            reminderEnabled: true, notes: nil, category: .vitamins, timeOfDay: .morning
         )
         let creatine = Supplement(
             id: UUID(), name: "Creatine", dosage: 5, unit: .gram,
-            schedule: .daily, reminderTime: nil, reminderEnabled: false, notes: "With breakfast"
+            schedule: .daily, reminderTime: nil, reminderEnabled: false, notes: "With breakfast",
+            category: .performance, timeOfDay: .withMeal
         )
         let omega3 = Supplement(
             id: UUID(), name: "Omega 3", dosage: 1, unit: .capsule,
             schedule: .weekdays([.monday, .wednesday, .friday]), reminderTime: nil,
-            reminderEnabled: false, notes: nil
+            reminderEnabled: false, notes: nil, category: .omega3, timeOfDay: .withMeal
         )
         supplements = [vitaminD, creatine, omega3]
         supplementLog = [

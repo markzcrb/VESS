@@ -6,7 +6,7 @@ import SwiftUI
 struct HabitsView: View {
     @Environment(LocalStore.self) private var store
     @Environment(HealthDataStore.self) private var health
-    @Environment(ReminderService.self) private var reminders
+    @Environment(\.vessOpenAdd) private var openAdd
 
     @State private var editing: HabitSheetRequest?
     @State private var showEdit = false
@@ -69,10 +69,11 @@ struct HabitsView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { editing = HabitSheetRequest(habit: nil) } label: {
+                // The Add sheet, on Habits (21).
+                Button { openAdd(.habits) } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("Add a habit")
+                .accessibilityLabel("Add")
                 .accessibilityIdentifier("habits.plus")
             }
         }
@@ -149,9 +150,32 @@ struct HabitsView: View {
     }
 
     private func todayList(_ habits: [Habit], now: Date, log: HabitRules.Log) -> some View {
+        HabitTodayList(habits: habits, now: now, log: log, onEdit: { showEdit = true })
+    }
+}
+
+/// Today's habits with their ticks and week (14), also in the Add sheet (21).
+struct HabitTodayList: View {
+    @Environment(LocalStore.self) private var store
+    @Environment(ReminderService.self) private var reminders
+
+    let habits: [Habit]
+    let now: Date
+    let log: HabitRules.Log
+    var onEdit: (() -> Void)?
+
+    @State private var showError = false
+
+    private let calendar = Calendar.current
+
+    var body: some View {
         let listed = habits.filter { HabitRules.isListed($0, on: now, today: now, log: log, calendar: calendar) }
         return VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-            VESSSectionHeader(title: "Today", actionTitle: "Edit", action: { showEdit = true })
+            if let onEdit {
+                VESSSectionHeader(title: "Today", actionTitle: "Edit", action: onEdit)
+            } else {
+                VESSSectionHeader(title: "Today")
+            }
             if listed.isEmpty {
                 Text("Nothing on today's list.")
                     .vessTextStyle(.bodyS)
@@ -165,6 +189,7 @@ struct HabitsView: View {
                 .vessHairlineBottom()
             }
         }
+        .vessErrorAlert(isPresented: $showError)
     }
 
     private func row(_ habit: Habit, now: Date, log: HabitRules.Log) -> some View {

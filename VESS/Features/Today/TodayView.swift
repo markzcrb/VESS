@@ -8,9 +8,9 @@ struct TodayView: View {
 
     @Environment(LocalStore.self) private var store
     @Environment(HealthDataStore.self) private var health
+    @Environment(\.vessOpenAdd) private var openAdd
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var addFood: AddFoodRequest?
-    @State private var addDrink = false
     @State private var showCoach = false
     @State private var showFuelInfo = false
     @State private var showEnergy = false
@@ -120,7 +120,7 @@ struct TodayView: View {
                             hydration: summary.hydration,
                             lastDrink: drinks.map(\.loggedAt).max(),
                             onAddWater: { addWater(250, profile: profile) },
-                            onAddDrink: { addDrink = true }
+                            onAddDrink: { openAdd(.drink) }
                         )
 
                         if !store.habits.isEmpty {
@@ -129,7 +129,7 @@ struct TodayView: View {
 
                         // Opt-in: nothing about cycles shows while it's off.
                         if profile.isCycleTrackingOn {
-                            TodayCycleRow(now: now) { showCycle = true }
+                            TodayCycleRow(now: now, onLog: { openAdd(.cycle) }) { showCycle = true }
                         }
                     }
                 }
@@ -138,6 +138,7 @@ struct TodayView: View {
             .padding(.bottom, VESSSpacing.huge)
         }
         .vessScreenBackground(.fuel)
+        .vessTabBarFade()
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $showEnergy) {
             EnergyDetailView()
@@ -172,10 +173,7 @@ struct TodayView: View {
         .animation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.toast, value: undoLog?.id)
         .vessHaptic(.success, trigger: waterAddCount)
         .sheet(item: $addFood) { request in
-            FoodSearchSheet(request: request)
-        }
-        .sheet(isPresented: $addDrink) {
-            AddDrinkSheet(day: now)
+            AddSheet(request: request)
         }
         .vessErrorAlert(isPresented: $showError)
     }

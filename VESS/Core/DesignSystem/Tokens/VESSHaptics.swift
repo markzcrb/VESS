@@ -22,6 +22,9 @@ enum VESSHaptic {
 /// closes on Save or Delete). The app root plays them, so they're never lost.
 @Observable
 final class VESSHaptics {
+    /// Nobody plays this one: the environment's default, for previews.
+    static let unplayed = VESSHaptics()
+
     private(set) var addCount = 0
     private(set) var successCount = 0
     private(set) var warningCount = 0
@@ -39,7 +42,7 @@ final class VESSHaptics {
 
 extension EnvironmentValues {
     /// Previews get an instance nobody plays; the app root injects the real one.
-    @Entry var vessHaptics = VESSHaptics()
+    @Entry var vessHaptics: VESSHaptics = .unplayed
 }
 
 extension View {

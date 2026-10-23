@@ -42,7 +42,6 @@ enum ActivityRoute: Hashable {
     case activity
     case steps(day: Date)
     case workout(UUID)
-    case addWorkout
     case history
     case statistics
 }
@@ -314,7 +313,6 @@ extension View {
             case .activity: ActivityView()
             case .steps(let day): StepsDetailView(day: day)
             case .workout(let id): WorkoutDetailView(workoutID: id)
-            case .addWorkout: AddWorkoutView()
             case .history: ActivityHistoryView()
             case .statistics: ActivityStatisticsView()
             }

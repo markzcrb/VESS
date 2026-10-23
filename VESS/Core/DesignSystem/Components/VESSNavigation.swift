@@ -133,6 +133,32 @@ extension View {
             }
     }
 
+    /// `vessDetailTitle` for a screen shown on its own; nothing when it's
+    /// embedded in the Add sheet (21), whose nav bar keeps "ADD" and the X.
+    @ViewBuilder
+    func vessStandaloneTitle(_ title: LocalizedStringResource, embedded: Bool, hidesTabBar: Bool = true) -> some View {
+        if embedded {
+            self
+        } else if hidesTabBar {
+            vessDetailTitle(title).toolbar(.hidden, for: .tabBar)
+        } else {
+            vessDetailTitle(title)
+        }
+    }
+
+    /// Tab roots: content scrolling under the glass tab bar fades into the
+    /// canvas, so the bar's mirrored lensing never makes labels hard to read.
+    func vessTabBarFade() -> some View {
+        scrollEdgeEffectStyle(.soft, for: .bottom)
+            .overlay(alignment: .bottom) {
+                LinearGradient(colors: [VESSColor.background.opacity(0), VESSColor.background], startPoint: .top, endPoint: .bottom)
+                    .frame(height: VESSSize.tabBarFade)
+                    .ignoresSafeArea(edges: .bottom)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+    }
+
     /// The screen background: the canvas, with a metric-tinted atmosphere
     /// fading out over the top 440 pt. `nil` draws the plain canvas.
     ///

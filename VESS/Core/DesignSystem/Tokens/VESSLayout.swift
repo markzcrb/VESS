@@ -43,6 +43,8 @@ enum VESSSize {
     static let iconButton: CGFloat = 40
     static let addButton: CGFloat = 62
     static let rowIcon: CGFloat = 20
+    /// The canvas fade behind the floating tab bar, from the bar's top up.
+    static let tabBarFade: CGFloat = 120
 }
 
 /// Ring geometry. The stroke is 9.5 % of the radius, flat caps, starting at

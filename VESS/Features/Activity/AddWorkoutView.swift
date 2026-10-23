@@ -12,6 +12,9 @@ struct AddWorkoutView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// Inside the Add sheet (21), which has its own title and X.
+    var embedded = false
+
     private enum When: Hashable { case now, earlier }
 
     @State private var type: WorkoutType = .walking
@@ -59,8 +62,7 @@ struct AddWorkoutView: View {
             .padding(.bottom, VESSSpacing.xl)
         }
         .vessScreenBackground(.activity)
-        .vessDetailTitle("Add workout")
-        .toolbar(.hidden, for: .tabBar)
+        .vessStandaloneTitle("Add workout", embedded: embedded)
         .vessBottomAction(background: VESSColor.background) {
             VStack(alignment: .leading, spacing: VESSSpacing.sm) {
                 if !dynamicTypeSize.isAccessibilitySize {

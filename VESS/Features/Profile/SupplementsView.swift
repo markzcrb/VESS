@@ -114,7 +114,9 @@ struct SupplementsView: View {
     }
 }
 
-/// Add or edit a supplement: name, dose, and an optional reminder time.
+/// Add or edit a supplement (E04, 22): name, the user's own dose and unit,
+/// category, time of day, days, and an optional reminder (off by default).
+/// A preset fills in the name, category and unit; never a dose.
 struct SupplementEditSheet: View {
     let supplement: Supplement?
 
@@ -124,26 +126,49 @@ struct SupplementEditSheet: View {
     @Environment(ReminderService.self) private var reminders
     @Environment(\.dismiss) private var dismiss
 
+    private enum Days: Hashable { case daily, chosen, asNeeded }
+
     @State private var name: String
     @State private var doseText: String
     @State private var unit: SupplementUnit
+    @State private var category: SupplementCategory
+    @State private var timeOfDay: SupplementTimeOfDay
+    @State private var days: Days
+    @State private var weekdays: Set<Locale.Weekday>
     @State private var remind: Bool
     @State private var time: Date
     @State private var showDeleteConfirmation = false
     @State private var showError = false
 
-    init(supplement: Supplement?) {
+    private let calendar = Calendar.current
+
+    init(supplement: Supplement?, preset: SupplementRules.Preset? = nil, category: SupplementCategory? = nil) {
         self.supplement = supplement
-        _name = State(initialValue: supplement?.name ?? "")
+        _name = State(initialValue: supplement?.name ?? preset?.name ?? "")
         _doseText = State(initialValue: supplement.map { VESSFormat.quantity($0.dosage) } ?? "")
-        _unit = State(initialValue: supplement?.unit ?? .milligram)
-        _remind = State(initialValue: supplement?.reminderTime != nil)
-        let parts = supplement?.reminderTime ?? DateComponents(hour: 8, minute: 0)
+        _unit = State(initialValue: supplement?.unit ?? preset?.unit ?? .milligram)
+        _category = State(initialValue: supplement?.category ?? preset?.category ?? category ?? .other)
+        _timeOfDay = State(initialValue: supplement?.timeOfDay ?? .morning)
+        switch supplement?.schedule {
+        case .weekdays(let chosen):
+            _days = State(initialValue: .chosen)
+            _weekdays = State(initialValue: chosen)
+        case .asNeeded:
+            _days = State(initialValue: .asNeeded)
+            _weekdays = State(initialValue: [])
+        case .daily, nil:
+            _days = State(initialValue: .daily)
+            _weekdays = State(initialValue: [])
+        }
+        _remind = State(initialValue: supplement?.reminderEnabled ?? false)
+        let parts = supplement?.reminderTime ?? (supplement?.timeOfDay ?? .morning).defaultTime
         _time = State(initialValue: Calendar.current.date(bySettingHour: parts.hour ?? 8, minute: parts.minute ?? 0, second: 0, of: AppClock.now) ?? AppClock.now)
     }
 
     private var dose: Double? { VESSFormat.number(from: doseText) }
-    private var canSave: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty && (dose ?? 0) > 0 }
+    private var canSave: Bool {
+        !name.trimmingCharacters(in: .whitespaces).isEmpty && (dose ?? 0) > 0 && (days != .chosen || !weekdays.isEmpty)
+    }
 
     var body: some View {
         NavigationStack {
@@ -170,8 +195,38 @@ struct SupplementEditSheet: View {
                         .accessibilityLabel(Text("Unit, \(Text(unit.abbreviation))"))
                     }
                     VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                        ProfileToggleRow(title: Text("Daily reminder"), isOn: $remind)
-                        if remind {
+                        VESSSectionHeader(title: "Category")
+                        VESSChipFlow {
+                            ForEach(SupplementCategory.allCases, id: \.self) { option in
+                                VESSChip(title: option.title, isSelected: category == option) { category = option }
+                            }
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                        VESSSectionHeader(title: "Time of day")
+                        VESSSegmented(selection: $timeOfDay, options: SupplementTimeOfDay.allCases.map { ($0, $0.title) })
+                        if timeOfDay == .custom {
+                            DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
+                                .vessTextStyle(.bodyM)
+                                .foregroundStyle(VESSColor.text)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                        VESSSectionHeader(title: "Days")
+                        VESSSegmented(selection: $days, options: dayOptions)
+                        if days == .chosen {
+                            VESSChipFlow {
+                                ForEach(orderedWeekdays, id: \.self) { day in
+                                    VESSChip(title: weekdayTitle(day), isSelected: weekdays.contains(day)) {
+                                        if weekdays.contains(day) { weekdays.remove(day) } else { weekdays.insert(day) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                        ProfileToggleRow(title: Text("Reminder"), isOn: $remind)
+                        if remind, timeOfDay != .custom {
                             DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
                                 .vessTextStyle(.bodyM)
                                 .foregroundStyle(VESSColor.text)
@@ -205,24 +260,58 @@ struct SupplementEditSheet: View {
             .confirmationDialog("Delete this supplement?", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
                 Button("Delete", role: .destructive, action: delete)
             }
+            .vessKeyboardDoneButton()
             .vessErrorAlert(isPresented: $showError)
+            // A time of day picked suggests its reminder time.
+            .onChange(of: timeOfDay) { _, new in
+                guard new != .custom else { return }
+                let parts = new.defaultTime
+                time = calendar.date(bySettingHour: parts.hour ?? 8, minute: parts.minute ?? 0, second: 0, of: time) ?? time
+            }
         }
         .presentationCornerRadius(VESSRadius.sheet)
         .presentationDragIndicator(.visible)
     }
 
+    private var dayOptions: [(value: Days, title: LocalizedStringResource)] {
+        var options: [(value: Days, title: LocalizedStringResource)] = [(.daily, "Daily"), (.chosen, "Chosen days")]
+        // Kept only for supplements saved as needed before.
+        if days == .asNeeded || supplement?.schedule == .asNeeded { options.append((.asNeeded, "As needed")) }
+        return options
+    }
+
+    /// In the locale's week order.
+    private var orderedWeekdays: [Locale.Weekday] {
+        let all: [Locale.Weekday] = [.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday]
+        return (0..<7).map { all[(calendar.firstWeekday - 1 + $0) % 7] }
+    }
+
+    private func weekdayTitle(_ day: Locale.Weekday) -> LocalizedStringResource {
+        let all: [Locale.Weekday] = [.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday]
+        let index = all.firstIndex(of: day) ?? 0
+        return LocalizedStringResource(stringLiteral: calendar.shortStandaloneWeekdaySymbols[index])
+    }
+
     private func save() {
         guard let dose else { return }
-        let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
+        let parts = calendar.dateComponents([.hour, .minute], from: time)
+        let usesTime = remind || timeOfDay == .custom
+        let schedule: SupplementSchedule = switch days {
+        case .daily: .daily
+        case .chosen: .weekdays(weekdays)
+        case .asNeeded: .asNeeded
+        }
         let updated = Supplement(
             id: supplement?.id ?? UUID(),
             name: name.trimmingCharacters(in: .whitespaces),
             dosage: dose,
             unit: unit,
-            schedule: supplement?.schedule ?? .daily,
-            reminderTime: remind ? DateComponents(hour: parts.hour, minute: parts.minute) : nil,
+            schedule: schedule,
+            reminderTime: usesTime ? DateComponents(hour: parts.hour, minute: parts.minute) : nil,
             reminderEnabled: remind,
-            notes: supplement?.notes
+            notes: supplement?.notes,
+            category: category,
+            timeOfDay: timeOfDay
         )
         Task {
             // Turning a reminder on asks for permission the first time.
@@ -232,6 +321,7 @@ struct SupplementEditSheet: View {
             }
             do {
                 try store.save(toSave)
+                haptics.play(.success)
                 await reminders.sync(store: store)
                 dismiss()
             } catch {
@@ -249,6 +339,39 @@ struct SupplementEditSheet: View {
             dismiss()
         } catch {
             showError = true
+        }
+    }
+}
+
+extension SupplementCategory {
+    var title: LocalizedStringResource {
+        switch self {
+        case .vitamins: "Vitamins"
+        case .minerals: "Minerals"
+        case .omega3: "Omega-3"
+        case .performance: "Performance"
+        case .herbal: "Herbal"
+        case .other: "Other"
+        }
+    }
+}
+
+extension SupplementTimeOfDay {
+    var title: LocalizedStringResource {
+        switch self {
+        case .morning: "Morning"
+        case .withMeal: "With a meal"
+        case .evening: "Evening"
+        case .custom: "Custom"
+        }
+    }
+
+    /// The reminder time it suggests; the user can change it.
+    var defaultTime: DateComponents {
+        switch self {
+        case .morning: DateComponents(hour: 8, minute: 0)
+        case .withMeal: DateComponents(hour: 12, minute: 30)
+        case .evening, .custom: DateComponents(hour: 20, minute: 0)
         }
     }
 }

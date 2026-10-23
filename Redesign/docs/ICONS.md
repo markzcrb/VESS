@@ -44,3 +44,7 @@ The Figma icons (`Icon/*`) are stand-ins drawn to look like SF Symbols. In the a
 | moon | `moon` | Sleep (future) |
 | — | `camera`, `camera.viewfinder` | Photo estimate |
 | cycle | `calendar` (placeholder) | Cycle row on Today, Cycle in the Add sheet. One constant, `CycleCopy.symbol`, so it can be swapped later. |
+| camera | `camera` | Photo tile in the Add sheet (DEBUG) |
+| pill | `pills` | Supplements tile in the Add sheet |
+
+Add sheet tiles (`AddType.symbol`): Photo `camera`, Quick add `bolt`, Food `fork.knife`, Drink `waterbottle`*, Supplements `pills`, Workout `dumbbell`, Habits `checkmark`, Weight `scalemass`, Cycle `CycleCopy.symbol`.

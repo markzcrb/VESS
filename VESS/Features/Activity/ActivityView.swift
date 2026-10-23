@@ -7,6 +7,7 @@ import SwiftUI
 struct ActivityView: View {
     @Environment(LocalStore.self) private var store
     @Environment(HealthDataStore.self) private var health
+    @Environment(\.vessOpenAdd) private var openAdd
 
     @State private var showInfo = false
     @State private var showSteps = false
@@ -327,7 +328,8 @@ struct ActivityView: View {
     }
 
     private var logWorkoutButton: some View {
-        NavigationLink(value: ActivityRoute.addWorkout) {
+        // The Add sheet, on Workout (21).
+        Button { openAdd(.workout) } label: {
             Label("Log a workout", systemImage: "plus")
         }
         .buttonStyle(.vessSecondary)

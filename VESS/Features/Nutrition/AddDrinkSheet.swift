@@ -18,6 +18,8 @@ struct AddDrinkSheet: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let day: Date
+    /// Inside the Add sheet (21): its stack, X and title, so no own header close.
+    var embedded = false
     @State private var preset: DrinkPreset = .water
     /// The amount to add: one of the drink's sizes, or a custom amount.
     @State private var volume: Double = DrinkPreset.water.selectedServing.milliliters
@@ -34,54 +36,62 @@ struct AddDrinkSheet: View {
     private let calendar = Calendar.current
 
     var body: some View {
+        if embedded {
+            content
+        } else {
+            NavigationStack {
+                content
+                    .background(VESSColor.card)
+                    .toolbar(.hidden, for: .navigationBar)
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(VESSRadius.sheet)
+        }
+    }
+
+    private var content: some View {
         let logs = store.hydrationLogs(on: day, calendar: calendar)
 
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                    header(logs: logs)
-                    DrinkChoice(preset: preset, onSelect: select)
-                    sizeCards
-                    VStack(spacing: 0) {
-                        DrinkCompactTimeRow(time: $time, range: DrinkTime.range(on: day, calendar: calendar))
-                        if caffeine >= 1 { caffeineRow(logs) }
-                        if preset.defaultPercentByVolume != nil { strengthRow }
-                    }
-                    VStack(alignment: .leading, spacing: VESSSpacing.md) {
-                        VESSSectionHeader(title: isToday ? "Today" : "That day")
-                        HydrationTimeline(logs: logs, now: isToday ? AppClock.now : nil, calendar: calendar)
-                    }
-                    todayList(logs)
-                    footnote
+        return ScrollView {
+            VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                header(logs: logs)
+                DrinkChoice(preset: preset, onSelect: select)
+                sizeCards
+                VStack(spacing: 0) {
+                    DrinkCompactTimeRow(time: $time, range: DrinkTime.range(on: day, calendar: calendar))
+                    if caffeine >= 1 { caffeineRow(logs) }
+                    if preset.defaultPercentByVolume != nil { strengthRow }
                 }
-                .padding(.horizontal, VESSSpacing.screenInset)
-                .padding(.top, VESSSpacing.md)
-                .padding(.bottom, VESSSpacing.xl)
+                VStack(alignment: .leading, spacing: VESSSpacing.md) {
+                    VESSSectionHeader(title: isToday ? "Today" : "That day")
+                    HydrationTimeline(logs: logs, now: isToday ? AppClock.now : nil, calendar: calendar)
+                }
+                todayList(logs)
+                footnote
             }
-            .background(VESSColor.card)
-            .vessBottomAction { addButton }
-            .vessFoodUndoToast()
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: $showCaffeine) {
-                CaffeineView(day: day)
-            }
-            .navigationDestination(isPresented: $showCustom) {
-                CustomDrinkView(day: day, preset: preset, volume: volume, time: time, onClose: { dismiss() })
-            }
-            .sheet(item: $editing) { log in
-                EditDrinkSheet(log: log, day: day)
-            }
-            .vessErrorAlert(isPresented: $showError, retry: add)
-            .onAppear {
-                guard !hasLoaded else { return }
-                hasLoaded = true
-                time = DrinkTime.defaultTime(on: day, calendar: calendar)
-                strength = preset.defaultPercentByVolume ?? 0
-            }
+            .padding(.horizontal, VESSSpacing.screenInset)
+            .padding(.top, VESSSpacing.md)
+            .padding(.bottom, VESSSpacing.xl)
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
-        .presentationCornerRadius(VESSRadius.sheet)
+        .vessBottomAction { addButton }
+        .vessFoodUndoToast()
+        .navigationDestination(isPresented: $showCaffeine) {
+            CaffeineView(day: day)
+        }
+        .navigationDestination(isPresented: $showCustom) {
+            CustomDrinkView(day: day, preset: preset, volume: volume, time: time, onClose: { dismiss() })
+        }
+        .sheet(item: $editing) { log in
+            EditDrinkSheet(log: log, day: day)
+        }
+        .vessErrorAlert(isPresented: $showError, retry: add)
+        .onAppear {
+            guard !hasLoaded else { return }
+            hasLoaded = true
+            time = DrinkTime.defaultTime(on: day, calendar: calendar)
+            strength = preset.defaultPercentByVolume ?? 0
+        }
     }
 
     // MARK: Sections
@@ -106,7 +116,9 @@ struct AddDrinkSheet: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: VESSSpacing.md)
-                VESSIconButton(systemImage: "xmark", label: "Close") { dismiss() }
+                if !embedded {
+                    VESSIconButton(systemImage: "xmark", label: "Close") { dismiss() }
+                }
             }
             if let hydration {
                 VESSVesselLine(value: hydration.fractionComplete, tint: VESSColor.water)
@@ -416,7 +428,7 @@ struct DrinkChoice: View {
     var body: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             ScrollViewReader { proxy in
-                BleedingRow {
+                VESSBleedingRow {
                     HStack(spacing: VESSSpacing.xs) {
                         ForEach(DrinkCategory.allCases, id: \.self) { category in
                             VESSChip(title: category.title, isSelected: preset.category == category) {
@@ -439,23 +451,6 @@ struct DrinkChoice: View {
     }
 }
 
-/// A horizontal scroller that starts at the screen margin and runs off the
-/// sheet's edges, without making its parent any wider.
-private struct BleedingRow<Content: View>: View {
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            content
-        }
-        .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
-        // At rest the row starts at the margin; scrolled, it runs off both
-        // sheet edges instead of being cut at the margin.
-        .contentMargins(.horizontal, VESSSpacing.screenInset, for: .scrollContent)
-        .padding(.horizontal, -VESSSpacing.screenInset)
-    }
-}
-
 /// Text tabs with a water-coloured underline under the selected drink.
 private struct DrinkTabs: View {
     let options: [DrinkPreset]
@@ -464,7 +459,7 @@ private struct DrinkTabs: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            BleedingRow {
+            VESSBleedingRow {
                 HStack(spacing: VESSSpacing.xl) {
                     ForEach(options, id: \.self) { option in
                         let isSelected = option == selection

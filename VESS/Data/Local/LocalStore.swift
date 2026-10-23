@@ -56,6 +56,7 @@ final class LocalStore {
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
             StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self, StoredSupplement.self,
             StoredCycleDay.self, StoredHabit.self, StoredHabitCheck.self,
+            StoredSupplementLog.self,
         ])
     }
 
@@ -407,8 +408,28 @@ final class LocalStore {
         try save()
     }
 
+    /// Removes a supplement and the record of taking it.
     func deleteSupplement(id: UUID) throws {
         try context.delete(model: StoredSupplement.self, where: #Predicate { $0.id == id })
+        try context.delete(model: StoredSupplementLog.self, where: #Predicate { $0.supplementID == id })
+        try save()
+    }
+
+    /// Supplements taken on `day`.
+    func supplementLogs(on day: Date, calendar: Calendar) -> [SupplementLog] {
+        _ = revision
+        let (start, end) = Self.bounds(of: day, calendar: calendar)
+        let descriptor = FetchDescriptor<StoredSupplementLog>(predicate: #Predicate { $0.takenAt >= start && $0.takenAt < end })
+        return fetchDecoded(descriptor, as: SupplementLog.self) { $0.payload }
+    }
+
+    func add(_ log: SupplementLog) throws {
+        context.insert(StoredSupplementLog(id: log.id, supplementID: log.supplementID, takenAt: log.takenAt, payload: try encoder.encode(log)))
+        try save()
+    }
+
+    func deleteSupplementLog(id: UUID) throws {
+        try context.delete(model: StoredSupplementLog.self, where: #Predicate { $0.id == id })
         try save()
     }
 
@@ -518,6 +539,7 @@ final class LocalStore {
             grocery: groceryItems,
             workouts: workouts,
             supplements: supplements,
+            supplementLog: fetchDecoded(FetchDescriptor<StoredSupplementLog>(sortBy: [SortDescriptor(\.takenAt)]), as: SupplementLog.self) { $0.payload },
             cycleDays: cycleDays,
             habits: habits,
             habitChecks: fetchDecoded(FetchDescriptor<StoredHabitCheck>(sortBy: [SortDescriptor(\.day)]), as: HabitCheck.self) { $0.payload }
@@ -540,6 +562,7 @@ final class LocalStore {
         let grocery: [GroceryItem]
         let workouts: [Workout]
         let supplements: [Supplement]
+        let supplementLog: [SupplementLog]
         /// Cycle tracking, if it was ever used.
         let cycleDays: [CycleDay]
         let habits: [Habit]
@@ -559,6 +582,7 @@ final class LocalStore {
         try context.delete(model: StoredGroceryItem.self)
         try context.delete(model: StoredWorkout.self)
         try context.delete(model: StoredSupplement.self)
+        try context.delete(model: StoredSupplementLog.self)
         try context.delete(model: StoredCycleDay.self)
         try context.delete(model: StoredHabit.self)
         try context.delete(model: StoredHabitCheck.self)
@@ -624,6 +648,7 @@ extension LocalStore {
         for log in data.hydrationLog { try add(log) }
         for workout in data.workouts where !workout.isRecorded { try save(workout) }
         for supplement in data.supplements { try save(supplement) }
+        for log in data.supplementLog { try add(log) }
         for item in data.inventory + data.pantryExtras { try save(item) }
         for meal in data.plannedMeals { try save(meal) }
         insights = data.insights

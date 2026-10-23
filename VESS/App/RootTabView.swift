@@ -61,15 +61,19 @@ struct RootTabView: View {
         .tint(VESSColor.text)
         .vessHaptic(.selection, trigger: selection)
         .vessHaptic(.add, trigger: addTaps)
+        // Entry points elsewhere open the same sheet on their type.
+        .environment(\.vessOpenAdd, VESSOpenAddAction { type in
+            addRequest = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now, type: type)
+        })
         .sheet(item: $addRequest) { request in
-            FoodSearchSheet(request: request)
+            AddSheet(request: request)
         }
         // Pre-warm (first "+" took 1–1.5 s): once the first frame is on
         // screen, build the sheet's content and search field one time,
         // invisibly, so the first tap only has to present it.
         .background {
             if isPrewarming {
-                FoodSearchSheet(request: AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now))
+                AddSheet(request: AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now, type: .food))
                     .frame(width: 1, height: 1)
                     .opacity(0.01)
                     .allowsHitTesting(false)

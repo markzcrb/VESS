@@ -29,6 +29,7 @@ struct ProfileView: View {
                     .padding(.bottom, VESSSpacing.huge)
                 }
                 .vessScreenBackground()
+                .vessTabBarFade()
                 .toolbar(.hidden, for: .navigationBar)
                 .profileDestinations()
                 .vessErrorAlert(isPresented: $showError)

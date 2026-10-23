@@ -1,87 +1,22 @@
 import SwiftUI
 
-/// Where the food sheet can navigate.
+/// Where the Add sheet's Food content can navigate.
 enum FoodRoute: Hashable {
     case food(Food)
-    case quickAdd
     /// A scanned code that wasn't found is saved with the new food.
     case createFood(barcode: String?)
     case barcode
-    /// DEBUG only (`VESSFeatureFlags.photoEstimate`): static photo-estimate screens.
-    case photo
-    /// Log the day's flow and symptoms (15). Only while cycle tracking is on.
-    case cycleDay
 }
 
-/// Find a food and log it to a meal. Local results (starter catalog, your
+/// Food in the Add sheet (05, 21): the meal selector, then saved foods when
+/// idle and results while typing. Local results (starter catalog, your
 /// foods, cached products) appear instantly and work offline; Open Food
-/// Facts results are added below them when online.
-struct FoodSearchSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
-    let day: Date
-    private let collection: FoodCollection
-    @State private var meal: MealType
-    @State private var path: [FoodRoute] = []
-
-    init(request: AddFoodRequest) {
-        self.day = request.day
-        self.collection = request.collection
-        _meal = State(initialValue: request.meal)
-    }
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            FoodSearchHome(day: day, meal: $meal, path: $path, collection: collection)
-                .navigationDestination(for: FoodRoute.self) { route in
-                    destination(for: route)
-                        .toolbar { closeButton }
-                }
-                .toolbar { closeButton }
-                .onAppear { AddSheetTiming.appeared() }
-        }
-        .presentationCornerRadius(VESSRadius.sheet)
-        .presentationDragIndicator(.visible)
-    }
-
-    @ViewBuilder
-    private func destination(for route: FoodRoute) -> some View {
-        switch route {
-        case .food(let food):
-            FoodDetailView(food: food, day: day, meal: $meal, onLogged: { dismiss() })
-        case .quickAdd:
-            QuickAddForm(day: day, meal: $meal, onLogged: { dismiss() })
-        case .createFood(let barcode):
-            // Replace the form with the new food, so Back returns to search.
-            CustomFoodForm(barcode: barcode, onSaved: { food in path = [.food(food)] })
-        case .barcode:
-            BarcodeLookupView(onFound: { food in path.append(.food(food)) })
-        case .photo:
-            ContentUnavailableView(
-                "Photo estimate",
-                systemImage: "camera",
-                description: Text("Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved.")
-            )
-            .vessDetailTitle("Photo")
-        case .cycleDay:
-            // Its own X closes the Add sheet; no Back chevron (h1).
-            CycleDayForm(date: day, showsClose: true, onDone: { dismiss() })
-                .navigationBarBackButtonHidden(true)
-        }
-    }
-
-    private var closeButton: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) { dismiss() }
-        }
-    }
-}
-
-/// The search screen (05): saved foods when idle, results while typing.
-/// Tapping a food opens its detail; its + button selects it, and the
-/// sticky bar logs every selected food with its default portion.
-private struct FoodSearchHome: View {
+/// Facts results are added below them when online. Tapping a food opens
+/// its detail; its + button selects it, and the sticky bar logs every
+/// selected food with its default portion.
+struct FoodSearchHome: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(LocalStore.self) private var store
     @Environment(FoodLookupService.self) private var lookup
     @Environment(FoodLogUndo.self) private var undo
@@ -118,6 +53,7 @@ private struct FoodSearchHome: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                mealSelector
                 searchField
                 if trimmedQuery.isEmpty {
                     collectionChips
@@ -133,12 +69,6 @@ private struct FoodSearchHome: View {
             .padding(.bottom, VESSSpacing.huge)
         }
         .scrollDismissesKeyboard(.immediately)
-        .vessScreenBackground(nil)
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(Text(meal.addToTitle))
-        .toolbar {
-            ToolbarItem(placement: .principal) { mealTitle }
-        }
         .safeAreaInset(edge: .bottom) {
             if !selected.isEmpty { selectionBar }
         }
@@ -177,27 +107,48 @@ private struct FoodSearchHome: View {
 
     // MARK: Header
 
-    /// "ADD TO DINNER ⌄": the meal is a menu so it can change without leaving.
-    private var mealTitle: some View {
-        Menu {
-            Picker("Meal", selection: $meal) {
-                ForEach(MealType.dayOrder) { meal in
-                    Text(meal.title).tag(meal)
+    /// "To dinner ⌄ · Today · 19:30": the meal is a menu so it can change
+    /// without leaving. At accessibility sizes the time goes under it.
+    private var mealSelector: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xxs))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+        let time = meal.logTime(on: day, calendar: calendar)
+        return layout {
+            Menu {
+                Picker("Meal", selection: $meal) {
+                    ForEach(MealType.dayOrder) { meal in
+                        Text(meal.title).tag(meal)
+                    }
+                }
+            } label: {
+                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+                    Text(meal.toTitle)
+                        .vessTextStyle(.titleL)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Image(systemName: "chevron.down")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(VESSColor.secondaryText)
+                }
+                .foregroundStyle(VESSColor.text)
+                .frame(minHeight: VESSHitTarget.minimum)
+                .contentShape(Rectangle())
+            }
+            .accessibilityLabel(Text("Meal: \(Text(meal.title))"))
+            .accessibilityIdentifier("mealPicker")
+            if !dynamicTypeSize.isAccessibilitySize {
+                Spacer(minLength: VESSSpacing.sm)
+            }
+            Group {
+                if calendar.isDate(day, inSameDayAs: AppClock.now) {
+                    Text("Today · \(time, format: .dateTime.hour().minute())")
+                } else {
+                    Text("\(day, format: .dateTime.weekday(.abbreviated).day().month(.abbreviated)) · \(time, format: .dateTime.hour().minute())")
                 }
             }
-        } label: {
-            HStack(spacing: VESSSpacing.xxs) {
-                Text(meal.addToTitle)
-                    .vessTextStyle(.labelCaps)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(VESSColor.secondaryText)
-            }
-            .foregroundStyle(VESSColor.text)
-            .frame(minHeight: VESSHitTarget.minimum)
+            .vessTextStyle(.bodyS)
+            .foregroundStyle(VESSColor.secondaryText)
         }
-        .accessibilityLabel(Text("Meal: \(Text(meal.title))"))
-        .accessibilityIdentifier("mealPicker")
     }
 
     private var searchField: some View {
@@ -261,8 +212,9 @@ private struct FoodSearchHome: View {
 
     // MARK: Idle
 
+    /// Bleeds off the edge rather than being cut at the margin (21).
     private var collectionChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        VESSBleedingRow {
             HStack(spacing: VESSSpacing.xs) {
                 ForEach(FoodCollection.allCases) { item in
                     VESSChip(title: item.title, isSelected: collection == item) {
@@ -271,7 +223,6 @@ private struct FoodSearchHome: View {
                 }
             }
         }
-        .scrollClipDisabled()
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("foodSearch.collection")
     }
@@ -279,15 +230,9 @@ private struct FoodSearchHome: View {
     private var actions: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
             VESSSectionHeader(title: "Other ways to add")
+            // Quick add, Photo and Cycle are tiles in the carousel now.
             VESSRowGroup {
-                actionRow("Quick add", detail: "Log calories without a product", symbol: "bolt", route: .quickAdd, identifier: "foodSearch.quickAdd")
                 actionRow("Create a food", detail: "Save your own food or recipe", symbol: "square.and.pencil", route: .createFood(barcode: nil), identifier: "foodSearch.createFood")
-                if VESSFeatureFlags.photoEstimate {
-                    actionRow("Take a photo", detail: "Debug only", symbol: "camera", route: .photo, identifier: "foodSearch.photo")
-                }
-                if store.profile?.isCycleTrackingOn == true {
-                    actionRow("Cycle", detail: "Log flow or symptoms", symbol: CycleCopy.symbol, route: .cycleDay, identifier: "foodSearch.cycle")
-                }
             }
             .vessHairlineBottom()
         }
@@ -585,8 +530,3 @@ extension View {
     }
 }
 #endif
-
-#Preview("Search") {
-    FoodSearchSheet(request: AddFoodRequest(meal: .lunch, day: AppClock.now))
-        .previewEnvironment(LocalStore.preview())
-}

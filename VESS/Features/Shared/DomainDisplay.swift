@@ -42,6 +42,16 @@ extension MealType {
         }
     }
 
+    /// "To dinner", the Add sheet's meal selector (21).
+    var toTitle: LocalizedStringResource {
+        switch self {
+        case .breakfast: "To breakfast"
+        case .lunch: "To lunch"
+        case .dinner: "To dinner"
+        case .snack: "To snacks"
+        }
+    }
+
     /// A sensible time for an entry added to a past day.
     var typicalTime: DateComponents {
         switch self {

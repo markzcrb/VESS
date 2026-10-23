@@ -12,6 +12,19 @@ nonisolated struct Supplement: Identifiable, Codable, Hashable, Sendable {
     var reminderTime: DateComponents?
     var reminderEnabled: Bool
     var notes: String?
+    /// Additive: supplements saved before categories have none (Other).
+    var category: SupplementCategory? = nil
+    /// Additive: when the user takes it. `custom` uses `reminderTime`.
+    var timeOfDay: SupplementTimeOfDay? = nil
+}
+
+/// The Add sheet's category chips (22). Performance covers creatine and protein.
+nonisolated enum SupplementCategory: String, Codable, CaseIterable, Sendable {
+    case vitamins, minerals, omega3, performance, herbal, other
+}
+
+nonisolated enum SupplementTimeOfDay: String, Codable, CaseIterable, Sendable {
+    case morning, withMeal, evening, custom
 }
 
 nonisolated enum SupplementUnit: String, Codable, CaseIterable, Sendable {

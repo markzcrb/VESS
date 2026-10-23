@@ -6,7 +6,6 @@ struct NutritionView: View {
     @Environment(\.vessHaptics) private var haptics
     @State private var selectedDay = AppClock.now
     @State private var addFood: AddFoodRequest?
-    @State private var addDrinkDay: Date?
     @State private var editing: FoodLogEntry?
     @State private var showError = false
 
@@ -67,7 +66,7 @@ struct NutritionView: View {
                 DrinksDiarySection(
                     day: selectedDay,
                     logs: drinks,
-                    onAdd: { addDrinkDay = selectedDay },
+                    onAdd: { addFood = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: selectedDay, type: .drink) },
                     onDelete: { delete(log: $0) }
                 )
 
@@ -89,18 +88,13 @@ struct NutritionView: View {
             .padding(.bottom, VESSSpacing.huge)
         }
         .vessScreenBackground()
+        .vessTabBarFade()
         .vessDetailTitle("Nutrition")
         .sheet(item: $addFood) { request in
-            FoodSearchSheet(request: request)
+            AddSheet(request: request)
         }
         .sheet(item: $editing) { entry in
             EditEntrySheet(entry: entry)
-        }
-        .sheet(item: Binding(
-            get: { addDrinkDay.map(DrinkSheetDay.init) },
-            set: { addDrinkDay = $0?.day }
-        )) { item in
-            AddDrinkSheet(day: item.day)
         }
         .vessErrorAlert(isPresented: $showError)
     }
@@ -148,12 +142,6 @@ struct NutritionView: View {
     private func delete(log: HydrationLog) {
         do { try store.deleteHydrationLog(id: log.id); haptics.play(.warning) } catch { showError = true }
     }
-}
-
-/// Identifies a drink sheet presentation for a given day.
-private struct DrinkSheetDay: Identifiable {
-    let day: Date
-    var id: Date { day }
 }
 
 #Preview("Sample day") {

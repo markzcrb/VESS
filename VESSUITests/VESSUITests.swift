@@ -11,7 +11,9 @@ final class VESSUITests: XCTestCase {
     @MainActor
     private func launch(seeded: Bool) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-uiTesting"] + (seeded ? ["-seedSampleData"] : [])
+        // The Add sheet reopens on the type used last within the hour; every
+        // test starts on Food.
+        app.launchArguments = ["-uiTesting", "-add.lastTypeAt", "0"] + (seeded ? ["-seedSampleData"] : [])
         app.launch()
         return app
     }
@@ -101,7 +103,14 @@ final class VESSUITests: XCTestCase {
         let addDinner = app.buttons["nutrition.add.dinner"]
         scrollUntilHittable(addDinner, in: app)
         addDinner.tap()
-        tapWhenReady(app.buttons["foodSearch.quickAdd"])
+        // Quick add is the tile before Food in the carousel.
+        let types = app.otherElements["add.types"]
+        XCTAssertTrue(types.waitForExistence(timeout: 10))
+        // One element for VoiceOver, as wide as all the tiles; tap the tile
+        // left of the centred one (a 66 pt slot, nudged 8 pt beside the
+        // selected tile), measured from the screen's centre.
+        app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0))
+            .withOffset(CGVector(dx: -74, dy: types.frame.minY + 36)).tap()
 
         let submit = app.buttons["addFood.submit"]
         XCTAssertTrue(submit.waitForExistence(timeout: 10))
@@ -193,12 +202,12 @@ final class VESSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Nutrition"].waitForExistence(timeout: 10))
 
         tapWhenReady(tabs.buttons["Add"])
-        let quickAdd = app.buttons["foodSearch.quickAdd"]
-        XCTAssertTrue(quickAdd.waitForExistence(timeout: 10), "Add opens the Add sheet")
-        XCTAssertTrue(app.buttons["foodSearch.barcode"].exists)
+        let types = app.otherElements["add.types"]
+        XCTAssertTrue(types.waitForExistence(timeout: 10), "Add opens the Add sheet")
+        XCTAssertTrue(app.buttons["foodSearch.barcode"].exists, "on Food")
 
         app.buttons["Close"].firstMatch.tap()
-        waitFor(quickAdd, "exists == false")
+        waitFor(types, "exists == false")
         XCTAssertTrue(app.navigationBars["Nutrition"].waitForExistence(timeout: 10), "The tab stays where it was")
     }
 

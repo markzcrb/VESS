@@ -175,6 +175,22 @@ final class StoredHabitCheck {
     }
 }
 
+/// A supplement taken (22). Additive.
+@Model
+final class StoredSupplementLog {
+    @Attribute(.unique) var id: UUID
+    var supplementID: UUID
+    var takenAt: Date
+    var payload: Data
+
+    init(id: UUID, supplementID: UUID, takenAt: Date, payload: Data) {
+        self.id = id
+        self.supplementID = supplementID
+        self.takenAt = takenAt
+        self.payload = payload
+    }
+}
+
 /// What the user added to or changed on the grocery list. Additive.
 @Model
 final class StoredGroceryItem {

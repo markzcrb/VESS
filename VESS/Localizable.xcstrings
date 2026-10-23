@@ -136,6 +136,12 @@
     "%@ · Apple Health" : {
 
     },
+    "%@ · As needed" : {
+
+    },
+    "%@ · Daily" : {
+
+    },
     "%@ · eaten" : {
 
     },
@@ -160,6 +166,9 @@
           }
         }
       }
+    },
+    "%@ · you set the dose" : {
+
     },
     "%@ / %@ mg" : {
       "localizations" : {
@@ -621,6 +630,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@, %3$@ kcal, %4$@"
+          }
+        }
+      }
+    },
+    "%@, %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$lld of %3$lld"
           }
         }
       }
@@ -1196,6 +1215,9 @@
     "Add a snack" : {
 
     },
+    "Add a supplement" : {
+
+    },
     "Add an item yourself" : {
 
     },
@@ -1260,10 +1282,16 @@
     "Add to snacks" : {
 
     },
+    "Add type" : {
+
+    },
     "Add what you have at home, or check off groceries and tap Done shopping to move them here." : {
 
     },
     "Add workout" : {
+
+    },
+    "Add your own" : {
 
     },
     "Added" : {
@@ -1391,6 +1419,9 @@
 
     },
     "Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10 % counts as about usual." : {
+
+    },
+    "As needed" : {
 
     },
     "Average %lld days · range %lld–%lld days over ^[%lld cycle](inflect: true)." : {
@@ -1538,6 +1569,9 @@
     "Choose the one that matters most right now." : {
 
     },
+    "Chosen days" : {
+
+    },
     "Cider" : {
 
     },
@@ -1673,9 +1707,6 @@
     "Daily goals" : {
 
     },
-    "Daily reminder" : {
-
-    },
     "Daily targets" : {
 
     },
@@ -1703,6 +1734,9 @@
     "Day shows what you've logged today. Week and Month show daily averages over the days with at least one meal logged." : {
 
     },
+    "Days" : {
+
+    },
     "Days at %@ or more" : {
 
     },
@@ -1713,9 +1747,6 @@
 
     },
     "Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved." : {
-
-    },
-    "Debug only" : {
 
     },
     "Decaf" : {
@@ -1869,6 +1900,9 @@
     "Edit or delete" : {
 
     },
+    "Edit supplements" : {
+
+    },
     "Edit, or delete" : {
 
     },
@@ -1962,6 +1996,9 @@
 
     },
     "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone." : {
+
+    },
+    "Evening" : {
 
     },
     "Every logged cycle day will be removed from this iPhone. This can't be undone." : {
@@ -2549,6 +2586,9 @@
     "Light so far" : {
 
     },
+    "Log" : {
+
+    },
     "Log %@" : {
 
     },
@@ -2565,12 +2605,6 @@
 
     },
     "Log caffeine" : {
-
-    },
-    "Log calories without a product" : {
-
-    },
-    "Log flow or symptoms" : {
 
     },
     "Log periods and see an estimate. Stays on this iPhone." : {
@@ -2591,6 +2625,9 @@
     "Logged" : {
 
     },
+    "Logged %@" : {
+
+    },
     "Logged as" : {
 
     },
@@ -2598,6 +2635,9 @@
 
     },
     "Logs it" : {
+
+    },
+    "Logs it as taken now" : {
 
     },
     "Long drink" : {
@@ -2666,6 +2706,9 @@
     "Margin note" : {
 
     },
+    "Marks it as not taken" : {
+
+    },
     "Matcha" : {
 
     },
@@ -2702,6 +2745,9 @@
     "min" : {
 
     },
+    "Minerals" : {
+
+    },
     "ml" : {
 
     },
@@ -2730,6 +2776,9 @@
 
     },
     "More than the week before." : {
+
+    },
+    "Morning" : {
 
     },
     "Most active" : {
@@ -2785,6 +2834,9 @@
 
     },
     "Name" : {
+
+    },
+    "Name, dose and unit" : {
 
     },
     "Needed for" : {
@@ -2863,6 +2915,9 @@
 
     },
     "No supplements yet." : {
+
+    },
+    "No supplements yet. Add one below." : {
 
     },
     "No value yet" : {
@@ -2949,6 +3004,9 @@
     "Nothing to buy" : {
 
     },
+    "Nothing to take today." : {
+
+    },
     "Nothing was logged on this day." : {
 
     },
@@ -3028,6 +3086,9 @@
 
     },
     "OK" : {
+
+    },
+    "Omega-3" : {
 
     },
     "On chosen days" : {
@@ -3112,6 +3173,9 @@
 
     },
     "Per 100 %@" : {
+
+    },
+    "Performance" : {
 
     },
     "Period ^[%lld day](inflect: true)" : {
@@ -3272,6 +3336,9 @@
     "Recent" : {
 
     },
+    "Recent · %@" : {
+
+    },
     "Recent cycles" : {
 
     },
@@ -3315,6 +3382,9 @@
 
     },
     "Rest day" : {
+
+    },
+    "Results" : {
 
     },
     "Retry" : {
@@ -3378,6 +3448,9 @@
 
     },
     "Search meals and foods" : {
+
+    },
+    "Search supplements" : {
 
     },
     "Searching…" : {
@@ -3639,7 +3712,7 @@
     "tablet" : {
 
     },
-    "Take a photo" : {
+    "Taken %@" : {
 
     },
     "Tap + to log a meal or a drink: search, scan a barcode, or enter it yourself. Today shows how your day is going against your own targets." : {
@@ -3649,6 +3722,9 @@
 
     },
     "Tap the heart on a food to keep it here." : {
+
+    },
+    "Tap to log" : {
 
     },
     "Target" : {
@@ -3675,6 +3751,16 @@
     },
     "That day" : {
 
+    },
+    "That day · %lld of %lld taken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "That day · %1$lld of %2$lld taken"
+          }
+        }
+      }
     },
     "That day's caffeine" : {
 
@@ -3749,16 +3835,31 @@
     "Time" : {
 
     },
+    "Time of day" : {
+
+    },
     "Times a week" : {
 
     },
     "To" : {
 
     },
+    "To breakfast" : {
+
+    },
     "To buy" : {
 
     },
+    "To dinner" : {
+
+    },
+    "To lunch" : {
+
+    },
     "To scan, allow camera access in Settings. You can also type the number under the barcode." : {
+
+    },
+    "To snacks" : {
 
     },
     "today" : {
@@ -3769,6 +3870,16 @@
     },
     "Today · %@" : {
 
+    },
+    "Today · %lld of %lld taken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today · %1$lld of %2$lld taken"
+          }
+        }
+      }
     },
     "Today vs. a typical %@" : {
 
@@ -3889,6 +4000,9 @@
     "Updated from your plan. 1 thing you already have at home was left off." : {
 
     },
+    "Updates the weight in your profile. Weight from Apple Health is read, never written." : {
+
+    },
     "Use Apple Health" : {
 
     },
@@ -3998,6 +4112,9 @@
     "View or correct this product on Open Food Facts" : {
 
     },
+    "Vitamins" : {
+
+    },
     "walk" : {
 
     },
@@ -4081,6 +4198,9 @@
 
     },
     "Wine" : {
+
+    },
+    "With a meal" : {
 
     },
     "Without 3 days of history there's no regularity yet, so the other three parts make up the whole score." : {

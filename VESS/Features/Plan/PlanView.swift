@@ -51,6 +51,7 @@ struct PlanView: View {
             // Strip and grid days, arrows and swipes all move the selection.
             .vessHaptic(.selection, trigger: selectedDay)
             .vessScreenBackground()
+            .vessTabBarFade()
             .vessDetailTitle("Plan")
             .vessErrorAlert(isPresented: $showError)
         }
@@ -445,7 +446,7 @@ struct PlanView: View {
             NavigationLink {
                 AddToSlotView(day: day.date, meal: meal)
             } label: {
-                VESSListRow(systemImage: "plus", title: Text("Add \(String(localized: meal.title).localizedLowercase)"), subtitle: Text("\(Text(meal.title)) · open slot"))
+                VESSListRow(systemImage: "plus", title: Text(meal.addTitle), subtitle: Text("\(Text(meal.title)) · open slot"))
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("plan.open.\(day.date.formatted(.dateTime.weekday(.abbreviated))).\(meal.rawValue)")
