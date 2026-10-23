@@ -16,10 +16,14 @@ enum AppTab: Hashable {
 struct RootTabView: View {
     @State private var selection: AppTab = .today
     @State private var addRequest: AddFoodRequest?
+    /// Counts taps on Add; see `tabSelection`.
+    @State private var addTaps = 0
 
     private let calendar = Calendar.current
 
     var body: some View {
+        // Read here so each Add tap re-renders the tab view.
+        let _ = addTaps
         TabView(selection: tabSelection) {
             Tab(value: .today) {
                 TodayView(selectedTab: $selection)
@@ -84,14 +88,24 @@ struct RootTabView: View {
     }
 
     /// Selecting Add presents the sheet and leaves the current tab selected.
+    ///
+    /// The tab bar selects the (empty) Add tab before asking the binding,
+    /// and nothing told it to go back, so its blank content stayed on screen
+    /// until the sheet's first build finished (about 2 s, sometimes dropping
+    /// the sheet). Bumping `addTaps` re-renders the tab view at once, so it
+    /// reads `selection` again and returns to the current tab; the sheet is
+    /// presented on the next turn of the run loop, after that.
     private var tabSelection: Binding<AppTab> {
         Binding(
             get: { selection },
             set: { newValue in
-                if newValue == .add {
-                    addRequest = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now)
-                } else {
+                guard newValue == .add else {
                     selection = newValue
+                    return
+                }
+                addTaps += 1
+                Task { @MainActor in
+                    addRequest = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now)
                 }
             }
         )

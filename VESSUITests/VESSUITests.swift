@@ -202,6 +202,28 @@ final class VESSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Nutrition"].waitForExistence(timeout: 10), "The tab stays where it was")
     }
 
+    /// Regression: the first + after launch showed the empty Add tab (a blank
+    /// screen) and sometimes never presented the sheet. Today must stay
+    /// selected and on screen, and the sheet must open every time.
+    @MainActor
+    func testFirstAddAfterLaunchKeepsTodayAndOpensSheet() throws {
+        let app = launch(seeded: true)
+        let tabs = app.tabBars
+        let dayWord = app.staticTexts["today.dayWord"]
+        XCTAssertTrue(dayWord.waitForExistence(timeout: 10))
+
+        for attempt in 1...3 {
+            tabs.buttons["Add"].tap()
+            XCTAssertTrue(tabs.buttons["Today"].isSelected, "Today stays selected (attempt \(attempt))")
+            XCTAssertTrue(dayWord.exists, "Today stays on screen behind the sheet (attempt \(attempt))")
+            let search = app.textFields["foodSearch.query"]
+            XCTAssertTrue(search.waitForExistence(timeout: 5), "The Add sheet opens (attempt \(attempt))")
+            app.buttons["Close"].firstMatch.tap()
+            waitFor(search, "exists == false")
+        }
+        XCTAssertTrue(tabs.buttons["Today"].isSelected)
+    }
+
     @MainActor
     func testActivityOpensFromToday() throws {
         let app = launch(seeded: true)
