@@ -85,7 +85,7 @@ struct ProfileView: View {
                 link(.appleHealth, title: "Apple Health", value: Text(health.state.statusTitle))
                 ProfileToggleRow(
                     title: Text("Cycle tracking"),
-                    subtitle: Text("Log periods and see an estimate. Stays on this iPhone."),
+                    subtitle: Text("Log periods and see an estimate. Stays on this iPhone unless you share it with Coach."),
                     isOn: Binding(get: { profile.isCycleTrackingOn }, set: { setCycleTracking($0, profile: profile) })
                 )
                 .accessibilityIdentifier("you.cycleTracking")

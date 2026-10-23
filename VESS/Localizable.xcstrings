@@ -2090,7 +2090,7 @@
     "Estimated from a photo" : {
 
     },
-    "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone." : {
+    "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone unless you share it with Coach." : {
 
     },
     "Evening" : {
@@ -2105,16 +2105,16 @@
     "Everything" : {
 
     },
-    "Everything above, as a JSON file" : {
-
-    },
     "Everything here comes from what you log. It describes your logging, not your health." : {
 
     },
     "Everything is in your pantry" : {
 
     },
-    "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days and your profile." : {
+    "Everything stored on this iPhone, as a JSON file" : {
+
+    },
+    "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days, the Coach conversation and your profile." : {
 
     },
     "Exercise 3–5 days a week" : {
@@ -2726,7 +2726,7 @@
     "Log caffeine" : {
 
     },
-    "Log periods and see an estimate. Stays on this iPhone." : {
+    "Log periods and see an estimate. Stays on this iPhone unless you share it with Coach." : {
 
     },
     "Log three period starts to see an estimate" : {
@@ -3219,7 +3219,7 @@
         }
       }
     },
-    "Off unless you turn it on. Cycle days stay on this iPhone: they're never sent anywhere and never shared with Apple Health." : {
+    "Off unless you turn it on. Cycle days stay on this iPhone and are never shared with Apple Health. Coach gets your cycle day and next estimated window only if you turn on Share cycle with Coach." : {
 
     },
     "OK" : {
@@ -3243,7 +3243,16 @@
     "On your feet some of the day, or light exercise 1–3 days a week" : {
 
     },
+    "Only for Coach and photo estimates: your email or Apple ID and a daily count of AI uses. Delete it any time in Account." : {
+
+    },
     "Only for Coach and photo estimates. Your log stays on this iPhone." : {
+
+    },
+    "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through VESS's server, once. VESS doesn't store them." : {
+
+    },
+    "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. VESS doesn't store it, and nothing is logged until you confirm." : {
 
     },
     "Open Food Facts" : {
@@ -3604,7 +3613,7 @@
     "Saved %@" : {
 
     },
-    "Saved only on this iPhone. Not shared with Apple Health." : {
+    "Saved only on this iPhone. Not shared with Apple Health, and not with Coach unless you turn that on." : {
 
     },
     "Scan a barcode" : {
@@ -4641,7 +4650,7 @@
     "Your period may come later than estimated." : {
 
     },
-    "Your profile, meals, drinks, workouts, pantry, plans, supplements, habits and cycle days will be removed from this iPhone. This can't be undone." : {
+    "Your profile, meals, drinks, workouts, pantry, plans, supplements, habits, cycle days and the Coach conversation will be removed from this iPhone. Your account, if you have one, is deleted separately in Account. This can't be undone." : {
 
     },
     "Your question, the conversation so far, and a summary of your recent logs: targets, today's totals, 7-day averages, today's meals, habits, workouts and supplements. Cycle data only if you turn on sharing." : {

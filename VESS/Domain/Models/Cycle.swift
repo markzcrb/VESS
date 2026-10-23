@@ -1,8 +1,9 @@
 import Foundation
 
 /// One logged day of cycle tracking (13, 15): flow, symptoms and a note.
-/// Opt-in, stored only on this iPhone, never sent anywhere and never
-/// shared with Apple Health. One record per calendar day.
+/// Opt-in, stored only on this iPhone and never shared with Apple Health.
+/// Sent nowhere, except a summary (cycle day, next estimated window) with a
+/// Coach question when "Share cycle with Coach" is on. One record per day.
 nonisolated struct CycleDay: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     /// The start of the logged day.

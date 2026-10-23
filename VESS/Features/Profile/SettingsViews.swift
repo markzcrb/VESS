@@ -147,8 +147,11 @@ struct PrivacyView: View {
             ProfileIntro(title: "Your data stays yours.")
 
             VESSRowGroup {
-                fact("On this iPhone", "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days and your profile.")
-                fact("Cycle tracking", "Off unless you turn it on. Cycle days stay on this iPhone: they're never sent anywhere and never shared with Apple Health.")
+                fact("On this iPhone", "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days, the Coach conversation and your profile.")
+                fact("Coach", "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through VESS's server, once. VESS doesn't store them.")
+                fact("Photo estimates", "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. VESS doesn't store it, and nothing is logged until you confirm.")
+                fact("Account", "Only for Coach and photo estimates: your email or Apple ID and a daily count of AI uses. Delete it any time in Account.")
+                fact("Cycle tracking", "Off unless you turn it on. Cycle days stay on this iPhone and are never shared with Apple Health. Coach gets your cycle day and next estimated window only if you turn on Share cycle with Coach.")
                 fact("Open Food Facts", "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent.")
                 fact("Apple Health", "Read only: steps, workouts, active energy and weight. VESS shows them but doesn't keep a copy.")
                 fact("Reminders", "Scheduled on this iPhone, never on a server.")
@@ -174,7 +177,7 @@ struct PrivacyView: View {
 
             if let export {
                 ShareLink(item: export, preview: SharePreview(Text("VESS data export"))) {
-                    VESSListRow(title: Text("Export my data"), subtitle: Text("Everything above, as a JSON file"))
+                    VESSListRow(title: Text("Export my data"), subtitle: Text("Everything stored on this iPhone, as a JSON file"))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -189,7 +192,7 @@ struct PrivacyView: View {
                 .confirmationDialog("Delete all data?", isPresented: $confirmDelete, titleVisibility: .visible) {
                     Button("Delete all data", role: .destructive, action: deleteAll)
                 } message: {
-                    Text("Your profile, meals, drinks, workouts, pantry, plans, supplements, habits and cycle days will be removed from this iPhone. This can't be undone.")
+                    Text("Your profile, meals, drinks, workouts, pantry, plans, supplements, habits, cycle days and the Coach conversation will be removed from this iPhone. Your account, if you have one, is deleted separately in Account. This can't be undone.")
                 }
         }
         .vessErrorAlert(isPresented: $showError, retry: deleteAll)

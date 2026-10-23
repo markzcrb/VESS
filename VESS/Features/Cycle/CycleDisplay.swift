@@ -30,9 +30,9 @@ extension CycleSymptom {
 
 enum CycleCopy {
     /// Shown on the Cycle screen, always.
-    static let disclaimer: LocalizedStringResource = "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone."
+    static let disclaimer: LocalizedStringResource = "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone unless you share it with Coach."
     /// Shown under the day form.
-    static let storage: LocalizedStringResource = "Saved only on this iPhone. Not shared with Apple Health."
+    static let storage: LocalizedStringResource = "Saved only on this iPhone. Not shared with Apple Health, and not with Coach unless you turn that on."
     /// Fewer than two completed cycles (three period starts).
     static let needsMore: LocalizedStringResource = "Log three period starts to see an estimate"
     /// Enough cycles, but every one is outside 15–60 days.
