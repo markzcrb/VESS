@@ -84,7 +84,7 @@ struct VESSHabitRow: View {
                     .accessibilityLabel(title)
                     .accessibilityValue(isDone ? Text("Done") : Text("Not done"))
                     .accessibilityHint("Double-tap to change")
-                    .sensoryFeedback(.impact(weight: .light), trigger: isDone) { _, new in new }
+                    .vessHaptic(.success, trigger: isDone) { _, new in new }
             } else {
                 mark
                     .accessibilityElement(children: .ignore)

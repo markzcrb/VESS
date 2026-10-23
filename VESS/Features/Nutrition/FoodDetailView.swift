@@ -267,7 +267,7 @@ struct FoodDetailView: View {
         }
         .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
         .accessibilityIdentifier("foodDetail.favorite")
-        .sensoryFeedback(.selection, trigger: isFavorite)
+        .vessHaptic(.selection, trigger: isFavorite)
     }
 
     // MARK: Values

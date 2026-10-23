@@ -29,7 +29,7 @@ struct VESSToggleStyle: ToggleStyle {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.selection, trigger: configuration.isOn)
+        .vessHaptic(.selection, trigger: configuration.isOn)
         .accessibilityRepresentation {
             Toggle(isOn: configuration.$isOn) { configuration.label }
         }

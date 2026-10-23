@@ -130,6 +130,7 @@ struct NotificationsView: View {
 /// What VESS stores where, an export of everything, and Delete all data.
 struct PrivacyView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessHaptics) private var haptics
 
     @State private var confirmDelete = false
     @State private var showError = false
@@ -184,6 +185,7 @@ struct PrivacyView: View {
     private func deleteAll() {
         do {
             try store.deleteAllData()
+            haptics.play(.warning)
         } catch {
             showError = true
         }

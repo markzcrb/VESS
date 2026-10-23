@@ -62,7 +62,7 @@ struct EditDrinkSheet: View {
                         .accessibilityElement(children: .contain)
                         .accessibilityLabel("Amount")
                         .accessibilityValue(Text("\(VESSFormat.milliliters(volume)) ml"))
-                        .sensoryFeedback(.selection, trigger: volume)
+                        .vessHaptic(.selection, trigger: volume)
                     }
 
                     DrinkTimeRow(time: $time, isExpanded: $showTime, range: DrinkTime.range(on: day, calendar: calendar), identifier: "editDrink.time")
@@ -83,7 +83,7 @@ struct EditDrinkSheet: View {
                     .accessibilityIdentifier("editDrink.save")
             }
             .toolbar(.hidden, for: .navigationBar)
-            .sensoryFeedback(.success, trigger: saved)
+            .vessHaptic(.success, trigger: saved)
             .vessErrorAlert(isPresented: $showError, retry: save)
         }
         // Full height at accessibility sizes, where half hides the rows.

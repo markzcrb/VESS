@@ -462,7 +462,7 @@ private struct FoodSearchHome: View {
                 }
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
                 .accessibilityIdentifier("foodSelect.\(food.name)")
-                .sensoryFeedback(.selection, trigger: isSelected)
+                .vessHaptic(.selection, trigger: isSelected)
             }
         }
     }

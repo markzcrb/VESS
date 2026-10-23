@@ -12,7 +12,6 @@ struct CycleView: View {
     @State private var showHistory = false
     @State private var showError = false
     /// Each inline change to today's log: one light tap.
-    @State private var inlineChanges = 0
 
     private let calendar = Calendar.current
 
@@ -59,6 +58,8 @@ struct CycleView: View {
                 .accessibilityIdentifier("cycle.info")
             }
         }
+        // A calendar day picked to edit.
+        .vessHaptic(.selection, trigger: editingDay != nil) { _, new in new }
         .sheet(item: $editingDay) { day in
             CycleDaySheet(date: day.date)
         }
@@ -68,7 +69,6 @@ struct CycleView: View {
         .navigationDestination(isPresented: $showHistory) {
             CycleHistoryView()
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: inlineChanges)
         .vessErrorAlert(isPresented: $showError)
     }
 
@@ -213,7 +213,6 @@ struct CycleView: View {
                 day[keyPath: keyPath] = newValue
                 do {
                     try store.save(day, calendar: calendar)
-                    inlineChanges += 1
                 } catch {
                     showError = true
                 }

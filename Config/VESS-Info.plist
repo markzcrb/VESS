@@ -6,6 +6,8 @@
 	<dict>
 		<key>UIColorName</key>
 		<string>VESSBackground</string>
+		<key>UIImageName</key>
+		<string>VESSWordmark</string>
 	</dict>
 </dict>
 </plist>

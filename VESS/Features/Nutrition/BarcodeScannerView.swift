@@ -55,7 +55,7 @@ struct BarcodeScannerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .vessScreenBackground()
         .animation(reduceMotion ? nil : VESSMotion.selection, value: phase)
-        .sensoryFeedback(.success, trigger: phase) { _, new in
+        .vessHaptic(.success, trigger: phase) { _, new in
             if case .reading = new { true } else { false }
         }
         .task { await start() }

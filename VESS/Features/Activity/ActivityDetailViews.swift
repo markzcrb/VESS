@@ -188,6 +188,8 @@ struct WorkoutDetailView: View {
     let workoutID: UUID
 
     @Environment(LocalStore.self) private var store
+
+    @Environment(\.vessHaptics) private var haptics
     @Environment(HealthDataStore.self) private var health
     @Environment(\.dismiss) private var dismiss
 
@@ -295,6 +297,7 @@ struct WorkoutDetailView: View {
     private func delete() {
         do {
             try store.deleteWorkout(id: workoutID)
+            haptics.play(.warning)
             dismiss()
         } catch {
             showError = true

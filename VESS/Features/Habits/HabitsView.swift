@@ -79,8 +79,6 @@ struct HabitsView: View {
         .sheet(item: $editing) { request in
             AddHabitSheet(editing: request.habit)
         }
-        // Success when a habit is added, also after the sheet has closed.
-        .sensoryFeedback(.success, trigger: habits.count) { old, new in new > old }
         .navigationDestination(isPresented: $showEdit) {
             HabitEditList { editing = HabitSheetRequest(habit: $0) }
         }

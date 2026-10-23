@@ -13,6 +13,11 @@ import UIKit
 /// (see `VESSBrandAssets`)
 /// (PDF or SVG, "Preserve Vector Data", rendering mode Template) to
 /// `Assets.xcassets`. This view picks it up automatically; no screen changes.
+///
+/// The launch screen (`UILaunchScreen` in Config/VESS-Info.plist) shows the
+/// same image set centred on `VESSBackground`. Launch images aren't tinted,
+/// so give the set a Dark and a Light appearance. Until it exists, the
+/// launch screen is the canvas colour alone.
 struct VESSWordmark: View {
     /// Cap height-ish size of the wordmark in points, scaled with Dynamic Type.
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40

@@ -102,7 +102,7 @@ struct GroceryContent: View {
         }
         .sheet(isPresented: $showAdd) { AddGroceryItemSheet() }
         .vessErrorAlert(isPresented: $showError)
-        .sensoryFeedback(.success, trigger: storedCount)
+        .vessHaptic(.success, trigger: storedCount)
     }
 
     private func content(_ list: GroceryList, model: GroceryModel, now: Date) -> some View {

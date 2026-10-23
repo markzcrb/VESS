@@ -26,7 +26,7 @@ struct VESSChip: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .sensoryFeedback(.selection, trigger: isSelected)
+        .vessHaptic(.selection, trigger: isSelected)
     }
 }
 

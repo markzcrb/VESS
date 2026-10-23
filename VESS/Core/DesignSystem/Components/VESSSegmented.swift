@@ -43,6 +43,6 @@ struct VESSSegmented<Value: Hashable>: View {
         }
         .padding(3)
         .background(Capsule().fill(VESSColor.fill))
-        .sensoryFeedback(.selection, trigger: selection)
+        .vessHaptic(.selection, trigger: selection)
     }
 }

@@ -3,6 +3,7 @@ import SwiftUI
 /// Nutrition: the day diary. One day at a time, meal by meal, then drinks.
 struct NutritionView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessHaptics) private var haptics
     @State private var selectedDay = AppClock.now
     @State private var addFood: AddFoodRequest?
     @State private var addDrinkDay: Date?
@@ -141,11 +142,11 @@ struct NutritionView: View {
     }
 
     private func delete(entry: FoodLogEntry) {
-        do { try store.deleteFoodEntry(id: entry.id) } catch { showError = true }
+        do { try store.deleteFoodEntry(id: entry.id); haptics.play(.warning) } catch { showError = true }
     }
 
     private func delete(log: HydrationLog) {
-        do { try store.deleteHydrationLog(id: log.id) } catch { showError = true }
+        do { try store.deleteHydrationLog(id: log.id); haptics.play(.warning) } catch { showError = true }
     }
 }
 

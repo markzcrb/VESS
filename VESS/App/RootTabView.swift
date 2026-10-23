@@ -59,6 +59,8 @@ struct RootTabView: View {
             }
         }
         .tint(VESSColor.text)
+        .vessHaptic(.selection, trigger: selection)
+        .vessHaptic(.add, trigger: addTaps)
         .sheet(item: $addRequest) { request in
             FoodSearchSheet(request: request)
         }

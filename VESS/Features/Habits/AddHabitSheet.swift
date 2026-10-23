@@ -5,6 +5,7 @@ import SwiftUI
 /// default). Editing uses the same sheet.
 struct AddHabitSheet: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessHaptics) private var haptics
     @Environment(ReminderService.self) private var reminders
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -24,7 +25,6 @@ struct AddHabitSheet: View {
     @State private var reminderTime = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: AppClock.now) ?? AppClock.now
     @State private var showReminder = false
     @State private var confirmDelete = false
-    @State private var addedCount = 0
     @State private var showError = false
 
     @ScaledMetric(relativeTo: .body) private var pinnedInset: CGFloat = VESSHitTarget.control + VESSSpacing.xl * 2
@@ -92,7 +92,6 @@ struct AddHabitSheet: View {
             .toolbar(.hidden, for: .navigationBar)
             .vessKeyboardDoneButton()
             .vessErrorAlert(isPresented: $showError)
-            .sensoryFeedback(.success, trigger: addedCount)
             .confirmationDialog("Delete this habit?", isPresented: $confirmDelete, titleVisibility: .visible) {
                 Button("Delete habit", role: .destructive, action: delete)
                 Button("Cancel", role: .cancel) {}
@@ -320,7 +319,7 @@ struct AddHabitSheet: View {
         let habit = Habit(id: UUID(), name: name, schedule: .daily, category: category, reminder: nil, auto: rule, createdAt: AppClock.now)
         do {
             try store.save(habit)
-            addedCount += 1
+            haptics.play(.success)
         } catch {
             showError = true
         }
@@ -334,6 +333,7 @@ struct AddHabitSheet: View {
             }
             do {
                 try store.save(habit)
+                haptics.play(.success)
                 await reminders.sync(store: store)
                 dismiss()
             } catch {
@@ -346,6 +346,7 @@ struct AddHabitSheet: View {
         guard let editing else { return }
         do {
             try store.deleteHabit(id: editing.id)
+            haptics.play(.warning)
             Task { await reminders.sync(store: store) }
             dismiss()
         } catch {

@@ -9,6 +9,7 @@ struct AppRootView: View {
     @State private var health = Self.makeHealth()
     @State private var foodUndo = FoodLogUndo()
     @State private var reminders = Self.makeReminders()
+    @State private var haptics = VESSHaptics()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -37,8 +38,8 @@ struct AppRootView: View {
                 .environment(foodUndo)
                 .environment(reminders)
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
-                // One light tap for every log, wherever it came from.
-                .sensoryFeedback(.impact(weight: .light), trigger: foodUndo.loggedCount)
+                // One success tap for every log, wherever it came from.
+                .vessHaptic(.success, trigger: foodUndo.loggedCount)
             } else {
                 StoreUnavailableView {
                     store = Self.makeStore()
@@ -46,6 +47,7 @@ struct AppRootView: View {
                 }
             }
         }
+        .vessHapticsHost(haptics)
         // Chrome is greyscale; links and CTAs set the link accent themselves.
         .tint(VESSColor.text)
         .preferredColorScheme(appearance.colorScheme)

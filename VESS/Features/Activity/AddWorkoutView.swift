@@ -248,7 +248,7 @@ private struct WorkoutTypeCard: View {
         .buttonStyle(.plain)
         .accessibilityLabel(Text(title))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .sensoryFeedback(.selection, trigger: isSelected)
+        .vessHaptic(.selection, trigger: isSelected)
     }
 }
 

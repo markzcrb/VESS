@@ -48,6 +48,8 @@ struct PlanView: View {
                     scrollTarget = nil
                 }
             }
+            // Strip and grid days, arrows and swipes all move the selection.
+            .vessHaptic(.selection, trigger: selectedDay)
             .vessScreenBackground()
             .vessDetailTitle("Plan")
             .vessErrorAlert(isPresented: $showError)

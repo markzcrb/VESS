@@ -119,6 +119,8 @@ struct SupplementEditSheet: View {
     let supplement: Supplement?
 
     @Environment(LocalStore.self) private var store
+
+    @Environment(\.vessHaptics) private var haptics
     @Environment(ReminderService.self) private var reminders
     @Environment(\.dismiss) private var dismiss
 
@@ -242,6 +244,7 @@ struct SupplementEditSheet: View {
         guard let supplement else { return }
         do {
             try store.deleteSupplement(id: supplement.id)
+            haptics.play(.warning)
             Task { await reminders.sync(store: store) }
             dismiss()
         } catch {

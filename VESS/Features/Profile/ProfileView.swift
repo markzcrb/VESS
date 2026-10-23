@@ -4,6 +4,7 @@ import SwiftUI
 /// daily goals and preferences, and the settings screens (E01–E10).
 struct ProfileView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessHaptics) private var haptics
     @Environment(HealthDataStore.self) private var health
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @State private var showError = false
@@ -128,6 +129,7 @@ struct ProfileView: View {
     private func deleteCycleData() {
         do {
             try store.deleteCycleData()
+            haptics.play(.warning)
             saveCycleTracking(false)
         } catch {
             showError = true

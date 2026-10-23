@@ -4,6 +4,7 @@ import SwiftUI
 /// snapshot saved when it was logged, so it never changes if the food does.
 struct EditEntrySheet: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessHaptics) private var haptics
     @Environment(\.dismiss) private var dismiss
 
     let entry: FoodLogEntry
@@ -112,6 +113,7 @@ struct EditEntrySheet: View {
     private func delete() {
         do {
             try store.deleteFoodEntry(id: entry.id)
+            haptics.play(.warning)
             dismiss()
         } catch {
             showError = true

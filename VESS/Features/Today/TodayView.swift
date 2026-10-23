@@ -170,7 +170,7 @@ struct TodayView: View {
             }
         }
         .animation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.toast, value: undoLog?.id)
-        .sensoryFeedback(.impact(weight: .light), trigger: waterAddCount)
+        .vessHaptic(.success, trigger: waterAddCount)
         .sheet(item: $addFood) { request in
             FoodSearchSheet(request: request)
         }

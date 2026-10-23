@@ -11,6 +11,7 @@ import SwiftUI
 /// the right edge.
 struct AddDrinkSheet: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessHaptics) private var haptics
     @Environment(FoodLogUndo.self) private var undo
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -131,7 +132,7 @@ struct AddDrinkSheet: View {
                 }
             }
         }
-        .sensoryFeedback(.selection, trigger: volume)
+        .vessHaptic(.selection, trigger: volume)
     }
 
     private func sizeCard(_ serving: DrinkServing) -> some View {
@@ -224,7 +225,7 @@ struct AddDrinkSheet: View {
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Strength")
                 .accessibilityValue(Text(verbatim: "\(Self.percent(strength)) ABV"))
-                .sensoryFeedback(.selection, trigger: strength)
+                .vessHaptic(.selection, trigger: strength)
             }
         }
         .vessHairlineBottom()
@@ -333,6 +334,7 @@ struct AddDrinkSheet: View {
             try store.add(log)
             undo.show(Text("Added \(VESSFormat.milliliters(volume)) ml of \(drink.name.localizedLowercase)")) { store in
                 try store.deleteHydrationLog(id: log.id)
+                haptics.play(.warning)
             }
             dismiss()
         } catch {
@@ -489,7 +491,7 @@ private struct DrinkTabs: View {
             .overlay(alignment: .bottom) {
                 VESSHairline().padding(.trailing, -VESSSpacing.screenInset)
             }
-            .sensoryFeedback(.selection, trigger: selection)
+            .vessHaptic(.selection, trigger: selection)
             .onAppear { proxy.scrollTo(selection) }
             .onChange(of: selection) { _, new in proxy.scrollTo(new) }
         }

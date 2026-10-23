@@ -5,6 +5,7 @@ import SwiftUI
 /// insights), or delete it.
 struct PantryItemView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessHaptics) private var haptics
     @Environment(\.dismiss) private var dismiss
 
     let itemID: UUID
@@ -170,6 +171,7 @@ struct PantryItemView: View {
     private func delete() {
         do {
             try store.deleteInventoryItem(id: itemID)
+            haptics.play(.warning)
             dismiss()
         } catch {
             showError = true
