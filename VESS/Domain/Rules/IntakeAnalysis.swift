@@ -54,6 +54,8 @@ nonisolated enum IntakeAnalysis {
         let day: Date
         let nutrition: NutritionFacts
         let hasEntries: Bool
+        /// At least one food entry (drinks alone don't count).
+        var hasMeals: Bool = false
     }
 
     /// `extra` energy (alcohol) adds to each day's calories, and a day with
@@ -66,7 +68,7 @@ nonisolated enum IntakeAnalysis {
             let dayExtra = extra.filter { calendar.isDate($0.date, inSameDayAs: date) }
             var nutrition = dayEntries.totalNutrition
             nutrition.calories += dayExtra.reduce(0) { $0 + $1.calories }
-            return DayTotal(day: date, nutrition: nutrition, hasEntries: !dayEntries.isEmpty || !dayExtra.isEmpty)
+            return DayTotal(day: date, nutrition: nutrition, hasEntries: !dayEntries.isEmpty || !dayExtra.isEmpty, hasMeals: !dayEntries.isEmpty)
         }
     }
 
@@ -75,6 +77,22 @@ nonisolated enum IntakeAnalysis {
         let logged = totals.filter(\.hasEntries)
         guard !logged.isEmpty else { return nil }
         return logged.reduce(0) { $0 + value($1.nutrition) } / Double(logged.count)
+    }
+
+    /// The Energy screen's "Last 7 days" average: only days with meals
+    /// logged, never today (it isn't over), and at least `minimumDays` of
+    /// them; otherwise there's not enough to say.
+    enum WeekAverage: Equatable, Sendable {
+        case notEnough(days: Int)
+        case average(calories: Double, days: Int)
+    }
+
+    static let weekAverageMinimumDays = 3
+
+    static func weekAverage(_ totals: [DayTotal], today: Date, calendar: Calendar) -> WeekAverage {
+        let days = totals.filter { $0.hasMeals && !calendar.isDate($0.day, inSameDayAs: today) }
+        guard days.count >= weekAverageMinimumDays else { return .notEnough(days: days.count) }
+        return .average(calories: days.reduce(0) { $0 + $1.nutrition.calories } / Double(days.count), days: days.count)
     }
 
     /// Share of energy from protein, carbs and fat (4, 4 and 9 kcal per gram),

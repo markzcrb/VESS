@@ -51,6 +51,26 @@ struct IntakeAnalysisTests {
         #expect(IntakeAnalysis.average([], \.calories) == nil)
     }
 
+    @Test("Week average: only days with meals, never today, and at least three of them")
+    func weekAverage() throws {
+        let today = try TestClock.date(2026, 10, 9, 18)
+        let entries = [
+            entry(2000, at: try TestClock.date(2026, 10, 4, 12)),
+            entry(1800, at: try TestClock.date(2026, 10, 6, 12)),
+            entry(500, at: try TestClock.date(2026, 10, 9, 9)),     // today: left out
+        ]
+        // A day with only a drink isn't a day with meals.
+        let drinkOnly = [IntakeAnalysis.EnergyItem(date: try TestClock.date(2026, 10, 7, 20), calories: 140)]
+        let two = IntakeAnalysis.dailyTotals(entries, extra: drinkOnly, endingOn: today, days: 7, calendar: TestClock.utc)
+        #expect(two.map(\.hasMeals) == [false, true, false, true, false, false, true])
+        #expect(IntakeAnalysis.weekAverage(two, today: today, calendar: TestClock.utc) == .notEnough(days: 2))
+
+        let three = IntakeAnalysis.dailyTotals(entries + [entry(2200, at: try TestClock.date(2026, 10, 8, 13))], extra: drinkOnly,
+                                               endingOn: today, days: 7, calendar: TestClock.utc)
+        #expect(IntakeAnalysis.weekAverage(three, today: today, calendar: TestClock.utc) == .average(calories: 2000, days: 3))
+        #expect(IntakeAnalysis.weekAverage([], today: today, calendar: TestClock.utc) == .notEnough(days: 0))
+    }
+
     @Test("Energy split uses 4 / 4 / 9 kcal per gram and sums to 1")
     func energySplit() throws {
         // 108 g protein (432), 196 g carbs (784), 58 g fat (522): 1,738 kcal.

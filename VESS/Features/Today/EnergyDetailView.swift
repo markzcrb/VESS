@@ -17,7 +17,9 @@ struct EnergyDetailView: View {
                 content(profile: profile, now: AppClock.now)
             }
         }
-        .vessScreenBackground(.energy)
+        .vessScreenBackground(.energy, clipsUnderBar: false)
+        // Content scrolls softly under the glass buttons, not to a hard edge.
+        .scrollEdgeEffectStyle(.soft, for: .top)
         .vessDetailTitle("Energy")
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
@@ -38,8 +40,8 @@ struct EnergyDetailView: View {
             to: calendar.startOfDay(for: day)
         )
         let drinks = store.hydrationLogs(on: day, calendar: calendar)
-        // Alcohol's kcal count in the day's energy (ring, rows, chart, week),
-        // never in Fuel.
+        // Every drink's kcal count in the day's energy (ring, rows, chart,
+        // week); alcohol's never in Fuel.
         let alcohol = drinks.drinkEnergy
         let hasEnergy = !entries.isEmpty || !alcohol.isEmpty
         let summary = DaySummary(
@@ -148,18 +150,32 @@ struct EnergyDetailView: View {
     }
 
     private func lastSevenDays(week: [IntakeAnalysis.DayTotal], target: Double, isToday: Bool) -> some View {
-        let average = IntakeAnalysis.average(week, \.calories)
+        let summary = IntakeAnalysis.weekAverage(week, today: AppClock.now, calendar: calendar)
         return VStack(alignment: .leading, spacing: VESSSpacing.md) {
             VESSSectionHeader(title: "Last 7 days")
-            if let average {
-                VESSMetric(
-                    value: Text(VESSFormat.calories(average)),
-                    context: Text("kcal average · \(Self.comparison(average, target: target))"),
-                    style: .displayM,
-                    contextStyle: .bodyS
-                )
-                .foregroundStyle(VESSColor.text)
+            switch summary {
+            case .average(let calories, let days):
+                VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                    VESSMetric(
+                        value: Text(VESSFormat.calories(calories)),
+                        context: Text("kcal average · \(Self.share(calories, target: target))"),
+                        style: .displayM,
+                        contextStyle: .bodyS
+                    )
+                    .foregroundStyle(VESSColor.text)
+                    Text(isToday
+                         ? "Based on ^[\(days) day](inflect: true) with meals logged, not counting today."
+                         : "Based on ^[\(days) day](inflect: true) with meals logged.")
+                        .vessTextStyle(.bodyS)
+                        .foregroundStyle(VESSColor.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 .accessibilityElement(children: .combine)
+            case .notEnough:
+                Text("Not enough days yet. An average needs three days with meals logged, not counting today.")
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             VESSWeekBars(
                 bars: week.map { .init(day: $0.day, value: $0.nutrition.calories) },
@@ -176,13 +192,11 @@ struct EnergyDetailView: View {
         }
     }
 
-    /// "5% under target", "3% above target" or "on target".
-    static func comparison(_ value: Double, target: Double) -> String {
+    /// "18 % of your 2 550 kcal target": neutral, never "under" or "over".
+    static func share(_ value: Double, target: Double) -> String {
         guard target > 0 else { return "" }
-        let difference = value / target - 1
-        if abs(difference) < 0.01 { return String(localized: "on target") }
-        let amount = abs(difference).formatted(.percent.precision(.fractionLength(0)))
-        return difference < 0 ? String(localized: "\(amount) under target") : String(localized: "\(amount) above target")
+        let percent = (value / target).formatted(.percent.precision(.fractionLength(0)))
+        return String(localized: "\(percent) of your \(VESSFormat.calories(target)) kcal target")
     }
 
     private func percent(_ value: Double) -> String {
@@ -215,7 +229,7 @@ struct LineDrawReveal: ViewModifier {
 
 private struct EnergyThroughDayChart: View {
     let entries: [FoodLogEntry]
-    /// Alcoholic drinks, which add to the line but have no meal icon.
+    /// Drinks with kcal, which add to the line but have no meal icon.
     let extra: [IntakeAnalysis.EnergyItem]
     let target: Double
     /// `nil` for past days.
@@ -223,33 +237,39 @@ private struct EnergyThroughDayChart: View {
     let calendar: Calendar
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 200
+    /// With nothing logged the plot is shorter and says so.
+    @ScaledMetric(relativeTo: .body) private var emptyHeight: CGFloat = 120
 
     var body: some View {
         let points = IntakeAnalysis.cumulative(entries, extra: extra, calendar: calendar)
+        let isEmpty = points.isEmpty
         let total = points.last?.calories ?? 0
         let endMinute = now.map(minute) ?? 1440
         let line = [IntakeAnalysis.CumulativePoint(minute: 0, calories: 0)] + points
             + [IntakeAnalysis.CumulativePoint(minute: max(endMinute, points.last?.minute ?? 0), calories: total)]
-        let yMax = max(target, total) * 1.08
+        // Headroom above the target keeps the meal icons (top row) clear of
+        // the "Target" label (just above the dashed line).
+        let yMax = max(target, total) * 1.25
         let meals = MealType.dayOrder.compactMap { meal -> (MealType, Int)? in
             entries.entries(for: meal).map(\.loggedAt).min().map { (meal, minute($0)) }
         }
 
         Chart {
-            ForEach(Array(line.enumerated()), id: \.offset) { _, point in
-                LineMark(x: .value("Time", point.minute), y: .value("Energy", point.calories))
-                    .interpolationMethod(.stepEnd)
-                    .foregroundStyle(VESSColor.calories)
-                    .lineStyle(StrokeStyle(lineWidth: 1.75))
+            // Guides at 0, half and the target; the axes are drawn by hand
+            // below so labels sit exactly at their values.
+            RuleMark(y: .value("Zero", 0)).foregroundStyle(VESSColor.chartGuide)
+            RuleMark(y: .value("Half", target / 2)).foregroundStyle(VESSColor.chartGuide)
+            if !isEmpty {
+                ForEach(Array(line.enumerated()), id: \.offset) { _, point in
+                    LineMark(x: .value("Time", point.minute), y: .value("Energy", point.calories))
+                        .interpolationMethod(.stepEnd)
+                        .foregroundStyle(VESSColor.calories)
+                        .lineStyle(StrokeStyle(lineWidth: 1.75))
+                }
             }
             RuleMark(y: .value("Target", target))
                 .foregroundStyle(VESSColor.decorative)
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 4]))
-                .annotation(position: .top, alignment: .leading) {
-                    Text("Target")
-                        .vessTextStyle(.caption)
-                        .foregroundStyle(VESSColor.tertiaryText)
-                }
             ForEach(meals, id: \.0) { meal, minute in
                 PointMark(x: .value("Time", minute), y: .value("Energy", yMax))
                     .opacity(0)
@@ -265,37 +285,28 @@ private struct EnergyThroughDayChart: View {
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
                 PointMark(x: .value("Now", minute(now)), y: .value("Energy", total))
                     .foregroundStyle(VESSColor.calories)
-                    .symbolSize(70)
+                    .symbolSize(60)
             }
         }
         .chartXScale(domain: 0...1440)
         .chartYScale(domain: 0...yMax)
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
         // The line draws left to right (MOTION.md); axes stay in place.
         .chartPlotStyle { plot in plot.modifier(LineDrawReveal()) }
-        .chartXAxis {
-            AxisMarks(values: [0, 360, 720, 1080, 1440]) { value in
-                AxisValueLabel {
-                    if let minutes = value.as(Int.self) {
-                        Text(verbatim: String(format: "%02d", minutes / 60))
-                            .vessTextStyle(.caption)
-                            .foregroundStyle(VESSColor.tertiaryText)
-                    }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                if let plotFrame = proxy.plotFrame {
+                    let frame = geometry[plotFrame]
+                    axes(proxy: proxy, frame: frame, isEmpty: isEmpty)
                 }
             }
         }
-        .chartYAxis {
-            AxisMarks(position: .trailing, values: [0, target / 2, target]) { value in
-                AxisGridLine().foregroundStyle(VESSColor.chartGuide)
-                AxisValueLabel {
-                    if let kcal = value.as(Double.self) {
-                        Text(VESSFormat.calories(kcal))
-                            .vessTextStyle(.caption)
-                            .foregroundStyle(VESSColor.tertiaryText)
-                    }
-                }
-            }
-        }
-        .frame(height: height)
+        .frame(height: isEmpty ? emptyHeight : height)
+        // Room for the hour labels under the plot and the value column on
+        // its right (shared with the 7-day bars).
+        .padding(.bottom, VESSSpacing.lg)
+        .padding(.trailing, VESSChartAxis.labelColumn + VESSChartAxis.labelGap)
         // Labels and meal icons stop growing at accessibility sizes, so they
         // don't run into each other; VoiceOver hears the summary below.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
@@ -303,7 +314,64 @@ private struct EnergyThroughDayChart: View {
         // (as minutes since midnight), so the chart is replaced by one summary.
         .accessibilityRepresentation {
             Text("Energy through the day")
-                .accessibilityValue(Text("\(VESSFormat.calories(total)) of \(VESSFormat.calories(target)) kcal"))
+                .accessibilityValue(isEmpty ? Text("Nothing logged yet") : Text("\(VESSFormat.calories(total)) of \(VESSFormat.calories(target)) kcal"))
+        }
+    }
+
+    /// Hour labels at their exact x (00 flush left, 24 flush right) with
+    /// faint ticks; value labels right-aligned in the column; "Target" at
+    /// the dashed line's end; "Now" beside its rule on the side that's free.
+    @ViewBuilder
+    private func axes(proxy: ChartProxy, frame: CGRect, isEmpty: Bool) -> some View {
+        ForEach([0, 6, 12, 18, 24], id: \.self) { hour in
+            if let x = proxy.position(forX: hour * 60) {
+                let alignment: Alignment = hour == 0 ? .leading : (hour == 24 ? .trailing : .center)
+                Rectangle()
+                    .fill(VESSColor.chartGuide)
+                    .frame(width: 1, height: 4)
+                    .position(x: frame.minX + x, y: frame.maxY + 2)
+                Text(verbatim: String(format: "%02d", hour))
+                    .vessTextStyle(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    .fixedSize()
+                    .frame(width: 40, alignment: alignment)
+                    .position(
+                        x: frame.minX + x + (hour == 0 ? 20 : (hour == 24 ? -20 : 0)),
+                        y: frame.maxY + VESSSpacing.md
+                    )
+            }
+        }
+        ForEach([0, target / 2, target], id: \.self) { value in
+            if let y = proxy.position(forY: value) {
+                VESSChartAxis.label(VESSFormat.calories(value))
+                    .position(x: frame.maxX + VESSChartAxis.labelGap + VESSChartAxis.labelColumn / 2, y: frame.minY + y)
+            }
+        }
+        if let y = proxy.position(forY: target) {
+            Text("Target")
+                .vessTextStyle(.caption)
+                .foregroundStyle(VESSColor.tertiaryText)
+                .fixedSize()
+                .frame(width: frame.width, alignment: .trailing)
+                .position(x: frame.midX, y: frame.minY + y - VESSSpacing.sm)
+        }
+        if let now, let x = proxy.position(forX: minute(now)) {
+            // To the right of the rule, where the line has not reached yet;
+            // to its left only near midnight, still above the baseline.
+            let fitsRight = x + 44 < frame.width
+            Text("Now")
+                .vessTextStyle(.caption)
+                .foregroundStyle(VESSColor.secondaryText)
+                .fixedSize()
+                .frame(width: 40, alignment: fitsRight ? .leading : .trailing)
+                .position(x: frame.minX + x + (fitsRight ? 26 : -26), y: frame.maxY - VESSSpacing.md)
+        }
+        if isEmpty {
+            Text("Nothing logged yet")
+                .vessTextStyle(.bodyS)
+                .foregroundStyle(VESSColor.tertiaryText)
+                .position(x: frame.midX, y: frame.midY)
         }
     }
 
@@ -339,7 +407,7 @@ struct EnergyInfoSheet: View {
                     item("Energy vs. target", "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105 %.")
                     item("Meal regularity", "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100 %; two hours away or more scores 0 %.")
                     item("Before noon", "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat.")
-                    item("Last 7 days", "The average covers days with at least one meal logged.")
+                    item("Last 7 days", "The average covers days with at least one meal logged, not counting today, and needs three of them.")
                     Text("Everything here comes from what you log. It describes your logging, not your health.")
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.secondaryText)

@@ -47,10 +47,28 @@ struct VESSDayPicker: View {
     }
 }
 
+/// The right-hand label column the Energy charts share, so "0", "1 275"
+/// and "2 550" line up on their trailing edge in both.
+enum VESSChartAxis {
+    static let labelColumn: CGFloat = 48
+    static let labelGap: CGFloat = VESSSpacing.xs
+
+    /// A right-aligned axis value with monospaced digits.
+    static func label(_ text: String) -> some View {
+        Text(verbatim: text)
+            .vessTextStyle(.caption)
+            .monospacedDigit()
+            .foregroundStyle(VESSColor.tertiaryText)
+            .lineLimit(1)
+            .frame(width: labelColumn, alignment: .trailing)
+    }
+}
+
 /// Seven days as vertical bars against a dashed target line. Past days are
 /// grey; the last (today) is in the metric hue, and with `highlightsReached`
-/// so is every day at or above the target. Decorative for VoiceOver;
-/// callers give the summary as text.
+/// so is every day at or above the target. A day with nothing logged is the
+/// same short dash every time. Decorative for VoiceOver; callers give the
+/// summary as text. The target value sits in the shared label column.
 struct VESSWeekBars: View {
     struct Bar: Identifiable {
         let day: Date
@@ -67,11 +85,13 @@ struct VESSWeekBars: View {
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 120
     @State private var grown = false
 
+    private static let emptyDash: CGFloat = 4
+
     var body: some View {
         let scaleMax = max(target * 1.1, bars.map(\.value).max() ?? 0, 1)
 
         VStack(spacing: VESSSpacing.xs) {
-            ZStack(alignment: .topTrailing) {
+            HStack(alignment: .top, spacing: VESSChartAxis.labelGap) {
                 GeometryReader { proxy in
                     let targetY = proxy.size.height * (1 - target / scaleMax)
                     Path { path in
@@ -79,34 +99,35 @@ struct VESSWeekBars: View {
                         path.addLine(to: CGPoint(x: proxy.size.width, y: targetY))
                     }
                     .stroke(VESSColor.decorative, style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
-                    Text(verbatim: targetLabel)
-                        .vessTextStyle(.caption)
-                        .foregroundStyle(VESSColor.tertiaryText)
-                        // Flush with the line's end, so no dash shows past the label.
-                        .padding(.leading, VESSSpacing.xxs)
-                        .background(VESSColor.background)
-                        .frame(width: proxy.size.width, alignment: .trailing)
-                        .position(x: proxy.size.width / 2, y: max(targetY - 10, 8))
                     HStack(alignment: .bottom, spacing: 0) {
                         ForEach(Array(bars.enumerated()), id: \.element.id) { index, bar in
+                            let barHeight = bar.value > 0 ? max(Self.emptyDash, proxy.size.height * bar.value / scaleMax) : Self.emptyDash
                             Capsule()
                                 .fill(index == bars.count - 1 || (highlightsReached && bar.value >= target) ? tint : VESSColor.chartMuted)
-                                .frame(width: 12, height: max(4, proxy.size.height * bar.value / scaleMax) * (grown ? 1 : 0.02))
+                                .frame(width: 12, height: barHeight * (grown ? 1 : 0.02))
                                 .vessBarGrow(index: index, isGrown: grown)
                                 .frame(maxWidth: .infinity)
                         }
                     }
                     .frame(maxHeight: .infinity, alignment: .bottom)
                 }
+                GeometryReader { proxy in
+                    VESSChartAxis.label(targetLabel)
+                        .position(x: VESSChartAxis.labelColumn / 2, y: proxy.size.height * (1 - target / scaleMax))
+                }
+                .frame(width: VESSChartAxis.labelColumn)
             }
             .frame(height: height)
-            HStack(spacing: 0) {
-                ForEach(Array(bars.enumerated()), id: \.element.id) { index, bar in
-                    Text(bar.day, format: .dateTime.weekday(.narrow))
-                        .vessTextStyle(.caption)
-                        .foregroundStyle(index == bars.count - 1 ? VESSColor.text : VESSColor.tertiaryText)
-                        .frame(maxWidth: .infinity)
+            HStack(spacing: VESSChartAxis.labelGap) {
+                HStack(spacing: 0) {
+                    ForEach(Array(bars.enumerated()), id: \.element.id) { index, bar in
+                        Text(bar.day, format: .dateTime.weekday(.narrow))
+                            .vessTextStyle(.caption)
+                            .foregroundStyle(index == bars.count - 1 ? VESSColor.text : VESSColor.tertiaryText)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
+                Color.clear.frame(width: VESSChartAxis.labelColumn, height: 1)
             }
         }
         // Chart labels stop growing at accessibility sizes, so the target

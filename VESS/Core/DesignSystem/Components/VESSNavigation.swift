@@ -139,11 +139,27 @@ extension View {
     /// Content is clipped at the top of the safe area, so text scrolled up
     /// never shows through behind the navigation bar's buttons; it still
     /// runs under the tab bar, and the atmosphere runs under both bars.
-    func vessScreenBackground(_ metric: VESSMetricKind? = .fuel) -> some View {
-        mask {
-            Rectangle().ignoresSafeArea(edges: .bottom)
+    /// Pass `clipsUnderBar: false` to let content run under the bar and use
+    /// the system's soft scroll-edge effect instead of a hard edge.
+    @ViewBuilder
+    func vessScreenBackground(_ metric: VESSMetricKind? = .fuel, clipsUnderBar: Bool = true) -> some View {
+        if clipsUnderBar {
+            mask {
+                Rectangle().ignoresSafeArea(edges: .bottom)
+            }
+            .modifier(VESSScreenAtmosphere(metric: metric))
+        } else {
+            modifier(VESSScreenAtmosphere(metric: metric))
         }
-        .background(alignment: .top) {
+    }
+}
+
+/// The canvas with a metric-tinted atmosphere over the top 440 pt.
+private struct VESSScreenAtmosphere: ViewModifier {
+    let metric: VESSMetricKind?
+
+    func body(content: Content) -> some View {
+        content.background(alignment: .top) {
             ZStack(alignment: .top) {
                 VESSColor.background
                 if let metric {

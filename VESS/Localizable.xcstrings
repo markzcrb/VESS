@@ -211,9 +211,6 @@
     "%@ above" : {
 
     },
-    "%@ above target" : {
-
-    },
     "%@ ABV" : {
 
     },
@@ -474,6 +471,16 @@
         }
       }
     },
+    "%@ of your %@ kcal target" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of your %2$@ kcal target"
+          }
+        }
+      }
+    },
     "%@ packs" : {
       "comment" : "A fractional count of packs, such as 1.5 packs.",
       "localizations" : {
@@ -543,9 +550,6 @@
       }
     },
     "%@ to go" : {
-
-    },
-    "%@ under target" : {
 
     },
     "%@ Your quietest day is usually %@." : {
@@ -1394,6 +1398,12 @@
     "Barcode detected" : {
 
     },
+    "Based on ^[%lld day](inflect: true) with meals logged, not counting today." : {
+
+    },
+    "Based on ^[%lld day](inflect: true) with meals logged." : {
+
+    },
     "Beer" : {
 
     },
@@ -2208,6 +2218,9 @@
     "Habits today" : {
 
     },
+    "Half" : {
+
+    },
     "Hard" : {
 
     },
@@ -2847,6 +2860,9 @@
     "Not done yet, from your log" : {
 
     },
+    "Not enough days yet. An average needs three days with meals logged, not counting today." : {
+
+    },
     "Not now" : {
 
     },
@@ -2872,6 +2888,9 @@
 
     },
     "Nothing logged for %@ yet. Add it when you're ready." : {
+
+    },
+    "Nothing logged yet" : {
 
     },
     "Nothing logged yet today." : {
@@ -2986,9 +3005,6 @@
 
     },
     "On chosen days" : {
-
-    },
-    "on target" : {
 
     },
     "On this habit's days, only if it isn't done. Never between 22:00 and 07:00." : {
@@ -3631,7 +3647,7 @@
     "That doesn't look like a barcode. Check the digits." : {
 
     },
-    "The average covers days with at least one meal logged." : {
+    "The average covers days with at least one meal logged, not counting today, and needs three of them." : {
 
     },
     "The camera is off for VESS" : {
@@ -4167,6 +4183,9 @@
 
     },
     "Your week in motion." : {
+
+    },
+    "Zero" : {
 
     },
     "µg" : {
