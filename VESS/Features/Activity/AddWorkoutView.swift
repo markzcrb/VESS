@@ -38,10 +38,13 @@ struct AddWorkoutView: View {
 
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                Text("Move in your own way.")
-                    .vessTextStyle(.editorialL)
-                    .foregroundStyle(VESSColor.text)
-                    .accessibilityAddTraits(.isHeader)
+                // The editorial line belongs to the standalone screen.
+                if !embedded {
+                    Text("Move in your own way.")
+                        .vessTextStyle(.editorialL)
+                        .foregroundStyle(VESSColor.text)
+                        .accessibilityAddTraits(.isHeader)
+                }
 
                 section("Type") { typeCards }
                 section("Duration") { duration }
@@ -58,7 +61,7 @@ struct AddWorkoutView: View {
                 ActivityFootnote(text: Text("Energy is estimated from duration and effort, not measured. VESS never estimates steps."))
             }
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.xs)
+            .vessContentTop(VESSSpacing.xs)
             .padding(.bottom, VESSSpacing.xl)
         }
         .vessScreenBackground(.activity)

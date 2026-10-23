@@ -39,7 +39,7 @@ struct AddSupplementsContent: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.md)
+            .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.huge)
         }
         .scrollDismissesKeyboard(.immediately)

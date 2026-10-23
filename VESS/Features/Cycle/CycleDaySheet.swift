@@ -22,6 +22,7 @@ struct CycleDayForm: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.vessInAddSheet) private var inAddSheet
 
     let showsClose: Bool
     /// Called after Save or Delete instead of dismissing, when pushed.
@@ -50,7 +51,11 @@ struct CycleDayForm: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                header
+                // The date headline belongs to the standalone sheet; in the
+                // Add sheet the date row below names the day.
+                if !inAddSheet {
+                    header
+                }
                 dateRow
                 VStack(alignment: .leading, spacing: VESSSpacing.md) {
                     VESSSectionHeader(title: "Flow")
@@ -72,11 +77,11 @@ struct CycleDayForm: View {
                 }
             }
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.md)
+            .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.xl)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(VESSColor.card)
+        .background(inAddSheet ? Color.clear : VESSColor.card)
         .vessBottomAction {
             VStack(spacing: VESSSpacing.xs) {
                 Button("Save", action: save)

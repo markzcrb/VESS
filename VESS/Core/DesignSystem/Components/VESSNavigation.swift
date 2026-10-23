@@ -167,16 +167,51 @@ extension View {
     /// runs under the tab bar, and the atmosphere runs under both bars.
     /// Pass `clipsUnderBar: false` to let content run under the bar and use
     /// the system's soft scroll-edge effect instead of a hard edge.
-    @ViewBuilder
+    ///
+    /// Inside the Add sheet it draws nothing: the sheet has one background.
     func vessScreenBackground(_ metric: VESSMetricKind? = .fuel, clipsUnderBar: Bool = true) -> some View {
-        if clipsUnderBar {
-            mask {
-                Rectangle().ignoresSafeArea(edges: .bottom)
-            }
-            .modifier(VESSScreenAtmosphere(metric: metric))
+        modifier(VESSScreenBackground(metric: metric, clipsUnderBar: clipsUnderBar))
+    }
+
+    /// The gap above a screen's first content: `standalone` on its own, the
+    /// same 24 pt under the carousel's hairline for every Add sheet type.
+    func vessContentTop(_ standalone: CGFloat) -> some View {
+        modifier(VESSContentTop(standalone: standalone))
+    }
+}
+
+extension EnvironmentValues {
+    /// True for content shown inside the Add sheet (21), which brings its own
+    /// background, title and top gap, so the content draws none of them.
+    @Entry var vessInAddSheet = false
+}
+
+private struct VESSScreenBackground: ViewModifier {
+    let metric: VESSMetricKind?
+    let clipsUnderBar: Bool
+    @Environment(\.vessInAddSheet) private var inAddSheet
+
+    func body(content: Content) -> some View {
+        if inAddSheet {
+            content
+        } else if clipsUnderBar {
+            content
+                .mask {
+                    Rectangle().ignoresSafeArea(edges: .bottom)
+                }
+                .modifier(VESSScreenAtmosphere(metric: metric))
         } else {
-            modifier(VESSScreenAtmosphere(metric: metric))
+            content.modifier(VESSScreenAtmosphere(metric: metric))
         }
+    }
+}
+
+private struct VESSContentTop: ViewModifier {
+    let standalone: CGFloat
+    @Environment(\.vessInAddSheet) private var inAddSheet
+
+    func body(content: Content) -> some View {
+        content.padding(.top, inAddSheet ? VESSSpacing.xl : standalone)
     }
 }
 

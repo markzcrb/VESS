@@ -33,7 +33,8 @@ struct VESSButtonStyle: ButtonStyle {
             .frame(maxWidth: isFullWidth ? .infinity : nil, minHeight: minHeight)
             .background { background }
             .contentShape(Capsule())
-            .opacity(isEnabled ? (configuration.isPressed ? 0.7 : 1) : 0.4)
+            // Disabled is drawn (raised fill, tertiary text), not faded.
+            .opacity(isEnabled && configuration.isPressed ? 0.7 : (isEnabled || isFullWidth ? 1 : 0.4))
             .scaleEffect(configuration.isPressed && !reduceMotion && variant != .quiet ? 0.98 : 1)
             .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: configuration.isPressed)
     }
@@ -47,7 +48,8 @@ struct VESSButtonStyle: ButtonStyle {
     }
 
     private var foreground: Color {
-        switch variant {
+        if !isEnabled && isFullWidth { return VESSColor.tertiaryText }
+        return switch variant {
         case .primary: VESSColor.onAccent
         case .secondary, .quick: VESSColor.text
         case .quiet: VESSColor.accent
@@ -57,6 +59,9 @@ struct VESSButtonStyle: ButtonStyle {
     @ViewBuilder
     private var background: some View {
         switch variant {
+        case .primary where !isEnabled:
+            Capsule().fill(VESSColor.fill)
+                .overlay(Capsule().strokeBorder(VESSColor.divider))
         case .primary:
             Capsule().fill(VESSColor.accentFill)
         case .secondary, .quick:

@@ -71,7 +71,7 @@ struct AddDrinkSheet: View {
                 footnote
             }
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.md)
+            .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.xl)
         }
         .vessBottomAction { addButton }

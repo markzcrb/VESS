@@ -77,6 +77,17 @@ enum VESSMotion {
     static let toast = Animation.spring(response: 0.38, dampingFraction: 0.86)
     /// What replaces movement under Reduce Motion.
     static let reducedCrossfade = Animation.easeInOut(duration: 0.2)
+    /// Add sheet (21): content swaps when the carousel settles, sliding
+    /// `addSwapOffset` from the swipe side; Reduce Motion crossfades only.
+    static let addSwap = Animation.easeOut(duration: 0.28)
+    static let addSwapReduced = Animation.easeInOut(duration: 0.15)
+    /// The outgoing content of a swap leaves faster than the new one arrives.
+    static let addSwapOut = Animation.easeIn(duration: 0.14)
+    static let addSwapOffset: CGFloat = 24
+    /// A tapped tile springs to the centre.
+    static let addTileScroll = Animation.spring(response: 0.35, dampingFraction: 0.85)
+    /// The type name under the carousel crossfades to the new name and colour.
+    static let addLabel = Animation.easeInOut(duration: 0.2)
 }
 
 extension View {

@@ -65,7 +65,7 @@ struct FoodSearchHome: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.xs)
+            .vessContentTop(VESSSpacing.xs)
             .padding(.bottom, VESSSpacing.huge)
         }
         .scrollDismissesKeyboard(.immediately)

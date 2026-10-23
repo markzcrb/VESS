@@ -46,10 +46,13 @@ struct QuickAddForm: View {
         ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                Text("A label, or your best guess.")
-                    .vessTextStyle(.editorialL)
-                    .foregroundStyle(VESSColor.text)
-                    .fixedSize(horizontal: false, vertical: true)
+                // The editorial line belongs to the standalone screen.
+                if !embedded {
+                    Text("A label, or your best guess.")
+                        .vessTextStyle(.editorialL)
+                        .foregroundStyle(VESSColor.text)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 VESSTextField("Food", text: $name, error: nameError) { focusedField = .name }
                     .id(Field.name)
@@ -66,7 +69,7 @@ struct QuickAddForm: View {
                     .accessibilityIdentifier("addFood.calories")
 
                 VStack(alignment: .leading, spacing: VESSSpacing.md) {
-                    VESSSectionHeader(title: "Protein, carbs, fat · optional")
+                    VESSSectionHeader(title: "Macros · optional")
                     macroFields
                     Text("Leave one empty if you don't know it. It shows as not reported, not as zero.")
                         .vessTextStyle(.caption)
@@ -102,7 +105,7 @@ struct QuickAddForm: View {
                 .vessHairlineBottom()
             }
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.xs)
+            .vessContentTop(VESSSpacing.xs)
             .padding(.bottom, VESSSpacing.xl)
         }
         .scrollDismissesKeyboard(.interactively)
@@ -134,13 +137,14 @@ struct QuickAddForm: View {
             ? AnyLayout(VStackLayout(spacing: VESSSpacing.md))
             : AnyLayout(HStackLayout(alignment: .top, spacing: VESSSpacing.sm))
         return layout {
-            VESSTextField("Protein", text: $protein, unit: "g", error: NutrientInput.grams(protein) == nil ? Text("0–1,000 g") : nil) { focusedField = .protein }
+            // One section label above; each field names itself inside.
+            VESSTextField("Protein", text: $protein, unit: "g", error: NutrientInput.grams(protein) == nil ? Text("0–1,000 g") : nil, titleInside: true) { focusedField = .protein }
                 .id(Field.protein)
                 .keyboardType(.decimalPad)
-            VESSTextField("Carbs", text: $carbs, unit: "g", error: NutrientInput.grams(carbs) == nil ? Text("0–1,000 g") : nil) { focusedField = .carbs }
+            VESSTextField("Carbs", text: $carbs, unit: "g", error: NutrientInput.grams(carbs) == nil ? Text("0–1,000 g") : nil, titleInside: true) { focusedField = .carbs }
                 .id(Field.carbs)
                 .keyboardType(.decimalPad)
-            VESSTextField("Fat", text: $fat, unit: "g", error: NutrientInput.grams(fat) == nil ? Text("0–1,000 g") : nil) { focusedField = .fat }
+            VESSTextField("Fat", text: $fat, unit: "g", error: NutrientInput.grams(fat) == nil ? Text("0–1,000 g") : nil, titleInside: true) { focusedField = .fat }
                 .id(Field.fat)
                 .keyboardType(.decimalPad)
         }

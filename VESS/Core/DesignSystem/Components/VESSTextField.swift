@@ -18,6 +18,9 @@ struct VESSTextField: View {
     var error: Text?
     /// Called when the field gains focus, so a form can scroll it into view.
     var onFocus: (() -> Void)?
+    /// The title inside the empty field instead of above it ("Protein  g"),
+    /// for a row of fields under one section label.
+    var titleInside = false
 
     @FocusState private var isFocused: Bool
 
@@ -27,6 +30,7 @@ struct VESSTextField: View {
         prompt: Text? = nil,
         unit: LocalizedStringKey? = nil,
         error: Text? = nil,
+        titleInside: Bool = false,
         onFocus: (() -> Void)? = nil
     ) {
         self.title = title
@@ -34,6 +38,7 @@ struct VESSTextField: View {
         self.prompt = prompt
         self.unit = unit
         self.error = error
+        self.titleInside = titleInside
         self.onFocus = onFocus
     }
 
@@ -42,10 +47,12 @@ struct VESSTextField: View {
 
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             // The field itself carries the label for VoiceOver.
-            Text(title)
-                .vessTextStyle(.labelCaps)
-                .foregroundStyle(VESSColor.secondaryText)
-                .accessibilityHidden(true)
+            if !titleInside {
+                Text(title)
+                    .vessTextStyle(.labelCaps)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .accessibilityHidden(true)
+            }
 
             HStack(spacing: VESSSpacing.xs) {
                 // No placeholder unless given: the label above already names the field.
@@ -55,6 +62,16 @@ struct VESSTextField: View {
                     .foregroundStyle(VESSColor.text)
                     // With a prompt, SwiftUI would otherwise use the prompt as the label.
                     .accessibilityLabel(Text(title))
+                    // Drawn, not a system placeholder: that one is under 4.5:1.
+                    .background(alignment: .leading) {
+                        if titleInside && text.isEmpty {
+                            Text(title)
+                                .vessTextStyle(.bodyM)
+                                .foregroundStyle(VESSColor.tertiaryText)
+                                .lineLimit(1)
+                                .accessibilityHidden(true)
+                        }
+                    }
 
                 if let unit {
                     Text(unit)

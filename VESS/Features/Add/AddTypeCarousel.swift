@@ -45,7 +45,12 @@ extension AddType {
 
 /// The type carousel under the Add sheet's nav bar (21, 22). It snaps; the
 /// centred tile is the selection, with its name under it in the type
-/// colour. Tapping a tile scrolls it to the centre. The edges fade.
+/// colour. Every tile is 72 pt and scales down to 0.78 (opacity 0.85) with
+/// its distance from the centre, continuously while dragging. Tapping a
+/// tile springs it to the centre. The selection changes once the scroll
+/// settles, so the content swaps (and the haptic plays) once, not per tile
+/// passed. The edges fade. Reduce Motion: no scaling or springs; the
+/// centred tile is full size, the others 0.78.
 ///
 /// VoiceOver hears one adjustable element ("Add type, Food, 3 of 9"). From
 /// the AX3 text size the tiles give way to a row of text chips.
@@ -56,18 +61,22 @@ struct AddTypeCarousel: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var position = ScrollPosition(idType: AddType.self)
+    /// Set to scroll a type to the centre once (tap, VoiceOver, opening).
+    /// One-shot on purpose: a bound scroll position re-applies itself when
+    /// the selection re-renders the view and pulls against the finger.
+    @State private var scrollRequest: ScrollRequest?
     @State private var width: CGFloat = 0
-    /// The tile at the centre while the user scrolls; selected when it settles.
+    /// The tile at the centre; becomes the selection when the scroll settles.
     @State private var centred: AddType?
-    @State private var isScrolling = false
+    /// Off until the first layout has scrolled to the selection: that
+    /// layout asks for a target too, from the first tile.
+    @State private var isReady = false
 
-    /// Each tile sits in a slot this wide (a 56 pt tile and a 10 pt gap).
-    /// Slots are equal so snapping is exact; the tiles beside the larger
-    /// selected one are nudged outwards instead.
-    private static let slot: CGFloat = VESSAddTypeTile.size + gap
-    private static let gap: CGFloat = 10
-    private static let nudge = (VESSAddTypeTile.selectedSize - VESSAddTypeTile.size) / 2
+    /// Each tile sits in an equal slot, so snapping is exact: 10 pt beside
+    /// the centred tile, 18 pt between the smaller ones.
+    private static let slot: CGFloat = VESSAddTypeTile.size + 2
+    private static let minScale: CGFloat = 0.78
+    private static let minOpacity: Double = 0.85
 
     var body: some View {
         Group {
@@ -83,8 +92,8 @@ struct AddTypeCarousel: View {
         .accessibilityAdjustableAction { direction in
             let index = index(of: selection)
             switch direction {
-            case .increment: if index + 1 < types.count { select(types[index + 1]) }
-            case .decrement: if index > 0 { select(types[index - 1]) }
+            case .increment: if index + 1 < types.count { selectNow(types[index + 1]) }
+            case .decrement: if index > 0 { selectNow(types[index - 1]) }
             @unknown default: break
             }
         }
@@ -92,61 +101,103 @@ struct AddTypeCarousel: View {
     }
 
     private var tiles: some View {
-        let selectedIndex = index(of: selection)
+        let slot = Self.slot, minScale = Self.minScale, minOpacity = Self.minOpacity
+        let reduceMotion = reduceMotion
         return VStack(spacing: VESSSpacing.xs) {
-            ScrollView(.horizontal) {
-                HStack(spacing: 0) {
-                    ForEach(Array(types.enumerated()), id: \.element) { offset, type in
-                        Button { select(type) } label: {
-                            VESSAddTypeTile(systemImage: type.symbol, hue: type.hue, isSelected: type == selection)
-                                .frame(width: Self.slot, height: VESSAddTypeTile.selectedSize)
-                                .contentShape(Rectangle())
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal) {
+                    HStack(spacing: 0) {
+                        ForEach(types, id: \.self) { type in
+                            let isSelected = type == selection
+                            Button { tap(type) } label: {
+                                VESSAddTypeTile(systemImage: type.symbol, hue: type.hue)
+                                    // 0 at the centre, 1 a slot or more away.
+                                    .visualEffect { content, proxy in
+                                        let t: CGFloat
+                                        if reduceMotion {
+                                            t = isSelected ? 0 : 1
+                                        } else {
+                                            let bounds = proxy.bounds(of: .scrollView) ?? .zero
+                                            let midX = proxy.frame(in: .scrollView).midX
+                                            t = min(abs(midX - bounds.midX) / slot, 1)
+                                        }
+                                        return content
+                                            .scaleEffect(1 - (1 - minScale) * t)
+                                            .opacity(1 - (1 - minOpacity) * Double(t))
+                                    }
+                                    .frame(width: slot, height: VESSAddTypeTile.size)
+                                    .contentShape(Rectangle())
+                                    // Reduce Motion: the size swap is instant.
+                                    .transaction { if reduceMotion { $0.animation = nil } }
+                            }
+                            .buttonStyle(.plain)
+                            .id(type)
                         }
-                        .buttonStyle(.plain)
-                        .offset(x: offset == selectedIndex ? 0 : (offset < selectedIndex ? -Self.nudge : Self.nudge))
-                        .id(type)
+                    }
+                    .scrollTargetLayout()
+                }
+                // Snaps to whole slots and reports where it will land the moment
+                // the finger lifts, so the selection doesn't wait for the
+                // deceleration to finish.
+                .scrollTargetBehavior(SlotSnapping(slot: slot) { index in
+                    land(on: index)
+                })
+                .scrollIndicators(.hidden)
+                // (width − tile) / 2 on both sides, so the first and last tiles
+                // can sit in the centre too.
+                .contentMargins(.horizontal, margin, for: .scrollContent)
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+                .onScrollGeometryChange(for: Int.self) { geometry in
+                    Int(((geometry.contentOffset.x + geometry.contentInsets.leading) / slot).rounded())
+                } action: { _, index in
+                    centred = types[min(max(index, 0), types.count - 1)]
+                }
+                .onScrollPhaseChange { _, phase in
+                    // Fallback: whatever is centred once everything stops.
+                    if isReady, phase == .idle, let centred, centred != selection { selection = centred }
+                }
+                .mask {
+                    LinearGradient(stops: [
+                        .init(color: .clear, location: 0),
+                        .init(color: .black, location: 0.12),
+                        .init(color: .black, location: 0.88),
+                        .init(color: .clear, location: 1),
+                    ], startPoint: .leading, endPoint: .trailing)
+                }
+                .onChange(of: scrollRequest) { _, request in
+                    guard let request else { return }
+                    withAnimation(request.animated && !reduceMotion ? VESSMotion.addTileScroll : nil) {
+                        proxy.scrollTo(request.type, anchor: .center)
                     }
                 }
-                .scrollTargetLayout()
-            }
-            .scrollPosition($position, anchor: .center)
-            .scrollTargetBehavior(.viewAligned)
-            .scrollIndicators(.hidden)
-            // Margins that let the first and last tiles reach the centre.
-            .contentMargins(.horizontal, max(0, (width - Self.slot) / 2), for: .scrollContent)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-            .onScrollGeometryChange(for: Int.self) { geometry in
-                Int(((geometry.contentOffset.x + geometry.contentInsets.leading) / Self.slot).rounded())
-            } action: { _, index in
-                centred = types[min(max(index, 0), types.count - 1)]
-            }
-            .onScrollPhaseChange { _, phase in
-                isScrolling = phase != .idle
-                // A swipe selects the tile it settles on.
-                if phase == .idle, let centred, centred != selection { selection = centred }
-            }
-            .mask {
-                LinearGradient(stops: [
-                    .init(color: .clear, location: 0),
-                    .init(color: .black, location: 0.12),
-                    .init(color: .black, location: 0.88),
-                    .init(color: .clear, location: 1),
-                ], startPoint: .leading, endPoint: .trailing)
-            }
-            .animation(reduceMotion ? nil : VESSMotion.selection, value: selection)
-            .onAppear { position.scrollTo(id: selection, anchor: .center) }
-            .onChange(of: selection) { _, new in
-                guard !isScrolling else { return }
-                withAnimation(reduceMotion ? nil : VESSMotion.selection) { position.scrollTo(id: new, anchor: .center) }
+                .onAppear {
+                    proxy.scrollTo(selection, anchor: .center)
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(300))
+                        centred = selection
+                        isReady = true
+                    }
+                }
+                // A selection made elsewhere (VoiceOver, the text row) re-centres.
+                .onChange(of: selection) { _, new in
+                    guard new != centred else { return }
+                    scrollRequest = ScrollRequest(type: new, animated: true)
+                }
             }
 
-            Text(selection.title)
-                .vessTextStyle(.bodyMStrong)
-                .foregroundStyle(selection.hue ?? VESSColor.text)
-                .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(.center)
+            // The name crossfades to the new type and its colour.
+            ZStack {
+                Text(selection.title)
+                    .vessTextStyle(.bodyMStrong)
+                    .foregroundStyle(selection.hue ?? VESSColor.text)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
+                    .id(selection)
+                    .transition(.opacity)
+            }
+            .animation(reduceMotion ? VESSMotion.addSwapReduced : VESSMotion.addLabel, value: selection)
         }
-        // The chips of the text row play their own.
+        // Once per settled change. The chips of the text row play their own.
         .vessHaptic(.selection, trigger: selection)
     }
 
@@ -156,7 +207,7 @@ struct AddTypeCarousel: View {
             VESSBleedingRow {
                 HStack(spacing: VESSSpacing.xs) {
                     ForEach(types, id: \.self) { type in
-                        VESSChip(title: type.title, isSelected: type == selection) { select(type) }
+                        VESSChip(title: type.title, isSelected: type == selection) { selection = type }
                             .id(type)
                     }
                 }
@@ -166,12 +217,55 @@ struct AddTypeCarousel: View {
         }
     }
 
+    /// (width − slot) / 2 on both sides.
+    private var margin: CGFloat { max(0, (width - Self.slot) / 2) }
+
+    /// The tile a swipe will settle on: selected as the finger lifts.
+    private func land(on index: Int) {
+        guard isReady else { return }
+        let type = types[min(max(index, 0), types.count - 1)]
+        Task { @MainActor in
+            centred = type
+            if type != selection { selection = type }
+        }
+    }
+
     private func index(of type: AddType) -> Int {
         types.firstIndex(of: type) ?? 0
     }
 
-    private func select(_ type: AddType) {
-        isScrolling = false
+    /// Springs the tile to the centre and selects it.
+    private func tap(_ type: AddType) {
+        guard type != selection else { return }
+        selectNow(type)
+    }
+
+    /// Tap and VoiceOver: centre the tile (with the spring) and select it.
+    private func selectNow(_ type: AddType) {
+        scrollRequest = ScrollRequest(type: type, animated: true)
+        centred = type
         selection = type
+    }
+
+    private struct ScrollRequest: Equatable {
+        let id = UUID()
+        let type: AddType
+        let animated: Bool
+    }
+}
+
+/// Snaps the carousel to whole slots (one tile centred) and reports the
+/// slot it will land on as soon as the target is known. The target's x is
+/// measured from the first tile (the margins aren't part of it), so slot n
+/// is centred at x = n × slot.
+private struct SlotSnapping: ScrollTargetBehavior {
+    let slot: CGFloat
+    let onLanding: (Int) -> Void
+
+    func updateTarget(_ target: inout ScrollTarget, context: TargetContext) {
+        guard slot > 0 else { return }
+        let index = max(0, (target.rect.minX / slot).rounded())
+        target.rect.origin.x = index * slot
+        onLanding(Int(index))
     }
 }

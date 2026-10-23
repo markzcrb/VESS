@@ -23,12 +23,15 @@ extension EnvironmentValues {
 struct AddSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LocalStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let day: Date
     private let collection: FoodCollection
     @State private var meal: MealType
     @State private var selection: AddType
     @State private var path: [FoodRoute] = []
+    /// +1 when the new type is to the right of the old one, -1 to the left.
+    @State private var direction: CGFloat = 1
 
     private static let lastTypeKey = "add.lastType"
     private static let lastTypeAtKey = "add.lastTypeAt"
@@ -61,11 +64,19 @@ struct AddSheet: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            content(current)
-                .id(current)
-                // One canvas for every type; a type's own background wins.
-                .background(VESSColor.background)
-                .safeAreaInset(edge: .top, spacing: 0) { carousel }
+            // The old type slides 24 pt away and fades as the new one comes in
+            // from the side it was swiped from (MOTION.md, Add sheet).
+            ZStack {
+                content(current)
+                    .id(current)
+                    .transition(swapTransition)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            // One canvas for every type: their own backgrounds stand down.
+            .background(VESSColor.background)
+            .environment(\.vessInAddSheet, true)
+            .safeAreaInset(edge: .top, spacing: 0) { carousel }
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationTitle(Text("Add"))
                 .toolbar {
@@ -94,13 +105,33 @@ struct AddSheet: View {
 
     private var carousel: some View {
         VStack(spacing: 0) {
-            AddTypeCarousel(types: types, selection: Binding(get: { current }, set: { selection = $0 }))
+            AddTypeCarousel(types: types, selection: Binding(get: { current }, set: select))
                 .padding(.top, VESSSpacing.xs)
                 .padding(.bottom, VESSSpacing.md)
             VESSHairline()
                 .padding(.horizontal, VESSSpacing.screenInset)
         }
         .background(VESSColor.background)
+    }
+
+    /// Sets the direction first, so the outgoing view leaves the right way.
+    private func select(_ type: AddType) {
+        guard type != current else { return }
+        direction = (types.firstIndex(of: type) ?? 0) > (types.firstIndex(of: current) ?? 0) ? 1 : -1
+        withAnimation(reduceMotion ? VESSMotion.addSwapReduced : VESSMotion.addSwap) {
+            selection = type
+        }
+    }
+
+    private var swapTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        // The old content leaves in the first part of the swap, so the two
+        // layouts barely overlap; the new one takes the full 0.28 s.
+        return .asymmetric(
+            insertion: .offset(x: direction * VESSMotion.addSwapOffset).combined(with: .opacity),
+            removal: AnyTransition.offset(x: -direction * VESSMotion.addSwapOffset).combined(with: .opacity)
+                .animation(VESSMotion.addSwapOut)
+        )
     }
 
     @ViewBuilder
@@ -129,7 +160,7 @@ struct AddSheet: View {
                     systemImage: "camera",
                     description: Text("Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved.")
                 )
-                .padding(.top, VESSSpacing.huge)
+                .vessContentTop(VESSSpacing.huge)
             }
         }
     }
@@ -189,7 +220,7 @@ struct AddHabitsContent: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.md)
+            .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.huge)
         }
         .sheet(isPresented: $adding) {
@@ -237,7 +268,7 @@ struct AddWeightContent: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.md)
+            .vessContentTop(VESSSpacing.md)
         }
         .vessBottomAction(background: VESSColor.background) {
             Button("Save") { save(weight) }
