@@ -311,6 +311,7 @@ extension Food {
         case .starterCatalog: "Typical values from USDA FoodData Central"
         case .userCreated: "Your food"
         case .aiEstimate: "Estimate"
+        case .photoEstimate: "Estimated from a photo"
         case .foodDatabase, .barcodeScan: "Food database"
         }
     }

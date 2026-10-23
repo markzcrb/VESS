@@ -274,6 +274,16 @@
     "%@ g" : {
 
     },
+    "%@ g protein · %@ g carbs · %@ g fat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ g protein · %2$@ g carbs · %3$@ g fat"
+          }
+        }
+      }
+    },
     "%@ is still selected. Your plan hasn't changed." : {
 
     },
@@ -995,6 +1005,9 @@
         }
       }
     },
+    "^[%lld item](inflect: true) estimated. Check each one; nothing is logged until you add it." : {
+
+    },
     "^[%lld meal](inflect: true) logged, about %@ kcal a day." : {
       "localizations" : {
         "en" : {
@@ -1028,6 +1041,9 @@
 
     },
     "+250 ml" : {
+
+    },
+    "≈ %@" : {
 
     },
     "≈ %@ mg in this %@" : {
@@ -1342,6 +1358,9 @@
     "Added by you" : {
 
     },
+    "Added to %@ · Estimated" : {
+
+    },
     "Adding to %@" : {
 
     },
@@ -1386,6 +1405,16 @@
     },
     "Amount" : {
 
+    },
+    "Amount %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Amount %1$@ %2$@"
+          }
+        }
+      }
     },
     "Amount in %@" : {
 
@@ -1536,6 +1565,9 @@
     "Calories not reported" : {
 
     },
+    "Camera access is off for VESS. Pick a photo, or turn it on in Settings." : {
+
+    },
     "Camera preview" : {
 
     },
@@ -1570,6 +1602,9 @@
 
     },
     "Changes the strength" : {
+
+    },
+    "Check this" : {
 
     },
     "Checked" : {
@@ -1792,9 +1827,6 @@
 
     },
     "Days logged" : {
-
-    },
-    "Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved." : {
 
     },
     "Decaf" : {
@@ -2055,6 +2087,9 @@
     "Estimated caffeine in your system through the day" : {
 
     },
+    "Estimated from a photo" : {
+
+    },
     "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone." : {
 
     },
@@ -2145,7 +2180,16 @@
     "Fish" : {
 
     },
+    "Fit the whole plate in the frame." : {
+
+    },
     "Fitness" : {
+
+    },
+    "Flash off" : {
+
+    },
+    "Flash on" : {
 
     },
     "Flat white" : {
@@ -2541,6 +2585,9 @@
     "kcal · %@ g protein" : {
 
     },
+    "kcal · Estimated" : {
+
+    },
     "kcal a day" : {
 
     },
@@ -2719,6 +2766,9 @@
 
     },
     "Look up" : {
+
+    },
+    "Looking at your photo…" : {
 
     },
     "Looking up on %@…" : {
@@ -2969,6 +3019,9 @@
 
     },
     "No estimate yet." : {
+
+    },
+    "No food found. Try another photo or search instead." : {
 
     },
     "No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
@@ -3289,10 +3342,19 @@
     "Photo estimates" : {
 
     },
+    "Photo estimates need an account. Only for Coach and photo estimates; your log stays on this iPhone." : {
+
+    },
     "Photo estimates use AI." : {
 
     },
+    "Photos" : {
+
+    },
     "Physical job or training twice a day" : {
+
+    },
+    "Pick a photo" : {
 
     },
     "Pint" : {
@@ -3482,6 +3544,9 @@
     "Reminders" : {
 
     },
+    "Remove %@" : {
+
+    },
     "Remove %@ from selection" : {
 
     },
@@ -3561,6 +3626,9 @@
 
     },
     "Search foods or brands" : {
+
+    },
+    "Search instead" : {
 
     },
     "Search meals and foods" : {
@@ -3870,6 +3938,12 @@
     "tablet" : {
 
     },
+    "Take another photo" : {
+
+    },
+    "Take photo" : {
+
+    },
     "Taken %@" : {
 
     },
@@ -3935,6 +4009,9 @@
     "That's today's free Coach questions. Back tomorrow." : {
 
     },
+    "That's today's free photo estimates. Back tomorrow." : {
+
+    },
     "That's today's free uses. Back tomorrow." : {
 
     },
@@ -3942,6 +4019,9 @@
 
     },
     "The camera is off for VESS" : {
+
+    },
+    "The camera isn't available here. Pick a photo instead." : {
 
     },
     "The category sets the colour of its dots." : {
@@ -3963,6 +4043,12 @@
 
     },
     "The number under the barcode." : {
+
+    },
+    "The photo is used only to estimate this meal, then dropped." : {
+
+    },
+    "The photo is used only to estimate this meal, then dropped. · ^[%lld estimate](inflect: true) left today" : {
 
     },
     "The photo, made smaller and without location or other details from the camera." : {
@@ -4106,6 +4192,9 @@
 
     },
     "Try again" : {
+
+    },
+    "Try another photo" : {
 
     },
     "tsp" : {
@@ -4374,6 +4463,9 @@
 
     },
     "What could I have for dinner?" : {
+
+    },
+    "What is it?" : {
 
     },
     "What is sent" : {

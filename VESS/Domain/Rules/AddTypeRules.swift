@@ -10,7 +10,7 @@ nonisolated enum AddTypeRules {
     /// The type used last is reopened for this long.
     static let reopenWindow: TimeInterval = 60 * 60
 
-    /// Photo only with the DEBUG flag, Cycle only while tracking is on.
+    /// Photo when offered, Cycle only while tracking is on.
     /// Hidden types leave no gap.
     static func visible(photo: Bool, cycle: Bool) -> [AddType] {
         AddType.allCases.filter { type in

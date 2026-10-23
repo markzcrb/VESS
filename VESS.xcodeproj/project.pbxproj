@@ -355,7 +355,7 @@
 				INFOPLIST_FILE = "Config/VESS-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = VESS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSCameraUsageDescription = "VESS uses the camera to scan food barcodes. Nothing is recorded or uploaded.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "VESS uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "VESS reads your steps, workouts, active energy and weight to show them in Activity and Today. It never writes to Apple Health, and this data stays on your iPhone.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -401,7 +401,7 @@
 				INFOPLIST_FILE = "Config/VESS-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = VESS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSCameraUsageDescription = "VESS uses the camera to scan food barcodes. Nothing is recorded or uploaded.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "VESS uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "VESS reads your steps, workouts, active energy and weight to show them in Activity and Today. It never writes to Apple Health, and this data stays on your iPhone.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

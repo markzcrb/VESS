@@ -49,12 +49,12 @@ struct AddSheet: View {
             lastUsed: defaults.string(forKey: Self.lastTypeKey).flatMap(AddType.init(rawValue:)),
             lastUsedAt: lastAt > 0 ? Date(timeIntervalSince1970: lastAt) : nil,
             now: AppClock.now,
-            visible: AddTypeRules.visible(photo: VESSFeatureFlags.photoEstimate, cycle: true)
+            visible: AddTypeRules.visible(photo: true, cycle: true)
         ))
     }
 
     private var types: [AddType] {
-        AddTypeRules.visible(photo: VESSFeatureFlags.photoEstimate, cycle: store.profile?.isCycleTrackingOn == true)
+        AddTypeRules.visible(photo: true, cycle: store.profile?.isCycleTrackingOn == true)
     }
 
     /// The selection, or Food when it isn't shown (cycle tracking off).
@@ -159,14 +159,7 @@ struct AddSheet: View {
         case .cycle:
             CycleDayForm(date: day, showsClose: false, onDone: { dismiss() })
         case .photo:
-            ScrollView {
-                ContentUnavailableView(
-                    "Photo estimate",
-                    systemImage: "camera",
-                    description: Text("Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved.")
-                )
-                .vessContentTop(VESSSpacing.huge)
-            }
+            AddPhotoContent(day: day, meal: $meal, onSearchInstead: { select(.food) }, onLogged: { dismiss() })
         }
     }
 

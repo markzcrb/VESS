@@ -90,6 +90,9 @@ nonisolated enum FoodSource: String, Codable, Sendable {
     case starterCatalog
     /// A product retrieved from Open Food Facts (community data).
     case openFoodFacts
+    /// Estimated from a photo by the AI processor, then confirmed by the
+    /// user. Additive: older entries never carry it.
+    case photoEstimate
 }
 
 /// Provenance for data that VESS did not author.
