@@ -559,8 +559,9 @@ enum DrinkFacts {
             return Text("Typical values: \(VESSFormat.grams(alcohol)) g alcohol (\(drinksText(StandardDrink.count(alcoholGrams: alcohol)))), about \(VESSFormat.calories(kcal)) kcal.")
         }
         switch (kcal >= 1, caffeine >= 1) {
-        case (true, true): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal and \(VESSFormat.grams(caffeine)) mg caffeine.")
-        case (true, false): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal.")
+        // Drink kcal count in the day's energy and in Fuel (alcohol: energy only).
+        case (true, true): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal and \(VESSFormat.grams(caffeine)) mg caffeine. The kcal count in your energy.")
+        case (true, false): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal, counted in your energy.")
         case (false, true): return Text("Typical values: \(VESSFormat.grams(caffeine)) mg caffeine.")
         case (false, false): return nil
         }
@@ -597,17 +598,26 @@ struct DrinkTimeRow: View {
     var identifier = "addDrink.time"
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        // At accessibility sizes the time goes under the label, so "Time"
+        // and "Now" never break mid-word (same as the drink sheet's row).
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xxs))
+            : AnyLayout(HStackLayout(spacing: VESSSpacing.xs))
         VStack(spacing: 0) {
             Button {
                 withAnimation(reduceMotion ? nil : VESSMotion.selection) { isExpanded.toggle() }
             } label: {
-                HStack(spacing: VESSSpacing.xs) {
+                layout {
                     Text("Time")
                         .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.text)
-                    Spacer(minLength: VESSSpacing.sm)
+                        .fixedSize()
+                    if !dynamicTypeSize.isAccessibilitySize {
+                        Spacer(minLength: VESSSpacing.sm)
+                    }
                     Group {
                         if abs(time.timeIntervalSince(AppClock.now)) < 60 {
                             Text("Now · \(time, format: .dateTime.hour().minute())")
@@ -617,12 +627,16 @@ struct DrinkTimeRow: View {
                     }
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.secondaryText)
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(VESSColor.tertiaryText)
-                        .accessibilityHidden(true)
+                    .fixedSize(horizontal: false, vertical: true)
+                    if !dynamicTypeSize.isAccessibilitySize {
+                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(VESSColor.tertiaryText)
+                            .accessibilityHidden(true)
+                    }
                 }
-                .frame(minHeight: VESSSize.rowHeight)
+                .frame(maxWidth: .infinity, minHeight: VESSSize.rowHeight, alignment: .leading)
+                .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? VESSSpacing.sm : 0)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

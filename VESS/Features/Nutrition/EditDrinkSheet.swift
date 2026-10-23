@@ -6,6 +6,7 @@ struct EditDrinkSheet: View {
     @Environment(LocalStore.self) private var store
     @Environment(FoodLogUndo.self) private var undo
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let log: HydrationLog
     let day: Date
@@ -85,7 +86,8 @@ struct EditDrinkSheet: View {
             .sensoryFeedback(.success, trigger: saved)
             .vessErrorAlert(isPresented: $showError, retry: save)
         }
-        .presentationDetents([.medium, .large])
+        // Full height at accessibility sizes, where half hides the rows.
+        .presentationDetents(dynamicTypeSize.isAccessibilitySize ? [.large] : [.medium, .large])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(VESSRadius.sheet)
     }
