@@ -6,7 +6,8 @@ Publishable key (safe to ship in the app): `sb_publishable_vK6Sn8Pi2AIZsY0IEEjg2
 
 ## What the server does (and doesn't)
 - The food log stays on the iPhone. The server keeps **only** auth users and a per-day AI usage counter (`ai_usage`).
-- `coach` and `food-photo` forward one request to the Claude API (Anthropic) and return the answer. VESS stores and logs no prompts, context or photos. Anthropic processes them under its API terms.
+- `coach` and `food-photo` forward one request to the AI provider and return the answer. VESS stores and logs no prompts, context or photos. The provider processes them under its API terms.
+- Provider is switched on the server only (`AI_PROVIDER` = `gemini` or `anthropic`); the app doesn't change. With no `AI_PROVIDER` set, whichever key exists is used (Gemini first).
 - Daily limits (free beta): Coach 20, photo 10 (`ai_daily_limit`). Changed server-side only.
 
 ## Edge functions (all require a signed-in, non-anonymous user's JWT)
@@ -20,8 +21,10 @@ Errors: `401 not_authenticated`, `429 daily_limit`, `400 bad_*`, `502 upstream` 
 Headers: `Authorization: Bearer <access_token>`, `apikey: <publishable key>`.
 
 ## Secrets (Dashboard › Edge Functions › Secrets)
-- `ANTHROPIC_API_KEY` (required)
-- `COACH_MODEL`, `PHOTO_MODEL` (optional, default `claude-sonnet-5-5`)
+- `AI_PROVIDER`: `gemini` or `anthropic`
+- Gemini: `GEMINI_API_KEY`; optional `GEMINI_COACH_MODEL`, `GEMINI_PHOTO_MODEL` (default `gemini-3.8-flash`)
+- Claude: `ANTHROPIC_API_KEY`; optional `COACH_MODEL`, `PHOTO_MODEL` (default `claude-sonnet-5-5`)
+- Note: on the Gemini API free tier Google may use prompts and photos to improve its products. Fine for testing with our own data; use a paid (billing-enabled) key before real users.
 
 ## Auth
 - Sign in with Apple (native, `signInWithIdToken` / `grant_type=id_token`): enable the Apple provider with the app's bundle ID as Client ID. Needs a paid Apple Developer account.
