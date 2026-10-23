@@ -152,7 +152,7 @@ struct PrivacyView: View {
                 fact("Open Food Facts", "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent.")
                 fact("Apple Health", "Read only: steps, workouts, active energy and weight. VESS shows them but doesn't keep a copy.")
                 fact("Reminders", "Scheduled on this iPhone, never on a server.")
-                fact("Nothing else", "VESS has no account, no analytics and no ads.")
+                fact("Nothing else", "No analytics and no ads. An account only if you use Coach or photo estimates.")
             }
             .vessHairlineBottom()
 

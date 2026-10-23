@@ -1390,6 +1390,9 @@
     "Amount in milliliters" : {
 
     },
+    "An account for AI features." : {
+
+    },
     "An estimate from your last ^[%lld cycle](inflect: true), which average %lld days. It can be off." : {
       "localizations" : {
         "en" : {
@@ -2914,6 +2917,9 @@
     "Next week" : {
 
     },
+    "No analytics and no ads. An account only if you use Coach or photo estimates." : {
+
+    },
     "No daily target set." : {
 
     },
@@ -3158,9 +3164,6 @@
 
     },
     "Only for Coach and photo estimates. Your log stays on this iPhone." : {
-
-    },
-    "Only for Coach and photos." : {
 
     },
     "Open Food Facts" : {
@@ -4221,9 +4224,6 @@
     "VESS doesn't store it. %@ processes it under its API terms." : {
 
     },
-    "VESS has no account, no analytics and no ads." : {
-
-    },
     "VESS never estimates steps." : {
 
     },
@@ -4388,6 +4388,9 @@
 
     },
     "You can change your targets, diet and what to avoid at any time under You." : {
+
+    },
+    "You can turn this off any time in You › Privacy and data." : {
 
     },
     "You finished most of your list on %lld of the last ^[%lld day](inflect: true)." : {

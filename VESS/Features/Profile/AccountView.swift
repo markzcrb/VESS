@@ -20,12 +20,14 @@ struct AccountView: View {
                 signedIn(session)
             } else {
                 ProfileIntro(
-                    title: "Only for Coach and photos.",
+                    title: "An account for AI features.",
                     text: "Only for Coach and photo estimates. Your log stays on this iPhone."
                 )
                 AccountSignInForm()
             }
         }
+        .scrollDismissesKeyboard(.interactively)
+        .vessKeyboardDoneButton()
     }
 
     // MARK: Signed in
@@ -91,6 +93,7 @@ struct AccountView: View {
 struct AccountSignInForm: View {
     @Environment(AccountStore.self) private var account
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private enum Step: Equatable { case email, code(String) }
 
@@ -155,19 +158,25 @@ struct AccountSignInForm: View {
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
                 .accessibilityIdentifier("account.code")
+                // A new try clears the last message.
+                .onChange(of: code) { error = nil }
             Button(action: verify) {
                 Text(isWorking ? "Checking…" : "Sign in")
             }
             .buttonStyle(.vessPrimary)
             .disabled(code.filter(\.isNumber).count < 6 || isWorking)
             .accessibilityIdentifier("account.verify")
-            HStack {
+            // Side by side; stacked at accessibility sizes.
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.sm))
+                : AnyLayout(HStackLayout())
+            layout {
                 Button("Use another email") {
                     step = .email
                     code = ""
                     error = nil
                 }
-                Spacer()
+                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
                 Button("Send again", action: sendCode)
                     .disabled(isWorking)
             }
@@ -229,6 +238,8 @@ struct AccountSignInForm: View {
     }
 
     private func run(_ work: @escaping () async throws -> Void) {
+        // The keyboard goes, so the answer (or the message) is in view.
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         isWorking = true
         error = nil
         Task {

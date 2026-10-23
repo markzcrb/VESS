@@ -8,6 +8,7 @@ struct AIConsentSheet: View {
     let onAllow: () -> Void
 
     @Environment(AIConsentStore.self) private var consent
+    @Environment(AccountStore.self) private var account
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -20,6 +21,18 @@ struct AIConsentSheet: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
 
+                    // Up top, so it's read first and never hidden by the buttons.
+                    Group {
+                        if account.isSignedIn {
+                            Text("You can turn this off any time in You › Privacy and data.")
+                        } else {
+                            Text("Needs an account. You can turn this off any time in You › Privacy and data.")
+                        }
+                    }
+                    .vessTextStyle(.bodyM)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+
                     VESSRowGroup {
                         fact("What is sent", sent)
                         fact("To whom", Text("\(AIProcessor.displayName), through VESS's server."))
@@ -27,17 +40,13 @@ struct AIConsentSheet: View {
                         fact("What stays here", Text("Your log, profile and history stay on this iPhone."))
                     }
                     .vessHairlineBottom()
-
-                    Text("Needs an account. You can turn this off any time in You › Privacy and data.")
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.secondaryText)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
                 .padding(.top, VESSSpacing.md)
                 .padding(.bottom, VESSSpacing.xl)
             }
             .background(VESSColor.card)
+            .scrollEdgeEffectStyle(.soft, for: .top)
             .vessBottomAction {
                 VStack(spacing: VESSSpacing.xs) {
                     Button("Allow") {
@@ -97,5 +106,6 @@ extension View {
 #Preview("Coach consent") {
     AIConsentSheet(feature: .coach, onAllow: {})
         .environment(AIConsentStore(defaults: UserDefaults(suiteName: "preview") ?? .standard))
+        .environment(AccountStore(config: nil, transport: URLSessionTransport(), store: MemorySessionStore()))
         .preferredColorScheme(.dark)
 }
