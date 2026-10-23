@@ -66,8 +66,12 @@ final class AccountStore {
     /// POSTs JSON to an edge function with a fresh token; on a 401, refreshes
     /// once and tries again.
     func callFunction<Response: Decodable, Body: Encodable>(_ name: String, body: Body) async throws -> Response {
+        try await callFunction(name, json: try JSONEncoder().encode(body))
+    }
+
+    /// The same, with a body that's already JSON (Coach's snake_case context).
+    func callFunction<Response: Decodable>(_ name: String, json payload: Data) async throws -> Response {
         guard let config else { throw BackendError.notConfigured }
-        let payload = try JSONEncoder().encode(body)
         var token = try await validAccessToken()
         for attempt in 0..<2 {
             var request = URLRequest(url: config.url.appending(path: "functions/v1/\(name)"), timeoutInterval: 60)

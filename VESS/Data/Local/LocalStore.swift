@@ -56,7 +56,7 @@ final class LocalStore {
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
             StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self, StoredSupplement.self,
             StoredCycleDay.self, StoredHabit.self, StoredHabitCheck.self,
-            StoredSupplementLog.self,
+            StoredSupplementLog.self, StoredCoachMessage.self,
         ])
     }
 
@@ -519,6 +519,25 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Coach
+
+    /// The conversation, oldest first.
+    var coachMessages: [CoachMessage] {
+        _ = revision
+        return fetchDecoded(FetchDescriptor<StoredCoachMessage>(sortBy: [SortDescriptor(\.createdAt)]), as: CoachMessage.self) { $0.payload }
+    }
+
+    func add(_ message: CoachMessage) throws {
+        context.insert(StoredCoachMessage(id: message.id, createdAt: message.createdAt, payload: try encoder.encode(message)))
+        try save()
+    }
+
+    /// "Clear conversation".
+    func deleteCoachMessages() throws {
+        try context.delete(model: StoredCoachMessage.self)
+        try save()
+    }
+
     // MARK: Export
 
     /// Everything VESS stores on this iPhone, as one JSON document (E07).
@@ -542,7 +561,8 @@ final class LocalStore {
             supplementLog: fetchDecoded(FetchDescriptor<StoredSupplementLog>(sortBy: [SortDescriptor(\.takenAt)]), as: SupplementLog.self) { $0.payload },
             cycleDays: cycleDays,
             habits: habits,
-            habitChecks: fetchDecoded(FetchDescriptor<StoredHabitCheck>(sortBy: [SortDescriptor(\.day)]), as: HabitCheck.self) { $0.payload }
+            habitChecks: fetchDecoded(FetchDescriptor<StoredHabitCheck>(sortBy: [SortDescriptor(\.day)]), as: HabitCheck.self) { $0.payload },
+            coachMessages: coachMessages
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -567,6 +587,8 @@ final class LocalStore {
         let cycleDays: [CycleDay]
         let habits: [Habit]
         let habitChecks: [HabitCheck]
+        /// The Coach conversation, kept only here.
+        let coachMessages: [CoachMessage]
     }
 
     // MARK: Account data
@@ -583,6 +605,7 @@ final class LocalStore {
         try context.delete(model: StoredWorkout.self)
         try context.delete(model: StoredSupplement.self)
         try context.delete(model: StoredSupplementLog.self)
+        try context.delete(model: StoredCoachMessage.self)
         try context.delete(model: StoredCycleDay.self)
         try context.delete(model: StoredHabit.self)
         try context.delete(model: StoredHabitCheck.self)

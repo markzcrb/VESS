@@ -175,6 +175,20 @@ final class StoredHabitCheck {
     }
 }
 
+/// A Coach message (12). Additive; only on this iPhone.
+@Model
+final class StoredCoachMessage {
+    @Attribute(.unique) var id: UUID
+    var createdAt: Date
+    var payload: Data
+
+    init(id: UUID, createdAt: Date, payload: Data) {
+        self.id = id
+        self.createdAt = createdAt
+        self.payload = payload
+    }
+}
+
 /// A supplement taken (22). Additive.
 @Model
 final class StoredSupplementLog {

@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Header
 
-/// Date in tracked caps, the greeting, and (Debug builds only) the Coach entry.
+/// Date in tracked caps, the greeting, and the Coach entry.
 struct TodayHeader: View {
     let date: Date
     let greeting: String

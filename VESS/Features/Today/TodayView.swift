@@ -69,7 +69,7 @@ struct TodayView: View {
                             TodayHeader(
                                 date: now,
                                 greeting: Greeting.text(for: now, name: profile.name, calendar: calendar),
-                                onCoach: VESSFeatureFlags.coach ? { showCoach = true } : nil
+                                onCoach: { showCoach = true }
                             )
                             if !entries.isEmpty {
                                 TodayMetricStrip(summary: summary, fuel: fuel, health: health.state.snapshot)
@@ -153,12 +153,7 @@ struct TodayView: View {
             FuelInfoSheet(fuel: fuel)
         }
         .navigationDestination(isPresented: $showCoach) {
-            ContentUnavailableView(
-                "Coach",
-                systemImage: "bubble.left",
-                description: Text("Debug builds only. The Coach screen (12) is a static design until its backend is approved.")
-            )
-            .vessDetailTitle("Coach")
+            CoachView()
         }
         .safeAreaInset(edge: .bottom) {
             if health.state == .syncing {

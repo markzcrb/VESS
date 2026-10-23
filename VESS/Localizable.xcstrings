@@ -656,6 +656,9 @@
     "%@." : {
 
     },
+    "%@. What's on your mind?" : {
+
+    },
     "%lld" : {
 
     },
@@ -1439,6 +1442,9 @@
     "As needed" : {
 
     },
+    "Ask Coach" : {
+
+    },
     "Average %lld days · range %lld–%lld days over ^[%lld cycle](inflect: true)." : {
       "localizations" : {
         "en" : {
@@ -1593,7 +1599,13 @@
     "Cider" : {
 
     },
+    "Clear conversation" : {
+
+    },
     "Clear search" : {
+
+    },
+    "Clear the conversation?" : {
 
     },
     "Cleared %@" : {
@@ -1615,6 +1627,15 @@
 
     },
     "Coach answers with AI." : {
+
+    },
+    "Coach can make mistakes. Check anything important." : {
+
+    },
+    "Coach can make mistakes. Check anything important. · ^[%lld question](inflect: true) left today" : {
+
+    },
+    "Coach settings" : {
 
     },
     "Cocktail" : {
@@ -1713,6 +1734,9 @@
     "Cycle day %lld" : {
 
     },
+    "Cycle day and the next estimated window. Off unless you turn it on." : {
+
+    },
     "Cycle history" : {
 
     },
@@ -1768,9 +1792,6 @@
 
     },
     "Days logged" : {
-
-    },
-    "Debug builds only. The Coach screen (12) is a static design until its backend is approved." : {
 
     },
     "Debug builds only. The photo screens (I02–I07) are static designs until recognition is approved." : {
@@ -2041,6 +2062,9 @@
 
     },
     "Every logged cycle day will be removed from this iPhone. This can't be undone." : {
+
+    },
+    "Every message is removed from this iPhone." : {
 
     },
     "Everything" : {
@@ -2399,6 +2423,9 @@
     "How Fuel is calculated" : {
 
     },
+    "How has my protein been this week?" : {
+
+    },
     "How macros are measured" : {
 
     },
@@ -2406,6 +2433,9 @@
 
     },
     "How this is measured" : {
+
+    },
+    "How's my water today?" : {
 
     },
     "Hydration" : {
@@ -3388,6 +3418,16 @@
     "Quantity" : {
 
     },
+    "Questions go to %@ through VESS's server. VESS doesn't store them. %@ processes them under its API terms. The conversation is kept only on this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Questions go to %1$@ through VESS's server. VESS doesn't store them. %2$@ processes them under its API terms. The conversation is kept only on this iPhone."
+          }
+        }
+      }
+    },
     "Quick add" : {
 
     },
@@ -3544,6 +3584,9 @@
     "Select all that apply, or continue if none do." : {
 
     },
+    "Send" : {
+
+    },
     "Send again" : {
 
     },
@@ -3571,6 +3614,9 @@
     "Sex" : {
 
     },
+    "Share cycle with Coach" : {
+
+    },
     "Share of energy" : {
 
     },
@@ -3593,6 +3639,9 @@
 
     },
     "Sign in" : {
+
+    },
+    "Sign in to ask Coach" : {
 
     },
     "Sign in with Apple" : {
@@ -3883,6 +3932,9 @@
     "That doesn't look like a barcode. Check the digits." : {
 
     },
+    "That's today's free Coach questions. Back tomorrow." : {
+
+    },
     "That's today's free uses. Back tomorrow." : {
 
     },
@@ -3919,10 +3971,16 @@
     "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
 
     },
+    "The summary sent with each question" : {
+
+    },
     "The window runs from your shortest to your longest of those cycles. It says when they vary by more than a week." : {
 
     },
     "These use what's in your pantry first. Check use-by dates before cooking." : {
+
+    },
+    "Thinking…" : {
 
     },
     "This device can't scan barcodes. Type the number under the barcode instead." : {
@@ -3932,6 +3990,9 @@
 
     },
     "This product doesn't list calories, so it can't be logged. Create it as your own food instead." : {
+
+    },
+    "This summary goes with each question, and nothing else from your log. Numbers are rounded; there are no IDs." : {
 
     },
     "This time is in quiet hours, so no reminder will be sent." : {
@@ -4309,6 +4370,12 @@
     "What brings you to VESS?" : {
 
     },
+    "What Coach sees" : {
+
+    },
+    "What could I have for dinner?" : {
+
+    },
     "What is sent" : {
 
     },
@@ -4415,6 +4482,9 @@
           }
         }
       }
+    },
+    "You: %@" : {
+
     },
     "You're offline, and this product isn't saved on this iPhone yet." : {
 
