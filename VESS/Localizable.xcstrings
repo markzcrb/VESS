@@ -1614,9 +1614,6 @@
     "Coach and photo estimates stop until you sign in again. Your log stays on this iPhone unless you also delete all data." : {
 
     },
-    "Coach and photo estimates use this account. Your log stays on this iPhone." : {
-
-    },
     "Coach answers with AI." : {
 
     },
@@ -4429,9 +4426,6 @@
 
     },
     "You're offline. Try again when you're connected." : {
-
-    },
-    "You're signed in." : {
 
     },
     "You've logged enough days. Insights will appear here once VESS can compare them carefully." : {

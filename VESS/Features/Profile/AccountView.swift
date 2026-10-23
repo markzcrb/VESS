@@ -16,13 +16,14 @@ struct AccountView: View {
 
     var body: some View {
         ProfilePage(title: "Account") {
+            // One headline, signed in or not.
+            ProfileIntro(
+                title: "An account for AI features.",
+                text: "Only for Coach and photo estimates. Your log stays on this iPhone."
+            )
             if let session = account.session {
                 signedIn(session)
             } else {
-                ProfileIntro(
-                    title: "An account for AI features.",
-                    text: "Only for Coach and photo estimates. Your log stays on this iPhone."
-                )
                 AccountSignInForm()
             }
         }
@@ -34,7 +35,6 @@ struct AccountView: View {
 
     @ViewBuilder
     private func signedIn(_ session: AuthSession) -> some View {
-        ProfileIntro(title: "You're signed in.", text: "Coach and photo estimates use this account. Your log stays on this iPhone.")
         VESSRowGroup {
             VESSListRow(
                 systemImage: session.provider == "apple" ? "apple.logo" : "envelope",

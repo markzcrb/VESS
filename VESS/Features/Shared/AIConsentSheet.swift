@@ -21,18 +21,6 @@ struct AIConsentSheet: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
 
-                    // Up top, so it's read first and never hidden by the buttons.
-                    Group {
-                        if account.isSignedIn {
-                            Text("You can turn this off any time in You › Privacy and data.")
-                        } else {
-                            Text("Needs an account. You can turn this off any time in You › Privacy and data.")
-                        }
-                    }
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-
                     VESSRowGroup {
                         fact("What is sent", sent)
                         fact("To whom", Text("\(AIProcessor.displayName), through VESS's server."))
@@ -47,8 +35,22 @@ struct AIConsentSheet: View {
             }
             .background(VESSColor.card)
             .scrollEdgeEffectStyle(.soft, for: .top)
-            .vessBottomAction {
+            // The footer and buttons sit on the sheet's background below a
+            // hairline; the rows scroll above them, never under.
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(spacing: VESSSpacing.xs) {
+                    Group {
+                        if account.isSignedIn {
+                            Text("You can turn this off any time in You › Privacy and data.")
+                        } else {
+                            Text("Needs an account. You can turn this off any time in You › Privacy and data.")
+                        }
+                    }
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, VESSSpacing.xxs)
                     Button("Allow") {
                         consent.grant(feature)
                         dismiss()
@@ -61,6 +63,12 @@ struct AIConsentSheet: View {
                         .frame(minHeight: VESSHitTarget.minimum)
                         .accessibilityIdentifier("consent.notNow")
                 }
+                .padding(.horizontal, VESSSpacing.screenInset)
+                .padding(.top, VESSSpacing.md)
+                .padding(.bottom, VESSSpacing.xs)
+                .frame(maxWidth: .infinity)
+                .background(VESSColor.card.ignoresSafeArea(edges: .bottom))
+                .overlay(alignment: .top) { VESSHairline() }
             }
             .vessDetailTitle(feature == .coach ? "Coach" : "Photo estimate")
         }
