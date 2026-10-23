@@ -139,6 +139,7 @@ struct ProfileView: View {
             VESSSectionHeader(title: "More")
             VESSRowGroup {
                 link(.body, title: "Body")
+                link(.habits, title: "Habits")
                 link(.supplements, title: "Supplements")
                 link(.notifications, title: "Notifications")
                 link(.privacy, title: "Privacy and data")
@@ -163,7 +164,7 @@ struct ProfileView: View {
 
 /// The You screens, pushed by value on the You stack.
 enum ProfileRoute: Hashable {
-    case goals, body, nutrition, supplements, appleHealth, notifications, privacy, settings, help
+    case goals, body, nutrition, supplements, appleHealth, notifications, privacy, settings, help, habits
     case helpArticle(HelpArticle)
     #if DEBUG
     case vessPlus
@@ -183,6 +184,7 @@ extension View {
             case .privacy: PrivacyView()
             case .settings: SettingsView()
             case .help: HelpView()
+            case .habits: HabitsView()
             case .helpArticle(let article): HelpArticleView(article: article)
             #if DEBUG
             case .vessPlus: VESSPlusView()

@@ -245,13 +245,13 @@ private struct DesignSystemGallery: View {
             VESSSectionHeader(title: "Habit row")
             VESSRowGroup {
                 VESSHabitRow(title: Text(verbatim: "Protein at breakfast"), subtitle: Text(verbatim: "Daily · from your log"), isDone: true,
-                             dots: [.done, .done, .missed, .done, .future, .future, .future], hue: VESSColor.protein)
+                             dots: [.done, .done, .notDone, .done, .future, .future, .future], hue: VESSColor.protein)
                 VESSHabitRow(title: Text(verbatim: "Walk after lunch"), subtitle: Text(verbatim: "Weekdays · 15 min"), isDone: true,
-                             dots: [.missed, .done, .done, .done, .future, .future, .future], hue: VESSColor.activity, onToggle: {})
+                             dots: [.notDone, .done, .done, .done, .future, .future, .future], hue: VESSColor.activity, onToggle: {})
                 VESSHabitRow(title: Text(verbatim: "Water 2.2 L"), subtitle: Text(verbatim: "1.6 of 2.2 L · from your log"), isDone: false,
-                             dots: [.done, .missed, .done, .open, .future, .future, .future], hue: VESSColor.water)
+                             dots: [.done, .notDone, .done, .open, .future, .future, .future], hue: VESSColor.water)
                 VESSHabitRow(title: Text(verbatim: "Screens off by 23:00"), subtitle: Text(verbatim: "Daily · evening"), isDone: false,
-                             dots: [.done, .done, .missed, .open, .future, .future, .future], onToggle: {})
+                             dots: [.done, .done, .notDone, .open, .future, .future, .future], onToggle: {})
             }
             .vessHairlineBottom()
         }

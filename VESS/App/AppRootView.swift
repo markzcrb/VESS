@@ -86,6 +86,10 @@ struct AppRootView: View {
                     if arguments.contains("-seedFullDay") {
                         for entry in data.fullDayExtras { try store.add(entry) }
                     }
+                    // 14: six habits with four weeks of ticks.
+                    if arguments.contains("-habitsDemo") {
+                        try MockData.seedHabits(into: store, now: AppClock.now, calendar: .current)
+                    }
                     // 13: cycle tracking on, with six cycles of history
                     // (`-cycleOn`) or nothing logged yet (`-cycleOnEmpty`).
                     if arguments.contains("-cycleOn") || arguments.contains("-cycleOnEmpty"), var profile = store.profile {

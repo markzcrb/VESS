@@ -15,6 +15,7 @@ struct TodayView: View {
     @State private var showFuelInfo = false
     @State private var showEnergy = false
     @State private var showCycle = false
+    @State private var showHabits = false
     @State private var undoLog: HydrationLog?
     @State private var undoDismissal: Task<Void, Never>?
     @State private var waterAddCount = 0
@@ -122,6 +123,10 @@ struct TodayView: View {
                             onAddDrink: { addDrink = true }
                         )
 
+                        if !store.habits.isEmpty {
+                            TodayHabitsRow(now: now) { showHabits = true }
+                        }
+
                         // Opt-in: nothing about cycles shows while it's off.
                         if profile.isCycleTrackingOn {
                             TodayCycleRow(now: now) { showCycle = true }
@@ -139,6 +144,9 @@ struct TodayView: View {
         }
         .navigationDestination(isPresented: $showCycle) {
             CycleView()
+        }
+        .navigationDestination(isPresented: $showHabits) {
+            HabitsView()
         }
         .sheet(isPresented: $showFuelInfo) {
             FuelInfoSheet(fuel: fuel)

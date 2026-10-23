@@ -144,7 +144,7 @@ struct PrivacyView: View {
             ProfileIntro(title: "Your data stays yours.")
 
             VESSRowGroup {
-                fact("On this iPhone", "Everything you log: meals, drinks, workouts, pantry, plans, supplements, cycle days and your profile.")
+                fact("On this iPhone", "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days and your profile.")
                 fact("Cycle tracking", "Off unless you turn it on. Cycle days stay on this iPhone: they're never sent anywhere and never shared with Apple Health.")
                 fact("Open Food Facts", "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent.")
                 fact("Apple Health", "Read only: steps, workouts, active energy and weight. VESS shows them but doesn't keep a copy.")
@@ -170,7 +170,7 @@ struct PrivacyView: View {
                 .confirmationDialog("Delete all data?", isPresented: $confirmDelete, titleVisibility: .visible) {
                     Button("Delete all data", role: .destructive, action: deleteAll)
                 } message: {
-                    Text("Your profile, meals, drinks, workouts, pantry, plans, supplements and cycle days will be removed from this iPhone. This can't be undone.")
+                    Text("Your profile, meals, drinks, workouts, pantry, plans, supplements, habits and cycle days will be removed from this iPhone. This can't be undone.")
                 }
         }
         .vessErrorAlert(isPresented: $showError, retry: deleteAll)

@@ -143,6 +143,38 @@ final class StoredCycleDay {
     }
 }
 
+/// A habit (14). Additive.
+@Model
+final class StoredHabit {
+    @Attribute(.unique) var id: UUID
+    /// For a stable list order.
+    var createdAt: Date
+    var payload: Data
+
+    init(id: UUID, createdAt: Date, payload: Data) {
+        self.id = id
+        self.createdAt = createdAt
+        self.payload = payload
+    }
+}
+
+/// A day a hand-ticked habit was done. Additive.
+@Model
+final class StoredHabitCheck {
+    @Attribute(.unique) var id: UUID
+    var habitID: UUID
+    /// The start of the day.
+    var day: Date
+    var payload: Data
+
+    init(id: UUID, habitID: UUID, day: Date, payload: Data) {
+        self.id = id
+        self.habitID = habitID
+        self.day = day
+        self.payload = payload
+    }
+}
+
 /// What the user added to or changed on the grocery list. Additive.
 @Model
 final class StoredGroceryItem {

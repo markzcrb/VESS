@@ -3,14 +3,14 @@ import SwiftUI
 /// A habit in today's list (14-habits): a done toggle, the title and
 /// subtitle, and seven day dots for this week.
 ///
-/// No streaks: a missed day is an empty dot, nothing more.
+/// No streaks: a day without it is an empty dot, nothing more.
 struct VESSHabitRow: View {
     /// One day of the week.
     enum Dot: Equatable {
         /// Done, in the habit's hue.
         case done
-        /// A past scheduled day without it.
-        case missed
+        /// A past day without it: an empty dot, nothing more.
+        case notDone
         /// Today, not done yet.
         case open
         /// Later this week, or a day the habit isn't scheduled.
@@ -26,6 +26,9 @@ struct VESSHabitRow: View {
     var hue: Color = VESSColor.text
     /// `nil` when the habit tracks itself: the toggle only shows its state.
     var onToggle: (() -> Void)?
+    /// What VoiceOver says for the week, when counting dots isn't right
+    /// (N times a week: "1 of 2 this week").
+    var spokenWeek: Text?
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .body) private var toggleSize: CGFloat = 32
@@ -101,14 +104,14 @@ struct VESSHabitRow: View {
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("This week")
-        .accessibilityValue(Text("Done on \(dots.filter { $0 == .done }.count) of \(dots.filter { $0 != .future }.count) days so far"))
+        .accessibilityValue(spokenWeek ?? Text("Done on \(dots.filter { $0 == .done }.count) of \(dots.filter { $0 != .future }.count) days so far"))
     }
 
     @ViewBuilder
     private func dotView(_ dot: Dot) -> some View {
         switch dot {
         case .done: Circle().fill(hue).frame(width: dotSize, height: dotSize)
-        case .missed: Circle().fill(VESSColor.chartTrack).frame(width: dotSize, height: dotSize)
+        case .notDone: Circle().fill(VESSColor.chartTrack).frame(width: dotSize, height: dotSize)
         case .open: Circle().strokeBorder(VESSColor.text, lineWidth: 1.5).frame(width: dotSize, height: dotSize)
         case .future: Circle().strokeBorder(VESSColor.decorative, lineWidth: 1).frame(width: dotSize, height: dotSize)
         }
@@ -118,11 +121,11 @@ struct VESSHabitRow: View {
 #Preview("Rows") {
     VESSRowGroup {
         VESSHabitRow(title: Text(verbatim: "Protein at breakfast"), subtitle: Text(verbatim: "Daily · from your log"), isDone: true,
-                     dots: [.done, .done, .missed, .done, .future, .future, .future], hue: VESSColor.protein)
+                     dots: [.done, .done, .notDone, .done, .future, .future, .future], hue: VESSColor.protein)
         VESSHabitRow(title: Text(verbatim: "Vitamin D"), subtitle: Text(verbatim: "Daily · 08:00"), isDone: true,
                      dots: [.done, .done, .done, .done, .future, .future, .future], onToggle: {})
         VESSHabitRow(title: Text(verbatim: "Water 2.2 L"), subtitle: Text(verbatim: "1.6 of 2.2 L · from your log"), isDone: false,
-                     dots: [.done, .missed, .done, .open, .future, .future, .future], hue: VESSColor.water)
+                     dots: [.done, .notDone, .done, .open, .future, .future, .future], hue: VESSColor.water)
     }
     .padding()
     .background(VESSColor.background)

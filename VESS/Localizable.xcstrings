@@ -368,6 +368,16 @@
         }
       }
     },
+    "%@ of %@ · from Apple Health" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ · from Apple Health"
+          }
+        }
+      }
+    },
     "%@ of %@ energy came before noon." : {
       "localizations" : {
         "en" : {
@@ -404,6 +414,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ of %2$@ kcal. %3$@"
+          }
+        }
+      }
+    },
+    "%@ of %@ L · from your log" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ L · from your log"
           }
         }
       }
@@ -637,6 +657,9 @@
         }
       }
     },
+    "%lld days with most of the list done" : {
+
+    },
     "%lld from your pantry · %lld to buy" : {
       "localizations" : {
         "en" : {
@@ -647,6 +670,12 @@
         }
       }
     },
+    "%lld left this evening" : {
+
+    },
+    "%lld left today" : {
+
+    },
     "%lld min" : {
 
     },
@@ -656,6 +685,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld done"
           }
         }
       }
@@ -676,6 +715,36 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld selected · You can change these later."
+          }
+        }
+      }
+    },
+    "%lld of %lld this week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld this week"
+          }
+        }
+      }
+    },
+    "%lld of %lld today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld today"
+          }
+        }
+      }
+    },
+    "%lld of %lld, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld, %3$@"
           }
         }
       }
@@ -887,6 +956,9 @@
     "^[%lld slot](inflect: true) left open: nothing you've saved fits them yet." : {
 
     },
+    "^[%lld time](inflect: true) a week" : {
+
+    },
     "+250 ml" : {
 
     },
@@ -924,6 +996,9 @@
     "a day" : {
 
     },
+    "A fresh list." : {
+
+    },
     "A full day, right at your target." : {
 
     },
@@ -958,6 +1033,9 @@
 
     },
     "A reminder you set for %@." : {
+
+    },
+    "A reminder you set. No pressure." : {
 
     },
     "A separate daily rhythm." : {
@@ -1005,6 +1083,9 @@
     "Add" : {
 
     },
+    "Add %@" : {
+
+    },
     "Add %@ ml" : {
 
     },
@@ -1037,6 +1118,12 @@
     "Add a drink" : {
 
     },
+    "Add a habit" : {
+
+    },
+    "Add a habit or two. Some track themselves from what you already log." : {
+
+    },
     "Add a name so you can find it again." : {
 
     },
@@ -1059,6 +1146,9 @@
 
     },
     "Add drink" : {
+
+    },
+    "Add habit" : {
 
     },
     "Add item" : {
@@ -1114,6 +1204,9 @@
 
     },
     "Add workout" : {
+
+    },
+    "Added" : {
 
     },
     "Added %@ ml of %@" : {
@@ -1179,6 +1272,9 @@
     "All cycles" : {
 
     },
+    "All done today" : {
+
+    },
     "Americano" : {
 
     },
@@ -1205,6 +1301,9 @@
 
     },
     "An estimate: caffeine halves about every %@ hours, and this differs from person to person." : {
+
+    },
+    "Any day is a good day to pick it up." : {
 
     },
     "Anything else, optional" : {
@@ -1338,6 +1437,9 @@
 
     },
     "Carbs are on pace; fat is lighter so far." : {
+
+    },
+    "Category" : {
 
     },
     "Checked" : {
@@ -1478,6 +1580,9 @@
     "Daily" : {
 
     },
+    "Daily · from your log" : {
+
+    },
     "Daily goals" : {
 
     },
@@ -1544,10 +1649,16 @@
     "Delete entry" : {
 
     },
+    "Delete habit" : {
+
+    },
     "Delete last glass" : {
 
     },
     "Delete this day" : {
+
+    },
+    "Delete this habit?" : {
 
     },
     "Delete this item?" : {
@@ -1629,7 +1740,13 @@
     "Duration" : {
 
     },
+    "e.g. Stretch for 10 minutes" : {
+
+    },
     "Each meal near its usual time adds to this part" : {
+
+    },
+    "Each square is a day. Stronger means more of the list was done." : {
 
     },
     "Earlier today" : {
@@ -1648,6 +1765,12 @@
 
     },
     "Edit" : {
+
+    },
+    "Edit habit" : {
+
+    },
+    "Edit habits" : {
 
     },
     "Edit or delete" : {
@@ -1760,7 +1883,7 @@
     "Everything is in your pantry" : {
 
     },
-    "Everything you log: meals, drinks, workouts, pantry, plans, supplements, cycle days and your profile." : {
+    "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days and your profile." : {
 
     },
     "Exercise 3–5 days a week" : {
@@ -1800,6 +1923,9 @@
 
     },
     "Female" : {
+
+    },
+    "Fewer" : {
 
     },
     "Fewer than the 30 days before." : {
@@ -1877,13 +2003,22 @@
     "From" : {
 
     },
+    "From Apple Health" : {
+
+    },
     "From Apple Health · %@" : {
+
+    },
+    "From Apple Health, when connected" : {
 
     },
     "From Apple Health. VESS never estimates steps." : {
 
     },
     "From Open Food Facts · check against the label" : {
+
+    },
+    "From the drinks you log" : {
 
     },
     "From the product database · check against the label" : {
@@ -1898,6 +2033,9 @@
           }
         }
       }
+    },
+    "From your breakfast log" : {
+
     },
     "Fuel" : {
 
@@ -1989,6 +2127,15 @@
     "Grocery list" : {
 
     },
+    "Habit" : {
+
+    },
+    "Habits" : {
+
+    },
+    "Habits today" : {
+
+    },
     "Hard" : {
 
     },
@@ -2063,6 +2210,9 @@
 
     },
     "How macros are measured" : {
+
+    },
+    "How often" : {
 
     },
     "How this is measured" : {
@@ -2144,6 +2294,9 @@
     "Item" : {
 
     },
+    "Its days are removed too." : {
+
+    },
     "IU" : {
 
     },
@@ -2213,6 +2366,9 @@
     "Language" : {
 
     },
+    "Last 4 weeks" : {
+
+    },
     "Last 7 days" : {
 
     },
@@ -2229,6 +2385,9 @@
 
     },
     "Later than the estimate" : {
+
+    },
+    "Later this week" : {
 
     },
     "Latte" : {
@@ -2429,6 +2588,9 @@
     "Most active %@. Known values are kept until the next successful sync." : {
 
     },
+    "Most days, most of the list." : {
+
+    },
     "Most often: %@, then %@." : {
       "localizations" : {
         "en" : {
@@ -2479,6 +2641,9 @@
 
     },
     "New" : {
+
+    },
+    "New habit" : {
 
     },
     "Next day" : {
@@ -2539,6 +2704,12 @@
 
     },
     "No source connected" : {
+
+    },
+    "No streaks to protect. Miss a day and simply pick it up again." : {
+
+    },
+    "No streaks, just today" : {
 
     },
     "No supplements yet." : {
@@ -2605,6 +2776,12 @@
 
     },
     "Nothing on Open Food Facts for %@. You can add it yourself." : {
+
+    },
+    "Nothing on today's list" : {
+
+    },
+    "Nothing on today's list." : {
 
     },
     "Nothing planned yet" : {
@@ -2697,7 +2874,13 @@
     "OK" : {
 
     },
+    "On chosen days" : {
+
+    },
     "on target" : {
+
+    },
+    "On this habit's days, only if it isn't done. Never between 22:00 and 07:00." : {
 
     },
     "On this iPhone" : {
@@ -2743,6 +2926,9 @@
 
     },
     "Optional" : {
+
+    },
+    "Or your own" : {
 
     },
     "Other" : {
@@ -2936,6 +3122,12 @@
     "Reflects how much you move" : {
 
     },
+    "Remind me" : {
+
+    },
+    "Reminder" : {
+
+    },
     "Reminder for %@" : {
 
     },
@@ -3068,7 +3260,13 @@
     "Shows the time picker" : {
 
     },
+    "Sleep" : {
+
+    },
     "slice" : {
+
+    },
+    "Small things, most days." : {
 
     },
     "Snack" : {
@@ -3087,6 +3285,9 @@
 
     },
     "Some" : {
+
+    },
+    "Some days, most of the list." : {
 
     },
     "Some foods don't report %@, so those totals may be low." : {
@@ -3283,6 +3484,9 @@
     "The camera is off for VESS" : {
 
     },
+    "The category sets the colour of its dots." : {
+
+    },
     "The context behind your targets." : {
 
     },
@@ -3316,6 +3520,9 @@
     "This product doesn't list calories, so it can't be logged. Create it as your own food instead." : {
 
     },
+    "This time is in quiet hours, so no reminder will be sent." : {
+
+    },
     "This week" : {
 
     },
@@ -3336,6 +3543,9 @@
 
     },
     "Time" : {
+
+    },
+    "Times a week" : {
 
     },
     "To" : {
@@ -3387,6 +3597,9 @@
 
     },
     "Total" : {
+
+    },
+    "Tracks itself from your log" : {
 
     },
     "Try again" : {
@@ -3593,6 +3806,9 @@
     "Water" : {
 
     },
+    "Water %@ L" : {
+
+    },
     "Water is at %@ of %@ L so far today." : {
       "localizations" : {
         "en" : {
@@ -3616,6 +3832,9 @@
 
     },
     "Week starts on" : {
+
+    },
+    "Weekdays" : {
 
     },
     "Weekends and weekdays are about the same." : {
@@ -3699,6 +3918,16 @@
     "You can change your targets, diet and what to avoid at any time under You." : {
 
     },
+    "You finished most of your list on %lld of the last ^[%lld day](inflect: true)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "You finished most of your list on %1$lld of the last ^[%2$lld day](inflect: true)."
+          }
+        }
+      }
+    },
     "You move most on weekdays." : {
 
     },
@@ -3772,7 +4001,10 @@
     "Your period may come later than estimated." : {
 
     },
-    "Your profile, meals, drinks, workouts, pantry, plans, supplements and cycle days will be removed from this iPhone. This can't be undone." : {
+    "Your profile, meals, drinks, workouts, pantry, plans, supplements, habits and cycle days will be removed from this iPhone. This can't be undone." : {
+
+    },
+    "Your week fills in as you go." : {
 
     },
     "Your week in motion." : {

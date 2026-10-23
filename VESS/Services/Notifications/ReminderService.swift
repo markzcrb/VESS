@@ -59,7 +59,7 @@ final class ReminderService {
         await refreshAuthorization()
         let pending = await center.pendingNotificationRequests().map(\.identifier)
         center.removePendingNotificationRequests(withIdentifiers: pending.filter {
-            $0.hasPrefix(MealReminders.idPrefix) || $0.hasPrefix(Self.supplementPrefix)
+            $0.hasPrefix(MealReminders.idPrefix) || $0.hasPrefix(Self.supplementPrefix) || $0.hasPrefix(HabitRules.idPrefix)
         })
         guard [.authorized, .provisional, .ephemeral].contains(authorization) else { return }
 
@@ -93,6 +93,24 @@ final class ReminderService {
                 content: content,
                 trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: true)
             ))
+        }
+        // Habits: on their days, only while not done, never in quiet hours.
+        // Steps come from Apple Health, which isn't read here, so a steps
+        // habit's reminder doesn't know today's count.
+        let habits = store.habits
+        if habits.contains(where: { $0.reminder != nil }) {
+            let log = HabitLogLoader.log(
+                store: store, health: nil,
+                from: HabitRules.week(containing: now, calendar: calendar).first ?? now, through: now, calendar: calendar
+            )
+            let names = Dictionary(habits.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+            requests += HabitRules.reminders(habits, log: log, now: now, calendar: calendar).map { reminder in
+                let content = UNMutableNotificationContent()
+                content.title = names[reminder.habitID] ?? ""
+                content.body = String(localized: "A reminder you set. No pressure.")
+                let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: reminder.date)
+                return UNNotificationRequest(identifier: reminder.id, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: false))
+            }
         }
         for request in requests {
             do {

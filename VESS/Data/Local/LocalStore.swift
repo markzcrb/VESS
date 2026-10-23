@@ -55,7 +55,7 @@ final class LocalStore {
         Schema([
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
             StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self, StoredSupplement.self,
-            StoredCycleDay.self,
+            StoredCycleDay.self, StoredHabit.self, StoredHabitCheck.self,
         ])
     }
 
@@ -442,6 +442,51 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Habits
+
+    /// The user's habits, in the order they were added.
+    var habits: [Habit] {
+        _ = revision
+        return fetchDecoded(FetchDescriptor<StoredHabit>(sortBy: [SortDescriptor(\.createdAt)]), as: Habit.self) { $0.payload }
+    }
+
+    /// Adds or updates a habit.
+    func save(_ habit: Habit) throws {
+        let payload = try encoder.encode(habit)
+        let id = habit.id
+        if let existing = try context.fetch(FetchDescriptor<StoredHabit>(predicate: #Predicate { $0.id == id })).first {
+            existing.payload = payload
+        } else {
+            context.insert(StoredHabit(id: id, createdAt: habit.createdAt, payload: payload))
+        }
+        try save()
+    }
+
+    /// Removes a habit and its ticks.
+    func deleteHabit(id: UUID) throws {
+        try context.delete(model: StoredHabit.self, where: #Predicate { $0.id == id })
+        try context.delete(model: StoredHabitCheck.self, where: #Predicate { $0.habitID == id })
+        try save()
+    }
+
+    /// Ticks from `start` (inclusive) to `end` (exclusive).
+    func habitChecks(from start: Date, to end: Date) -> [HabitCheck] {
+        _ = revision
+        let descriptor = FetchDescriptor<StoredHabitCheck>(predicate: #Predicate { $0.day >= start && $0.day < end })
+        return fetchDecoded(descriptor, as: HabitCheck.self) { $0.payload }
+    }
+
+    /// Ticks or unticks a habit for a day. One tick per habit and day.
+    func setHabit(_ habitID: UUID, done: Bool, on day: Date, calendar: Calendar) throws {
+        let (start, end) = Self.bounds(of: day, calendar: calendar)
+        try context.delete(model: StoredHabitCheck.self, where: #Predicate { $0.habitID == habitID && $0.day >= start && $0.day < end })
+        if done {
+            let check = HabitCheck(id: UUID(), habitID: habitID, day: start)
+            context.insert(StoredHabitCheck(id: check.id, habitID: habitID, day: start, payload: try encoder.encode(check)))
+        }
+        try save()
+    }
+
     // MARK: Export
 
     /// Everything VESS stores on this iPhone, as one JSON document (E07).
@@ -462,7 +507,9 @@ final class LocalStore {
             grocery: groceryItems,
             workouts: workouts,
             supplements: supplements,
-            cycleDays: cycleDays
+            cycleDays: cycleDays,
+            habits: habits,
+            habitChecks: fetchDecoded(FetchDescriptor<StoredHabitCheck>(sortBy: [SortDescriptor(\.day)]), as: HabitCheck.self) { $0.payload }
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -484,6 +531,8 @@ final class LocalStore {
         let supplements: [Supplement]
         /// Cycle tracking, if it was ever used.
         let cycleDays: [CycleDay]
+        let habits: [Habit]
+        let habitChecks: [HabitCheck]
     }
 
     // MARK: Account data
@@ -500,6 +549,8 @@ final class LocalStore {
         try context.delete(model: StoredWorkout.self)
         try context.delete(model: StoredSupplement.self)
         try context.delete(model: StoredCycleDay.self)
+        try context.delete(model: StoredHabit.self)
+        try context.delete(model: StoredHabitCheck.self)
         try save()
         profile = nil
         insights = []
