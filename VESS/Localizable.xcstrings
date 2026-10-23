@@ -158,6 +158,16 @@
         }
       }
     },
+    "%@ / %@ mg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@ mg"
+          }
+        }
+      }
+    },
     "%@ %@" : {
       "localizations" : {
         "en" : {
@@ -202,6 +212,9 @@
 
     },
     "%@ above target" : {
+
+    },
+    "%@ ABV" : {
 
     },
     "%@ capsules" : {
@@ -323,6 +336,9 @@
       }
     },
     "%@ ml" : {
+
+    },
+    "%@ ml" : {
 
     },
     "%@ ml · %@ drinks" : {
@@ -962,6 +978,16 @@
     "+250 ml" : {
 
     },
+    "≈ %@ mg in this %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "≈ %1$@ mg in this %2$@"
+          }
+        }
+      }
+    },
     "≈ %@ mg in your system at %@" : {
       "localizations" : {
         "en" : {
@@ -1047,6 +1073,16 @@
     "about %@ kcal" : {
 
     },
+    "About %@ kcal and %@ g alcohol (%@), typical values. Counted in your energy, not in Fuel. Alcohol doesn't count toward water." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About %1$@ kcal and %2$@ g alcohol (%3$@), typical values. Counted in your energy, not in Fuel. Alcohol doesn't count toward water."
+          }
+        }
+      }
+    },
     "about %@ mg at 22:00" : {
 
     },
@@ -1086,18 +1122,18 @@
     "Add %@" : {
 
     },
-    "Add %@ ml" : {
-
-    },
-    "Add %@ ml %@" : {
+    "Add %@ · %@ ml" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Add %1$@ ml %2$@"
+            "value" : "Add %1$@ · %2$@ ml"
           }
         }
       }
+    },
+    "Add %@ ml" : {
+
     },
     "Add %lld‑minute %@" : {
       "localizations" : {
@@ -1303,6 +1339,9 @@
     "An estimate: caffeine halves about every %@ hours, and this differs from person to person." : {
 
     },
+    "Any" : {
+
+    },
     "Any day is a good day to pick it up." : {
 
     },
@@ -1359,6 +1398,9 @@
 
     },
     "Before noon" : {
+
+    },
+    "Black" : {
 
     },
     "Black tea" : {
@@ -1442,6 +1484,9 @@
     "Category" : {
 
     },
+    "Changes the strength" : {
+
+    },
     "Checked" : {
 
     },
@@ -1458,6 +1503,9 @@
 
     },
     "Choose the one that matters most right now." : {
+
+    },
+    "Cider" : {
 
     },
     "Clear search" : {
@@ -1539,6 +1587,9 @@
 
     },
     "cup" : {
+
+    },
+    "Cup" : {
 
     },
     "Cupboard" : {
@@ -1631,6 +1682,9 @@
     "Debug only" : {
 
     },
+    "Decaf" : {
+
+    },
     "Delete" : {
 
     },
@@ -1656,6 +1710,9 @@
 
     },
     "Delete this day" : {
+
+    },
+    "Delete this drink" : {
 
     },
     "Delete this habit?" : {
@@ -1719,6 +1776,9 @@
     "Dose" : {
 
     },
+    "Double" : {
+
+    },
     "Double-tap to change" : {
 
     },
@@ -1765,6 +1825,9 @@
 
     },
     "Edit" : {
+
+    },
+    "Edit drink" : {
 
     },
     "Edit habit" : {
@@ -1940,6 +2003,9 @@
     "Filled days are logged, dashed days are estimated, and the outlined day is today" : {
 
     },
+    "Filter" : {
+
+    },
     "Fish" : {
 
     },
@@ -2112,6 +2178,9 @@
     "Good morning, %@" : {
 
     },
+    "Green" : {
+
+    },
     "Green tea" : {
 
     },
@@ -2160,10 +2229,16 @@
     "Help" : {
 
     },
+    "Herbal" : {
+
+    },
     "Herbal tea" : {
 
     },
     "Hides the calendar" : {
+
+    },
+    "Hides the strength" : {
 
     },
     "Hides the time picker" : {
@@ -2270,6 +2345,12 @@
     "Insights need about %lld days of logging so a pattern isn't just one odd week. Keep logging and they'll show up here." : {
 
     },
+    "Instant" : {
+
+    },
+    "Instant coffee" : {
+
+    },
     "Intake today" : {
 
     },
@@ -2354,6 +2435,9 @@
     "Known values are kept until the next successful sync." : {
 
     },
+    "Kombucha" : {
+
+    },
     "L" : {
 
     },
@@ -2364,6 +2448,21 @@
 
     },
     "Language" : {
+
+    },
+    "Large" : {
+
+    },
+    "Large bottle" : {
+
+    },
+    "Large can" : {
+
+    },
+    "Large glass" : {
+
+    },
+    "Large mug" : {
 
     },
     "Last 4 weeks" : {
@@ -2462,6 +2561,9 @@
     "Logs it" : {
 
     },
+    "Long drink" : {
+
+    },
     "Longer" : {
 
     },
@@ -2495,6 +2597,9 @@
     "Lunch" : {
 
     },
+    "Lungo" : {
+
+    },
     "Macros" : {
 
     },
@@ -2522,6 +2627,9 @@
     "Margin note" : {
 
     },
+    "Matcha" : {
+
+    },
     "Meal" : {
 
     },
@@ -2547,6 +2655,9 @@
 
     },
     "mg" : {
+
+    },
+    "Milk" : {
 
     },
     "min" : {
@@ -2976,6 +3087,9 @@
     "Physical job or training twice a day" : {
 
     },
+    "Pint" : {
+
+    },
     "Plan" : {
 
     },
@@ -3119,6 +3233,9 @@
     "Reflects how much you move" : {
 
     },
+    "Regular" : {
+
+    },
     "Remind me" : {
 
     },
@@ -3257,19 +3374,40 @@
     "Shows the time picker" : {
 
     },
+    "Single" : {
+
+    },
     "Sleep" : {
 
     },
     "slice" : {
 
     },
+    "Small" : {
+
+    },
+    "Small bottle" : {
+
+    },
+    "Small can" : {
+
+    },
+    "Small glass" : {
+
+    },
     "Small things, most days." : {
+
+    },
+    "Smoothie" : {
 
     },
     "Snack" : {
 
     },
     "So you don't log them twice" : {
+
+    },
+    "Soda" : {
 
     },
     "Sodium" : {
@@ -3305,10 +3443,19 @@
     "soy-free" : {
 
     },
+    "Sparkling" : {
+
+    },
     "Sparkling water" : {
 
     },
     "Spirit" : {
+
+    },
+    "Spirits" : {
+
+    },
+    "Sports drink" : {
 
     },
     "Spotting" : {
@@ -3360,6 +3507,9 @@
     "Steps, last 7 days" : {
 
     },
+    "Still" : {
+
+    },
     "Stored in" : {
 
     },
@@ -3370,6 +3520,9 @@
 
     },
     "strength session" : {
+
+    },
+    "Stronger" : {
 
     },
     "Sufficient" : {
@@ -3676,6 +3829,9 @@
     "Up to your water target" : {
 
     },
+    "Updated %@" : {
+
+    },
     "Updated from your plan. %lld things you already have at home were left off." : {
 
     },
@@ -3820,6 +3976,9 @@
 
     },
     "Water target reached." : {
+
+    },
+    "Weaker" : {
 
     },
     "Week" : {

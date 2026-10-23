@@ -37,6 +37,22 @@ nonisolated struct HydrationLog: Identifiable, Codable, Hashable, Sendable {
     var standardDrinks: Double? {
         alcoholGrams.map(StandardDrink.count(alcoholGrams:))
     }
+
+    /// The same drink at another volume and time (editing a logged drink):
+    /// kcal, sugar, caffeine and alcohol scale with the volume; the share
+    /// toward water stays as it was logged.
+    func edited(volumeMilliliters newVolume: Double, loggedAt newDate: Date) -> HydrationLog {
+        let volume = max(newVolume, 0)
+        let factor = volumeMilliliters > 0 ? volume / volumeMilliliters : 0
+        var copy = self
+        copy.volumeMilliliters = volume
+        copy.calories = calories * factor
+        copy.sugarGrams = sugarGrams * factor
+        copy.caffeineMilligrams = caffeineMilligrams * factor
+        copy.alcoholGrams = alcoholGrams.map { $0 * factor }
+        copy.loggedAt = newDate
+        return copy
+    }
 }
 
 nonisolated extension Sequence where Element == HydrationLog {

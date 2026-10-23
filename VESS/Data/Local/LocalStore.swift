@@ -239,6 +239,17 @@ final class LocalStore {
         try save()
     }
 
+    /// Replaces a logged drink (after editing its amount or time).
+    func update(_ log: HydrationLog) throws {
+        let id = log.id
+        guard let record = try context.fetch(FetchDescriptor<StoredHydrationLog>(predicate: #Predicate { $0.id == id })).first else {
+            throw LocalStoreError.notFound
+        }
+        record.loggedAt = log.loggedAt
+        record.payload = try encoder.encode(log)
+        try save()
+    }
+
     func deleteHydrationLog(id: UUID) throws {
         try context.delete(model: StoredHydrationLog.self, where: #Predicate { $0.id == id })
         try save()

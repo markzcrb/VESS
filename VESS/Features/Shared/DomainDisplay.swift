@@ -174,11 +174,64 @@ extension DrinkPreset {
         case .wine: "Wine"
         case .spirit: "Spirit"
         case .cocktail: "Cocktail"
+        case .matcha: "Matcha"
+        case .instantCoffee: "Instant coffee"
+        case .decaf: "Decaf"
+        case .milk: "Milk"
+        case .smoothie: "Smoothie"
+        case .sportsDrink: "Sports drink"
+        case .kombucha: "Kombucha"
+        case .cider: "Cider"
+        }
+    }
+
+    /// The drink tab's name: short, and never the category's name again
+    /// ("Still" under Water, "Green" under Tea, "Filter" under Coffee).
+    var tabTitle: LocalizedStringResource {
+        switch self {
+        case .water: "Still"
+        case .sparklingWater: "Sparkling"
+        case .tea: "Black"
+        case .greenTea: "Green"
+        case .herbalTea: "Herbal"
+        case .blackCoffee: "Filter"
+        case .instantCoffee: "Instant"
+        case .softDrink: "Soda"
+        case .spirit: "Spirits"
+        default: title
         }
     }
 
     /// Outline SF Symbols only.
     var symbol: String { type.symbol }
+}
+
+extension DrinkServing.Name {
+    var title: LocalizedStringResource {
+        switch self {
+        case .small: "Small"
+        case .medium: "Medium"
+        case .large: "Large"
+        case .regular: "Regular"
+        case .single: "Single"
+        case .double: "Double"
+        case .lungo: "Lungo"
+        case .cup: "Cup"
+        case .mug: "Mug"
+        case .largeMug: "Large mug"
+        case .glass: "Glass"
+        case .smallGlass: "Small glass"
+        case .largeGlass: "Large glass"
+        case .can: "Can"
+        case .smallCan: "Small can"
+        case .largeCan: "Large can"
+        case .bottle: "Bottle"
+        case .smallBottle: "Small bottle"
+        case .largeBottle: "Large bottle"
+        case .pint: "Pint"
+        case .longDrink: "Long drink"
+        }
+    }
 }
 
 extension DrinkCategory {

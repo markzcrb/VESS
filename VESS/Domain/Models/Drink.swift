@@ -80,9 +80,17 @@ nonisolated enum DrinkCategory: String, CaseIterable, Sendable {
     case other
     case alcohol
 
-    /// The drinks in this group, in the order they're offered.
+    /// The drinks in this group, in the order they're offered (19, 20).
+    /// Cola and "Other drink" are no longer offered; logs that use them
+    /// still decode and show.
     var presets: [DrinkPreset] {
-        DrinkPreset.allCases.filter { $0.category == self }
+        switch self {
+        case .water: [.water, .sparklingWater]
+        case .tea: [.greenTea, .tea, .herbalTea, .matcha]
+        case .coffee: [.espresso, .americano, .latte, .cappuccino, .flatWhite, .blackCoffee, .coldBrew, .instantCoffee, .decaf]
+        case .other: [.juice, .softDrink, .energyDrink, .milk, .smoothie, .sportsDrink, .kombucha]
+        case .alcohol: [.beer, .wine, .spirit, .cocktail, .cider]
+        }
     }
 }
 
@@ -100,6 +108,9 @@ nonisolated enum StandardDrink {
     static func gramsPer100Milliliters(percentByVolume: Double) -> Double {
         percentByVolume * ethanolDensity
     }
+
+    /// Energy in a gram of alcohol.
+    static let kilocaloriesPerGram = 7.0
 }
 
 /// Built-in drinks offered when logging. Nutrition values are typical
@@ -137,17 +148,28 @@ nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseItera
     case wine
     case spirit
     case cocktail
+    // Added with the drinks sheet (19, 20); appended, so stored values stay.
+    case matcha
+    case instantCoffee
+    case decaf
+    case milk
+    case smoothie
+    case sportsDrink
+    case kombucha
+    case cider
 
     var type: DrinkType {
         switch self {
         case .water, .sparklingWater: .water
-        case .espresso, .americano, .cappuccino, .latte, .flatWhite, .blackCoffee, .coldBrew: .coffee
-        case .tea, .greenTea, .herbalTea: .tea
-        case .juice: .juice
-        case .softDrink, .cola: .softDrink
+        case .espresso, .americano, .cappuccino, .latte, .flatWhite, .blackCoffee, .coldBrew, .instantCoffee, .decaf: .coffee
+        case .tea, .greenTea, .herbalTea, .matcha: .tea
+        // Milk and smoothies use juice's share; sports drinks and kombucha
+        // a soft drink's. No new hydration rules.
+        case .juice, .milk, .smoothie: .juice
+        case .softDrink, .cola, .sportsDrink, .kombucha: .softDrink
         case .energyDrink: .energyDrink
         case .other: .custom
-        case .beer, .wine, .spirit, .cocktail: .alcohol
+        case .beer, .wine, .spirit, .cocktail, .cider: .alcohol
         }
     }
 
@@ -161,13 +183,14 @@ nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseItera
         }
     }
 
+    /// A typical serving, used by the caffeine screen's quick log and as a
+    /// drink definition's default. Unchanged by the sheet's three sizes.
     var defaultVolumeMilliliters: Double {
         switch self {
         case .water, .tea, .juice, .other: 250
         case .sparklingWater, .softDrink: 330
         case .blackCoffee: 200
         case .flatWhite: 240
-        // Typical serving sizes (new presets).
         case .espresso: 30
         case .americano, .coldBrew, .greenTea, .herbalTea, .energyDrink: 250
         case .cappuccino: 180
@@ -175,6 +198,52 @@ nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseItera
         case .cola, .beer: 330
         case .wine, .cocktail: 150
         case .spirit: 40
+        case .matcha, .instantCoffee, .decaf, .milk: 250
+        case .smoothie, .kombucha, .cider: 330
+        case .sportsDrink: 500
+        }
+    }
+
+    /// The size selected when the drink is chosen on the sheet: the middle one.
+    var selectedServing: DrinkServing { servings[1] }
+
+    /// Three sizes per drink, small to large (19, 20: Latte 250/350/450,
+    /// Wine 125/150/250, Water 250/330/500).
+    var servings: [DrinkServing] {
+        switch self {
+        case .water, .sparklingWater: [.init(250, .glass), .init(330, .smallBottle), .init(500, .bottle)]
+        case .espresso: [.init(30, .single), .init(60, .double), .init(110, .lungo)]
+        case .americano, .latte, .coldBrew: [.init(250, .small), .init(350, .medium), .init(450, .large)]
+        case .cappuccino: [.init(180, .small), .init(250, .medium), .init(350, .large)]
+        case .flatWhite: [.init(160, .small), .init(240, .regular), .init(300, .large)]
+        case .blackCoffee, .decaf: [.init(200, .cup), .init(300, .mug), .init(400, .largeMug)]
+        case .instantCoffee: [.init(200, .cup), .init(250, .mug), .init(300, .largeMug)]
+        case .tea, .greenTea, .herbalTea, .matcha: [.init(200, .cup), .init(300, .mug), .init(400, .largeMug)]
+        case .juice: [.init(150, .smallGlass), .init(250, .glass), .init(330, .bottle)]
+        case .softDrink, .cola: [.init(250, .glass), .init(330, .can), .init(500, .bottle)]
+        case .energyDrink: [.init(250, .smallCan), .init(330, .can), .init(500, .largeCan)]
+        case .milk: [.init(200, .smallGlass), .init(250, .glass), .init(300, .largeGlass)]
+        case .smoothie: [.init(250, .small), .init(350, .medium), .init(500, .large)]
+        case .sportsDrink: [.init(330, .can), .init(500, .bottle), .init(750, .largeBottle)]
+        case .kombucha: [.init(250, .glass), .init(330, .bottle), .init(500, .largeBottle)]
+        case .other: [.init(150, .smallGlass), .init(250, .glass), .init(330, .bottle)]
+        case .beer, .cider: [.init(330, .bottle), .init(500, .large), .init(568, .pint)]
+        case .wine: [.init(125, .smallGlass), .init(150, .glass), .init(250, .largeGlass)]
+        case .spirit: [.init(25, .small), .init(40, .single), .init(80, .double)]
+        case .cocktail: [.init(100, .small), .init(150, .glass), .init(250, .longDrink)]
+        }
+    }
+
+    /// Typical strength in % by volume; `nil` for drinks without alcohol.
+    /// A cocktail is one 40 ml shot of a 40 % spirit in 150 ml.
+    var defaultPercentByVolume: Double? {
+        switch self {
+        case .beer: 5
+        case .wine: 12
+        case .spirit: 40
+        case .cocktail: 40 * 40 / 150
+        case .cider: 4.5
+        default: nil
         }
     }
 
@@ -194,7 +263,7 @@ nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseItera
     /// from the earlier catalog. All figures are shown as typical values.
     var hasNewTypicalValues: Bool {
         switch self {
-        case .water, .sparklingWater, .blackCoffee, .flatWhite, .tea, .juice, .softDrink, .other: false
+        case .water, .sparklingWater, .blackCoffee, .flatWhite, .tea, .juice, .softDrink, .other, .cola: false
         default: true
         }
     }
@@ -227,6 +296,17 @@ nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseItera
         case .wine: (83, 0.8, 0, StandardDrink.gramsPer100Milliliters(percentByVolume: 12))
         case .spirit: (231, 0, 0, StandardDrink.gramsPer100Milliliters(percentByVolume: 40))
         case .cocktail: (100, 8, 0, StandardDrink.gramsPer100Milliliters(percentByVolume: 40) * 40 / 150)
+        // Added with the drinks sheet. Matcha: 2 g powder in water; instant:
+        // 2 g in water; decaf ~2 mg a cup; semi-skimmed milk; a fruit
+        // smoothie; an isotonic sports drink; kombucha; cider at 4.5 %.
+        case .matcha: (1, 0, 28, 0)
+        case .instantCoffee: (1, 0, 25, 0)
+        case .decaf: (1, 0, 1, 0)
+        case .milk: (47, 4.8, 0, 0)
+        case .smoothie: (55, 10, 0, 0)
+        case .sportsDrink: (25, 6, 0, 0)
+        case .kombucha: (15, 3, 3, 0)
+        case .cider: (45, 4, 0, StandardDrink.gramsPer100Milliliters(percentByVolume: 4.5))
         }
     }
 
@@ -235,18 +315,47 @@ nonisolated enum DrinkPreset: String, Codable, CodingKeyRepresentable, CaseItera
 
     /// A drink definition for this preset, using `hydrationContributionPercent`
     /// if the user has set their own default.
-    func drink(name: String, hydrationContributionPercent: Double? = nil) -> Drink {
+    ///
+    /// For alcohol, `percentByVolume` (the Strength row) replaces the typical
+    /// strength: grams of alcohol follow it, and so do the kcal, at 7 kcal
+    /// per gram of alcohol on top of the drink's other kcal.
+    func drink(name: String, hydrationContributionPercent: Double? = nil, percentByVolume: Double? = nil) -> Drink {
         let typical = typicalPer100Milliliters
+        var calories = typical.calories
+        var alcohol = typical.alcohol
+        if let percentByVolume, defaultPercentByVolume != nil {
+            let grams = StandardDrink.gramsPer100Milliliters(percentByVolume: max(percentByVolume, 0))
+            calories = max(typical.calories - typical.alcohol * StandardDrink.kilocaloriesPerGram, 0) + grams * StandardDrink.kilocaloriesPerGram
+            alcohol = grams
+        }
         return Drink(
             id: UUID(),
             name: name,
             type: type,
             defaultVolumeMilliliters: defaultVolumeMilliliters,
-            caloriesPer100Milliliters: typical.calories,
+            caloriesPer100Milliliters: calories,
             sugarGramsPer100Milliliters: typical.sugar,
             caffeineMilligramsPer100Milliliters: typical.caffeine,
             hydrationContributionPercent: hydrationContributionPercent ?? defaultHydrationContributionPercent,
-            alcoholGramsPer100Milliliters: typical.alcohol
+            alcoholGramsPer100Milliliters: alcohol
         )
+    }
+}
+
+/// One of a drink's three sizes.
+nonisolated struct DrinkServing: Hashable, Sendable {
+    let milliliters: Double
+    let name: Name
+
+    init(_ milliliters: Double, _ name: Name) {
+        self.milliliters = milliliters
+        self.name = name
+    }
+
+    nonisolated enum Name: String, Sendable {
+        case small, medium, large, regular, single, double, lungo
+        case cup, mug, largeMug, glass, smallGlass, largeGlass
+        case can, smallCan, largeCan, bottle, smallBottle, largeBottle
+        case pint, longDrink
     }
 }

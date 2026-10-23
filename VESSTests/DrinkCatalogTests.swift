@@ -8,14 +8,20 @@ struct DrinkCatalogTests {
     private let calendar = TestClock.utc
     private let targets = NutritionTargets(calories: 2000, proteinGrams: 100, carbohydrateGrams: 250, fatGrams: 70)
 
-    @Test("Every drink has a chip; alcohol counts 0 % toward water")
+    @Test("Every offered drink sits in its own category, in the order of 19 and 20; alcohol counts 0 % toward water")
     func categories() {
-        for preset in DrinkPreset.allCases {
-            #expect(preset.category.presets.contains(preset))
+        // Cola and "Other drink" are no longer offered; their logs still decode.
+        for preset in DrinkPreset.allCases where ![.cola, .other].contains(preset) {
+            #expect(preset.category.presets.contains(preset), "\(preset) is offered")
         }
-        #expect(DrinkCategory.coffee.presets == [.espresso, .americano, .cappuccino, .latte, .flatWhite, .blackCoffee, .coldBrew])
-        #expect(DrinkCategory.tea.presets == [.tea, .greenTea, .herbalTea])
-        #expect(DrinkCategory.alcohol.presets == [.beer, .wine, .spirit, .cocktail])
+        #expect(DrinkCategory.water.presets == [.water, .sparklingWater])
+        #expect(DrinkCategory.tea.presets == [.greenTea, .tea, .herbalTea, .matcha])
+        #expect(DrinkCategory.coffee.presets == [.espresso, .americano, .latte, .cappuccino, .flatWhite, .blackCoffee, .coldBrew, .instantCoffee, .decaf])
+        #expect(DrinkCategory.other.presets == [.juice, .softDrink, .energyDrink, .milk, .smoothie, .sportsDrink, .kombucha])
+        #expect(DrinkCategory.alcohol.presets == [.beer, .wine, .spirit, .cocktail, .cider])
+        for category in DrinkCategory.allCases {
+            #expect(category.presets.allSatisfy { $0.category == category })
+        }
         for preset in DrinkCategory.alcohol.presets {
             #expect(preset.defaultHydrationContributionPercent == 0)
             #expect(DrinkFacts.contributionPercent(preset, profile: nil) == 0)
@@ -103,6 +109,68 @@ struct DrinkCatalogTests {
         let week = IntakeAnalysis.dailyTotals([breakfast], extra: extra, endingOn: day, days: 2, calendar: calendar)
         #expect(week[0].hasEntries, "A day with only a drink still counts as logged")
         #expect(abs(week[0].nutrition.calories - yesterdayWine.calories) < 0.001)
+    }
+
+    @Test("Three sizes per drink, small to large; the middle one is selected")
+    func servings() {
+        for preset in DrinkPreset.allCases {
+            let sizes = preset.servings.map(\.milliliters)
+            #expect(sizes.count == 3, "\(preset)")
+            #expect(sizes == sizes.sorted() && Set(sizes).count == 3, "\(preset) ascends")
+            #expect(preset.selectedServing == preset.servings[1])
+        }
+        #expect(DrinkPreset.latte.servings.map(\.milliliters) == [250, 350, 450])
+        #expect(DrinkPreset.espresso.servings.map(\.milliliters) == [30, 60, 110])
+        #expect(DrinkPreset.wine.servings.map(\.milliliters) == [125, 150, 250])
+        #expect(DrinkPreset.beer.servings.map(\.milliliters) == [330, 500, 568])
+        #expect(DrinkPreset.water.servings.map(\.milliliters) == [250, 330, 500])
+    }
+
+    @Test("New drinks keep the existing water shares; cider is alcohol")
+    func newDrinks() {
+        #expect(DrinkPreset.milk.defaultHydrationContributionPercent == DrinkType.juice.defaultHydrationContributionPercent)
+        #expect(DrinkPreset.kombucha.defaultHydrationContributionPercent == DrinkType.softDrink.defaultHydrationContributionPercent)
+        #expect(DrinkPreset.matcha.type == .tea && DrinkPreset.decaf.type == .coffee)
+        #expect(DrinkPreset.cider.type == .alcohol && DrinkPreset.cider.defaultPercentByVolume == 4.5)
+        #expect(DrinkFacts.contributionPercent(.cider, profile: nil) == 0)
+        #expect(DrinkPreset.latte.defaultPercentByVolume == nil)
+    }
+
+    @Test("Strength: grams of alcohol follow the ABV, and kcal at 7 per gram on top of the drink's other kcal")
+    func strength() throws {
+        let typical = DrinkPreset.wine.drink(name: "Wine")
+        let same = DrinkPreset.wine.drink(name: "Wine", percentByVolume: 12)
+        #expect(abs(same.caloriesPer100Milliliters - typical.caloriesPer100Milliliters) < 0.001)
+        #expect(abs(same.alcoholGramsPer100Milliliters - typical.alcoholGramsPer100Milliliters) < 0.001)
+
+        let stronger = DrinkPreset.wine.drink(name: "Wine", percentByVolume: 14)
+        let extraGrams = 2 * StandardDrink.ethanolDensity
+        #expect(abs(stronger.alcoholGramsPer100Milliliters - typical.alcoholGramsPer100Milliliters - extraGrams) < 0.001)
+        #expect(abs(stronger.caloriesPer100Milliliters - typical.caloriesPer100Milliliters - extraGrams * 7) < 0.001)
+
+        // Strength is ignored for drinks without alcohol.
+        let latte = DrinkPreset.latte.drink(name: "Latte", percentByVolume: 10)
+        #expect(latte.alcoholGramsPer100Milliliters == 0)
+        let log = stronger.log(userID: userID, volumeMilliliters: 150, at: try TestClock.date(2026, 10, 6, 20))
+        #expect(log.hydrationMilliliters == 0)
+    }
+
+    @Test("Editing a logged drink scales its values; the share toward water stays")
+    func edited() throws {
+        let at = try TestClock.date(2026, 10, 6, 9)
+        let later = try TestClock.date(2026, 10, 6, 10)
+        let latte = DrinkPreset.latte.drink(name: "Latte").log(userID: userID, volumeMilliliters: 300, at: at)
+        let bigger = latte.edited(volumeMilliliters: 450, loggedAt: later)
+        #expect(bigger.id == latte.id && bigger.loggedAt == later)
+        #expect(abs(bigger.caffeineMilligrams - latte.caffeineMilligrams * 1.5) < 0.001)
+        #expect(abs(bigger.calories - latte.calories * 1.5) < 0.001)
+        #expect(bigger.hydrationContributionPercent == latte.hydrationContributionPercent)
+        #expect(abs(bigger.hydrationMilliliters - 360) < 0.001)
+
+        let beer = DrinkPreset.beer.drink(name: "Beer").log(userID: userID, volumeMilliliters: 330, at: at)
+        #expect(abs((beer.edited(volumeMilliliters: 660, loggedAt: at).alcoholGrams ?? 0) - (beer.alcoholGrams ?? 0) * 2) < 0.001)
+        #expect(DrinkPreset.water.drink(name: "Water").log(userID: userID, volumeMilliliters: 250, at: at)
+            .edited(volumeMilliliters: 500, loggedAt: at).alcoholGrams == nil)
     }
 
     @Test("Logs and profiles saved before the expanded catalog still decode")
