@@ -19,6 +19,23 @@ nonisolated struct WeekPlan: Sendable {
         let slots: [(meal: MealType, slot: Slot)]
         /// Everything logged that day, snacks included.
         let logged: [FoodLogEntry]
+
+        /// How many main meals are eaten or planned (17, 18: the day's dot).
+        var filledCount: Int {
+            slots.filter { if case .open = $0.slot { false } else { true } }.count
+        }
+
+        /// The day's dot: filled for all main meals, hollow for some, none
+        /// for nothing.
+        var coverage: Coverage {
+            let filled = filledCount
+            if filled == 0 { return .none }
+            return filled == slots.count ? .all : .some
+        }
+    }
+
+    nonisolated enum Coverage: Equatable, Sendable {
+        case none, some, all
     }
 
     static let slotsPerDay = MealType.mainMeals

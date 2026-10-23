@@ -145,7 +145,10 @@
     "%@ · no reminder" : {
 
     },
-    "%@ · open" : {
+    "%@ · open slot" : {
+
+    },
+    "%@ · planned" : {
 
     },
     "%@ · use by %@" : {
@@ -622,6 +625,9 @@
         }
       }
     },
+    "%@, today" : {
+
+    },
     "%@, via Apple Health" : {
 
     },
@@ -715,6 +721,26 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld done"
+          }
+        }
+      }
+    },
+    "%lld of %lld meals logged" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld meals logged"
+          }
+        }
+      }
+    },
+    "%lld of %lld meals planned" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld meals planned"
           }
         }
       }
@@ -943,9 +969,6 @@
           }
         }
       }
-    },
-    "^[%lld meal](inflect: true) logged" : {
-
     },
     "^[%lld meal](inflect: true) logged, about %@ kcal a day." : {
       "localizations" : {
@@ -1200,9 +1223,6 @@
     "Add manually" : {
 
     },
-    "Add meal" : {
-
-    },
     "Add supplement" : {
 
     },
@@ -1313,6 +1333,9 @@
 
     },
     "All done today" : {
+
+    },
+    "All main meals" : {
 
     },
     "Americano" : {
@@ -1525,6 +1548,9 @@
 
     },
     "Close" : {
+
+    },
+    "Closes the month" : {
 
     },
     "cm" : {
@@ -1826,9 +1852,6 @@
 
     },
     "Eat healthier" : {
-
-    },
-    "Eaten" : {
 
     },
     "Edit" : {
@@ -2776,6 +2799,9 @@
     "Next day" : {
 
     },
+    "Next month" : {
+
+    },
     "Next period in about ^[%lld day](inflect: true)" : {
 
     },
@@ -3049,6 +3075,9 @@
     "Opens Settings" : {
 
     },
+    "Opens the month" : {
+
+    },
     "Optimal" : {
 
     },
@@ -3143,6 +3172,9 @@
 
     },
     "Previous day" : {
+
+    },
+    "Previous month" : {
 
     },
     "Previous week" : {
@@ -3388,6 +3420,9 @@
 
     },
     "Shows a calendar" : {
+
+    },
+    "Shows the meals to plan" : {
 
     },
     "Shows the time picker" : {
@@ -3733,9 +3768,6 @@
 
     },
     "Today · %@" : {
-
-    },
-    "Today %@" : {
 
     },
     "Today vs. a typical %@" : {

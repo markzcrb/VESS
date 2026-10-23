@@ -60,6 +60,26 @@ struct WeekPlanTests {
         #expect(plan.openSlots.first?.meal == .lunch)
     }
 
+    @Test("A day's dot: all main meals eaten or planned, some, or none; snacks don't count")
+    func coverage() throws {
+        let monday = try TestClock.date(2026, 10, 5, 0)
+        let now = try TestClock.date(2026, 10, 6, 18, 40)
+        let tuesday = try TestClock.date(2026, 10, 6, 12)
+        let entries = [
+            entry("Oats", .breakfast, at: try TestClock.date(2026, 10, 5, 8)),
+            entry("Poke", .lunch, at: try TestClock.date(2026, 10, 5, 13)),
+            entry("Cod", .dinner, at: try TestClock.date(2026, 10, 5, 19)),
+            entry("Skyr", .snack, at: try TestClock.date(2026, 10, 7, 16)),
+        ]
+        let planned = [
+            PlannedMeal(candidate: candidate("Miso cod", .dinner), day: tuesday, meal: .dinner, now: now, calendar: calendar),
+        ]
+        let plan = WeekPlan(weekStart: monday, entries: entries, planned: planned, now: now, calendar: calendar)
+        #expect(plan.days[0].coverage == .all && plan.days[0].filledCount == 3)
+        #expect(plan.days[1].coverage == .some && plan.days[1].filledCount == 1, "A planned dinner counts")
+        #expect(plan.days[2].coverage == .none, "A snack alone isn't a main meal")
+    }
+
     @Test("Ingredients match pantry items by name, longest match first")
     func pantryMatch() throws {
         let now = try TestClock.date(2026, 10, 6, 18, 40)

@@ -7,30 +7,46 @@ import SwiftUI
 struct PlanView: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Segment: Hashable { case week, recipes, grocery }
 
     @State private var segment: Segment = .week
     @State private var weekOffset = 0
+    /// The day picked in the strip or the month grid (17, 18).
+    @State private var selectedDay = Calendar.current.startOfDay(for: AppClock.now)
+    @State private var showMonth = false
+    @State private var monthOffset = 0
+    /// Days whose empty "Nothing planned yet" row was opened to add a meal.
+    @State private var expandedDays: Set<Date> = []
+    @State private var scrollTarget: Date?
     @State private var showError = false
 
     private let calendar = Calendar.current
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: VESSSpacing.section) {
-                    VESSSegmented(selection: $segment, options: segments)
-                    switch segment {
-                    case .week: week
-                    case .recipes: recipes
-                    case .grocery: GroceryContent(onPlanMeals: { segment = .week })
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: VESSSpacing.section) {
+                        VESSSegmented(selection: $segment, options: segments)
+                        switch segment {
+                        case .week: week
+                        case .recipes: recipes
+                        case .grocery: GroceryContent(onPlanMeals: { segment = .week })
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, VESSSpacing.screenInset)
+                    .padding(.top, VESSSpacing.xs)
+                    .padding(.bottom, VESSSpacing.huge)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, VESSSpacing.screenInset)
-                .padding(.top, VESSSpacing.xs)
-                .padding(.bottom, VESSSpacing.huge)
+                // A day picked in the strip or grid brings its section up.
+                .onChange(of: scrollTarget) { _, target in
+                    guard let target else { return }
+                    withAnimation(reduceMotion ? nil : VESSMotion.selection) { proxy.scrollTo(target, anchor: .top) }
+                    scrollTarget = nil
+                }
             }
             .vessScreenBackground()
             .vessDetailTitle("Plan")
@@ -61,8 +77,44 @@ struct PlanView: View {
         let isEmptyFuture = start > today && plan.filledCount == 0
 
         VStack(alignment: .leading, spacing: VESSSpacing.lg) {
-            header(start: start, end: end)
-            if isPastWeek {
+            // The strip and grid sit right under their title, as in 17 and 18.
+            VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                header(start: start, end: end, today: today)
+                if showMonth {
+                    PlanMonthGrid(
+                        month: monthDate(today: today),
+                        selection: selectedDay,
+                        calendar: calendar,
+                        store: store,
+                        onSelect: select(fromMonth:)
+                    )
+                } else {
+                    PlanWeekStrip(days: plan.days, selection: selectedDay, calendar: calendar) { day in
+                        selectedDay = day
+                        scrollTarget = day
+                    } onSwipe: { change in
+                        changeWeek(by: change)
+                    }
+                }
+            }
+            if showMonth {
+                // The selected day's line replaces the week summary.
+                if let day = selectedPlanDay {
+                    Text("\(Text(day.date, format: .dateTime.weekday(.wide).day().month(.wide))) · \(day.spokenStatus)")
+                        .vessTextStyle(.bodyM)
+                        .foregroundStyle(VESSColor.secondaryText)
+                    let open = selectedWeek.openSlots.filter { calendar.isDate($0.day, inSameDayAs: day.date) }
+                    if !open.isEmpty {
+                        NavigationLink {
+                            SuggestionsView(openSlots: open, plannedNames: Set(selectedWeek.days.flatMap { $0.slots.compactMap { if case .planned(let meal) = $0.slot { meal.name } else { nil } } }))
+                        } label: {
+                            Text("Suggest meals for ^[\(open.count) open slot](inflect: true)")
+                        }
+                        .buttonStyle(.vessPrimary)
+                        .accessibilityIdentifier("plan.suggest")
+                    }
+                }
+            } else if isPastWeek {
                 pastSummary(plan)
             } else if isEmptyFuture {
                 Text(weekOffset == 1 ? "Next week" : "Later")
@@ -78,7 +130,7 @@ struct PlanView: View {
             }
         }
 
-        if isEmptyFuture {
+        if isEmptyFuture && !showMonth {
             emptyWeek(plan, planned: planned, start: start)
         } else {
             VESSRowGroup {
@@ -111,43 +163,148 @@ struct PlanView: View {
             }
             .vessHairlineBottom()
 
-            #if DEBUG
-            featuredRecipe(plan)
-            #endif
+            if showMonth {
+                // 18: only the selected day under the grid.
+                if let day = selectedPlanDay {
+                    daySection(day)
+                }
+            } else {
+                #if DEBUG
+                featuredRecipe(plan)
+                #endif
 
-            ForEach(plan.days, id: \.date) { day in
-                daySection(day)
+                ForEach(plan.days, id: \.date) { day in
+                    daySection(day)
+                }
             }
 
-            if !isPastWeek, let insight = insight(plan) {
+            if !isPastWeek, !showMonth, let insight = insight(plan) {
                 VESSInsightCard(text: insight, linkTitle: nil)
             }
         }
     }
 
-    private func header(start: Date, end: Date) -> some View {
-        // At accessibility sizes the arrows go under the title, so the
-        // range never breaks mid-word.
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.sm))
-            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
-
-        return layout {
-            Text(rangeText(start: start, end: end))
-                .vessTextStyle(.editorialL)
-                .foregroundStyle(VESSColor.text)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityAddTraits(.isHeader)
-            if !dynamicTypeSize.isAccessibilitySize {
-                Spacer(minLength: VESSSpacing.sm)
+    /// "19–25 October ˅" (tap for the month) or "October ˄", the Today
+    /// chip when away from this week, and the arrows (week or month).
+    @ViewBuilder
+    private func header(start: Date, end: Date, today: Date) -> some View {
+        let isAway = showMonth ? (monthOffset != 0 || !isInThisWeek(selectedDay, today: today)) : (weekOffset != 0 || !isInThisWeek(selectedDay, today: today))
+        // At accessibility sizes the controls go under the title, so the
+        // range never breaks mid-word. Otherwise they share a row while the
+        // title fits at 80 % (the Today chip on a 402 pt screen) and drop
+        // under it when it doesn't (SE), so the range is never cut.
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                titleButton(start: start, end: end, today: today, wraps: true)
+                headerControls(isAway: isAway, today: today)
             }
-            HStack(spacing: VESSSpacing.xxs) {
-                VESSIconButton(systemImage: "chevron.left", label: "Previous week") { weekOffset -= 1 }
-                    .accessibilityIdentifier("plan.previousWeek")
-                VESSIconButton(systemImage: "chevron.right", label: "Next week") { weekOffset += 1 }
-                    .accessibilityIdentifier("plan.nextWeek")
+        } else {
+            PlanHeaderLayout(spacing: VESSSpacing.sm, minimumScale: Self.titleMinimumScale) {
+                titleButton(start: start, end: end, today: today, wraps: false)
+                headerControls(isAway: isAway, today: today)
             }
         }
+    }
+
+    private static let titleMinimumScale: CGFloat = 0.8
+
+    private func titleButton(start: Date, end: Date, today: Date, wraps: Bool) -> some View {
+        Button {
+            withAnimation(reduceMotion ? nil : VESSMotion.selection) {
+                if !showMonth {
+                    monthOffset = calendar.dateComponents([.month], from: monthStart(today), to: monthStart(selectedDay)).month ?? 0
+                }
+                showMonth.toggle()
+            }
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+                Text(showMonth ? monthDate(today: today).formatted(.dateTime.month(.wide)) : rangeText(start: start, end: end))
+                    .vessTextStyle(.editorialL)
+                    .foregroundStyle(VESSColor.text)
+                    .lineLimit(wraps ? nil : 1)
+                    .minimumScaleFactor(wraps ? 1 : Self.titleMinimumScale)
+                    .fixedSize(horizontal: false, vertical: wraps)
+                Image(systemName: showMonth ? "chevron.up" : "chevron.down")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .accessibilityHidden(true)
+            }
+            .frame(minHeight: VESSHitTarget.minimum)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityHint(showMonth ? "Closes the month" : "Opens the month")
+        .accessibilityIdentifier("plan.title")
+    }
+
+    private func headerControls(isAway: Bool, today: Date) -> some View {
+        HStack(spacing: VESSSpacing.xxs) {
+            if isAway {
+                Button("Today") { goToToday(today) }
+                    .buttonStyle(.vessQuick)
+                    .fixedSize()
+                    .accessibilityIdentifier("plan.today")
+            }
+            VESSIconButton(systemImage: "chevron.left", label: showMonth ? "Previous month" : "Previous week") {
+                if showMonth { monthOffset -= 1 } else { changeWeek(by: -1) }
+            }
+            .accessibilityIdentifier("plan.previousWeek")
+            VESSIconButton(systemImage: "chevron.right", label: showMonth ? "Next month" : "Next week") {
+                if showMonth { monthOffset += 1 } else { changeWeek(by: 1) }
+            }
+            .accessibilityIdentifier("plan.nextWeek")
+        }
+    }
+
+    // MARK: Calendar
+
+    private var selectedWeek: WeekPlan {
+        PlanCalendarData(store: store, calendar: calendar).week(containing: selectedDay, now: AppClock.now)
+    }
+
+    private var selectedPlanDay: WeekPlan.Day? {
+        selectedWeek.days.first { calendar.isDate($0.date, inSameDayAs: selectedDay) }
+    }
+
+    private func monthStart(_ date: Date) -> Date {
+        calendar.dateInterval(of: .month, for: date)?.start ?? calendar.startOfDay(for: date)
+    }
+
+    private func monthDate(today: Date) -> Date {
+        calendar.date(byAdding: .month, value: monthOffset, to: monthStart(today)) ?? today
+    }
+
+    private func isInThisWeek(_ day: Date, today: Date) -> Bool {
+        calendar.isDate(day, equalTo: today, toGranularity: .weekOfYear)
+    }
+
+    /// Arrows and swipes: the week moves, and the selected day with it.
+    private func changeWeek(by change: Int) {
+        weekOffset += change
+        selectedDay = calendar.date(byAdding: .day, value: 7 * change, to: selectedDay) ?? selectedDay
+    }
+
+    private func goToToday(_ today: Date) {
+        withAnimation(reduceMotion ? nil : VESSMotion.selection) {
+            weekOffset = 0
+            monthOffset = 0
+            selectedDay = today
+            showMonth = false
+        }
+    }
+
+    /// A day in the month grid: its week opens with it selected.
+    private func select(fromMonth day: Date) {
+        let thisWeek = calendar.startOfWeek(for: AppClock.now)
+        // Both are week starts, so the day count is a whole number of weeks.
+        let weeks = (calendar.dateComponents([.day], from: thisWeek, to: calendar.startOfWeek(for: day)).day ?? 0) / 7
+        withAnimation(reduceMotion ? nil : VESSMotion.selection) {
+            selectedDay = calendar.startOfDay(for: day)
+            weekOffset = weeks
+            showMonth = false
+        }
+        Task { @MainActor in scrollTarget = calendar.startOfDay(for: day) }
     }
 
     /// "5–11 October", or "28 Sep–4 Oct" across months.
@@ -205,21 +362,38 @@ struct PlanView: View {
     // MARK: Days
 
     private func daySection(_ day: WeekPlan.Day) -> some View {
-        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+        let isSelected = calendar.isDate(day.date, inSameDayAs: selectedDay)
+        return VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
             Group {
                 if day.isToday {
-                    Text("Today \(Text(day.date, format: .dateTime.day().month(.abbreviated)))")
+                    Text("Today · \(Text(day.date, format: .dateTime.weekday(.wide).day().month(.abbreviated)))")
                 } else {
                     Text(day.date, format: .dateTime.weekday(.wide).day().month(.abbreviated))
                 }
             }
             .vessTextStyle(.labelCaps)
-            .foregroundStyle(VESSColor.secondaryText)
+            // The day picked in the strip stands out.
+            .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
             .accessibilityAddTraits(.isHeader)
 
             VESSRowGroup {
                 if day.isPast {
-                    pastRow(day)
+                    let eaten = day.slots.filter { if case .eaten = $0.slot { true } else { false } }
+                    if eaten.isEmpty {
+                        emptyRow(Text("Nothing logged"))
+                    } else {
+                        ForEach(eaten, id: \.meal) { slot in
+                            slotRow(slot.meal, slot.slot, day: day)
+                        }
+                    }
+                } else if day.filledCount == 0 && !expandedDays.contains(day.date) {
+                    Button {
+                        withAnimation(reduceMotion ? nil : VESSMotion.selection) { _ = expandedDays.insert(day.date) }
+                    } label: {
+                        emptyRow(Text("Nothing planned yet"))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Shows the meals to plan")
                 } else {
                     ForEach(day.slots, id: \.meal) { slot in
                         slotRow(slot.meal, slot.slot, day: day)
@@ -228,49 +402,38 @@ struct PlanView: View {
             }
             .vessHairlineBottom()
         }
+        .id(day.date)
     }
 
-    /// "3 meals logged · Eaten · 1,840 kcal".
-    private func pastRow(_ day: WeekPlan.Day) -> some View {
-        let meals = Set(day.logged.map(\.mealType)).count
-        return VESSRow(
-            title: meals == 0 ? Text("Nothing logged") : Text("^[\(meals) meal](inflect: true) logged"),
-            subtitle: meals == 0 ? nil : Text("Eaten")
-        ) {
-            Image(systemName: "checkmark")
-                .foregroundStyle(meals == 0 ? .clear : VESSColor.secondaryText)
-                .frame(width: VESSSize.rowIcon)
-                .accessibilityHidden(true)
-        } trailing: {
-            if meals > 0 {
-                Text("\(VESSFormat.calories(day.logged.totalNutrition.calories)) kcal")
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
-            }
-        }
-        .accessibilityElement(children: .combine)
+    /// "Nothing logged", "Nothing planned yet": at the header's leading edge.
+    private func emptyRow(_ text: Text) -> some View {
+        text
+            .vessTextStyle(.bodyM)
+            .foregroundStyle(VESSColor.secondaryText)
+            .frame(maxWidth: .infinity, minHeight: VESSSize.rowHeight, alignment: .leading)
+            .contentShape(Rectangle())
     }
 
+    /// Eaten (check), planned (clock) and open (+) rows, as in 17.
     @ViewBuilder
     private func slotRow(_ meal: MealType, _ slot: WeekPlan.Slot, day: WeekPlan.Day) -> some View {
         switch slot {
         case .eaten(let entries):
-            VESSRow(
+            VESSListRow(
+                systemImage: "checkmark",
                 title: Text(MealSuggestions.Candidate.mealName(entries.map(\.foodName))),
-                subtitle: Text("\(Text(meal.title)) · eaten")
-            ) {
-                Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal")
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
-            }
-            .accessibilityElement(children: .combine)
+                subtitle: Text("\(Text(meal.title)) · eaten"),
+                value: Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal"),
+                showsChevron: false
+            )
         case .planned(let plannedMeal):
             NavigationLink {
                 PlannedMealView(mealID: plannedMeal.id)
             } label: {
                 VESSListRow(
+                    systemImage: "clock",
                     title: Text(plannedMeal.name),
-                    subtitle: Text(meal.title),
+                    subtitle: Text("\(Text(meal.title)) · planned"),
                     value: Text("\(VESSFormat.calories(plannedMeal.nutrition.calories)) kcal")
                 )
             }
@@ -280,7 +443,7 @@ struct PlanView: View {
             NavigationLink {
                 AddToSlotView(day: day.date, meal: meal)
             } label: {
-                VESSListRow(title: Text("\(Text(meal.title)) · open"), value: Text("Add meal"))
+                VESSListRow(systemImage: "plus", title: Text("Add \(String(localized: meal.title).localizedLowercase)"), subtitle: Text("\(Text(meal.title)) · open slot"))
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("plan.open.\(day.date.formatted(.dateTime.weekday(.abbreviated))).\(meal.rawValue)")
@@ -415,4 +578,44 @@ struct PlanView: View {
 #Preview("Plan") {
     PlanView()
         .previewEnvironment(LocalStore.preview())
+}
+
+/// The Plan title row: title and controls side by side while the title
+/// fits at `minimumScale`, otherwise the controls go under the title.
+private struct PlanHeaderLayout: Layout {
+    let spacing: CGFloat
+    let minimumScale: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard subviews.count == 2 else { return .zero }
+        let width = proposal.width ?? subviews[0].sizeThatFits(.unspecified).width + spacing + subviews[1].sizeThatFits(.unspecified).width
+        let controls = subviews[1].sizeThatFits(.unspecified)
+        if fitsRow(width: width, subviews: subviews) {
+            let title = subviews[0].sizeThatFits(ProposedViewSize(width: width - spacing - controls.width, height: nil))
+            return CGSize(width: width, height: max(title.height, controls.height))
+        }
+        let title = subviews[0].sizeThatFits(ProposedViewSize(width: width, height: nil))
+        return CGSize(width: width, height: title.height + spacing + controls.height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 2 else { return }
+        let controls = subviews[1].sizeThatFits(.unspecified)
+        if fitsRow(width: bounds.width, subviews: subviews) {
+            let titleProposal = ProposedViewSize(width: bounds.width - spacing - controls.width, height: nil)
+            subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading, proposal: titleProposal)
+            subviews[1].place(at: CGPoint(x: bounds.maxX, y: bounds.midY), anchor: .trailing, proposal: .unspecified)
+        } else {
+            let titleProposal = ProposedViewSize(width: bounds.width, height: nil)
+            let title = subviews[0].sizeThatFits(titleProposal)
+            subviews[0].place(at: bounds.origin, proposal: titleProposal)
+            subviews[1].place(at: CGPoint(x: bounds.minX, y: bounds.minY + title.height + spacing), proposal: .unspecified)
+        }
+    }
+
+    private func fitsRow(width: CGFloat, subviews: Subviews) -> Bool {
+        let title = subviews[0].sizeThatFits(.unspecified).width
+        let controls = subviews[1].sizeThatFits(.unspecified).width
+        return title * minimumScale + spacing + controls <= width
+    }
 }
