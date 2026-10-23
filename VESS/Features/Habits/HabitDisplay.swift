@@ -97,4 +97,13 @@ enum HabitLogLoader {
 enum HabitCopy {
     static let noStreaks: LocalizedStringResource = "No streaks to protect. Miss a day and simply pick it up again."
     static let gridNote: LocalizedStringResource = "Each square is a day. Stronger means more of the list was done."
+
+    /// Under the ring and on the Today row: "2 left this evening",
+    /// "All done today".
+    static func remaining(_ status: HabitRules.DayStatus, now: Date, calendar: Calendar) -> Text {
+        let left = status.listed - status.done
+        if status.listed == 0 { return Text("Nothing on today's list") }
+        if left == 0 { return Text("All done today") }
+        return calendar.component(.hour, from: now) >= 17 ? Text("\(left) left this evening") : Text("\(left) left today")
+    }
 }

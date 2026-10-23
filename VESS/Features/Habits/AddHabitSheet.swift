@@ -27,6 +27,8 @@ struct AddHabitSheet: View {
     @State private var addedCount = 0
     @State private var showError = false
 
+    @ScaledMetric(relativeTo: .body) private var pinnedInset: CGFloat = VESSHitTarget.control + VESSSpacing.xl * 2
+
     private let calendar = Calendar.current
 
     init(editing: Habit?) {
@@ -75,7 +77,9 @@ struct AddHabitSheet: View {
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
                 .padding(.top, VESSSpacing.md)
-                .padding(.bottom, VESSSpacing.xl)
+                // The pinned button's height plus spacing, so "Delete habit"
+                // scrolls fully clear of it at every text size.
+                .padding(.bottom, pinnedInset)
             }
             .scrollDismissesKeyboard(.interactively)
             .background(VESSColor.card)

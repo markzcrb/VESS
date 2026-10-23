@@ -104,17 +104,7 @@ struct HabitsView: View {
 
     /// "4/6 · HABITS TODAY · 2 left this evening".
     private func ring(_ status: HabitRules.DayStatus, now: Date) -> some View {
-        let left = status.listed - status.done
-        let evening = calendar.component(.hour, from: now) >= 17
-        let sublabel: Text = if status.listed == 0 {
-            Text("Nothing on today's list")
-        } else if left == 0 {
-            Text("All done today")
-        } else if evening {
-            Text("\(left) left this evening")
-        } else {
-            Text("\(left) left today")
-        }
+        let sublabel = HabitCopy.remaining(status, now: now, calendar: calendar)
         return VESSScoreRing(
             value: status.done.formatted(),
             unit: "/\(status.listed)",
@@ -289,8 +279,6 @@ private struct HabitWeekStrip: View {
 private struct HabitGrid: View {
     let levels: [[Int?]]
 
-    @ScaledMetric(relativeTo: .body) private var height: CGFloat = 22
-
     var body: some View {
         VStack(spacing: VESSSpacing.xs) {
             ForEach(Array(levels.enumerated()), id: \.offset) { _, week in
@@ -304,8 +292,9 @@ private struct HabitGrid: View {
                                 shape.strokeBorder(VESSColor.divider)
                             }
                         }
+                        // Square, seven across the full width (reference 14).
+                        .aspectRatio(1, contentMode: .fit)
                         .frame(maxWidth: .infinity)
-                        .frame(height: min(height, 28))
                     }
                 }
             }
@@ -374,7 +363,7 @@ struct TodayHabitsRow: View {
             Button {
                 action()
             } label: {
-                VESSListRow(title: Text("\(status.done) of \(status.listed) today"), subtitle: Text("No streaks, just today"))
+                VESSListRow(title: Text("\(status.done) of \(status.listed) today"), subtitle: HabitCopy.remaining(status, now: now, calendar: calendar))
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
