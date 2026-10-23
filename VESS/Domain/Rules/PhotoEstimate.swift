@@ -37,6 +37,8 @@ nonisolated struct EstimatedItem: Identifiable, Equatable, Sendable {
     /// Per gram or millilitre.
     var perUnit: NutritionFacts
     var confidence: Confidence
+    /// Added by hand on the review screen: not an estimate, kcal typed.
+    var isManual = false
 
     /// Low confidence is highlighted as "Check this".
     var needsCheck: Bool { confidence == .low }
@@ -46,13 +48,14 @@ nonisolated struct EstimatedItem: Identifiable, Equatable, Sendable {
     /// 10 g or ml at a time, never below 1.
     static let step: Double = 10
 
-    init(id: UUID = UUID(), name: String, amount: Double, isMilliliters: Bool, perUnit: NutritionFacts, confidence: Confidence) {
+    init(id: UUID = UUID(), name: String, amount: Double, isMilliliters: Bool, perUnit: NutritionFacts, confidence: Confidence, isManual: Bool = false) {
         self.id = id
         self.name = name
         self.amount = amount
         self.isMilliliters = isMilliliters
         self.perUnit = perUnit
         self.confidence = confidence
+        self.isManual = isManual
     }
 
     init(_ item: PhotoEstimateResponse.Item) {

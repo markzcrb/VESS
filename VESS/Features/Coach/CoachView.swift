@@ -75,7 +75,8 @@ struct CoachView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { composer(isEmpty: messages.isEmpty) }
-        .vessScreenBackground(.fuel)
+        .vessScreenBackground(.fuel, clipsUnderBar: false)
+        .scrollEdgeEffectStyle(.soft, for: .top)
         .vessDetailTitle("Coach")
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
@@ -167,7 +168,13 @@ struct CoachView: View {
                         .lineLimit(1...5)
                         .focused($isComposerFocused)
                         .submitLabel(.send)
-                        .onSubmit { ask(draft) }
+                        // Multi-line fields don't submit: Return sends instead
+                        // of starting a new line.
+                        .onChange(of: draft) { _, text in
+                            guard text.hasSuffix("\n") else { return }
+                            draft = String(text.dropLast())
+                            ask(draft)
+                        }
                         .padding(.horizontal, VESSSpacing.md)
                         .padding(.vertical, VESSSpacing.sm)
                         .frame(minHeight: VESSHitTarget.control)
@@ -175,6 +182,7 @@ struct CoachView: View {
                     Button { ask(draft) } label: {
                         Image(systemName: "arrow.up")
                             .font(.body.weight(.semibold))
+                            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                             .foregroundStyle(VESSColor.onAccent)
                             .frame(width: 36, height: 36)
                             .background(VESSColor.accentFill, in: Circle())
@@ -201,12 +209,19 @@ struct CoachView: View {
         .padding(.top, VESSSpacing.sm)
         .padding(.bottom, VESSSpacing.xs)
         .background(VESSColor.background.ignoresSafeArea(edges: .bottom))
+        // The chat fades into the composer instead of meeting it at an edge.
+        .background(alignment: .top) {
+            LinearGradient(colors: [VESSColor.background.opacity(0), VESSColor.background], startPoint: .top, endPoint: .bottom)
+                .frame(height: VESSSpacing.lg)
+                .offset(y: -VESSSpacing.lg)
+                .allowsHitTesting(false)
+        }
     }
 
     private var footer: some View {
         Group {
-            if let left = remainingToday {
-                Text("Coach can make mistakes. Check anything important. · ^[\(left) question](inflect: true) left today")
+            if let left = remainingToday, account.isSignedIn {
+                Text("^[\(left) question](inflect: true) left today · Coach can make mistakes.")
             } else {
                 Text("Coach can make mistakes. Check anything important.")
             }
@@ -250,6 +265,7 @@ struct CoachView: View {
     private func send(_ question: String) {
         pendingQuestion = nil
         draft = ""
+        isComposerFocused = false
         let message = CoachMessage(id: UUID(), role: .user, text: question, createdAt: AppClock.now)
         do {
             try store.add(message)

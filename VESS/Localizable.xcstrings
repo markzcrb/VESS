@@ -145,6 +145,9 @@
     "%@ · eaten" : {
 
     },
+    "%@ · Estimated" : {
+
+    },
     "%@ · no date" : {
 
     },
@@ -1024,6 +1027,9 @@
     "^[%lld open slot](inflect: true), considered." : {
 
     },
+    "^[%lld question](inflect: true) left today · Coach can make mistakes." : {
+
+    },
     "^[%lld slot](inflect: true) left open: nothing fits %@." : {
       "localizations" : {
         "en" : {
@@ -1665,9 +1671,6 @@
 
     },
     "Coach can make mistakes. Check anything important." : {
-
-    },
-    "Coach can make mistakes. Check anything important. · ^[%lld question](inflect: true) left today" : {
 
     },
     "Coach settings" : {
@@ -3566,6 +3569,9 @@
 
     },
     "Remove from plan" : {
+
+    },
+    "Remove item" : {
 
     },
     "Replace meal" : {

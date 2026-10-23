@@ -30,6 +30,8 @@ struct AddPhotoContent: View {
 
     @State private var camera = PhotoCameraController()
     @State private var phase: Phase = .camera
+    /// Shown while it's being looked at, then dropped with the answer.
+    @State private var lookingImage: UIImage?
     @State private var items: [EstimatedItem] = []
     @State private var note: String?
     @State private var pickerItem: PhotosPickerItem?
@@ -37,6 +39,8 @@ struct AddPhotoContent: View {
     @State private var showConsent = false
     @State private var showSignIn = false
     @State private var showError = false
+    /// Set by the first Save, so a quick second tap can't log twice.
+    @State private var isSaved = false
 
     var body: some View {
         Group {
@@ -123,7 +127,8 @@ struct AddPhotoContent: View {
                         .padding(VESSSpacing.lg)
                     }
                 }
-                .aspectRatio(3 / 4, contentMode: .fit)
+                // Square, so the shutter stays on screen.
+                .aspectRatio(1, contentMode: .fit)
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .combine)
 
@@ -193,8 +198,17 @@ struct AddPhotoContent: View {
     private var looking: some View {
         VStack(spacing: VESSSpacing.lg) {
             RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
-                .strokeBorder(VESSColor.borderStrong, lineWidth: 2)
-                .aspectRatio(3 / 4, contentMode: .fit)
+                .fill(VESSColor.fill)
+                .overlay {
+                    if let lookingImage {
+                        Image(uiImage: lookingImage)
+                            .resizable()
+                            .scaledToFill()
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous).strokeBorder(VESSColor.borderStrong, lineWidth: 2))
+                .aspectRatio(1, contentMode: .fit)
                 .phaseAnimator(reduceMotion ? [1.0] : [0.4, 1.0]) { frame, opacity in
                     frame.opacity(opacity)
                 } animation: { _ in .easeInOut(duration: 1.2) }
@@ -282,6 +296,8 @@ struct AddPhotoContent: View {
                 phase = .failed(.badRequest("bad_image"))
                 return
             }
+            lookingImage = UIImage(data: jpeg)
+            defer { lookingImage = nil }
             do {
                 let response: PhotoEstimateResponse = try await account.callFunction(
                     "food-photo", body: FoodPhotoRequest(jpeg: jpeg, meal: meal, locale: CoachRequest.locale)
@@ -305,9 +321,10 @@ struct AddPhotoContent: View {
     }
 
     private func save() {
-        guard let profile = store.profile else { return }
+        guard !isSaved, let profile = store.profile else { return }
         let entries = PhotoEstimateRules.entries(items, userID: profile.id, meal: meal, at: meal.logTime(on: day, calendar: .current))
         guard !entries.isEmpty else { return }
+        isSaved = true
         do {
             for entry in entries { try store.add(entry) }
             undo.show(Text("Added to \(Text(meal.title)) · Estimated")) { store in
@@ -315,6 +332,7 @@ struct AddPhotoContent: View {
             }
             onLogged()
         } catch {
+            isSaved = false
             showError = true
         }
     }
@@ -388,7 +406,7 @@ struct PhotoReviewView: View {
                 Button("Add item") {
                     items.append(EstimatedItem(name: "", amount: 100, isMilliliters: false,
                                                perUnit: NutritionFacts(calories: 0, proteinGrams: 0, carbohydrateGrams: 0, fatGrams: 0),
-                                               confidence: .high))
+                                               confidence: .high, isManual: true))
                 }
                 .buttonStyle(.vessSecondary)
                 .accessibilityIdentifier("photo.addItem")
@@ -428,37 +446,41 @@ private struct EstimatedItemRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var kcalText = ""
 
-    /// Items added by hand start with no nutrition; their kcal is typed.
-    private var isManual: Bool { item.perUnit.calories == 0 && item.perUnit.proteinGrams == 0 }
+    /// Items added by hand: kcal typed, not an estimate.
+    private var isManual: Bool { item.isManual }
 
     var body: some View {
         let nutrition = item.nutrition
         let shape = RoundedRectangle(cornerRadius: VESSRadius.control, style: .continuous)
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.sm) {
-                TextField("Name", text: $item.name, prompt: Text("What is it?").foregroundStyle(VESSColor.tertiaryText))
+            HStack(alignment: .top, spacing: VESSSpacing.sm) {
+                TextField("Name", text: $item.name, prompt: Text("What is it?").foregroundStyle(VESSColor.tertiaryText), axis: .vertical)
                     .vessTextStyle(.bodyMStrong)
                     .foregroundStyle(VESSColor.text)
+                    .padding(.top, VESSSpacing.sm)
                     .accessibilityLabel("Name")
                 Button(role: .destructive, action: onDelete) {
                     Image(systemName: "trash")
                         .foregroundStyle(VESSColor.secondaryText)
-                        .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(Text("Remove \(item.name)"))
+                .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                .contentShape(Rectangle())
+                .accessibilityLabel(item.name.isEmpty ? Text("Remove item") : Text("Remove \(item.name)"))
             }
 
-            HStack(spacing: VESSSpacing.xs) {
-                VessTagLabel(text: "Estimated", warning: false)
-                if item.needsCheck { VessTagLabel(text: "Check this", warning: true) }
+            if !isManual {
+                HStack(spacing: VESSSpacing.xs) {
+                    VessTagLabel(text: "Estimated", warning: false)
+                    if item.needsCheck { VessTagLabel(text: "Check this", warning: true) }
+                }
             }
 
             let layout = dynamicTypeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.sm))
                 : AnyLayout(HStackLayout(alignment: .center, spacing: VESSSpacing.sm))
             layout {
-                HStack(spacing: VESSSpacing.xs) {
+                HStack(spacing: VESSSpacing.sm) {
                     VESSIconButton(systemImage: "minus", label: "Less") { item.amount = PhotoEstimateRules.stepped(item.amount, by: -1) }
                         .disabled(item.amount <= EstimatedItem.step)
                     Text("\(VESSFormat.quantity(item.amount)) \(item.isMilliliters ? "ml" : "g")")
@@ -471,7 +493,7 @@ private struct EstimatedItemRow: View {
                 }
                 if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
                 if isManual {
-                    VESSTextField("kcal", text: $kcalText, unit: "kcal", titleInside: true)
+                    VESSTextField("Energy", text: $kcalText, unit: "kcal", titleInside: true)
                         .keyboardType(.numberPad)
                         .frame(maxWidth: 140)
                         .onChange(of: kcalText) { _, text in

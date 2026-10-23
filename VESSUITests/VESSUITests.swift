@@ -233,6 +233,66 @@ final class VESSUITests: XCTestCase {
         XCTAssertTrue(tabs.buttons["Today"].isSelected)
     }
 
+    // MARK: AI (canned server, -aiMock)
+
+    @MainActor
+    private func launchAI(_ extra: [String] = []) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-seedSampleData", "-aiMock", "-aiConsentGranted", "-add.lastTypeAt", "0"] + extra
+        app.launch()
+        return app
+    }
+
+    @MainActor
+    func testCoachAnswersWithMockServer() throws {
+        let app = launchAI()
+        tapWhenReady(app.buttons["Coach"])
+        let input = app.textFields["coach.input"].exists ? app.textFields["coach.input"] : app.textViews["coach.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        input.tap()
+        input.typeText("How is my protein today?")
+        tapWhenReady(app.buttons["coach.send"])
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'close to your 140 g target'")).firstMatch.waitForExistence(timeout: 10),
+                      "The canned answer appears")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS '17 questions left today'")).firstMatch.exists)
+    }
+
+    @MainActor
+    func testCoachDailyLimitIsCalm() throws {
+        let app = launchAI(["-aiMockScenario", "limit"])
+        tapWhenReady(app.buttons["Coach"])
+        let input = app.textFields["coach.input"].exists ? app.textFields["coach.input"] : app.textViews["coach.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        input.tap()
+        input.typeText("Hello")
+        tapWhenReady(app.buttons["coach.send"])
+        let failure = app.staticTexts["coach.failure"]
+        XCTAssertTrue(failure.waitForExistence(timeout: 10))
+        XCTAssertTrue(failure.label.contains("Back tomorrow"))
+    }
+
+    @MainActor
+    func testPhotoEstimateNeedsConfirmationThenLogs() throws {
+        // The Add sheet reopens on the type used last within the hour.
+        let now = String(Date().timeIntervalSince1970)
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-seedSampleData", "-aiMock", "-aiConsentGranted", "-add.lastType", "photo", "-add.lastTypeAt", now]
+        app.launch()
+        tapWhenReady(app.tabBars.buttons["Add"])
+        let sample = app.buttons["photo.sample"]
+        XCTAssertTrue(sample.waitForExistence(timeout: 10))
+        scrollUntilHittable(sample, in: app)
+        sample.tap()
+        let save = app.buttons["photo.save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 10), "Review before anything is logged")
+        XCTAssertTrue(app.staticTexts["Grilled salmon"].exists || app.textFields["Name"].firstMatch.exists)
+        save.tap()
+        waitFor(save, "exists == false")
+        app.tabBars.buttons["Nutrition"].tap()
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Grilled salmon'")).firstMatch.waitForExistence(timeout: 10),
+                      "The confirmed items are in the diary")
+    }
+
     /// Regression: "+" tapped while the sheet was still going down was lost.
     /// It must open the sheet again, every time.
     @MainActor

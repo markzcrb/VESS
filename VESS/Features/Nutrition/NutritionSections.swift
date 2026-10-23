@@ -191,8 +191,11 @@ struct MealDiarySection: View {
         return Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal · \(first.loggedAt, format: .dateTime.hour().minute())")
     }
 
-    /// "1 tbsp · 21 g", "200 g" or "Quick add".
+    /// "1 tbsp · 21 g", "200 g", "150 g · Estimated" or "Quick add".
     private func subtitle(for entry: FoodLogEntry) -> Text {
+        if entry.source == .photoEstimate {
+            return Text("\(Text(verbatim: entry.servingUnit.amountText(entry.quantity))) · Estimated")
+        }
         if entry.foodID == nil {
             guard entry.nutrition.isReported(.protein) else { return Text("Quick add") }
             return Text("Quick add · \(VESSFormat.grams(entry.nutrition.proteinGrams)) g protein")

@@ -62,7 +62,7 @@ nonisolated struct AIMockTransport: HTTPTransport {
         }
         if path.hasSuffix("/coach") {
             return reply(200, [
-                "reply": "You're at about 1,240 kcal and 82 g protein so far, with dinner still to come. Something like the miso cod you planned would bring protein close to your 140 g target. Water is a little behind your usual pace for this time of day.",
+                "reply": "Protein is a little under your target so far, with dinner still to come. The miso cod you planned would bring it close to your 140 g target. Water is a little behind your usual pace for this time of day. (Sample answer.)",
                 "remaining": 17,
             ])
         }
