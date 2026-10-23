@@ -3,21 +3,18 @@ import SwiftUI
 import UIKit
 #endif
 
-/// The VESS wordmark.
+/// The VESS wordmark (option B: an open ring and VESS in caps), from the
+/// `VESSWordmark` image set: SVG, Preserve Vector Data, Dark and Light
+/// appearances, drawn here as a template in `color`. The ring's track is
+/// the same colour at 22 % opacity, so tinting keeps it lighter.
 ///
-/// TEMPORARY PLACEHOLDER: the approved wordmark and V mark exist only as
-/// mockups. Until the vector files arrive, this renders a plain text
-/// "VESS" in thin, widely tracked SF Pro. It is not the final logo.
+/// The launch screen (`UILaunchScreen` in Config/VESS-Info.plist) shows
+/// `VESSLaunchWordmark` at its own size, 134 × 30 pt, centred on
+/// `VESSBackground`: PNGs at @2x and @3x rendered from these SVGs, because
+/// the system's launch screen doesn't draw the SVG. Re-render them when
+/// the wordmark changes.
 ///
-/// To install the real asset, add an image set named `VESSWordmark`
-/// (see `VESSBrandAssets`)
-/// (PDF or SVG, "Preserve Vector Data", rendering mode Template) to
-/// `Assets.xcassets`. This view picks it up automatically; no screen changes.
-///
-/// The launch screen (`UILaunchScreen` in Config/VESS-Info.plist) shows the
-/// same image set centred on `VESSBackground`. Launch images aren't tinted,
-/// so give the set a Dark and a Light appearance. Until it exists, the
-/// launch screen is the canvas colour alone.
+/// The text below is only a safety net, should the image ever fail to load.
 struct VESSWordmark: View {
     /// Cap height-ish size of the wordmark in points, scaled with Dynamic Type.
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40

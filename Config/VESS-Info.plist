@@ -7,7 +7,7 @@
 		<key>UIColorName</key>
 		<string>VESSBackground</string>
 		<key>UIImageName</key>
-		<string>VESSWordmark</string>
+		<string>VESSLaunchWordmark</string>
 	</dict>
 </dict>
 </plist>
