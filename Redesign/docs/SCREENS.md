@@ -94,5 +94,21 @@ Notes:
 - The second row lists the drinks of the chosen category; it is hidden when a category has a single drink.
 - Alcohol: kcal count toward energy, not toward Fuel and not toward water. Neutral copy, no advice.
 
+## N · Add sheet with a type carousel (new, same Figma section, renamed "New · Plan calendar, Drinks and Add sheet")
+| File | Screen | Reached from | Key components |
+|---|---|---|---|
+| 21-add-food | "+" sheet, Food selected: type carousel under the nav, then meal selector ("To dinner ˅ · Today 19:30"), search, filters, saved and recent, AddBar | "+" in the tab bar | AddTypeTile (new), IconButton, Chip, ListRow, FoodRow |
+| 22-add-supplements | Same sheet, Supplements selected: today's supplements (tap to log), then add a supplement (search, category chips, presets, Add your own) | Swipe or tap the carousel | AddTypeTile, SectionHeader, ListRow, Chip |
+| L21-add-food-light | Light version of 21 | | |
+
+Notes:
+- One "+" for everything. The carousel order: Photo (DEBUG only), Quick add, Food, Drink, Supplements, Workout, Habits, Weight, Cycle (only when cycle tracking is on). Hidden types leave no gap.
+- The carousel snaps; the centred tile is the selection (72 pt, others 56 pt) and its name sits under it in the type colour. Tapping a tile also selects it. Edge fades on both sides. The content below swaps in place, with no new screen.
+- Type colours: Food energy, Quick add carbs, Drink water, Supplements fat, Workout activity, Cycle cycle; Photo, Habits and Weight neutral. Tile fill = type colour at 20 % (Dark) / 14 % (Light); icon = type colour.
+- The sheet opens on Food by default (or on the type you used last within the past hour). The meal selector belongs to Food only, so the nav title is just "Add".
+- Each type reuses its existing screen content inside the sheet: Drink = the drinks sheet (19/20), Workout = the workout form, Cycle = the day form (15), Habits = today's list with ticks plus "Add a habit" (16), Weight = weight entry, Quick add = the quick-add form, Photo = the camera.
+- Filter chip rows bleed off the right edge (scroll hint); they never clip at the content margin.
+- New components: AddTypeTile (Selected No/Yes, icon swap), Icon/camera, Icon/pill.
+
 ## Not designed yet (ask Mark before building)
 Plan › Recipes tab list · Add food search results / no results · edit a logged meal · weight entry + measurements · onboarding.
