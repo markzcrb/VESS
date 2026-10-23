@@ -1150,6 +1150,9 @@
     "About you" : {
 
     },
+    "Account" : {
+
+    },
     "Active" : {
 
     },
@@ -1566,6 +1569,9 @@
     "Checking items does not add them to Pantry. Tap Done shopping to move this checked item into Pantry." : {
 
     },
+    "Checking…" : {
+
+    },
     "Choose the one that matters most right now." : {
 
     },
@@ -1593,7 +1599,16 @@
     "Coach" : {
 
     },
+    "Coach and photo estimates stop until you sign in again. Your log stays on this iPhone unless you also delete all data." : {
+
+    },
+    "Coach and photo estimates use this account. Your log stays on this iPhone." : {
+
+    },
     "Cocktail" : {
+
+    },
+    "Code" : {
 
     },
     "Coffee" : {
@@ -1755,6 +1770,12 @@
     "Delete" : {
 
     },
+    "Delete account" : {
+
+    },
+    "Delete account and all data" : {
+
+    },
     "Delete all data" : {
 
     },
@@ -1792,6 +1813,9 @@
 
     },
     "Delete this workout?" : {
+
+    },
+    "Delete your account?" : {
 
     },
     "Deleted %@" : {
@@ -1916,6 +1940,9 @@
 
     },
     "Eggs" : {
+
+    },
+    "Email" : {
 
     },
     "Energy" : {
@@ -2953,6 +2980,9 @@
     "Not reported" : {
 
     },
+    "Not signed in" : {
+
+    },
     "Note" : {
 
     },
@@ -3109,6 +3139,12 @@
     "On your feet some of the day, or light exercise 1–3 days a week" : {
 
     },
+    "Only for Coach and photo estimates. Your log stays on this iPhone." : {
+
+    },
+    "Only for Coach and photos." : {
+
+    },
     "Open Food Facts" : {
 
     },
@@ -3146,6 +3182,9 @@
 
     },
     "Optional" : {
+
+    },
+    "or with a code by email" : {
 
     },
     "Or your own" : {
@@ -3224,6 +3263,9 @@
 
     },
     "Plan, grocery and pantry" : {
+
+    },
+    "Please sign in again." : {
 
     },
     "Point at a barcode" : {
@@ -3468,6 +3510,15 @@
     "Select all that apply, or continue if none do." : {
 
     },
+    "Send again" : {
+
+    },
+    "Send code" : {
+
+    },
+    "Sending…" : {
+
+    },
     "serving" : {
 
     },
@@ -3499,6 +3550,21 @@
 
     },
     "Shows the time picker" : {
+
+    },
+    "Sign in" : {
+
+    },
+    "Sign in with Apple" : {
+
+    },
+    "Sign out" : {
+
+    },
+    "Signed in" : {
+
+    },
+    "Signing in didn't work. Try again." : {
 
     },
     "Single" : {
@@ -3559,6 +3625,9 @@
 
     },
     "Something went wrong" : {
+
+    },
+    "Something went wrong. Try again in a moment." : {
 
     },
     "Source · %@. Energy is a recorded measurement, not an estimate entered in VESS." : {
@@ -3746,6 +3815,9 @@
     "Tea" : {
 
     },
+    "That code didn't work. Check it, or send a new one." : {
+
+    },
     "that day" : {
 
     },
@@ -3765,7 +3837,13 @@
     "That day's caffeine" : {
 
     },
+    "That didn't go through. Try again in a moment." : {
+
+    },
     "That doesn't look like a barcode. Check the digits." : {
+
+    },
+    "That's today's free uses. Back tomorrow." : {
 
     },
     "The average covers days with at least one meal logged, not counting today, and needs three of them." : {
@@ -3805,6 +3883,9 @@
 
     },
     "This device can't scan barcodes. Type the number under the barcode instead." : {
+
+    },
+    "This isn't available yet. Try again later." : {
 
     },
     "This product doesn't list calories, so it can't be logged. Create it as your own food instead." : {
@@ -3908,6 +3989,9 @@
     "Too many searches in a short time. Try again in a minute." : {
 
     },
+    "Too many tries for now. Wait a minute and try again." : {
+
+    },
     "Total" : {
 
     },
@@ -4001,6 +4085,9 @@
 
     },
     "Updates the weight in your profile. Weight from Apple Health is read, never written." : {
+
+    },
+    "Use another email" : {
 
     },
     "Use Apple Health" : {
@@ -4146,6 +4233,9 @@
     "Water target reached." : {
 
     },
+    "We sent a 6-digit code to %@." : {
+
+    },
     "Weaker" : {
 
     },
@@ -4278,6 +4368,12 @@
 
     },
     "You're offline. Packaged products can be searched again once you're connected." : {
+
+    },
+    "You're offline. Try again when you're connected." : {
+
+    },
+    "You're signed in." : {
 
     },
     "You've logged enough days. Insights will appear here once VESS can compare them carefully." : {

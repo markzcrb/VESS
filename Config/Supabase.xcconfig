@@ -1,0 +1,10 @@
+// VESS backend (Supabase). Both values are publishable: safe to ship in the
+// app. "//" starts a comment in an xcconfig, so Info.plist builds the URL
+// from the host.
+SUPABASE_HOST = ysiuljqenyugxrwmajmo.supabase.co
+SUPABASE_PUBLISHABLE_KEY = sb_publishable_vK6Sn8Pi2AIZsY0IEEjg2g_jABKWR9N
+
+// Sign in with Apple needs the paid Apple Developer Program. Set YES together
+// with the com.apple.developer.applesignin entitlement in VESS.entitlements;
+// while NO, the Account screen offers only the email code.
+VESS_APPLE_SIGN_IN = NO

@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>VESSSupabaseURL</key>
+	<string>https://$(SUPABASE_HOST)</string>
+	<key>VESSSupabasePublishableKey</key>
+	<string>$(SUPABASE_PUBLISHABLE_KEY)</string>
+	<key>VESSAppleSignIn</key>
+	<string>$(VESS_APPLE_SIGN_IN)</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

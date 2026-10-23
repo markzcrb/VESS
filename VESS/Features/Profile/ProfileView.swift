@@ -6,6 +6,7 @@ struct ProfileView: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.vessHaptics) private var haptics
     @Environment(HealthDataStore.self) private var health
+    @Environment(AccountStore.self) private var account
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @State private var showError = false
     @State private var confirmCycleOff = false
@@ -145,6 +146,7 @@ struct ProfileView: View {
                 link(.habits, title: "Habits")
                 link(.supplements, title: "Supplements")
                 link(.notifications, title: "Notifications")
+                link(.account, title: "Account", value: account.isSignedIn ? Text("Signed in") : Text("Not signed in"))
                 link(.privacy, title: "Privacy and data")
                 link(.help, title: "Help")
                 #if DEBUG
@@ -167,7 +169,7 @@ struct ProfileView: View {
 
 /// The You screens, pushed by value on the You stack.
 enum ProfileRoute: Hashable {
-    case goals, body, nutrition, supplements, appleHealth, notifications, privacy, settings, help, habits
+    case goals, body, nutrition, supplements, appleHealth, notifications, privacy, settings, help, habits, account
     case helpArticle(HelpArticle)
     #if DEBUG
     case vessPlus
@@ -188,6 +190,7 @@ extension View {
             case .settings: SettingsView()
             case .help: HelpView()
             case .habits: HabitsView()
+            case .account: AccountView()
             case .helpArticle(let article): HelpArticleView(article: article)
             #if DEBUG
             case .vessPlus: VESSPlusView()

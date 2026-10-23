@@ -527,6 +527,7 @@ extension View {
             .environment(HealthDataStore(state: health ?? .available(MockData.preview.health)))
             .environment(FoodLogUndo())
             .environment(ReminderService(center: nil, defaults: UserDefaults(suiteName: "preview") ?? .standard))
+            .environment(AccountStore(config: nil, transport: URLSessionTransport(), store: MemorySessionStore()))
     }
 }
 #endif
