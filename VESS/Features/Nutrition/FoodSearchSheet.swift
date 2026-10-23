@@ -38,6 +38,7 @@ struct FoodSearchSheet: View {
                         .toolbar { closeButton }
                 }
                 .toolbar { closeButton }
+                .onAppear { AddSheetTiming.appeared() }
         }
         .presentationCornerRadius(VESSRadius.sheet)
         .presentationDragIndicator(.visible)

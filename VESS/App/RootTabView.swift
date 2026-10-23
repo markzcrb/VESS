@@ -1,3 +1,4 @@
+import OSLog
 import SwiftUI
 
 /// Top-level destinations: four tabs plus the Add action.
@@ -18,6 +19,9 @@ struct RootTabView: View {
     @State private var addRequest: AddFoodRequest?
     /// Counts taps on Add; see `tabSelection`.
     @State private var addTaps = 0
+    /// Builds the Add sheet once, off screen, soon after launch.
+    @State private var isPrewarming = false
+    @State private var didPrewarm = false
 
     private let calendar = Calendar.current
 
@@ -57,6 +61,28 @@ struct RootTabView: View {
         .tint(VESSColor.text)
         .sheet(item: $addRequest) { request in
             FoodSearchSheet(request: request)
+        }
+        // Pre-warm (first "+" took 1–1.5 s): once the first frame is on
+        // screen, build the sheet's content and search field one time,
+        // invisibly, so the first tap only has to present it.
+        .background {
+            if isPrewarming {
+                FoodSearchSheet(request: AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now))
+                    .frame(width: 1, height: 1)
+                    .opacity(0.01)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .task {
+                        try? await Task.sleep(for: .milliseconds(400))
+                        isPrewarming = false
+                    }
+            }
+        }
+        .task {
+            guard !didPrewarm else { return }
+            didPrewarm = true
+            try? await Task.sleep(for: .seconds(1))
+            isPrewarming = true
         }
     }
 
@@ -104,6 +130,7 @@ struct RootTabView: View {
                     return
                 }
                 addTaps += 1
+                AddSheetTiming.tapped()
                 Task { @MainActor in
                     addRequest = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now)
                 }
@@ -122,4 +149,27 @@ struct RootTabView: View {
     RootTabView()
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.light)
+}
+
+/// DEBUG: how long the first "+" takes, tap to the sheet's content on
+/// screen. Console: subsystem "VESS", category "Timing".
+enum AddSheetTiming {
+    #if DEBUG
+    private static var tapDate: Date?
+    private static let logger = Logger(subsystem: "VESS", category: "Timing")
+    #endif
+
+    static func tapped() {
+        #if DEBUG
+        tapDate = .now
+        #endif
+    }
+
+    static func appeared() {
+        #if DEBUG
+        guard let tapDate else { return }
+        Self.tapDate = nil
+        logger.notice("Add sheet: tap → appear \(Int(Date.now.timeIntervalSince(tapDate) * 1000), privacy: .public) ms")
+        #endif
+    }
 }
