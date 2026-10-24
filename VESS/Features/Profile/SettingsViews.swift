@@ -150,12 +150,13 @@ struct PrivacyView: View {
                 fact("On this iPhone", "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days, the Coach conversation and your profile.")
                 fact("Coach", "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through VESS's server, once. VESS doesn't store them.")
                 fact("Photo estimates", "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. VESS doesn't store it, and nothing is logged until you confirm.")
-                fact("Account", "Only for Coach and photo estimates: your email or Apple ID and a daily count of AI uses. Delete it any time in Account.")
+                fact("AI Chef", "Only when you create a recipe: your pantry list, the choices you made, your diet, the ingredients you don't eat, your allergies and today's protein gap go to the AI processor once. VESS doesn't store them, nutrition is calculated on this iPhone, and the recipe is saved only if you save it.")
+                fact("Account", "Only for Coach, photo estimates and AI Chef: your email or Apple ID and a daily count of AI uses. Delete it any time in Account.")
                 fact("Cycle tracking", "Off unless you turn it on. Cycle days stay on this iPhone and are never shared with Apple Health. Coach gets your cycle day and next estimated window only if you turn on Share cycle with Coach.")
                 fact("Open Food Facts", "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent.")
                 fact("Apple Health", "Read only: steps, workouts, active energy and weight. VESS shows them but doesn't keep a copy.")
                 fact("Reminders", "Scheduled on this iPhone, never on a server.")
-                fact("Nothing else", "No analytics and no ads. An account only if you use Coach or photo estimates.")
+                fact("Nothing else", "No analytics and no ads. An account only if you use Coach, photo estimates or AI Chef.")
             }
             .vessHairlineBottom()
 
@@ -164,6 +165,7 @@ struct PrivacyView: View {
                 VESSRowGroup {
                     consentToggle(.coach, title: "Coach", detail: "Sends your question and a summary of recent logs.")
                     consentToggle(.photo, title: "Photo estimates", detail: "Sends the photo you take or pick.")
+                    consentToggle(.chef, title: "AI Chef", detail: "Sends your pantry list, recipe choices, diet, avoid list and allergies.")
                 }
                 .vessHairlineBottom()
                 Text("Processed by \(AIProcessor.displayName) through VESS's server. VESS doesn't store it. \(AIProcessor.company) processes it under its API terms.")

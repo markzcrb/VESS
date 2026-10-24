@@ -142,6 +142,11 @@ struct AppRootView: View {
                     if arguments.contains("-recipesDemo") {
                         try MockData.seedRecipes(into: store, now: AppClock.now, calendar: .current)
                     }
+                    // AI Chef's on-device check (UI test): also allergic to soy.
+                    if arguments.contains("-allergicToSoy"), var profile = store.profile {
+                        profile.allergies.insert(.soy)
+                        try store.saveProfile(profile)
+                    }
                     // 13: cycle tracking on, with six cycles of history
                     // (`-cycleOn`) or nothing logged yet (`-cycleOnEmpty`).
                     if arguments.contains("-cycleOn") || arguments.contains("-cycleOnEmpty"), var profile = store.profile {

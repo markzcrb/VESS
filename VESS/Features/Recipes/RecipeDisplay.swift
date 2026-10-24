@@ -14,6 +14,17 @@ extension RecipeCategory {
     }
 }
 
+extension ChefGoal {
+    var title: LocalizedStringResource {
+        switch self {
+        case .highProtein: "High-protein"
+        case .lighter: "Lighter"
+        case .quick: "Quick (≤ 20 min)"
+        case .comfort: "Comfort"
+        }
+    }
+}
+
 extension RecipeDiscover.MealFilter {
     var title: LocalizedStringResource {
         switch self {

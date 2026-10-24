@@ -81,7 +81,7 @@ struct AddPhotoContent: View {
     private var signedOut: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.lg) {
-                Text("Photo estimates need an account. Only for Coach and photo estimates; your log stays on this iPhone.")
+                Text("Photo estimates need an account. Only for Coach, photo estimates and AI Chef; your log stays on this iPhone.")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -179,7 +179,7 @@ struct AddPhotoContent: View {
 
                 Group {
                     if let left = remainingToday {
-                        Text("The photo is used only to estimate this meal, then dropped. · ^[\(left) estimate](inflect: true) left today")
+                        Text("The photo is used only to estimate this meal, then dropped. · ^[\(left) estimate](inflect: true) left today · \(AIQuotaText.resets(after: AppClock.now))")
                     } else {
                         Text("The photo is used only to estimate this meal, then dropped.")
                     }

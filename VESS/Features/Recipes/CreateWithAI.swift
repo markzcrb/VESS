@@ -6,24 +6,25 @@ import UIKit
 struct CreateWithAISheet: View {
     let meal: MealType
     let useSoon: [InventoryItem]
+    /// Today's remaining protein, sent as the protein gap.
+    var proteinGap: Double?
     /// A draft was saved to My recipes.
     var onSaved: () -> Void = {}
 
-    enum Goal: CaseIterable {
-        case highProtein, lighter, quick, comfort
-
-        var title: LocalizedStringResource {
-            switch self {
-            case .highProtein: "High-protein"
-            case .lighter: "Lighter"
-            case .quick: "Quick (≤ 20 min)"
-            case .comfort: "Comfort"
-            }
-        }
-    }
+    typealias Goal = ChefGoal
 
     @Environment(LocalStore.self) private var store
+    @Environment(AccountStore.self) private var account
+    @Environment(AIConsentStore.self) private var consent
+    @Environment(GenericFoodDatabase.self) private var foods
     @Environment(\.dismiss) private var dismiss
+
+    @AppStorage("chef.remaining") private var remaining = -1
+    @AppStorage("chef.remainingDay") private var remainingDay = ""
+    @State private var isCreating = false
+    @State private var failure: String?
+    @State private var asksConsent = false
+    @State private var signsIn = false
 
     @State private var mustUse: Set<UUID>
     @State private var chosenMeal: MealType
@@ -34,9 +35,10 @@ struct CreateWithAISheet: View {
     @State private var editsServings = false
     @State private var draft: Recipe?
 
-    init(meal: MealType, useSoon: [InventoryItem], onSaved: @escaping () -> Void = {}) {
+    init(meal: MealType, useSoon: [InventoryItem], proteinGap: Double? = nil, onSaved: @escaping () -> Void = {}) {
         self.meal = meal
         self.useSoon = useSoon
+        self.proteinGap = proteinGap
         self.onSaved = onSaved
         _mustUse = State(initialValue: Set(useSoon.prefix(2).map(\.id)))
         _chosenMeal = State(initialValue: meal)
@@ -109,6 +111,17 @@ struct CreateWithAISheet: View {
                     }
                     .vessHairlineBottom()
 
+                    if let failure {
+                        Text(failure)
+                            .vessTextStyle(.bodyM)
+                            .foregroundStyle(VESSColor.text)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(VESSSpacing.md)
+                            .background(VESSColor.fill, in: RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
+                            .accessibilityIdentifier("create.failure")
+                    }
+
                     Text("Sends your pantry list, diet and avoid list and these choices to \(AIProcessor.displayName) through VESS's server. Nothing else from your log. You review the recipe before it's saved.")
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.tertiaryText)
@@ -118,13 +131,28 @@ struct CreateWithAISheet: View {
                 .padding(.bottom, VESSSpacing.xl)
             }
             .safeAreaInset(edge: .bottom) {
-                Button("Create recipe", action: create)
+                VStack(spacing: VESSSpacing.xs) {
+                    Button(action: create) {
+                        if isCreating {
+                            HStack(spacing: VESSSpacing.xs) {
+                                ProgressView().tint(VESSColor.onAccent)
+                                Text("Writing a recipe…")
+                            }
+                        } else {
+                            Text("Create recipe")
+                        }
+                    }
                     .buttonStyle(.vessPrimary)
-                    .padding(.horizontal, VESSSpacing.screenInset)
-                    .padding(.vertical, VESSSpacing.sm)
-                    .background(VESSColor.card)
+                    // None left today: nothing to try until it resets.
+                    .disabled(isCreating || (remaining == 0 && remainingDay == AIQuota.serverDay(AppClock.now)))
                     .accessibilityIdentifier("create.go")
+                }
+                .padding(.horizontal, VESSSpacing.screenInset)
+                .padding(.vertical, VESSSpacing.sm)
+                .background(VESSColor.card)
             }
+            .vessAIConsent(.chef, isPresented: $asksConsent) { create() }
+            .sheet(isPresented: $signsIn) { AISignInSheet() }
             .background(VESSColor.card)
             .vessDetailTitle("Create with AI")
             .toolbar {
@@ -162,12 +190,81 @@ struct CreateWithAISheet: View {
         }
     }
 
-    /// The server call comes with the AI Chef function; until then debug
-    /// builds show a fixed draft.
+    /// Consent once, an account, then one request. The draft is built and
+    /// checked on this iPhone before it's shown.
     private func create() {
-        #if DEBUG
-        draft = MockData.chefDraft(servings: servings, meal: chosenMeal)
-        #endif
+        guard !isCreating else { return }
+        guard consent.isGranted(.chef) else {
+            asksConsent = true
+            return
+        }
+        guard account.isSignedIn else {
+            signsIn = true
+            return
+        }
+        guard let profile = store.profile else { return }
+        let now = AppClock.now
+        let calendar = Calendar.current
+        let pantry = store.inventory
+        let request = ChefRequest.make(
+            pantry: pantry, mustUse: pantry.filter { mustUse.contains($0.id) }, meal: chosenMeal, goal: goal,
+            servings: servings, onlyWhatIHave: onlyWhatIHave, preferences: profile.preferences, allergies: profile.allergies,
+            proteinGapGrams: proteinGap, locale: CoachRequest.locale, now: now, calendar: calendar
+        )
+        failure = nil
+        isCreating = true
+        Task {
+            defer { isCreating = false }
+            do {
+                await foods.load()
+                let response: ChefResponse = try await account.callFunction("chef", body: request)
+                if let left = response.remaining { setRemaining(left) }
+                let outcome = ChefDraftBuilder.build(
+                    response, meal: chosenMeal, preferences: profile.preferences, allergies: profile.allergies, pantry: pantry,
+                    search: { foods.search($0, limit: 1).first }, food: { foods.food(ndb: $0) }
+                )
+                switch outcome {
+                case .draft(let built):
+                    draft = built.recipe
+                case .conflict:
+                    failure = String(localized: "That draft used something you avoid. Try another.")
+                }
+            } catch {
+                failure = Self.message(for: BackendError.from(error), now: now)
+                if BackendError.from(error) == .dailyLimit { setRemaining(0) }
+                if BackendError.from(error) == .notSignedIn { signsIn = true }
+            }
+        }
+    }
+
+    private func setRemaining(_ value: Int) {
+        remaining = value
+        remainingDay = AIQuota.serverDay(AppClock.now)
+    }
+
+    /// Calm words for what went wrong.
+    static func message(for error: BackendError, now: Date) -> String {
+        switch error {
+        case .dailyLimit: String(localized: "No AI recipes left today. Back tomorrow. \(AIQuotaText.resets(after: now))")
+        case .upstream: String(localized: "AI Chef couldn't write a recipe just now. This one didn't count; try again.")
+        case .notConfigured: String(localized: "AI Chef isn't available right now.")
+        case .offline: String(localized: "You're offline. AI Chef needs a connection; everything else works without one.")
+        case .notSignedIn: String(localized: "Sign in to use AI Chef.")
+        default: String(localized: "Something went wrong. Try again.")
+        }
+    }
+}
+
+private struct ChoosingIndex: Identifiable {
+    let index: Int
+    var id: Int { index }
+}
+
+/// "Resets at 02:00": when the AI limits count again (00:00 UTC), in the
+/// user's time.
+enum AIQuotaText {
+    static func resets(after now: Date) -> String {
+        String(localized: "Resets at \(AIQuota.resetTime(after: now).formatted(date: .omitted, time: .shortened)).")
     }
 }
 
@@ -229,7 +326,6 @@ private struct PantryPicker: View {
 struct AIRecipeReviewView: View {
     @State var draft: Recipe
     let summary: String
-    var isPartial = false
     let onFinished: () -> Void
     var onSaved: () -> Void = {}
     let onTryAnother: () -> Void
@@ -240,16 +336,17 @@ struct AIRecipeReviewView: View {
 
     @State private var servings: Int
     @State private var draftPhoto: Data?
+    @State private var choosingIndex: Int?
+    @Environment(GenericFoodDatabase.self) private var foods
     @State private var scrolledUnderBar = false
     @State private var edits = false
     @State private var showError = false
 
     private let calendar = Calendar.current
 
-    init(draft: Recipe, summary: String, isPartial: Bool = false, onFinished: @escaping () -> Void, onSaved: @escaping () -> Void = {}, onTryAnother: @escaping () -> Void) {
+    init(draft: Recipe, summary: String, onFinished: @escaping () -> Void, onSaved: @escaping () -> Void = {}, onTryAnother: @escaping () -> Void) {
         _draft = State(initialValue: draft)
         self.summary = summary
-        self.isPartial = isPartial
         self.onFinished = onFinished
         self.onSaved = onSaved
         self.onTryAnother = onTryAnother
@@ -286,7 +383,7 @@ struct AIRecipeReviewView: View {
                     VStack(alignment: .leading, spacing: VESSSpacing.lg) {
                         RecipeStats(minutes: draft.minutes, extraTime: draft.extraTime, nutrition: draft.nutrition)
                         RecipeMacroKey(nutrition: draft.nutrition, includesProtein: false)
-                        if isPartial {
+                        if draft.ingredients.contains(where: { $0.per100 == nil }) {
                             Text("Partial: some ingredients have no nutrition data.")
                                 .vessTextStyle(.caption)
                                 .foregroundStyle(VESSColor.secondaryText)
@@ -300,11 +397,20 @@ struct AIRecipeReviewView: View {
                             VStack(alignment: .leading, spacing: VESSSpacing.xs) { ingredientsLabel; RecipeServingsStepper(servings: $servings, range: 1...8) }
                         }
                         VESSRowGroup {
-                            ForEach(Array(draft.ingredients.enumerated()), id: \.offset) { _, ingredient in
-                                RecipeIngredientRow(
-                                    ingredient: ingredient, status: status(of: ingredient, use: use),
-                                    scale: Double(servings) / Double(max(draft.servings, 1)), now: now
-                                )
+                            ForEach(Array(draft.ingredients.enumerated()), id: \.offset) { index, ingredient in
+                                if ingredient.per100 == nil {
+                                    // "No nutrition data · Choose food".
+                                    Button { choosingIndex = index } label: {
+                                        VESSListRow(title: Text(ingredient.name), subtitle: Text("No nutrition data · Choose food"), value: Text(ingredient.amountText() ?? ""))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityIdentifier("draft.chooseFood")
+                                } else {
+                                    RecipeIngredientRow(
+                                        ingredient: ingredient, status: status(of: ingredient, use: use),
+                                        scale: Double(servings) / Double(max(draft.servings, 1)), now: now
+                                    )
+                                }
                             }
                         }
                         .vessHairlineBottom()
@@ -349,6 +455,16 @@ struct AIRecipeReviewView: View {
             }
             .fullScreenCover(isPresented: $edits) {
                 RecipeEditorView(recipe: draft) { draft = $0 }
+            }
+            .sheet(item: Binding(get: { choosingIndex.map(ChoosingIndex.init) }, set: { choosingIndex = $0?.index })) { choosing in
+                AddIngredientSheet(existing: draft.ingredients[choosing.index]) { chosen in
+                    guard draft.ingredients.indices.contains(choosing.index) else { return }
+                    var ingredient = chosen
+                    // Keep the draft's name and amount; take the food's values.
+                    ingredient.name = draft.ingredients[choosing.index].name
+                    draft.ingredients[choosing.index] = ingredient
+                    draft = RecipeDerivation.complete(draft) { foods.food(ndb: $0)?.per100g }.recipe
+                }
             }
             .vessErrorAlert(isPresented: $showError)
         }
@@ -439,47 +555,3 @@ struct AIRecipeReviewView: View {
         }
     }
 }
-
-#if DEBUG
-extension MockData {
-    /// R07's draft, for debug builds until the AI Chef function is wired:
-    /// made from the demo pantry, nutrition calculated from USDA values.
-    static func chefDraft(servings: Int, meal: MealType) -> Recipe {
-        func usda(_ name: String, _ ndb: String, grams: Double, quantity: Double, unit: Recipe.Unit, allergens: Set<Allergen> = [], optional: Bool = false) -> Recipe.Ingredient {
-            Recipe.Ingredient(name: name, key: name.lowercased(), quantity: quantity, unit: unit, grams: grams, allergens: allergens,
-                              source: .usda(ndb: ndb), per100: genericFoods[ndb]?.per100g, isOptional: optional)
-        }
-        let ingredients = [
-            usda("Jasmine rice", "20044", grams: 150, quantity: 150, unit: .gram),
-            usda("Bok choy", "11116", grams: 250, quantity: 2, unit: .piece),
-            usda("Baby spinach", "11457", grams: 100, quantity: 100, unit: .gram),
-            usda("Eggs", "01123", grams: 200, quantity: 4, unit: .piece, allergens: [.eggs]),
-            usda("White miso", "16112", grams: 17, quantity: 1, unit: .tablespoon, allergens: [.soy]),
-            usda("Sesame oil", "04058", grams: 4.5, quantity: 1, unit: .teaspoon, allergens: [.sesame]),
-            usda("Spring onions", "11291", grams: 30, quantity: 2, unit: .piece, optional: true),
-        ]
-        let base = Recipe(
-            id: "draft-\(UUID().uuidString)", name: "Bok choy, spinach and miso egg rice", category: .dinner, minutes: 20, extraTime: nil,
-            servings: 2, nutrition: .zero, ingredients: ingredients,
-            steps: [
-                "Rinse and cook the rice. Meanwhile halve the bok choy.",
-                "Whisk miso with a splash of hot water and the sesame oil.",
-                "Fry the eggs. Wilt bok choy and spinach in the same pan, 2 minutes.",
-                "Spoon greens and eggs over rice, drizzle the miso. Top with spring onions if you have them.",
-            ],
-            tip: nil, dietTags: [], tags: [], highProtein: false, contains: [], allergens: [], photo: nil, origin: .ai, createdAt: nil
-        )
-        var recipe = RecipeDerivation.complete(base) { genericFoods[$0]?.per100g }.recipe
-        recipe.servings = servings
-        if servings != 2 {
-            recipe.ingredients = recipe.ingredients.map { ingredient in
-                var scaled = ingredient
-                scaled.quantity = ingredient.quantity.map { $0 * Double(servings) / 2 }
-                scaled.grams = ingredient.grams.map { $0 * Double(servings) / 2 }
-                return scaled
-            }
-        }
-        return recipe
-    }
-}
-#endif

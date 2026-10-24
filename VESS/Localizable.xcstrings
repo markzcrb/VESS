@@ -854,6 +854,16 @@
     "%lld left today" : {
 
     },
+    "%lld left today · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld left today · %2$@"
+          }
+        }
+      }
+    },
     "%lld min" : {
 
     },
@@ -1194,8 +1204,15 @@
     "^[%lld open slot](inflect: true), considered." : {
 
     },
-    "^[%lld question](inflect: true) left today · Coach can make mistakes." : {
-
+    "^[%lld question](inflect: true) left today · %@ Coach can make mistakes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld question](inflect: true) left today · %2$@ Coach can make mistakes."
+          }
+        }
+      }
     },
     "^[%lld recipe](inflect: true)" : {
 
@@ -1626,6 +1643,15 @@
     "AI Chef" : {
 
     },
+    "AI Chef couldn't write a recipe just now. This one didn't count; try again." : {
+
+    },
+    "AI Chef isn't available right now." : {
+
+    },
+    "AI Chef writes recipes with AI." : {
+
+    },
     "AI draft · not saved yet" : {
 
     },
@@ -1974,9 +2000,6 @@
     "Coach" : {
 
     },
-    "Coach and photo estimates stop until you sign in again. Your log stays on this iPhone unless you also delete all data." : {
-
-    },
     "Coach answers with AI." : {
 
     },
@@ -1984,6 +2007,9 @@
 
     },
     "Coach settings" : {
+
+    },
+    "Coach, photo estimates and AI Chef stop until you sign in again. Your log stays on this iPhone unless you also delete all data." : {
 
     },
     "Cocktail" : {
@@ -3593,7 +3619,10 @@
     "no %@" : {
 
     },
-    "No analytics and no ads. An account only if you use Coach or photo estimates." : {
+    "No AI recipes left today. Back tomorrow. %@" : {
+
+    },
+    "No analytics and no ads. An account only if you use Coach, photo estimates or AI Chef." : {
 
     },
     "No daily target set." : {
@@ -3884,16 +3913,19 @@
     "One ingredient, such as coriander or blue cheese." : {
 
     },
-    "Only for Coach and photo estimates: your email or Apple ID and a daily count of AI uses. Delete it any time in Account." : {
+    "Only for Coach, photo estimates and AI Chef: your email or Apple ID and a daily count of AI uses. Delete it any time in Account." : {
 
     },
-    "Only for Coach and photo estimates. Your log stays on this iPhone." : {
+    "Only for Coach, photo estimates and AI Chef. Your log stays on this iPhone." : {
 
     },
     "Only what I have" : {
 
     },
     "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through VESS's server, once. VESS doesn't store them." : {
+
+    },
+    "Only when you create a recipe: your pantry list, the choices you made, your diet, the ingredients you don't eat, your allergies and today's protein gap go to the AI processor once. VESS doesn't store them, nutrition is calculated on this iPhone, and the recipe is saved only if you save it." : {
 
     },
     "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. VESS doesn't store it, and nothing is logged until you confirm." : {
@@ -4022,7 +4054,7 @@
     "Photo estimates" : {
 
     },
-    "Photo estimates need an account. Only for Coach and photo estimates; your log stays on this iPhone." : {
+    "Photo estimates need an account. Only for Coach, photo estimates and AI Chef; your log stays on this iPhone." : {
 
     },
     "Photo estimates use AI." : {
@@ -4287,6 +4319,9 @@
     "Replace meal" : {
 
     },
+    "Resets at %@." : {
+
+    },
     "Rest day" : {
 
     },
@@ -4413,6 +4448,9 @@
     "Sends your pantry list, diet and avoid list and these choices to %@ through VESS's server. Nothing else from your log. You review the recipe before it's saved." : {
 
     },
+    "Sends your pantry list, recipe choices, diet, avoid list and allergies." : {
+
+    },
     "Sends your question and a summary of recent logs." : {
 
     },
@@ -4492,6 +4530,9 @@
 
     },
     "Sign in to ask Coach" : {
+
+    },
+    "Sign in to use AI Chef." : {
 
     },
     "Sign in with Apple" : {
@@ -4576,6 +4617,9 @@
 
     },
     "Something went wrong. Try again in a moment." : {
+
+    },
+    "Something went wrong. Try again." : {
 
     },
     "Sort" : {
@@ -4825,6 +4869,9 @@
     "That doesn't look like a barcode. Check the digits." : {
 
     },
+    "That draft used something you avoid. Try another." : {
+
+    },
     "That's today's free Coach questions. Back tomorrow." : {
 
     },
@@ -4870,8 +4917,15 @@
     "The photo is used only to estimate this meal, then dropped." : {
 
     },
-    "The photo is used only to estimate this meal, then dropped. · ^[%lld estimate](inflect: true) left today" : {
-
+    "The photo is used only to estimate this meal, then dropped. · ^[%lld estimate](inflect: true) left today · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The photo is used only to estimate this meal, then dropped. · ^[%1$lld estimate](inflect: true) left today · %2$@"
+          }
+        }
+      }
     },
     "The photo, made smaller and without location or other details from the camera." : {
 
@@ -5415,6 +5469,9 @@
     "Workouts you enter are kept in VESS. Their energy is an estimate from type, duration and effort, so it's shown with ≈." : {
 
     },
+    "Writing a recipe…" : {
+
+    },
     "Year of birth" : {
 
     },
@@ -5475,6 +5532,9 @@
 
     },
     "You're offline, and this product isn't saved on this iPhone yet." : {
+
+    },
+    "You're offline. AI Chef needs a connection; everything else works without one." : {
 
     },
     "You're offline. Foods on this iPhone are still available above." : {
@@ -5538,6 +5598,9 @@
 
     },
     "Your pantry is empty" : {
+
+    },
+    "Your pantry list (names, and which to use soon), your choices for the recipe, your diet, the ingredients you don't eat, your allergies, and today's protein gap. Nothing else from your log. Nutrition is worked out on this iPhone, not by the AI." : {
 
     },
     "Your period may come later than estimated." : {

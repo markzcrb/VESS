@@ -70,16 +70,25 @@ struct AIConsentSheet: View {
                 .background(VESSColor.card.ignoresSafeArea(edges: .bottom))
                 .overlay(alignment: .top) { VESSHairline() }
             }
-            .vessDetailTitle(feature == .coach ? "Coach" : "Photo estimate")
+            .vessDetailTitle(navigationTitle)
         }
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(VESSRadius.sheet)
+    }
+
+    private var navigationTitle: LocalizedStringResource {
+        switch feature {
+        case .coach: "Coach"
+        case .photo: "Photo estimate"
+        case .chef: "AI Chef"
+        }
     }
 
     private var title: LocalizedStringResource {
         switch feature {
         case .coach: "Coach answers with AI."
         case .photo: "Photo estimates use AI."
+        case .chef: "AI Chef writes recipes with AI."
         }
     }
 
@@ -89,6 +98,8 @@ struct AIConsentSheet: View {
             Text("Your question, the conversation so far, and a summary of your recent logs: targets, today's totals, 7-day averages, today's meals, habits, workouts and supplements. Cycle data only if you turn on sharing.")
         case .photo:
             Text("The photo, made smaller and without location or other details from the camera.")
+        case .chef:
+            Text("Your pantry list (names, and which to use soon), your choices for the recipe, your diet, the ingredients you don't eat, your allergies, and today's protein gap. Nothing else from your log. Nutrition is worked out on this iPhone, not by the AI.")
         }
     }
 

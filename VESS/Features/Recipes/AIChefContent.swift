@@ -31,6 +31,9 @@ struct AIChefContent: View {
     @State private var usesUseSoon = false
     @State private var sort: Sort = .best
     @State private var createsWithAI = false
+    @AppStorage("chef.remaining") private var chefRemaining = -1
+    @AppStorage("chef.remainingDay") private var chefRemainingDay = ""
+    @Environment(AccountStore.self) private var account
     @State private var swapped: Recipe?
 
     /// Matches shown: the best as a card, the rest as rows.
@@ -94,7 +97,7 @@ struct AIChefContent: View {
                 createCard(profile: profile, remaining: remaining)
             }
             .sheet(isPresented: $createsWithAI) {
-                CreateWithAISheet(meal: meal, useSoon: useSoon, onSaved: onSaved)
+                CreateWithAISheet(meal: meal, useSoon: useSoon, proteinGap: Self.remaining(profile: profile, entries: store.foodEntries(on: AppClock.now, calendar: calendar)).proteinGrams, onSaved: onSaved)
             }
             .navigationDestination(item: $swapped) { RecipeView(recipe: $0) }
         }
@@ -298,11 +301,26 @@ struct AIChefContent: View {
                 .buttonStyle(.vessPrimary)
                 .padding(.top, VESSSpacing.xs)
                 .accessibilityIdentifier("chef.create")
+            // "8 left today · Resets at 02:00", once known and signed in.
+            if account.isSignedIn, chefRemaining >= 0, chefRemainingDay == AIQuota.serverDay(AppClock.now) {
+                Text("\(chefRemaining) left today · \(AIQuotaText.resets(after: AppClock.now))")
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .accessibilityIdentifier("chef.remaining")
+            }
         }
         .padding(VESSSpacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(VESSColor.tintLink, in: RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous).strokeBorder(VESSColor.strokeLink))
+        // Today's count before the first request; offline or signed out, none.
+        .task(id: account.isSignedIn) { await loadRemaining() }
+    }
+
+    private func loadRemaining() async {
+        guard account.isSignedIn, let left = try? await account.remainingToday(kind: "chef") else { return }
+        chefRemaining = left
+        chefRemainingDay = AIQuota.serverDay(AppClock.now)
     }
 
     // MARK: Rules

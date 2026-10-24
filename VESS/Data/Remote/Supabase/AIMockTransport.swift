@@ -4,11 +4,12 @@ import Foundation
 /// `-aiMock`: canned answers from "the server", so captures and UI tests never
 /// need the network or an account. `-aiMockScenario <name>` picks one:
 /// `ok` (default), `limit` (429), `offline`, `upstream` (502),
-/// `notConfigured` (503), `empty` (photo finds no food), `lowConfidence`.
+/// `notConfigured` (503), `empty` (photo finds no food), `lowConfidence`,
+/// `chefConflict` (the chef's draft uses soy sauce, for the on-device check).
 /// `-aiMockSignedOut` starts signed out; any email code but 000000 works.
 nonisolated struct AIMockTransport: HTTPTransport {
     enum Scenario: String, Sendable {
-        case ok, limit, offline, upstream, notConfigured, empty, lowConfidence
+        case ok, limit, offline, upstream, notConfigured, empty, lowConfidence, chefConflict
     }
 
     let scenario: Scenario
@@ -48,6 +49,11 @@ nonisolated struct AIMockTransport: HTTPTransport {
             return reply(200, ["deleted": true])
         case path.contains("/functions/v1/"):
             return functionReply(path)
+        // Today's usage: two AI Chef recipes so far, ten a day.
+        case path.hasSuffix("/rest/v1/ai_usage"):
+            return rawReply(200, scenario == .limit ? #"[{"count":10}]"# : #"[{"count":2}]"#)
+        case path.hasSuffix("/rest/v1/rpc/ai_daily_limit"):
+            return rawReply(200, "10")
         default:
             return reply(404, ["error": "not_found"])
         }
@@ -64,6 +70,37 @@ nonisolated struct AIMockTransport: HTTPTransport {
             return reply(200, [
                 "reply": "Protein is a little under your target so far, with dinner still to come. The miso cod you planned would bring it close to your 140 g target. Water is a little behind your usual pace for this time of day. (Sample answer.)",
                 "remaining": 17,
+            ])
+        }
+        if path.hasSuffix("/chef") {
+            func ingredient(_ name: String, _ amount: Double, _ unit: String, _ grams: Double, _ hint: String) -> [String: Any] {
+                ["name": name, "amount": amount, "unit": unit, "grams": grams, "from_pantry": true, "usda_hint": hint]
+            }
+            var ingredients = [
+                ingredient("Jasmine rice", 150, "g", 150, "Rice, white, long-grain, regular, raw"),
+                ingredient("Bok choy", 2, "piece", 250, "Cabbage, chinese (pak-choi), raw"),
+                ingredient("Baby spinach", 100, "g", 100, "Spinach, raw"),
+                ingredient("Eggs", 4, "piece", 200, "Egg, whole, raw, fresh"),
+                ingredient("White miso", 1, "tbsp", 17, "Miso"),
+                ingredient("Spring onions", 2, "piece", 30, "Onions, spring or scallions, raw"),
+            ]
+            if scenario == .chefConflict {
+                ingredients.append(ingredient("Soy sauce", 1, "tbsp", 16, "Soy sauce made from soy and wheat (shoyu)"))
+            }
+            return reply(200, [
+                "recipe": [
+                    "name": "Bok choy, spinach and miso egg rice", "minutes": 20, "servings": 2,
+                    "ingredients": ingredients,
+                    "steps": [
+                        "Rinse and cook the rice. Meanwhile halve the bok choy.",
+                        "Whisk the miso with a splash of hot water.",
+                        "Fry the eggs. Wilt the bok choy and spinach in the same pan, 2 minutes.",
+                        "Spoon the greens and eggs over the rice, drizzle the miso and top with spring onions.",
+                    ],
+                    "tip": "Day-old rice fries best.",
+                ],
+                "remaining": 7,
+                "estimated": true,
             ])
         }
         if path.hasSuffix("/food-photo") {
@@ -94,6 +131,11 @@ nonisolated struct AIMockTransport: HTTPTransport {
             "expires_at": Date().addingTimeInterval(3600).timeIntervalSince1970,
             "user": ["id": Self.session.userID, "email": email, "app_metadata": ["provider": provider]],
         ]
+    }
+
+    private func rawReply(_ status: Int, _ body: String) -> (Data, HTTPURLResponse) {
+        let response = HTTPURLResponse(url: URL(string: "https://mock.vess.invalid")!, statusCode: status, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": "application/json"])!
+        return (Data(body.utf8), response)
     }
 
     private func reply(_ status: Int, _ body: [String: Any]) -> (Data, HTTPURLResponse) {

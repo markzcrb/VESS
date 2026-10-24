@@ -11,9 +11,9 @@ nonisolated enum AIProcessor {
     static let consentVersion = 1
 }
 
-/// The two features that send something off the iPhone.
+/// The features that send something off the iPhone.
 nonisolated enum AIFeature: String, CaseIterable, Sendable {
-    case coach, photo
+    case coach, photo, chef
 }
 
 /// Consent for third-party AI (App Store 5.1.2(i)): asked once per feature

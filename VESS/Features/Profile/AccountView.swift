@@ -2,7 +2,7 @@ import AuthenticationServices
 import CryptoKit
 import SwiftUI
 
-/// You › Account. An account is only for Coach and photo estimates; the log
+/// You › Account. An account is only for Coach, photo estimates and AI Chef; the log
 /// stays on this iPhone. Sign in with Apple (when the capability is on) or a
 /// one-time code by email. Signed in: who, Sign out, Delete account.
 struct AccountView: View {
@@ -19,7 +19,7 @@ struct AccountView: View {
             // One headline, signed in or not.
             ProfileIntro(
                 title: "An account for AI features.",
-                text: "Only for Coach and photo estimates. Your log stays on this iPhone."
+                text: "Only for Coach, photo estimates and AI Chef. Your log stays on this iPhone."
             )
             if let session = account.session {
                 signedIn(session)
@@ -67,7 +67,7 @@ struct AccountView: View {
                     Button("Delete account and all data", role: .destructive) { delete(alsoLocalData: true) }
                     Button("Cancel", role: .cancel) {}
                 } message: {
-                    Text("Coach and photo estimates stop until you sign in again. Your log stays on this iPhone unless you also delete all data.")
+                    Text("Coach, photo estimates and AI Chef stop until you sign in again. Your log stays on this iPhone unless you also delete all data.")
                 }
         }
     }

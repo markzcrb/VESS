@@ -293,6 +293,46 @@ final class VESSUITests: XCTestCase {
                       "The confirmed items are in the diary")
     }
 
+    /// Plan › Recipes › AI Chef › Create with AI: the mock server's draft is
+    /// matched and checked on the device, reviewed, then saved to My recipes.
+    @MainActor
+    func testChefDraftIsReviewedThenSaved() throws {
+        let app = openChef(launchAI())
+        let remaining = app.staticTexts["chef.remaining"]
+        XCTAssertTrue(remaining.waitForExistence(timeout: 10), "What's left today shows before the first request")
+        XCTAssertTrue(remaining.label.contains("8 left today") && remaining.label.contains("Resets at"))
+        scrollUntilHittable(app.buttons["chef.create"], in: app)
+        app.buttons["chef.create"].tap()
+        tapWhenReady(app.buttons["create.go"])
+        let save = app.buttons["draft.save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 15), "The draft opens for review; nothing is saved yet")
+        XCTAssertTrue(app.staticTexts["Bok choy, spinach and miso egg rice"].exists)
+        save.tap()
+        XCTAssertTrue(app.staticTexts["Bok choy, spinach and miso egg rice"].waitForExistence(timeout: 10), "Saved to My recipes")
+        XCTAssertTrue(app.staticTexts["AI · Checked by you"].exists || app.staticTexts["AI · CHECKED BY YOU"].exists)
+    }
+
+    /// A draft with soy sauce for someone allergic to soy is never shown.
+    @MainActor
+    func testChefDraftWithAnAllergenIsNotShown() throws {
+        let app = openChef(launchAI(["-aiMockScenario", "chefConflict", "-allergicToSoy"]))
+        scrollUntilHittable(app.buttons["chef.create"], in: app)
+        app.buttons["chef.create"].tap()
+        tapWhenReady(app.buttons["create.go"])
+        let failure = app.staticTexts["create.failure"]
+        XCTAssertTrue(failure.waitForExistence(timeout: 15))
+        XCTAssertTrue(failure.label.contains("used something you avoid"))
+        XCTAssertFalse(app.buttons["draft.save"].exists)
+    }
+
+    @MainActor
+    private func openChef(_ app: XCUIApplication) -> XCUIApplication {
+        tapWhenReady(app.tabBars.buttons["Plan"])
+        tapWhenReady(app.buttons["Recipes"].firstMatch)
+        tapWhenReady(app.buttons["tabs.chef"])
+        return app
+    }
+
     /// Regression: "+" tapped while the sheet was still going down was lost.
     /// It must open the sheet again, every time.
     @MainActor

@@ -222,7 +222,7 @@ struct CoachView: View {
     private var footer: some View {
         Group {
             if let left = remainingToday, account.isSignedIn {
-                Text("^[\(left) question](inflect: true) left today · Coach can make mistakes.")
+                Text("^[\(left) question](inflect: true) left today · \(AIQuotaText.resets(after: AppClock.now)) Coach can make mistakes.")
             } else {
                 Text("Coach can make mistakes. Check anything important.")
             }
@@ -451,7 +451,7 @@ struct AISignInSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                    ProfileIntro(title: "An account for AI features.", text: "Only for Coach and photo estimates. Your log stays on this iPhone.")
+                    ProfileIntro(title: "An account for AI features.", text: "Only for Coach, photo estimates and AI Chef. Your log stays on this iPhone.")
                     AccountSignInForm()
                 }
                 .padding(VESSSpacing.screenInset)

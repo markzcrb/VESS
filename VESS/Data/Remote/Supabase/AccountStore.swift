@@ -104,6 +104,44 @@ final class AccountStore {
         throw BackendError.notSignedIn
     }
 
+    /// Today's uses of an AI feature: the user's own `ai_usage` row (row-level
+    /// security lets them read it; the day is UTC) and `ai_daily_limit`.
+    /// Returns what's left.
+    func remainingToday(kind: String, now: Date = Date()) async throws -> Int {
+        guard let config else { throw BackendError.notConfigured }
+        let token = try await validAccessToken()
+        func request(_ path: String, query: [URLQueryItem] = [], body: Data? = nil) -> URLRequest {
+            var url = config.url.appending(path: path)
+            if !query.isEmpty { url.append(queryItems: query) }
+            var request = URLRequest(url: url, timeoutInterval: 20)
+            request.httpMethod = body == nil ? "GET" : "POST"
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.setValue(config.publishableKey, forHTTPHeaderField: "apikey")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = body
+            return request
+        }
+        struct Row: Decodable { let count: Int }
+        do {
+            let (usage, usageResponse) = try await transport.send(request("rest/v1/ai_usage", query: [
+                URLQueryItem(name: "select", value: "count"),
+                URLQueryItem(name: "kind", value: "eq.\(kind)"),
+                URLQueryItem(name: "day", value: "eq.\(AIQuota.serverDay(now))"),
+            ]))
+            let (limit, limitResponse) = try await transport.send(request("rest/v1/rpc/ai_daily_limit", body: Data(#"{"p_kind":"\#(kind)"}"#.utf8)))
+            guard (200..<300).contains(usageResponse.statusCode), (200..<300).contains(limitResponse.statusCode) else {
+                throw BackendError.server(max(usageResponse.statusCode, limitResponse.statusCode))
+            }
+            let used = try JSONDecoder().decode([Row].self, from: usage).first?.count ?? 0
+            let daily = try JSONDecoder().decode(Int.self, from: limit)
+            return max(daily - used, 0)
+        } catch let error as BackendError {
+            throw error
+        } catch {
+            throw BackendError.from(error)
+        }
+    }
+
     /// The access token, refreshed first if it expires within a minute.
     func validAccessToken() async throws -> String {
         guard let session else { throw BackendError.notSignedIn }
