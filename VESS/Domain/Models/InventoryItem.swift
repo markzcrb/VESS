@@ -16,6 +16,9 @@ nonisolated struct InventoryItem: Identifiable, Codable, Hashable, Sendable {
     var status: InventoryStatus
     /// When set, expiration reminders are paused until this date.
     var reminderSnoozedUntil: Date?
+    /// The USDA food the user chose for this item's nutrition (NDB number),
+    /// so it is picked only once. `nil`: matched by name.
+    var genericFoodID: String? = nil
 
     func expirationStatus(now: Date, calendar: Calendar) -> ExpirationStatus {
         ExpirationStatus(expirationDate: expirationDate, now: now, calendar: calendar)

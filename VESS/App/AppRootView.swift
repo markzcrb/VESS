@@ -13,6 +13,8 @@ struct AppRootView: View {
     @State private var account = AccountStore.make()
     @State private var consent = AIConsentStore.make()
     @State private var catalog = RecipeCatalog()
+    /// USDA generic foods, read when a screen first needs them.
+    @State private var genericFoods = GenericFoodDatabase()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -49,6 +51,7 @@ struct AppRootView: View {
                 .environment(account)
                 .environment(consent)
                 .environment(catalog)
+                .environment(genericFoods)
                 // The bundled recipes, read in the background once the UI is up.
                 .task { await catalog.load() }
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
