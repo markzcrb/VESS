@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import UIKit
 import Testing
 @testable import VESS
 
@@ -31,6 +32,12 @@ struct RecipeCatalogTests {
         #expect(Dictionary(grouping: recipes, by: \.category).mapValues(\.count) == [
             .breakfast: 20, .lunch: 20, .dinner: 22, .snack: 20, .smoothie: 20, .dessert: 20,
         ])
+    }
+
+    @Test("Every Discover recipe's photo is in the asset catalog")
+    func photos() throws {
+        let missing = try RecipeCatalog.bundled().compactMap(\.photo).filter { UIImage(named: $0) == nil }
+        #expect(missing.isEmpty, "Missing: \(missing)")
     }
 
     @Test("Values come through: units, optional items, extra time, tip, tags, saturated fat")
