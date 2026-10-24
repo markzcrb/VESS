@@ -34,30 +34,3 @@ nonisolated struct PlannedMeal: Identifiable, Codable, Hashable, Sendable {
     var loggedAt: Date?
     let createdAt: Date
 }
-
-/// A recipe. In this build recipes exist only as DEBUG demo content
-/// (`MockData.recipes`); there is no Recipes tab in Release.
-nonisolated struct Recipe: Identifiable, Hashable, Sendable {
-    nonisolated struct Ingredient: Hashable, Sendable {
-        var name: String
-        /// Amount for the recipe's base servings, or `nil` ("to taste").
-        var quantity: Double?
-        var unit: QuantityUnit?
-    }
-
-    nonisolated enum Diet: String, Hashable, Sendable {
-        case pescatarian, vegetarian, vegan
-    }
-
-    let id: String
-    var name: String
-    var mealType: MealType
-    var minutes: Int
-    var servings: Int
-    /// Per serving. Values not given by the source are left unreported.
-    var nutrition: NutritionFacts
-    var ingredients: [Ingredient]
-    var steps: [String]
-    var diets: Set<Diet>
-    var allergens: Set<Allergen>
-}

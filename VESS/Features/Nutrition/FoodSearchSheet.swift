@@ -529,6 +529,7 @@ extension View {
             .environment(ReminderService(center: nil, defaults: UserDefaults(suiteName: "preview") ?? .standard))
             .environment(AccountStore(config: nil, transport: URLSessionTransport(), store: MemorySessionStore()))
             .environment(AIConsentStore(defaults: UserDefaults(suiteName: "preview") ?? .standard))
+            .environment(RecipeCatalog(recipes: MockData.catalogRecipes))
     }
 }
 #endif

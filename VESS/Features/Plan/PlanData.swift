@@ -1,12 +1,12 @@
 import SwiftUI
 
 /// What Plan suggests from: the user's own logged meals (last 28 days) and,
-/// in DEBUG builds only, the demo recipes. No recipes ship in Release.
+/// in DEBUG builds only until the Recipes screens ship, the Discover recipes.
 @MainActor
 enum PlanCandidates {
     static let historyDays = 28
 
-    static func all(store: LocalStore, now: Date, calendar: Calendar) -> [MealSuggestions.Candidate] {
+    static func all(store: LocalStore, catalog: RecipeCatalog, now: Date, calendar: Calendar) -> [MealSuggestions.Candidate] {
         let end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now
         let start = calendar.date(byAdding: .day, value: -historyDays, to: end) ?? now
         let logged = MealSuggestions.Candidate.fromLog(
@@ -14,7 +14,7 @@ enum PlanCandidates {
             allergens: { store.food(id: $0)?.allergens ?? [] },
             calendar: calendar
         )
-        return logged + recipes
+        return logged + recipes(catalog)
     }
 
     /// Saved foods (favourites and your own), each as a one-item meal.
@@ -36,19 +36,13 @@ enum PlanCandidates {
         }
     }
 
-    static var recipes: [MealSuggestions.Candidate] {
+    static func recipes(_ catalog: RecipeCatalog) -> [MealSuggestions.Candidate] {
         #if DEBUG
-        MockData.recipes.map(MealSuggestions.Candidate.init(recipe:))
+        catalog.recipes.map(MealSuggestions.Candidate.init(recipe:))
         #else
         []
         #endif
     }
-
-    #if DEBUG
-    static func recipe(id: String) -> Recipe? {
-        MockData.recipes.first { $0.id == id }
-    }
-    #endif
 }
 
 extension MealSuggestions.Reason {
@@ -88,6 +82,22 @@ extension PlannedMeal.Item {
     }
 }
 
+extension Recipe.Ingredient {
+    /// "240 g", "2 cloves", "1 pinch", "3" for pieces, times `scale`;
+    /// `nil` for "to taste".
+    func amountText(scale: Double = 1) -> String? {
+        guard let quantity else { return nil }
+        let value = quantity * scale
+        let number = VESSFormat.quantity(value)
+        switch unit {
+        case .clove: return value == 1 ? String(localized: "1 clove") : String(localized: "\(number) cloves")
+        case .pinch: return value == 1 ? String(localized: "1 pinch") : String(localized: "\(number) pinches")
+        case let unit?: return PlannedMeal.Item(name: name, quantity: value, unit: unit.quantityUnit).amountText
+        case nil: return number
+        }
+    }
+}
+
 extension Calendar {
     /// The first day of the week containing `date`.
     func startOfWeek(for date: Date) -> Date {
@@ -117,7 +127,8 @@ enum PlanLogging {
         } else {
             entries = [FoodLogEntry(
                 id: UUID(), userID: profile.id, foodID: nil, foodName: meal.name, mealType: meal.mealType,
-                quantity: 1, servingUnit: .serving, nutrition: meal.nutrition, loggedAt: time
+                quantity: 1, servingUnit: .serving, nutrition: meal.nutrition, loggedAt: time,
+                recipeID: { if case .recipe(let id) = meal.source { id } else { nil } }()
             )]
         }
         for entry in entries { try store.add(entry) }

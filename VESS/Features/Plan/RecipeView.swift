@@ -198,9 +198,8 @@ struct RecipeView: View {
                         VESSTag(text: Text("Use soon"), tone: .accent)
                     }
                 }
-                if let quantity = ingredient.quantity {
-                    let scaled = quantity * Double(servings) / Double(max(recipe.servings, 1))
-                    Text(PlannedMeal.Item(name: ingredient.name, quantity: scaled, unit: ingredient.unit).amountText ?? "")
+                if let amount = ingredient.amountText(scale: Double(servings) / Double(max(recipe.servings, 1))) {
+                    Text(amount)
                         .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.secondaryText)
                 }

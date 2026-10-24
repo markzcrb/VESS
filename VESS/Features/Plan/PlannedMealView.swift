@@ -5,6 +5,7 @@ import SwiftUI
 /// meals can be logged from here ("Log as Dinner").
 struct PlannedMealView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(RecipeCatalog.self) private var catalog
     @Environment(FoodLogUndo.self) private var undo
     @Environment(\.dismiss) private var dismiss
 
@@ -105,7 +106,7 @@ struct PlannedMealView: View {
                 }
 
                 #if DEBUG
-                if case .recipe(let id) = meal.source, let recipe = PlanCandidates.recipe(id: id) {
+                if case .recipe(let id) = meal.source, let recipe = catalog.recipe(id: id) {
                     NavigationLink("View recipe") { RecipeView(recipe: recipe) }
                         .buttonStyle(.vessSecondary)
                 }

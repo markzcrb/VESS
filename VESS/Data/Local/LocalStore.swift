@@ -63,7 +63,7 @@ final class LocalStore {
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
             StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self, StoredSupplement.self,
             StoredCycleDay.self, StoredHabit.self, StoredHabitCheck.self,
-            StoredSupplementLog.self, StoredCoachMessage.self,
+            StoredSupplementLog.self, StoredCoachMessage.self, StoredRecipe.self,
         ])
     }
 
@@ -546,6 +546,49 @@ final class LocalStore {
         try save()
     }
 
+    // MARK: Recipes
+
+    /// The user's own and saved AI recipes, newest first.
+    var userRecipes: [Recipe] {
+        _ = revision
+        return fetchDecoded(FetchDescriptor<StoredRecipe>(), as: Recipe.self) { $0.payload }
+            .sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+    }
+
+    func recipePhoto(id: String) -> Data? {
+        _ = revision
+        return try? context.fetch(FetchDescriptor<StoredRecipe>(predicate: #Predicate { $0.id == id })).first?.photo
+    }
+
+    /// Adds or replaces a user or AI recipe. `photo` replaces the stored
+    /// one; `nil` keeps it unless `removePhoto`.
+    func save(_ recipe: Recipe, photo: Data? = nil, removePhoto: Bool = false) throws {
+        precondition(recipe.origin != .discover, "Discover recipes are bundled, not stored")
+        let id = recipe.id
+        let payload = try encoder.encode(recipe)
+        if let existing = try context.fetch(FetchDescriptor<StoredRecipe>(predicate: #Predicate { $0.id == id })).first {
+            existing.payload = payload
+            existing.updatedAt = .now
+            if let photo { existing.photo = photo } else if removePhoto { existing.photo = nil }
+        } else {
+            context.insert(StoredRecipe(id: id, updatedAt: .now, payload: payload, photo: photo))
+        }
+        try save()
+    }
+
+    func deleteRecipe(id: String) throws {
+        try context.delete(model: StoredRecipe.self, where: #Predicate { $0.id == id })
+        try save()
+    }
+
+    /// How often a recipe was logged ("Cooked 3×"). A recipe logs as one
+    /// entry, so this counts entries.
+    func cookedCount(recipeID: String) -> Int {
+        _ = revision
+        return fetchDecoded(FetchDescriptor<StoredFoodLogEntry>(), as: FoodLogEntry.self) { $0.payload }
+            .count { $0.recipeID == recipeID }
+    }
+
     // MARK: Export
 
     /// Everything VESS stores on this iPhone, as one JSON document (E07).
@@ -570,7 +613,8 @@ final class LocalStore {
             cycleDays: cycleDays,
             habits: habits,
             habitChecks: fetchDecoded(FetchDescriptor<StoredHabitCheck>(sortBy: [SortDescriptor(\.day)]), as: HabitCheck.self) { $0.payload },
-            coachMessages: coachMessages
+            coachMessages: coachMessages,
+            recipes: userRecipes
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -597,6 +641,8 @@ final class LocalStore {
         let habitChecks: [HabitCheck]
         /// The Coach conversation, kept only here.
         let coachMessages: [CoachMessage]
+        /// The user's own and saved AI recipes (photos left out).
+        let recipes: [Recipe]
     }
 
     // MARK: Account data
@@ -617,6 +663,7 @@ final class LocalStore {
         try context.delete(model: StoredCycleDay.self)
         try context.delete(model: StoredHabit.self)
         try context.delete(model: StoredHabitCheck.self)
+        try context.delete(model: StoredRecipe.self)
         try save()
         profile = nil
         insights = []

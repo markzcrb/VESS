@@ -6,6 +6,7 @@ import SwiftUI
 /// DEBUG-only segment until there is real recipe content.
 struct PlanView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(RecipeCatalog.self) private var catalog
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -491,14 +492,14 @@ struct PlanView: View {
     private var recipes: some View {
         #if DEBUG
         VStack(alignment: .leading, spacing: VESSSpacing.md) {
-            Text("Demo recipes")
+            Text("Recipes")
                 .vessTextStyle(.editorialL)
                 .foregroundStyle(VESSColor.text)
-            Text("Debug builds only. Pescatarian and nut-free, from the design's examples.")
+            Text("Debug builds only, until the Recipes screens are built. All \(catalog.recipes.count) Discover recipes, not filtered yet.")
                 .vessTextStyle(.bodyS)
                 .foregroundStyle(VESSColor.secondaryText)
             VESSRowGroup {
-                ForEach(MockData.recipes) { recipe in
+                ForEach(catalog.recipes) { recipe in
                     NavigationLink {
                         RecipeView(recipe: recipe)
                     } label: {
@@ -524,7 +525,7 @@ struct PlanView: View {
            let dinner = today.slots.first(where: { $0.meal == .dinner }),
            case .planned(let meal) = dinner.slot,
            case .recipe(let id) = meal.source,
-           let recipe = PlanCandidates.recipe(id: id) {
+           let recipe = catalog.recipe(id: id) {
             let expiring = MealSuggestions.expiringUsed(
                 by: .init(recipe: recipe), day: today.date, pantry: store.inventory, now: AppClock.now, calendar: calendar
             )

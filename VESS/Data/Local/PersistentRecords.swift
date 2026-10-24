@@ -216,3 +216,21 @@ final class StoredGroceryItem {
         self.payload = payload
     }
 }
+
+/// A recipe the user made or saved from AI Chef, with its own photo.
+/// Additive; only on this iPhone.
+@Model
+final class StoredRecipe {
+    @Attribute(.unique) var id: String
+    var updatedAt: Date
+    var payload: Data
+    /// The user's photo, JPEG.
+    @Attribute(.externalStorage) var photo: Data?
+
+    init(id: String, updatedAt: Date, payload: Data, photo: Data?) {
+        self.id = id
+        self.updatedAt = updatedAt
+        self.payload = payload
+        self.photo = photo
+    }
+}

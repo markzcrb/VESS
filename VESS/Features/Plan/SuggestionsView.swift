@@ -5,6 +5,7 @@ import SwiftUI
 /// state: the rule runs on the device and is instant.
 struct SuggestionsView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(RecipeCatalog.self) private var catalog
     @Environment(\.dismiss) private var dismiss
 
     let openSlots: [(day: Date, meal: MealType)]
@@ -122,7 +123,7 @@ struct SuggestionsView: View {
         guard let profile = store.profile else { return [] }
         return MealSuggestions.suggest(
             openSlots: openSlots,
-            candidates: PlanCandidates.all(store: store, now: now, calendar: calendar),
+            candidates: PlanCandidates.all(store: store, catalog: catalog, now: now, calendar: calendar),
             pantry: store.inventory,
             profile: profile,
             excludingNames: plannedNames,

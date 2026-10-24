@@ -249,10 +249,12 @@ nonisolated extension MealSuggestions.Candidate {
             mealType: recipe.mealType,
             nutrition: recipe.nutrition,
             items: recipe.ingredients.map {
-                PlannedMeal.Item(
+                // Cloves and pinches have no plan unit: the name alone.
+                let unit = $0.unit?.quantityUnit
+                return PlannedMeal.Item(
                     name: $0.name,
-                    quantity: $0.quantity.map { $0 / Double(max(recipe.servings, 1)) },
-                    unit: $0.unit
+                    quantity: $0.unit != nil && unit == nil ? nil : $0.quantity.map { $0 / Double(max(recipe.servings, 1)) },
+                    unit: unit
                 )
             },
             source: .recipe(recipe.id),

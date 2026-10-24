@@ -5,6 +5,7 @@ import SwiftUI
 /// Replaces `replacing` when given.
 struct AddToSlotView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(RecipeCatalog.self) private var catalog
     @Environment(\.dismiss) private var dismiss
 
     let day: Date
@@ -119,12 +120,12 @@ struct AddToSlotView: View {
         let list: [MealSuggestions.Candidate] = switch tab {
         case .suggested:
             MealSuggestions.ranked(
-                for: meal, on: day, candidates: PlanCandidates.all(store: store, now: now, calendar: calendar),
+                for: meal, on: day, candidates: PlanCandidates.all(store: store, catalog: catalog, now: now, calendar: calendar),
                 pantry: store.inventory, profile: profile, now: now, calendar: calendar
             )
         case .saved: PlanCandidates.saved(store: store)
         case .recent:
-            PlanCandidates.all(store: store, now: now, calendar: calendar).filter {
+            PlanCandidates.all(store: store, catalog: catalog, now: now, calendar: calendar).filter {
                 if case .foods = $0.source { true } else { false }
             }
         }

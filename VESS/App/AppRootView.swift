@@ -12,6 +12,7 @@ struct AppRootView: View {
     @State private var haptics = VESSHaptics()
     @State private var account = AccountStore.make()
     @State private var consent = AIConsentStore.make()
+    @State private var catalog = RecipeCatalog()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -47,6 +48,9 @@ struct AppRootView: View {
                 .environment(reminders)
                 .environment(account)
                 .environment(consent)
+                .environment(catalog)
+                // The bundled recipes, read in the background once the UI is up.
+                .task { await catalog.load() }
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 // One success tap for every log, wherever it came from.
                 .vessHaptic(.success, trigger: foodUndo.loggedCount)

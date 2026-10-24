@@ -240,6 +240,9 @@
         }
       }
     },
+    "%@ cloves" : {
+
+    },
     "%@ counts at %@ toward water. An estimate." : {
       "localizations" : {
         "en" : {
@@ -527,6 +530,9 @@
           }
         }
       }
+    },
+    "%@ pinches" : {
+
     },
     "%@ servings" : {
       "comment" : "A fractional count of servings, such as 1.5 servings.",
@@ -1075,7 +1081,13 @@
     "0–1,000 g" : {
 
     },
+    "1 clove" : {
+
+    },
     "1 drink" : {
+
+    },
+    "1 pinch" : {
 
     },
     "8 to 14 digits" : {
