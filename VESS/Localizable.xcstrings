@@ -170,6 +170,16 @@
         }
       }
     },
+    "%@ · uses %lld use-soon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · uses %2$lld use-soon"
+          }
+        }
+      }
+    },
     "%@ · you set the dose" : {
 
     },
@@ -199,6 +209,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ %2$@ is light on protein."
+          }
+        }
+      }
+    },
+    "%@ %lld min   %@ %@ kcal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$lld min   %3$@ %4$@ kcal"
           }
         }
       }
@@ -279,6 +299,16 @@
     },
     "%@ g" : {
 
+    },
+    "%@ g %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ g %2$@"
+          }
+        }
+      }
     },
     "%@ g protein · %@ g carbs · %@ g fat" : {
       "localizations" : {
@@ -681,6 +711,16 @@
     "%lld" : {
 
     },
+    "%lld aren't %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld aren't %2$@"
+          }
+        }
+      }
+    },
     "%lld capsule" : {
       "comment" : "A whole count of capsules, such as 1 capsule or 2 capsules.",
       "localizations" : {
@@ -730,6 +770,9 @@
     "%lld days with most of the list done" : {
 
     },
+    "%lld for you" : {
+
+    },
     "%lld from your pantry · %lld to buy" : {
       "localizations" : {
         "en" : {
@@ -740,6 +783,19 @@
         }
       }
     },
+    "%lld have %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld have %2$@"
+          }
+        }
+      }
+    },
+    "%lld have meat with dairy" : {
+
+    },
     "%lld left this evening" : {
 
     },
@@ -749,12 +805,42 @@
     "%lld min" : {
 
     },
+    "%lld min · %@ kcal · %@ g protein" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld min · %2$@ kcal · %3$@ g protein"
+          }
+        }
+      }
+    },
+    "%lld min, %@ kcal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld min, %2$@ kcal"
+          }
+        }
+      }
+    },
     "%lld of %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld at home" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld at home"
           }
         }
       }
@@ -897,6 +983,19 @@
         }
       }
     },
+    "%lld recipes are hidden because they contain %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld recipes are hidden because they contain %2$@."
+          }
+        }
+      }
+    },
+    "%lld recipes are hidden because they don't fit your preferences." : {
+
+    },
     "%lld serving" : {
       "comment" : "A whole count of servings, such as 1 serving or 2 servings.",
       "localizations" : {
@@ -1036,6 +1135,9 @@
     "^[%lld question](inflect: true) left today · Coach can make mistakes." : {
 
     },
+    "^[%lld serving](inflect: true)" : {
+
+    },
     "^[%lld slot](inflect: true) left open: nothing fits %@." : {
       "localizations" : {
         "en" : {
@@ -1087,7 +1189,16 @@
     "1 drink" : {
 
     },
+    "1 has %@" : {
+
+    },
     "1 pinch" : {
+
+    },
+    "1 recipe is hidden because it contains %@." : {
+
+    },
+    "1 recipe is hidden because it doesn't fit your preferences." : {
 
     },
     "8 to 14 digits" : {
@@ -1391,10 +1502,19 @@
     "Age" : {
 
     },
+    "AI" : {
+
+    },
+    "AI Chef" : {
+
+    },
     "AI features" : {
 
     },
     "Aisle" : {
+
+    },
+    "alcohol" : {
 
     },
     "Alcohol" : {
@@ -1619,6 +1739,9 @@
     "Category" : {
 
     },
+    "celery" : {
+
+    },
     "Celery" : {
 
     },
@@ -1709,6 +1832,9 @@
     "Cold brew" : {
 
     },
+    "Collections" : {
+
+    },
     "Community data from Open Food Facts · not verified" : {
 
     },
@@ -1725,6 +1851,15 @@
 
     },
     "Continue" : {
+
+    },
+    "Cook & log" : {
+
+    },
+    "Cook tonight" : {
+
+    },
+    "Cook tonight · uses what expires soon" : {
 
     },
     "Copy this week's plan" : {
@@ -1815,6 +1950,9 @@
 
     },
     "Daily targets" : {
+
+    },
+    "dairy" : {
 
     },
     "Dairy & eggs" : {
@@ -1913,6 +2051,12 @@
     "Describe it" : {
 
     },
+    "Dessert" : {
+
+    },
+    "Desserts" : {
+
+    },
     "Details" : {
 
     },
@@ -1929,6 +2073,9 @@
 
     },
     "Direction" : {
+
+    },
+    "Discover" : {
 
     },
     "Distance" : {
@@ -2010,6 +2157,9 @@
     "Edit habits" : {
 
     },
+    "Edit nutrition preferences" : {
+
+    },
     "Edit or delete" : {
 
     },
@@ -2025,7 +2175,13 @@
     "Effort" : {
 
     },
+    "egg" : {
+
+    },
     "egg-free" : {
+
+    },
+    "eggs" : {
 
     },
     "Eggs" : {
@@ -2183,6 +2339,9 @@
     "Fewer" : {
 
     },
+    "Fewer servings" : {
+
+    },
     "Fewer than the 30 days before." : {
 
     },
@@ -2201,7 +2360,13 @@
     "Filter coffee" : {
 
     },
+    "fish" : {
+
+    },
     "Fish" : {
+
+    },
+    "Fish and seafood" : {
 
     },
     "fish-free" : {
@@ -2211,6 +2376,12 @@
 
     },
     "Fitness" : {
+
+    },
+    "Fits you: %@" : {
+
+    },
+    "Fits you: everything" : {
 
     },
     "Flash off" : {
@@ -2355,6 +2526,9 @@
     "Glass" : {
 
     },
+    "gluten" : {
+
+    },
     "gluten-free" : {
 
     },
@@ -2430,6 +2604,9 @@
     "Hard exercise 6–7 days a week" : {
 
     },
+    "Has %@" : {
+
+    },
     "Has entries" : {
 
     },
@@ -2449,6 +2626,9 @@
 
     },
     "Herbal tea" : {
+
+    },
+    "Hide" : {
 
     },
     "Hides the calendar" : {
@@ -2622,6 +2802,9 @@
 
     },
     "kcal · Estimated" : {
+
+    },
+    "kcal / serving" : {
 
     },
     "kcal a day" : {
@@ -2837,6 +3020,9 @@
     "Lungo" : {
 
     },
+    "lupin" : {
+
+    },
     "Lupin" : {
 
     },
@@ -2900,13 +3086,25 @@
     "Meals you log appear here." : {
 
     },
+    "meat" : {
+
+    },
+    "Meat with dairy" : {
+
+    },
     "Mediterranean" : {
 
     },
     "Medium" : {
 
     },
+    "Method" : {
+
+    },
     "mg" : {
+
+    },
+    "milk" : {
 
     },
     "Milk" : {
@@ -2919,6 +3117,18 @@
 
     },
     "Minerals" : {
+
+    },
+    "minutes" : {
+
+    },
+    "minutes + %@" : {
+
+    },
+    "Missing" : {
+
+    },
+    "Missing · optional" : {
 
     },
     "ml" : {
@@ -2942,6 +3152,9 @@
     "mollusc-free" : {
 
     },
+    "molluscs" : {
+
+    },
     "Molluscs" : {
 
     },
@@ -2949,6 +3162,9 @@
 
     },
     "More" : {
+
+    },
+    "More servings" : {
 
     },
     "More than the 30 days before." : {
@@ -3009,6 +3225,9 @@
     "Mug" : {
 
     },
+    "mustard" : {
+
+    },
     "Mustard" : {
 
     },
@@ -3016,6 +3235,9 @@
 
     },
     "My foods" : {
+
+    },
+    "My recipes" : {
 
     },
     "Name" : {
@@ -3052,6 +3274,9 @@
 
     },
     "Next week" : {
+
+    },
+    "no %@" : {
 
     },
     "No analytics and no ads. An account only if you use Coach or photo estimates." : {
@@ -3096,6 +3321,9 @@
     "No product with this barcode on Open Food Facts. You can create it as your own food." : {
 
     },
+    "No recipes match “%@”. Try an ingredient, such as salmon or oats." : {
+
+    },
     "No restrictions" : {
 
     },
@@ -3121,6 +3349,9 @@
 
     },
     "None" : {
+
+    },
+    "Not %@" : {
 
     },
     "Not checked" : {
@@ -3237,6 +3468,9 @@
     "Nutrition preferences" : {
 
     },
+    "nuts" : {
+
+    },
     "of %@" : {
 
     },
@@ -3298,6 +3532,9 @@
 
     },
     "On your feet some of the day, or light exercise 1–3 days a week" : {
+
+    },
+    "On your grocery list" : {
 
     },
     "Only for Coach and photo estimates: your email or Apple ID and a daily count of AI uses. Delete it any time in Account." : {
@@ -3384,6 +3621,9 @@
     "peanut-free" : {
 
     },
+    "peanuts" : {
+
+    },
     "Peanuts" : {
 
     },
@@ -3441,6 +3681,9 @@
     "Plan a few meals and VESS builds the list, leaving out what's already at home." : {
 
     },
+    "Plan for %@" : {
+
+    },
     "Plan meals" : {
 
     },
@@ -3453,13 +3696,22 @@
     "Plan, grocery and pantry" : {
 
     },
+    "Planned for %@" : {
+
+    },
     "Please sign in again." : {
 
     },
     "Point at a barcode" : {
 
     },
+    "pork" : {
+
+    },
     "Portions" : {
+
+    },
+    "poultry" : {
 
     },
     "Prefer not to say" : {
@@ -3506,6 +3758,9 @@
 
     },
     "Protein" : {
+
+    },
+    "protein / serving" : {
 
     },
     "Protein %@, carbs %@, fat %@ of target. %@ kcal." : {
@@ -3568,6 +3823,9 @@
     "Quick add · %@ g protein" : {
 
     },
+    "Quick breakfasts" : {
+
+    },
     "Quiet hours" : {
 
     },
@@ -3590,6 +3848,9 @@
 
     },
     "Recent cycles" : {
+
+    },
+    "Recipes" : {
 
     },
     "Recorded" : {
@@ -3700,6 +3961,9 @@
     "Search" : {
 
     },
+    "Search %lld recipes" : {
+
+    },
     "Search foods or brands" : {
 
     },
@@ -3716,6 +3980,9 @@
 
     },
     "Sedentary" : {
+
+    },
+    "See all" : {
 
     },
     "See step history" : {
@@ -3751,6 +4018,9 @@
     "Serving" : {
 
     },
+    "sesame" : {
+
+    },
     "Sesame" : {
 
     },
@@ -3772,6 +4042,9 @@
     "Share of energy counts 4 kcal per gram of protein and carbs and 9 kcal per gram of fat. The target split comes from your daily targets." : {
 
     },
+    "shellfish" : {
+
+    },
     "Shellfish" : {
 
     },
@@ -3779,6 +4052,9 @@
 
     },
     "Shorter" : {
+
+    },
+    "Show why" : {
 
     },
     "Shown in You, with its trend" : {
@@ -3814,6 +4090,9 @@
     "Single" : {
 
     },
+    "Skipped · you don't eat it" : {
+
+    },
     "Sleep" : {
 
     },
@@ -3838,7 +4117,13 @@
     "Smoothie" : {
 
     },
+    "Smoothies" : {
+
+    },
     "Snack" : {
+
+    },
+    "Snacks" : {
 
     },
     "So you don't log them twice" : {
@@ -3875,6 +4160,9 @@
 
     },
     "Source · %@. Energy is a recorded measurement, not an estimate entered in VESS." : {
+
+    },
+    "soy" : {
 
     },
     "Soy" : {
@@ -3984,6 +4272,9 @@
 
     },
     "sulphite-free" : {
+
+    },
+    "sulphites" : {
 
     },
     "Sulphites" : {
@@ -4205,6 +4496,9 @@
     "Times a week" : {
 
     },
+    "Tip" : {
+
+    },
     "To" : {
 
     },
@@ -4346,6 +4640,9 @@
     "Typical values: about %@ kcal, counted in your energy." : {
 
     },
+    "Under 20 min" : {
+
+    },
     "Undo" : {
 
     },
@@ -4388,6 +4685,12 @@
     "Use by" : {
 
     },
+    "use by %@" : {
+
+    },
+    "use soon" : {
+
+    },
     "Use soon" : {
 
     },
@@ -4406,6 +4709,9 @@
     "Use this for %@ from now on" : {
 
     },
+    "use today" : {
+
+    },
     "Used it all" : {
 
     },
@@ -4418,11 +4724,31 @@
     "Used only to estimate your starting targets. You can change them anytime." : {
 
     },
+    "Uses %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Uses %1$@ · %2$@"
+          }
+        }
+      }
+    },
     "Uses %@ before it expires" : {
 
     },
     "Uses %@ before they expire" : {
 
+    },
+    "Uses the %@ before %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Uses the %1$@ before %2$@."
+          }
+        }
+      }
     },
     "Usual meal times" : {
 
@@ -4489,6 +4815,9 @@
 
     },
     "View or correct this product on Open Food Facts" : {
+
+    },
+    "View recipe" : {
 
     },
     "Vitamins" : {
@@ -4601,6 +4930,9 @@
 
     },
     "With a meal" : {
+
+    },
+    "Without %@" : {
 
     },
     "Without 3 days of history there's no regularity yet, so the other three parts make up the whole score." : {
@@ -4744,6 +5076,9 @@
 
     },
     "Your question, the conversation so far, and a summary of your recent logs: targets, today's totals, 7-day averages, today's meals, habits, workouts and supplements. Cycle data only if you turn on sharing." : {
+
+    },
+    "Your recipe" : {
 
     },
     "Your week fills in as you go." : {

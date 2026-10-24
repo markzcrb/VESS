@@ -105,12 +105,10 @@ struct PlannedMealView: View {
                     }
                 }
 
-                #if DEBUG
-                if case .recipe(let id) = meal.source, let recipe = catalog.recipe(id: id) {
+                if case .recipe(let id) = meal.source, let recipe = catalog.recipe(id: id) ?? store.userRecipes.first(where: { $0.id == id }) {
                     NavigationLink("View recipe") { RecipeView(recipe: recipe) }
                         .buttonStyle(.vessSecondary)
                 }
-                #endif
 
                 VStack(spacing: VESSSpacing.sm) {
                     Button("Move / change meal") { showMove = true }

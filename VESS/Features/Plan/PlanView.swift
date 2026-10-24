@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Plan: a week of meals (A01). Past days show what was logged (A10); today
 /// and later show each main meal as eaten, planned or open. An empty future
-/// week offers suggestions or a copy of this week (A09). Recipes are a
-/// DEBUG-only segment until there is real recipe content.
+/// week offers suggestions or a copy of this week (A09). Recipes: My
+/// recipes, Discover and AI Chef (R01–R05).
 struct PlanView: View {
     @Environment(LocalStore.self) private var store
     @Environment(RecipeCatalog.self) private var catalog
@@ -33,7 +33,7 @@ struct PlanView: View {
                         VESSSegmented(selection: $segment, options: segments)
                         switch segment {
                         case .week: week
-                        case .recipes: recipes
+                        case .recipes: RecipesContent()
                         case .grocery: GroceryContent(onPlanMeals: { segment = .week })
                         }
                     }
@@ -60,13 +60,8 @@ struct PlanView: View {
         }
     }
 
-    /// Recipes is a DEBUG-only segment until there is real recipe content.
     private var segments: [(value: Segment, title: LocalizedStringResource)] {
-        #if DEBUG
         [(.week, "Week"), (.recipes, "Recipes"), (.grocery, "Grocery")]
-        #else
-        [(.week, "Week"), (.grocery, "Grocery")]
-        #endif
     }
 
     // MARK: Week
@@ -175,9 +170,7 @@ struct PlanView: View {
                     daySection(day)
                 }
             } else {
-                #if DEBUG
                 featuredRecipe(plan)
-                #endif
 
                 ForEach(plan.days, id: \.date) { day in
                     daySection(day)
@@ -486,38 +479,6 @@ struct PlanView: View {
         return Text("\(average) \(Text(light.date, format: .dateTime.weekday(.wide))) is light on protein.")
     }
 
-    // MARK: Recipes (DEBUG)
-
-    @ViewBuilder
-    private var recipes: some View {
-        #if DEBUG
-        VStack(alignment: .leading, spacing: VESSSpacing.md) {
-            Text("Recipes")
-                .vessTextStyle(.editorialL)
-                .foregroundStyle(VESSColor.text)
-            Text("Debug builds only, until the Recipes screens are built. All \(catalog.recipes.count) Discover recipes, not filtered yet.")
-                .vessTextStyle(.bodyS)
-                .foregroundStyle(VESSColor.secondaryText)
-            VESSRowGroup {
-                ForEach(catalog.recipes) { recipe in
-                    NavigationLink {
-                        RecipeView(recipe: recipe)
-                    } label: {
-                        VESSListRow(
-                            title: Text(recipe.name),
-                            subtitle: Text("\(Text(recipe.mealType.title)) · \(recipe.minutes) min"),
-                            value: Text("\(VESSFormat.calories(recipe.nutrition.calories)) kcal")
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .vessHairlineBottom()
-        }
-        #endif
-    }
-
-    #if DEBUG
     /// 07's "Cook tonight" card, when tonight's dinner is a recipe.
     @ViewBuilder
     private func featuredRecipe(_ plan: WeekPlan) -> some View {
@@ -559,7 +520,6 @@ struct PlanView: View {
             .accessibilityIdentifier("plan.featuredRecipe")
         }
     }
-    #endif
 
     // MARK: Actions
 

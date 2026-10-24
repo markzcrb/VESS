@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// What Plan suggests from: the user's own logged meals (last 28 days) and,
-/// in DEBUG builds only until the Recipes screens ship, the Discover recipes.
+/// What Plan suggests from: the user's own logged meals (last 28 days), the
+/// Discover recipes and the user's own recipes that fit.
 @MainActor
 enum PlanCandidates {
     static let historyDays = 28
@@ -14,7 +14,7 @@ enum PlanCandidates {
             allergens: { store.food(id: $0)?.allergens ?? [] },
             calendar: calendar
         )
-        return logged + recipes(catalog, profile: store.profile)
+        return logged + recipes(catalog, profile: store.profile, own: store.userRecipes)
     }
 
     /// Saved foods (favourites and your own), each as a one-item meal.
@@ -38,16 +38,12 @@ enum PlanCandidates {
 
     /// Recipes that fit the user (`RecipeFit`): diet, allergens and the
     /// ingredients they don't eat.
-    static func recipes(_ catalog: RecipeCatalog, profile: UserProfile?) -> [MealSuggestions.Candidate] {
-        #if DEBUG
+    static func recipes(_ catalog: RecipeCatalog, profile: UserProfile?, own: [Recipe] = []) -> [MealSuggestions.Candidate] {
         guard let profile else { return [] }
-        return catalog.recipes.compactMap { recipe in
+        return (catalog.recipes + own).compactMap { recipe in
             let fit = RecipeFit.check(recipe, preferences: profile.preferences, allergies: profile.allergies)
             return fit.fits ? MealSuggestions.Candidate(recipe: recipe.without(fit.skipped)) : nil
         }
-        #else
-        []
-        #endif
     }
 }
 
