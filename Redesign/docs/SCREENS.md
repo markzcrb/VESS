@@ -110,5 +110,32 @@ Notes:
 - Filter chip rows bleed off the right edge (scroll hint); they never clip at the content margin.
 - New components: AddTypeTile (Selected No/Yes, icon swap), Icon/camera, Icon/pill.
 
+## O · Recipes, Health and diet (new, Figma section "New · Recipes and Body")
+| File | Screen | Tab | Reached from | Key components |
+|---|---|---|---|---|
+| R01-recipes-discover | Plan › Recipes › Discover: search, "Fits you" line + Edit, meal-type chips, featured card, diet collections, quick list, "N hidden" note | Plan | Plan segmented "Recipes" | SegmentedControl, text tabs (as drinks sheet), RecipeCard (new, Large/Row), Chip, SectionHeader, Tag |
+| R02-recipes-my-recipes | My recipes: New recipe, recently cooked, A–Z | Plan | text tab | RecipeCard Row, Button Primary |
+| R03-recipe-editor | New / edit recipe: photo (Camera / Library), name, meal, servings, time, ingredients with source, method steps, calculated nutrition per serving + derived diet tags, pinned Save | — | New recipe, Edit on a recipe, Edit on R07 | ListRow, Chip, Tag, Button |
+| R04-add-ingredient-sheet | Ingredient search: source chips (All / Generic · USDA / Brands · OFF / My pantry), results, amount stepper + units, live nutrition, Add | — | Add ingredient on R03 | ListRow, Chip, IconButton |
+| R05-recipes-ai-chef | AI Chef: use-soon strip, filter chips, best matches with "N of M at home · uses N use-soon", have / missing block (add missing to grocery, swap), "Create with AI" card with daily count | Plan | text tab | RecipeCard, Tag Accent, InsightCard-style card |
+| R06-create-with-ai-sheet | Create with AI: must-use (pre-selected use-soon), meal, goal, servings, only what I have, diet and avoid (always on), what is sent, Create | — | R05 card | Chip, ListRow |
+| R07-ai-recipe-review | AI draft review: "AI draft · not saved yet" banner, Edit / Try another, stats, ingredient availability tags, missing → grocery, method, Discard / Save to My recipes | — | R06 result | (08 recipe detail layout) |
+| H00-health-hub | Health hub: Sleep, Heart, Stress, Body tiles + Apple Health permissions | — | You › Health, Today metric strip (long-press / More) | tiles (elevated cards), ListRow |
+| H01-sleep | Sleep: ring (last night), editorial line, stages bar + rows, 7 nights, pattern card | — | H00 | ScoreRing (metric/sleep), ListRow, bars, InsightCard |
+| H02-heart | Heart: resting HR ring, resting / HRV / walking / range rows, hourly range chart, 7 days | — | H00 | ScoreRing (metric/heart), ListRow, range bars |
+| H03-stress | Stress estimate: ring (Calm / Elevated / High), parts of day, State of Mind check-in, signals, pattern | — | H00 | ScoreRing (metric/water), Chip, ListRow, InsightCard |
+| H04-body-bmi | Body: BMI value, range scale with marker, honest note, body rows, 12-week trend | — | H00, You › Body | ListRow, scale bar |
+| P01-diet-allergies-avoid | Nutrition preferences (replaces E03): one diet, extra preferences, 14 EU allergens, ingredients you don't eat, show non-fitting recipes, meal times | — | You › Nutrition preferences, "Edit" on R01 | Chip, ListRow |
+
+Notes:
+- New tokens `metric/sleep` (Dark #9A9CF0 / Light #4F52B8) and `metric/heart` (Dark #E58A7C / Light #B34A3C). Stress uses `metric/water` (calm blue), never red.
+- New component `RecipeCard` (Size Large / Row; Kicker, Title, Meta, Show badge). Badge = Tag: pantry match (Neutral), uses use-soon (Accent), protein (Positive), AI (Neutral).
+- Filtering rule: allergens are a hard filter everywhere (Discover, AI Chef, AI generation); "ingredients you don't eat" hide recipes in Discover and are never used by AI Chef; diet is a hard filter unless "Show recipes that don't fit" is on (then greyed with the reason).
+- AI Chef ranking: recipes from Discover + My recipes, scored by (1) use-soon items used, (2) share of ingredients at home, (3) fit to today's remaining targets; always shows have / missing.
+- AI recipes: nutrition is recalculated on device from USDA / OFF ingredient data, never trusted from the model; draft until the user saves.
+- Stress is an estimate from HRV and resting HR vs the user's own baseline, plus optional State of Mind check-ins (HealthKit). Not a medical measurement.
+- BMI: adults only; hidden under 18 and when pregnancy is set; never used alone for goals.
+- Light versions follow the same token remap; not drawn separately.
+
 ## Not designed yet (ask Mark before building)
-Plan › Recipes tab list · Add food search results / no results · edit a logged meal · weight entry + measurements · onboarding.
+Add food search results / no results · edit a logged meal · weight entry + measurements · onboarding.
