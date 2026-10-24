@@ -60,7 +60,7 @@ struct WelcomeView: View {
                     .buttonStyle(.vessPrimary)
                     .accessibilityIdentifier("onboarding.getStarted")
 
-                Text("Your data stays on this iPhone.")
+                Text("Your log stays on this iPhone.")
                     .vessTextStyle(.label)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
