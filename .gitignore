@@ -19,3 +19,7 @@ Config/Secrets.xcconfig
 Redesign/Captures/**
 !Redesign/Captures/**/
 !Redesign/Captures/**/*.md
+
+# Recipe photo sources (Figma exports, ~378 MB): kept on disk. The app ships
+# the resized copies in VESS/Assets.xcassets/RecipePhotos.
+Redesign/RecipePhotos/
