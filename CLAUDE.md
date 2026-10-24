@@ -25,7 +25,7 @@ Mark has approved a new visual design in the language of WHOOP and Oura. Everyth
 4. **Conflicts to raise with Mark before building** (do not decide alone):
    - **Fuel score (0–100).** The old spec rejected numeric scores as "looks like a medical measurement". The redesign makes Fuel the hero number. Fallback if Mark declines: the same ring showing qualitative state ("On track" / "Building" / "Full day") with the percent of energy target.
    - **Tab bar.** The redesign shows a floating capsule plus a separate + button. First try the native iOS 26 `TabView` (Liquid Glass) styled to match. Only build the custom `VessTabBar` if native can't get close.
-   - **Food photography** on Plan and Recipe. The old spec said: the user's own photo, otherwise a quiet tile with a symbol. Keep that rule unless Mark supplies recipe photos.
+   - **Food photography** on Plan and Recipe. Resolved: Mark supplied photos for the 122 Discover recipes (`Assets.xcassets/RecipePhotos`, sources in `Redesign/RecipePhotos/`, not in git). The user's own and saved AI recipes use the user's own photo, otherwise a quiet tile with a symbol.
 
 ## How to migrate (do not drop the reference files in as they are)
 

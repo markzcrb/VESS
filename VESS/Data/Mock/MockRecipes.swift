@@ -1,5 +1,6 @@
 import Foundation
 
+#if DEBUG
 /// R02's kitchen, for DEBUG captures (`-recipesDemo`): six of Mark's own
 /// recipes, two saved from AI Chef, pescatarian and nut-free, cooked on
 /// earlier days. Nutrition is calculated from USDA values, never typed.
@@ -71,3 +72,4 @@ nonisolated extension MockData {
         }
     }
 }
+#endif

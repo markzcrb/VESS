@@ -150,6 +150,33 @@ struct DiscoverContent: View {
             }
         }
 
+        // With recipes that don't fit shown, they follow, greyed with the reason.
+        if preferences.showNonFittingRecipes {
+            let others = RecipeDiscover.listed(items, meal: .all, preferences: preferences).filter { !$0.fit.fits && !$0.fit.failsOnlyOnAvoid }
+            if !others.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Text("Don't fit you")
+                            .vessTextStyle(.labelCaps)
+                            .foregroundStyle(VESSColor.secondaryText)
+                        Spacer()
+                        NavigationLink { RecipeListScreen(title: "Don't fit you", items: others) } label: {
+                            HStack(spacing: VESSSpacing.xxs) {
+                                Text("See all")
+                                Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+                            }
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.secondaryText)
+                            .frame(minHeight: VESSHitTarget.minimum)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    RecipeRows(items: Array(others.prefix(3)))
+                }
+            }
+        }
+
         let quick = quickBreakfasts(items, preferences: preferences, now: now)
         if !quick.isEmpty {
             VStack(alignment: .leading, spacing: 0) {

@@ -1348,6 +1348,9 @@
     "A–Z" : {
 
     },
+    "About" : {
+
+    },
     "about %@ kcal" : {
 
     },
@@ -1653,13 +1656,22 @@
     "All main meals" : {
 
     },
+    "Allergies and intolerances · never shown" : {
+
+    },
     "Allow" : {
 
     },
     "Allow 1–2 missing items if needed" : {
 
     },
+    "Also prefer · any" : {
+
+    },
     "Always" : {
+
+    },
+    "Always check labels yourself. Recipe allergen tags come from the ingredients and can miss cross-contamination." : {
 
     },
     "Americano" : {
@@ -2142,6 +2154,9 @@
     "Dashed line is your %@ kcal target. Today is still in progress." : {
 
     },
+    "Data sources" : {
+
+    },
     "Date" : {
 
     },
@@ -2244,6 +2259,9 @@
     "Diet" : {
 
     },
+    "Diet · one" : {
+
+    },
     "Diet and avoid" : {
 
     },
@@ -2266,6 +2284,9 @@
 
     },
     "Distance" : {
+
+    },
+    "Don't fit you" : {
 
     },
     "Done" : {
@@ -2731,6 +2752,9 @@
     "Generic · USDA · per 100 g" : {
 
     },
+    "Generic foods: USDA FoodData Central (public domain). Products: Open Food Facts, ODbL." : {
+
+    },
     "Get started" : {
 
     },
@@ -2809,6 +2833,9 @@
     "Halal" : {
 
     },
+    "Halal and kosher are read from the ingredients, not from a certification." : {
+
+    },
     "Half" : {
 
     },
@@ -2843,6 +2870,9 @@
 
     },
     "Herbal tea" : {
+
+    },
+    "Hidden from Discover and never used by AI Chef; when one is only an optional garnish, the recipe stays and leaves it out. Unlike allergies, you can still open a recipe that has them." : {
 
     },
     "Hide" : {
@@ -2967,10 +2997,16 @@
     "In your system" : {
 
     },
+    "Ingredient you don't eat" : {
+
+    },
     "Ingredients" : {
 
     },
     "Ingredients · %lld" : {
+
+    },
+    "Ingredients you don't eat" : {
 
     },
     "Insights need about %lld days of logging so a pattern isn't just one odd week. Keep logging and they'll show up here." : {
@@ -3138,7 +3174,7 @@
     "Latte" : {
 
     },
-    "Learned from when you log, once there are three days. Used for meal regularity and reminders." : {
+    "Learn them from my log" : {
 
     },
     "Leave a macro empty if the label doesn't list it." : {
@@ -3488,6 +3524,9 @@
     "Mug" : {
 
     },
+    "Mushrooms" : {
+
+    },
     "Must use" : {
 
     },
@@ -3737,6 +3776,9 @@
     "Nothing was logged this week." : {
 
     },
+    "Nothing yet." : {
+
+    },
     "Notifications" : {
 
     },
@@ -3831,6 +3873,9 @@
 
     },
     "On your grocery list" : {
+
+    },
+    "One ingredient, such as coriander or blue cheese." : {
 
     },
     "Only for Coach and photo estimates: your email or Apple ID and a daily count of AI uses. Delete it any time in Account." : {
@@ -4002,9 +4047,6 @@
 
     },
     "Plan meals" : {
-
-    },
-    "Plan suggestions skip anything you avoid." : {
 
     },
     "Plan your week's meals from saved foods and meals. Suggestions follow your diet and what you avoid, and prefer what's in your pantry and expires soon." : {
@@ -4416,7 +4458,13 @@
     "Shorter" : {
 
     },
+    "Show recipes that don't fit" : {
+
+    },
     "Show why" : {
+
+    },
+    "Shown greyed out with the reason" : {
 
     },
     "Shown in You, with its trend" : {
@@ -4777,6 +4825,9 @@
     "That's today's free uses. Back tomorrow." : {
 
     },
+    "The 14 allergens food labels must declare in the EU. Recipes and suggestions with any of these are hidden, and foods that list them get a warning." : {
+
+    },
     "The average covers days with at least one meal logged, not counting today, and needs three of them." : {
 
     },
@@ -5115,6 +5166,9 @@
 
     },
     "Used only to estimate your starting targets. You can change them anytime." : {
+
+    },
+    "Used to pick the next meal in Discover and AI Chef. Until you set them, they're learned from when you log." : {
 
     },
     "Uses %@ · %@" : {

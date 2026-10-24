@@ -280,6 +280,19 @@ struct SettingsView: View {
             .vessHairlineBottom()
 
             ActivityFootnote(text: Text("Week start and language follow your iPhone's settings. Units are metric."))
+
+            VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                VESSSectionHeader(title: "About")
+                VESSRowGroup {
+                    VESSListRow(
+                        title: Text("Data sources"),
+                        subtitle: Text("Generic foods: USDA FoodData Central (public domain). Products: Open Food Facts, ODbL."),
+                        showsChevron: false
+                    )
+                    .accessibilityIdentifier("settings.dataSources")
+                }
+                .vessHairlineBottom()
+            }
         }
     }
 }

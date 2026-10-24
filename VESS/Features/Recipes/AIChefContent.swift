@@ -105,21 +105,10 @@ struct AIChefContent: View {
     /// "USE SOON · 3" with each item and when it's due.
     private func useSoonCard(_ items: [InventoryItem], now: Date) -> some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            HStack {
-                Text("Use soon · \(items.count)")
-                    .vessTextStyle(.labelCaps)
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .fixedSize()
-                Spacer()
-                NavigationLink { PantryView() } label: {
-                    Text("Pantry")
-                        .vessTextStyle(.labelCapsLink)
-                        .foregroundStyle(VESSColor.accent)
-                        .fixedSize()
-                        .frame(minHeight: VESSHitTarget.minimum)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+            // Side by side, or the link under the label at large text sizes.
+            ViewThatFits(in: .horizontal) {
+                HStack { useSoonLabel(items.count); Spacer(); pantryLink }
+                VStack(alignment: .leading, spacing: 0) { useSoonLabel(items.count); pantryLink }
             }
             VESSChipFlow(spacing: VESSSpacing.xs) {
                 ForEach(items, id: \.id) { item in
@@ -131,6 +120,25 @@ struct AIChefContent: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(VESSColor.card, in: RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous).strokeBorder(VESSColor.divider))
+    }
+
+    private func useSoonLabel(_ count: Int) -> some View {
+        Text("Use soon · \(count)")
+            .vessTextStyle(.labelCaps)
+            .foregroundStyle(VESSColor.secondaryText)
+            .fixedSize()
+    }
+
+    private var pantryLink: some View {
+        NavigationLink { PantryView() } label: {
+            Text("Pantry")
+                .vessTextStyle(.labelCapsLink)
+                .foregroundStyle(VESSColor.accent)
+                .fixedSize()
+                .frame(minHeight: VESSHitTarget.minimum)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     /// "tomorrow", "Thu", "today".

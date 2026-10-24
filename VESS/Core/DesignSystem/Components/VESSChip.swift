@@ -46,12 +46,20 @@ struct VESSChipFlow: Layout {
         for row in rows(for: subviews, width: bounds.width) {
             var x = bounds.minX
             for index in row.indices {
-                let size = subviews[index].sizeThatFits(.unspecified)
+                let size = Self.size(of: subviews[index], width: bounds.width)
                 subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
                 x += size.width + spacing
             }
             y += row.height + spacing
         }
+    }
+
+    /// Its own size, but never wider than the row: a long item (a tag at
+    /// large text sizes) wraps instead of running off the screen.
+    private static func size(of subview: LayoutSubview, width: CGFloat) -> CGSize {
+        let ideal = subview.sizeThatFits(.unspecified)
+        guard ideal.width > width, width.isFinite else { return ideal }
+        return subview.sizeThatFits(ProposedViewSize(width: width, height: nil))
     }
 
     private struct Row {
@@ -63,7 +71,7 @@ struct VESSChipFlow: Layout {
     private func rows(for subviews: Subviews, width: CGFloat) -> [Row] {
         var rows: [Row] = [Row()]
         for index in subviews.indices {
-            let size = subviews[index].sizeThatFits(.unspecified)
+            let size = Self.size(of: subviews[index], width: width)
             let needed = rows[rows.count - 1].indices.isEmpty ? size.width : rows[rows.count - 1].width + spacing + size.width
             if needed > width, !rows[rows.count - 1].indices.isEmpty {
                 rows.append(Row())

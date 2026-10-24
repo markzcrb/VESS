@@ -263,71 +263,253 @@ struct BodyView: View {
 // MARK: - E03 Nutrition preferences
 
 /// Diet, what to avoid, and the usual meal times VESS has learned.
+/// P01 (replaces E03): one diet, preferences, the 14 EU allergens, the
+/// ingredients the user doesn't eat, whether recipes that don't fit are
+/// shown, and the usual meal times.
 struct NutritionPreferencesView: View {
     @Environment(LocalStore.self) private var store
     @State private var showError = false
+    @State private var addsAvoid = false
+    @State private var newAvoid = ""
+    @State private var editsMealTimes = false
 
     private let calendar = Calendar.current
 
+    /// P01's order: the most common allergies first.
+    static let allergenOrder: [Allergen] = [
+        .peanuts, .nuts, .milk, .eggs, .fish, .crustaceans, .soy, .gluten, .sesame, .celery, .mustard, .lupin, .molluscs, .sulphites,
+    ]
+
     var body: some View {
         if let profile = store.profile {
+            let preferences = profile.preferences
             let history = store.foodEntries(
                 from: calendar.date(byAdding: .day, value: -MealRegularity.historyDays, to: calendar.startOfDay(for: AppClock.now)) ?? AppClock.now,
                 to: calendar.startOfDay(for: AppClock.now)
             )
+            let times = RecipeDiscover.mealTimes(preferences: preferences) { history.usualTime(for: $0, calendar: calendar) }
+
             ProfilePage(title: "Nutrition preferences") {
                 ProfileIntro(title: "Food that fits your life.")
 
-                VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                    VESSSectionHeader(title: "Diet")
-                    VESSRowGroup {
-                        ForEach(Diet.allCases, id: \.self) { diet in
-                            ProfileCheckRow(title: Text(diet.title), isSelected: profile.preferences.diet == diet) {
-                                update { var preferences = $0.preferences; preferences.diet = diet; $0.nutritionPreferences = preferences }
+                chipSection("Diet · one") {
+                    ForEach(Diet.allCases, id: \.self) { diet in
+                        VESSChip(title: diet.title, isSelected: preferences.diet == diet) {
+                            update { $0.diet = diet }
+                        }
+                    }
+                }
+
+                chipSection("Also prefer · any", footnote: "Halal and kosher are read from the ingredients, not from a certification.") {
+                    ForEach(FoodPreference.allCases, id: \.self) { preference in
+                        VESSChip(title: preference.title, isSelected: preferences.alsoPrefer.contains(preference)) {
+                            update { $0.alsoPrefer.formSymmetricDifference([preference]) }
+                        }
+                    }
+                }
+
+                chipSection(
+                    "Allergies and intolerances · never shown",
+                    footnote: "The 14 allergens food labels must declare in the EU. Recipes and suggestions with any of these are hidden, and foods that list them get a warning."
+                ) {
+                    ForEach(Self.allergenOrder, id: \.self) { allergen in
+                        VESSChip(title: allergen.title, isSelected: profile.allergies.contains(allergen)) {
+                            updateProfile { $0.allergies.formSymmetricDifference([allergen]) }
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                    HStack {
+                        Text("Ingredients you don't eat")
+                            .vessTextStyle(.labelCaps)
+                            .foregroundStyle(VESSColor.secondaryText)
+                        Spacer()
+                        Button { addsAvoid = true } label: {
+                            HStack(spacing: VESSSpacing.xxs) {
+                                Text("Add")
+                                Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+                            }
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.secondaryText)
+                            .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum, alignment: .trailing)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("preferences.addAvoid")
+                    }
+                    if preferences.avoidIngredients.isEmpty {
+                        Text("Nothing yet.")
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.secondaryText)
+                    } else {
+                        VESSChipFlow(spacing: VESSSpacing.xs) {
+                            ForEach(preferences.avoidIngredients, id: \.self) { item in
+                                VESSChip(title: "\(item) ×", isSelected: true) {
+                                    update { $0.avoidIngredients.removeAll { $0 == item } }
+                                }
+                                .accessibilityLabel(Text("Remove \(item)"))
                             }
                         }
                     }
-                    .vessHairlineBottom()
+                    ActivityFootnote(text: Text("Hidden from Discover and never used by AI Chef; when one is only an optional garnish, the recipe stays and leaves it out. Unlike allergies, you can still open a recipe that has them."))
                 }
 
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                    VESSSectionHeader(title: "Avoid")
+                    VESSSectionHeader(title: "Recipes")
                     VESSRowGroup {
-                        ForEach(Allergen.allCases, id: \.self) { allergen in
-                            ProfileToggleRow(title: Text(allergen.title), isOn: Binding(
-                                get: { profile.allergies.contains(allergen) },
-                                set: { on in update { if on { $0.allergies.insert(allergen) } else { $0.allergies.remove(allergen) } } }
-                            ))
+                        ProfileToggleRow(
+                            title: Text("Show recipes that don't fit"),
+                            subtitle: Text("Shown greyed out with the reason"),
+                            isOn: Binding(get: { preferences.showNonFittingRecipes }, set: { on in update { $0.showNonFittingRecipes = on } })
+                        )
+                        Button { editsMealTimes = true } label: {
+                            VESSListRow(title: Text("Usual meal times"), value: Text(Self.timesText(times)))
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("preferences.mealTimes")
                     }
                     .vessHairlineBottom()
-                    ActivityFootnote(text: Text("Plan suggestions skip anything you avoid."))
+                    ActivityFootnote(text: Text("Always check labels yourself. Recipe allergen tags come from the ingredients and can miss cross-contamination."))
                 }
-
-                VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                    VESSSectionHeader(title: "Usual meal times")
-                    VESSRowGroup {
-                        ForEach(MealType.mainMeals, id: \.self) { meal in
-                            VESSListRow(title: Text(meal.title), value: Text(Self.timeText(history.usualTime(for: meal, calendar: calendar), calendar: calendar)), showsChevron: false)
-                        }
-                    }
-                    .vessHairlineBottom()
-                    ActivityFootnote(text: Text("Learned from when you log, once there are three days. Used for meal regularity and reminders."))
+            }
+            .alert("Ingredient you don't eat", isPresented: $addsAvoid) {
+                TextField("Mushrooms", text: $newAvoid)
+                Button("Add") {
+                    let item = newAvoid
+                    newAvoid = ""
+                    update { $0.avoidIngredients = NutritionPreferences.normalizedAvoidList($0.avoidIngredients + [item]) }
+                }
+                Button("Cancel", role: .cancel) { newAvoid = "" }
+            } message: {
+                Text("One ingredient, such as coriander or blue cheese.")
+            }
+            .sheet(isPresented: $editsMealTimes) {
+                MealTimesSheet(times: times, isSet: preferences.mealTimes != nil) { set in
+                    update { $0.mealTimes = set }
                 }
             }
             .vessErrorAlert(isPresented: $showError)
         }
     }
 
-    private static func timeText(_ time: DateComponents?, calendar: Calendar) -> String {
-        guard let time, let date = calendar.date(from: DateComponents(year: 2000, month: 1, day: 1, hour: time.hour, minute: time.minute)) else { return "—" }
+    private func chipSection<Content: View>(_ title: LocalizedStringResource, footnote: LocalizedStringResource? = nil, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+            Text(title)
+                .vessTextStyle(.labelCaps)
+                .foregroundStyle(VESSColor.secondaryText)
+            VESSChipFlow(spacing: VESSSpacing.xs) { content() }
+            if let footnote {
+                ActivityFootnote(text: Text(footnote))
+            }
+        }
+    }
+
+    /// "07:30 · 12:30 · 19:30".
+    static func timesText(_ times: MealTimes) -> String {
+        [times.breakfast, times.lunch, times.dinner].map(clock).joined(separator: " · ")
+    }
+
+    /// In the user's clock format, like the time pickers.
+    static func clock(_ minutes: Int) -> String {
+        let date = Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: Date(timeIntervalSinceReferenceDate: 0)) ?? .now
         return date.formatted(.dateTime.hour().minute())
     }
 
-    private func update(_ change: (inout UserProfile) -> Void) {
+    private func update(_ change: (inout NutritionPreferences) -> Void) {
+        updateProfile { profile in
+            var preferences = profile.preferences
+            change(&preferences)
+            profile.nutritionPreferences = preferences
+        }
+    }
+
+    private func updateProfile(_ change: (inout UserProfile) -> Void) {
         guard var profile = store.profile else { return }
         change(&profile)
         do { try store.saveProfile(profile) } catch { showError = true }
+    }
+}
+
+/// The three usual meal times, or back to learning them from the log.
+private struct MealTimesSheet: View {
+    let times: MealTimes
+    let isSet: Bool
+    let onSave: (MealTimes?) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var breakfast: Date
+    @State private var lunch: Date
+    @State private var dinner: Date
+
+    private static let calendar = Calendar.current
+
+    init(times: MealTimes, isSet: Bool, onSave: @escaping (MealTimes?) -> Void) {
+        self.times = times
+        self.isSet = isSet
+        self.onSave = onSave
+        _breakfast = State(initialValue: Self.date(times.breakfast))
+        _lunch = State(initialValue: Self.date(times.lunch))
+        _dinner = State(initialValue: Self.date(times.dinner))
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: VESSSpacing.lg) {
+                VESSRowGroup {
+                    picker("Breakfast", $breakfast)
+                    picker("Lunch", $lunch)
+                    picker("Dinner", $dinner)
+                }
+                .vessHairlineBottom()
+                ActivityFootnote(text: Text("Used to pick the next meal in Discover and AI Chef. Until you set them, they're learned from when you log."))
+                if isSet {
+                    Button("Learn them from my log") {
+                        onSave(nil)
+                        dismiss()
+                    }
+                    .buttonStyle(.vessSecondary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, VESSSpacing.screenInset)
+            .padding(.top, VESSSpacing.md)
+            .background(VESSColor.card)
+            .vessDetailTitle("Usual meal times")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Save") {
+                        onSave(MealTimes(breakfast: Self.minutes(breakfast), lunch: Self.minutes(lunch), dinner: Self.minutes(dinner)))
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationBackground(VESSColor.card)
+    }
+
+    private func picker(_ title: LocalizedStringResource, _ value: Binding<Date>) -> some View {
+        DatePicker(selection: value, displayedComponents: .hourAndMinute) {
+            Text(title)
+                .vessTextStyle(.bodyM)
+                .foregroundStyle(VESSColor.text)
+        }
+        .tint(VESSColor.text)
+        .frame(minHeight: VESSSize.rowHeight)
+    }
+
+    private static func date(_ minutes: Int) -> Date {
+        calendar.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: Date(timeIntervalSinceReferenceDate: 0)) ?? .now
+    }
+
+    private static func minutes(_ date: Date) -> Int {
+        let parts = calendar.dateComponents([.hour, .minute], from: date)
+        return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
     }
 }
 
