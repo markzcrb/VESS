@@ -80,7 +80,8 @@ struct RecipeCatalogTests {
     func loads() async {
         let catalog = RecipeCatalog()
         #expect(!catalog.isLoaded && catalog.recipes.isEmpty)
-        await catalog.load()
+        await catalog.load(foods: GenericFoodDatabase())
+        #expect(catalog.recipes.allSatisfy { $0.ingredients.allSatisfy { $0.per100 != nil } }, "USDA values filled in")
         #expect(catalog.isLoaded && catalog.recipes.count == 122)
         #expect(catalog.recipe(id: MockData.tonightRecipeID)?.name == "Miso-glazed cod with greens")
     }

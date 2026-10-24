@@ -388,7 +388,11 @@ nonisolated extension MockData {
 }
 nonisolated extension MockData {
     /// The bundled Discover recipes, read once for demo data and previews.
-    static let catalogRecipes: [Recipe] = (try? RecipeCatalog.bundled()) ?? []
+    static let catalogRecipes: [Recipe] = (try? RecipeCatalog.bundled(per100: genericFoods)) ?? []
+    /// The bundled USDA foods, by NDB number.
+    static let genericFoods: [String: GenericFood] = Dictionary(
+        ((try? GenericFoodDatabase.bundled()) ?? []).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }
+    )
     /// Tonight's planned dinner in the demo week.
     static let tonightRecipeID = "020-miso-glazed-cod-with-greens"
 }

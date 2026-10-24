@@ -13,7 +13,7 @@ struct AppRootView: View {
     @State private var account = AccountStore.make()
     @State private var consent = AIConsentStore.make()
     @State private var catalog = RecipeCatalog()
-    /// USDA generic foods, read when a screen first needs them.
+    /// USDA generic foods, read in the background with the recipes.
     @State private var genericFoods = GenericFoodDatabase()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
@@ -52,8 +52,9 @@ struct AppRootView: View {
                 .environment(consent)
                 .environment(catalog)
                 .environment(genericFoods)
-                // The bundled recipes, read in the background once the UI is up.
-                .task { await catalog.load() }
+                // The bundled recipes and generic foods, read in the background
+                // once the UI is up.
+                .task { await catalog.load(foods: genericFoods) }
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 // One success tap for every log, wherever it came from.
                 .vessHaptic(.success, trigger: foodUndo.loggedCount)

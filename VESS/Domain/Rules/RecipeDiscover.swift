@@ -73,7 +73,11 @@ nonisolated enum RecipeDiscover {
     }
 
     static func items(_ recipes: [Recipe], preferences: NutritionPreferences, allergies: Set<Allergen>) -> [Item] {
-        recipes.map { Item(recipe: $0, fit: RecipeFit.check($0, preferences: preferences, allergies: allergies)) }
+        recipes.map { recipe in
+            let fit = RecipeFit.check(recipe, preferences: preferences, allergies: allergies)
+            // Optional don't-eat ingredients are left out of what's shown and counted.
+            return Item(recipe: recipe.without(fit.skipped), fit: fit)
+        }
     }
 
     /// The list for a meal chip: fitting recipes first, ranked by the user's
@@ -162,18 +166,25 @@ nonisolated enum RecipeDiscover {
     /// How long after its usual time a meal is still the next one.
     static let slotGraceMinutes = 60
 
-    /// The featured card: among fitting recipes for the next meal, those
-    /// with the most "also prefer" points; which of them changes each day
-    /// and stays the same all day.
+    /// How many top recipes the featured card rotates through.
+    static let featuredPool = 5
+
+    /// The featured card: the top five fitting recipes for the next meal
+    /// (most "also prefer" points, then most protein, then by name), one per
+    /// day in turn, so it changes daily and stays the same all day.
     static func featured(_ items: [Item], meal: MealType, day: Date, preferences: NutritionPreferences, calendar: Calendar) -> Recipe? {
-        let candidates = items.filter { $0.fit.fits && $0.recipe.category.defaultMeal == meal }
-        guard let best = candidates.map({ RecipeFit.boost($0.recipe, preferences: preferences) }).max() else { return nil }
-        let parts = calendar.dateComponents([.year, .month, .day], from: day)
-        let seed = String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
-        return candidates
-            .filter { RecipeFit.boost($0.recipe, preferences: preferences) == best }
-            .min { stableHash("\(seed)|\($0.recipe.id)") < stableHash("\(seed)|\($1.recipe.id)") }?
-            .recipe
+        let pool = items
+            .filter { $0.fit.fits && $0.recipe.category.defaultMeal == meal }
+            .map(\.recipe)
+            .sorted { lhs, rhs in
+                let (l, r) = (RecipeFit.boost(lhs, preferences: preferences), RecipeFit.boost(rhs, preferences: preferences))
+                if l != r { return l > r }
+                if lhs.nutrition.proteinGrams != rhs.nutrition.proteinGrams { return lhs.nutrition.proteinGrams > rhs.nutrition.proteinGrams }
+                return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+            }
+            .prefix(featuredPool)
+        guard !pool.isEmpty, let dayNumber = calendar.ordinality(of: .day, in: .era, for: day) else { return pool.first }
+        return pool[pool.startIndex + dayNumber % pool.count]
     }
 
     /// The usual meal times: the user's, else learned from the log, else
@@ -186,11 +197,6 @@ nonisolated enum RecipeDiscover {
         }
         let standard = MealTimes.standard
         return MealTimes(breakfast: minutes(.breakfast, standard.breakfast), lunch: minutes(.lunch, standard.lunch), dinner: minutes(.dinner, standard.dinner))
-    }
-
-    /// FNV-1a: the same on every launch, unlike `hashValue`.
-    static func stableHash(_ text: String) -> UInt64 {
-        text.utf8.reduce(14_695_981_039_346_656_037) { ($0 ^ UInt64($1)) &* 1_099_511_628_211 }
     }
 }
 

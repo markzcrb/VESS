@@ -3,7 +3,9 @@ import Observation
 import OSLog
 
 /// The bundled Discover recipes (`recipes.json`, 122 recipes with USDA
-/// nutrition). Read once, off the main thread, and kept in memory.
+/// nutrition). Read once, off the main thread, and kept in memory. USDA
+/// ingredients get their per-100 g values from the generic foods, so a
+/// skipped ingredient's nutrition can be taken out (`Recipe.without(_:)`).
 @Observable
 final class RecipeCatalog {
     private(set) var recipes: [Recipe] = []
@@ -16,11 +18,14 @@ final class RecipeCatalog {
         }
     }
 
-    /// Reads the bundled file in the background; later calls do nothing.
-    func load() async {
+    /// Reads the bundled file in the background, after the generic foods;
+    /// later calls do nothing.
+    func load(foods: GenericFoodDatabase) async {
         guard !isLoaded else { return }
+        await foods.load()
+        let table = foods.table
         do {
-            recipes = try await Task.detached(priority: .utility) { try Self.bundled() }.value
+            recipes = try await Task.detached(priority: .utility) { try Self.bundled(per100: table) }.value
         } catch {
             Logger(subsystem: "VESS", category: "Recipes").fault("Reading recipes.json failed: \(error.localizedDescription, privacy: .public)")
         }
@@ -32,15 +37,23 @@ final class RecipeCatalog {
     }
 
     /// Reads and decodes the bundled file on the calling thread.
-    nonisolated static func bundled() throws -> [Recipe] {
+    nonisolated static func bundled(per100 table: [String: GenericFood] = [:]) throws -> [Recipe] {
         guard let url = Bundle.main.url(forResource: "recipes", withExtension: "json") else {
             throw CocoaError(.fileNoSuchFile)
         }
-        return try decode(Data(contentsOf: url))
+        return try decode(Data(contentsOf: url), per100: table)
     }
 
-    nonisolated static func decode(_ data: Data) throws -> [Recipe] {
-        try JSONDecoder().decode([Entry].self, from: data).map(\.recipe)
+    nonisolated static func decode(_ data: Data, per100 table: [String: GenericFood] = [:]) throws -> [Recipe] {
+        try JSONDecoder().decode([Entry].self, from: data).map { entry in
+            var recipe = entry.recipe
+            for index in recipe.ingredients.indices where recipe.ingredients[index].per100 == nil {
+                if case .usda(let ndb) = recipe.ingredients[index].source {
+                    recipe.ingredients[index].per100 = table[ndb]?.per100g
+                }
+            }
+            return recipe
+        }
     }
 }
 

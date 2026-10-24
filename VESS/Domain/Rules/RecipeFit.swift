@@ -11,7 +11,9 @@ import Foundation
 ///    or poultry with dairy. Halal and kosher are read from the ingredients,
 ///    not from a certification.
 /// 3. Ingredients you don't eat: matched against each ingredient's key and
-///    name (`IngredientMatcher`).
+///    name (`IngredientMatcher`). When only optional ingredients match, the
+///    recipe still fits and they are skipped ("Without coriander"); an
+///    optional ingredient with an allergen still hides the recipe.
 /// Diet and don't-eat failures are hidden unless the user shows recipes that
 /// don't fit; then they are greyed with the reason.
 nonisolated struct RecipeFit: Equatable, Sendable {
@@ -30,6 +32,9 @@ nonisolated struct RecipeFit: Equatable, Sendable {
     /// The user's allergens in the recipe. Not empty: never shown.
     let allergens: Set<Allergen>
     let reasons: [Reason]
+    /// Don't-eat items found only in optional ingredients, as the user typed
+    /// them: those ingredients are left out (`Recipe.without(_:)`).
+    var skipped: [String] = []
 
     var isBlocked: Bool { !allergens.isEmpty }
     var fits: Bool { allergens.isEmpty && reasons.isEmpty }
@@ -77,14 +82,18 @@ nonisolated struct RecipeFit: Equatable, Sendable {
                 reasons.append(.meatWithDairy)
             }
         }
-        for item in preferences.avoidIngredients where recipe.ingredients.contains(where: { IngredientMatcher.ingredient($0, contains: item) }) {
-            reasons.append(.avoid(item))
+        var skipped: [String] = []
+        for item in preferences.avoidIngredients {
+            let hits = recipe.ingredients.filter { IngredientMatcher.ingredient($0, contains: item) }
+            if hits.isEmpty { continue }
+            if hits.allSatisfy(\.isOptional) { skipped.append(item) } else { reasons.append(.avoid(item)) }
         }
 
         var seen = Set<Reason>()
         return RecipeFit(
             allergens: recipe.allergens.intersection(allergies),
-            reasons: reasons.filter { seen.insert($0).inserted }
+            reasons: reasons.filter { seen.insert($0).inserted },
+            skipped: skipped
         )
     }
 
@@ -106,6 +115,37 @@ nonisolated struct RecipeFit: Equatable, Sendable {
 
     /// Lower carb: at most this much per serving.
     static let lowerCarbGrams: Double = 30
+}
+
+nonisolated extension Recipe {
+    /// The recipe without the optional ingredients that match `skipped`, and
+    /// without their nutrition. Allergens stay as they were: an optional
+    /// allergen still counts.
+    func without(_ skipped: [String]) -> Recipe {
+        guard !skipped.isEmpty else { return self }
+        let left = ingredients.filter { ingredient in
+            !(ingredient.isOptional && skipped.contains { IngredientMatcher.ingredient(ingredient, contains: $0) })
+        }
+        guard left.count != ingredients.count else { return self }
+        var copy = self
+        copy.ingredients = left
+        let removed = ingredients.filter { !left.contains($0) }
+        let servings = Double(Swift.max(self.servings, 1))
+        for ingredient in removed {
+            guard let per100 = ingredient.per100, let grams = ingredient.grams else { continue }
+            let factor = grams / 100 / servings
+            copy.nutrition.calories -= per100.calories * factor
+            copy.nutrition.proteinGrams -= per100.proteinGrams * factor
+            copy.nutrition.carbohydrateGrams -= per100.carbohydrateGrams * factor
+            copy.nutrition.fatGrams -= per100.fatGrams * factor
+            if let value = per100.fiberGrams { copy.nutrition.fiberGrams = copy.nutrition.fiberGrams.map { $0 - value * factor } }
+            if let value = per100.sugarGrams { copy.nutrition.sugarGrams = copy.nutrition.sugarGrams.map { $0 - value * factor } }
+            if let value = per100.sodiumMilligrams { copy.nutrition.sodiumMilligrams = copy.nutrition.sodiumMilligrams.map { $0 - value * factor } }
+            if let value = per100.additional[.saturatedFat] { copy.nutrition.additional[.saturatedFat] = copy.nutrition.additional[.saturatedFat].map { $0 - value * factor } }
+        }
+        copy.highProtein = RecipeNutritionCalculator.isHighProtein(copy.nutrition)
+        return copy
+    }
 }
 
 /// Ingredient words for each kind of content, to name what breaks a diet

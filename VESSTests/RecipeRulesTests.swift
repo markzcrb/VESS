@@ -165,6 +165,63 @@ struct RecipeRulesTests {
         #expect(RecipeFit.check(cheese, preferences: NutritionPreferences(avoidIngredients: ["blue"]), allergies: []).fits == false)
     }
 
+    @Test("An optional don't-eat ingredient is skipped: the recipe stays, without it and its nutrition")
+    func optionalAvoid() throws {
+        let guacamole = try recipe("091-guacamole-with-corn-tortilla-chips")
+        let coriander = try #require(guacamole.ingredients.first { $0.name == "Fresh coriander" })
+        #expect(coriander.isOptional && coriander.per100 != nil)
+        let fit = RecipeFit.check(guacamole, preferences: mark, allergies: markAllergies)
+        #expect(fit.fits && fit.skipped == ["Coriander"])
+        let cooked = guacamole.without(fit.skipped)
+        #expect(cooked.ingredients.count == guacamole.ingredients.count - 1)
+        let expected = guacamole.nutrition.calories - (coriander.per100?.calories ?? 0) * (coriander.grams ?? 0) / 100 / Double(guacamole.servings)
+        #expect(abs(cooked.nutrition.calories - expected) < 0.001 && cooked.nutrition.calories < guacamole.nutrition.calories)
+        // Recalculating without it gives the same total, within the data's rounding.
+        let recalculated = RecipeNutritionCalculator.perServing(ingredients: cooked.ingredients, servings: cooked.servings) { Self.usda[$0] }.nutrition
+        #expect(abs(recalculated.calories - cooked.nutrition.calories) <= 1)
+        #expect(abs(recalculated.proteinGrams - cooked.nutrition.proteinGrams) <= 0.1)
+        #expect(cooked.allergens == guacamole.allergens)
+
+        let items = RecipeDiscover.items(Self.recipes, preferences: mark, allergies: markAllergies)
+        let listed = try #require(RecipeDiscover.listed(items, meal: .all, preferences: mark).first { $0.recipe.id == guacamole.id })
+        #expect(listed.fit.skipped == ["Coriander"] && !listed.recipe.ingredients.contains { $0.name == "Fresh coriander" })
+    }
+
+    @Test("A don't-eat item that isn't optional still hides; an optional allergen still hides everywhere")
+    func requiredAvoidAndOptionalAllergen() throws {
+        let both = make("Herb rice", ingredients: [
+            ingredient("Coriander", grams: 20, per100: nil), ingredient("Coriander leaves", grams: 5, per100: nil, optional: true),
+        ], tags: [.vegan], contains: [])
+        let fit = RecipeFit.check(both, preferences: mark, allergies: [])
+        #expect(!fit.fits && fit.reasons == [.avoid("Coriander")] && fit.skipped.isEmpty)
+        #expect(!RecipeFit.check(try recipe("026-mushroom-and-lentil-shepherd-s-pie"), preferences: mark, allergies: []).fits)
+
+        let topping = make("Yogurt bowl", ingredients: [
+            ingredient("Greek yogurt", grams: 150, per100: nil, allergens: [.milk]),
+            ingredient("Chopped hazelnuts", grams: 10, per100: nil, allergens: [.nuts], optional: true),
+        ], tags: [.vegetarian], contains: [.dairy])
+        var showAll = mark
+        showAll.showNonFittingRecipes = true
+        let blocked = RecipeFit.check(topping, preferences: showAll, allergies: markAllergies)
+        #expect(blocked.isBlocked && !blocked.isListed(showNonFitting: true))
+        #expect(topping.without(["hazelnuts"]).allergens.contains(.nuts), "Skipping never removes an allergen")
+        let now = try TestClock.date(2026, 10, 6, 18, 40)
+        #expect(AIChef.rank([topping], preferences: showAll, allergies: markAllergies, pantry: [], remaining: .init(proteinGrams: 30, calories: 900), now: now, calendar: calendar).isEmpty)
+        let items = RecipeDiscover.items([topping], preferences: showAll, allergies: markAllergies)
+        #expect(RecipeDiscover.search("yogurt", in: items, preferences: showAll).isEmpty)
+    }
+
+    @Test("AI Chef leaves a skipped ingredient out of have and missing")
+    func chefSkips() throws {
+        let now = try TestClock.date(2026, 10, 6, 18, 40)
+        let guacamole = try recipe("091-guacamole-with-corn-tortilla-chips")
+        let match = try #require(AIChef.rank([guacamole], preferences: mark, allergies: markAllergies, pantry: [pantryItem("Avocados", expiresIn: 1, now: now)],
+                                             remaining: .init(proteinGrams: 30, calories: 900), now: now, calendar: calendar).first)
+        let names = (match.pantry.have.map(\.ingredient) + match.pantry.missing + match.pantry.missingOptional).map(\.name)
+        #expect(!names.contains("Fresh coriander"))
+        #expect(match.pantry.useSoon.map(\.name) == ["Avocados"])
+    }
+
     @Test("Also-prefer chips rank, never hide")
     func boosts() throws {
         let prefs = NutritionPreferences(alsoPrefer: [.highProtein, .glutenFree, .lowerCarb])
@@ -185,21 +242,23 @@ struct RecipeRulesTests {
         #expect(!candidates.isEmpty)
         let names = Set(candidates.map(\.name))
         #expect(!names.contains("Chicken, quinoa and roasted veg bowl"))
-        #expect(!names.contains("Guacamole with corn tortilla chips"), "Has coriander")
         #expect(names.contains("Miso-glazed cod with greens"))
+        let guacamole = try #require(candidates.first { $0.name == "Guacamole with corn tortilla chips" }, "Coriander is optional")
+        #expect(!guacamole.items.contains { $0.name.localizedCaseInsensitiveContains("coriander") }, "Nothing to buy for it")
     }
 
     // MARK: Discover
 
-    @Test("R01 for Mark: 32 of 122 hidden; Show why counts each reason")
+    @Test("R01 for Mark: 31 of 122 hidden; Show why counts each reason")
     func hiddenNote() {
         let items = RecipeDiscover.items(Self.recipes, preferences: mark, allergies: markAllergies)
         let hidden = RecipeDiscover.hidden(items, preferences: mark)
-        #expect(hidden.total == 32)
+        // Coriander is only ever an optional garnish: those recipes stay, without it.
+        #expect(hidden.total == 31)
         let counts = Dictionary(uniqueKeysWithValues: hidden.groups.map { ($0.group, $0.count) })
-        #expect(counts == [.meat: 21, .allergen(.nuts): 5, .allergen(.peanuts): 4, .avoid("Coriander"): 2, .avoid("Mushrooms"): 1])
+        #expect(counts == [.meat: 21, .allergen(.nuts): 5, .allergen(.peanuts): 4, .avoid("Mushrooms"): 1])
         #expect(hidden.groups.first?.group == .meat)
-        #expect(RecipeDiscover.listed(items, meal: .all, preferences: mark).count == 90)
+        #expect(RecipeDiscover.listed(items, meal: .all, preferences: mark).count == 91)
 
         var showAll = mark
         showAll.showNonFittingRecipes = true
@@ -207,7 +266,7 @@ struct RecipeRulesTests {
         #expect(shown.total == 9 && shown.groups.allSatisfy { if case .allergen = $0.group { true } else { false } })
         let listed = RecipeDiscover.listed(items, meal: .all, preferences: showAll)
         #expect(listed.count == 113)
-        #expect(listed.prefix(90).allSatisfy(\.fit.fits) && listed.dropFirst(90).allSatisfy { !$0.fit.fits }, "Greyed ones after")
+        #expect(listed.prefix(91).allSatisfy(\.fit.fits) && listed.dropFirst(91).allSatisfy { !$0.fit.fits }, "Greyed ones after")
     }
 
     @Test("Search covers names and ingredients; don't-eat recipes still open from search, allergens never")
@@ -252,10 +311,19 @@ struct RecipeRulesTests {
         let again = RecipeDiscover.featured(items, meal: .dinner, day: day.addingTimeInterval(3600), preferences: mark, calendar: calendar)
         #expect(first != nil && first == again)
         #expect(first?.category == .dinner && first?.highProtein == true)
-        let week = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: day) }
+        // Five days in a row: five different dinners from the top five, then again.
+        let days = (0..<10).compactMap { calendar.date(byAdding: .day, value: $0, to: day) }
             .compactMap { RecipeDiscover.featured(items, meal: .dinner, day: $0, preferences: mark, calendar: calendar)?.id }
-        #expect(Set(week).count > 1, "Rotates")
-        #expect(RecipeDiscover.stableHash("2026-10-06|a") == RecipeDiscover.stableHash("2026-10-06|a"))
+        #expect(Set(days.prefix(5)).count == 5)
+        #expect(Array(days.prefix(5)) == Array(days.suffix(5)))
+        // One recipe leading on points doesn't repeat every day.
+        let leader = make("Leader", kcal: 600, protein: 60)
+        let others = (1...6).map { make("Other \($0)", protein: Double(20 + $0), highProtein: false) }
+        let pool = RecipeDiscover.items([leader] + others, preferences: mark, allergies: [])
+        let picks = (0..<5).compactMap { calendar.date(byAdding: .day, value: $0, to: day) }
+            .compactMap { RecipeDiscover.featured(pool, meal: .dinner, day: $0, preferences: mark, calendar: calendar)?.name }
+        #expect(picks.count { $0 == "Leader" } == 1 && Set(picks).count == 5)
+        #expect(!picks.contains("Other 1"), "Only the top five: Leader, then the most protein")
     }
 
     @Test("Meal times: the user's, else learned, else 07:30 · 12:30 · 19:30")
@@ -299,9 +367,11 @@ struct RecipeRulesTests {
             pantry: pantry, remaining: .init(proteinGrams: 26, calories: 900), now: now, calendar: calendar
         )
         // Cod uses two use-soon items; eggs one; then the rice bowls, all at
-        // home, within energy before over it. Chicken (diet) and coriander
-        // (don't eat, even with the toggle on) are never used.
-        #expect(ranked.map(\.recipe.name) == ["A cod and greens", "B spinach eggs", "C rice bowl", "D rice feast"])
+        // home, within energy (closest to the protein left) before over it.
+        // Chicken is never used (diet, even with the toggle on); the coriander
+        // rice comes without its optional coriander.
+        #expect(ranked.map(\.recipe.name) == ["A cod and greens", "B spinach eggs", "C rice bowl", "F coriander rice", "D rice feast"])
+        #expect(ranked.first { $0.recipe.name == "F coriander rice" }?.recipe.ingredients.map(\.name) == ["Jasmine rice"])
 
         let cod = try #require(ranked.first)
         #expect(cod.pantry.atHomeCount == 2 && cod.pantry.countedTotal == 3, "Salt doesn't count")

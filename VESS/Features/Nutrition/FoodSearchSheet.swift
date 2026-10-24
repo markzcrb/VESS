@@ -530,7 +530,7 @@ extension View {
             .environment(AccountStore(config: nil, transport: URLSessionTransport(), store: MemorySessionStore()))
             .environment(AIConsentStore(defaults: UserDefaults(suiteName: "preview") ?? .standard))
             .environment(RecipeCatalog(recipes: MockData.catalogRecipes))
-            .environment(GenericFoodDatabase())
+            .environment(GenericFoodDatabase(foods: Array(MockData.genericFoods.values)))
     }
 }
 #endif

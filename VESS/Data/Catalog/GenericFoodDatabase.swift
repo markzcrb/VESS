@@ -48,6 +48,9 @@ final class GenericFoodDatabase {
         isLoaded = true
     }
 
+    /// Every food by NDB number.
+    var table: [String: GenericFood] { index.byID }
+
     func food(ndb: String) -> GenericFood? {
         index.byID[ndb]
     }

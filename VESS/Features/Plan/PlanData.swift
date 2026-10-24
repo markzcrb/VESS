@@ -41,9 +41,10 @@ enum PlanCandidates {
     static func recipes(_ catalog: RecipeCatalog, profile: UserProfile?) -> [MealSuggestions.Candidate] {
         #if DEBUG
         guard let profile else { return [] }
-        return catalog.recipes
-            .filter { RecipeFit.check($0, preferences: profile.preferences, allergies: profile.allergies).fits }
-            .map(MealSuggestions.Candidate.init(recipe:))
+        return catalog.recipes.compactMap { recipe in
+            let fit = RecipeFit.check(recipe, preferences: profile.preferences, allergies: profile.allergies)
+            return fit.fits ? MealSuggestions.Candidate(recipe: recipe.without(fit.skipped)) : nil
+        }
         #else
         []
         #endif

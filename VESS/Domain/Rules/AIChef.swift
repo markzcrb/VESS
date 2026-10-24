@@ -111,8 +111,11 @@ nonisolated enum AIChef {
         now: Date,
         calendar: Calendar
     ) -> [Match] {
-        let matches = recipes.compactMap { recipe -> Match? in
-            guard RecipeFit.check(recipe, preferences: preferences, allergies: allergies).fits else { return nil }
+        let matches = recipes.compactMap { original -> Match? in
+            let fit = RecipeFit.check(original, preferences: preferences, allergies: allergies)
+            guard fit.fits else { return nil }
+            // Skipped optional ingredients are neither at home nor missing.
+            let recipe = original.without(fit.skipped)
             if let meal = filters.meal, recipe.mealType != meal { return nil }
             if filters.under30Minutes, recipe.minutes > Filters.quickMinutes || recipe.extraTime != nil { return nil }
             if filters.highProtein, !recipe.highProtein { return nil }
