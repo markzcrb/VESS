@@ -116,8 +116,84 @@ nonisolated struct GenericFoodIndex: Sendable {
         word == term || word == term + "s" || word == term + "es" || (term.hasSuffix("s") && word == term.dropLast())
     }
 
+    /// UK and EU names for what USDA calls something else. Each phrase is
+    /// replaced in the query by its USDA words; longer phrases first.
+    static let synonyms: [(phrase: String, usda: [String])] = [
+        ("wholemeal bread", ["bread whole-wheat commercially prepared"]),
+        ("baby spinach", ["spinach raw"]),
+        ("spring onion", ["scallions", "onions spring"]),
+        ("bok choy", ["pak-choi"]),
+        ("jasmine rice", ["rice white long-grain"]),
+        ("basmati rice", ["rice white long-grain"]),
+        ("minced beef", ["ground beef"]),
+        ("minced turkey", ["ground turkey"]),
+        ("double cream", ["cream fluid heavy"]),
+        ("single cream", ["cream fluid light table"]),
+        ("icing sugar", ["sugars powdered"]),
+        ("caster sugar", ["sugars granulated"]),
+        ("plain flour", ["wheat flour white all-purpose"]),
+        ("porridge oats", ["oats"]),
+        ("rapeseed oil", ["oil canola"]),
+        ("courgette", ["zucchini"]),
+        ("aubergine", ["eggplant"]),
+        ("coriander", ["cilantro", "coriander leaves"]),
+        ("rocket", ["arugula"]),
+        ("prawn", ["shrimp"]),
+        ("beetroot", ["beets"]),
+        ("chickpeas", ["chickpeas garbanzo"]),
+        ("wholemeal", ["whole-wheat"]),
+        ("swede", ["rutabagas"]),
+        ("mangetout", ["peas edible-podded"]),
+        ("sweetcorn", ["corn sweet"]),
+        ("gherkin", ["pickles cucumber"]),
+    ]
+
+    /// Foods USDA has no match for: nothing is suggested, so the search
+    /// falls through to Open Food Facts instead of a wrong generic food.
+    static let noMatch: [String] = ["quark", "tvaroh", "skyr", "oat drink"]
+
     /// Every query word must start a word of the name ("chickpea" finds
-    /// "Chickpeas"); foods missing one are left out. Best first:
+    /// "Chickpeas"); foods missing one are left out. The original words
+    /// come first, then their synonyms (`synonyms`):
+    /// - original results with every query word in the food's own name (the
+    ///   part before the first comma, "Coriander (cilantro) leaves, raw");
+    /// - then the synonyms' results;
+    /// - then the other original results ("Soup, cream of chicken" for
+    ///   "single cream").
+    /// Within each, best first (`ranked`).
+    func search(_ query: String, limit: Int) -> [GenericFood] {
+        let terms = Self.words(query)
+        guard !terms.isEmpty, !Self.noMatch.contains(where: { Self.range(of: Self.words($0), in: terms) != nil }) else { return [] }
+        let original = ranked(terms)
+        let strong = original.filter { entry in terms.allSatisfy { term in entry.headWords.contains { Self.isWhole($0, term) } } }
+        let weak = original.filter { entry in !strong.contains { $0.food.id == entry.food.id } }
+        let alternatives = Self.synonyms
+            .sorted { $0.phrase.count > $1.phrase.count }
+            .flatMap { synonym -> [Entry] in
+                guard let range = Self.range(of: Self.words(synonym.phrase), in: terms) else { return [] }
+                return synonym.usda.flatMap { usda in
+                    var replaced = terms
+                    replaced.replaceSubrange(range, with: Self.words(usda))
+                    return ranked(replaced)
+                }
+            }
+        var seen = Set<String>()
+        return (strong + alternatives + weak)
+            .filter { seen.insert($0.food.id).inserted }
+            .prefix(limit)
+            .map(\.food)
+    }
+
+    /// Where `phrase` appears in `terms`, word by word, allowing plurals.
+    private static func range(of phrase: [String], in terms: [String]) -> Range<Int>? {
+        guard !phrase.isEmpty, terms.count >= phrase.count else { return nil }
+        for start in 0...(terms.count - phrase.count) where phrase.indices.allSatisfy({ isWhole(terms[start + $0], phrase[$0]) }) {
+            return start..<(start + phrase.count)
+        }
+        return nil
+    }
+
+    /// Foods matching every term, best first:
     /// 1. every query word is a whole word ("egg" before "Eggplant");
     /// 2. the part before the first comma is the query, then contains it
     ///    ("Milk, whole" before "Milk and cereal bar");
@@ -125,24 +201,21 @@ nonisolated struct GenericFoodIndex: Sendable {
     /// 4. raw or plain forms;
     /// 5. shorter description: fewer comma-separated parts, then fewer
     ///    letters; then by name, so the order is stable.
-    func search(_ query: String, limit: Int) -> [GenericFood] {
-        let terms = Self.words(query)
-        guard !terms.isEmpty else { return [] }
-        let ranked = entries.compactMap { entry -> (entry: Entry, key: [Int])? in
-            guard terms.allSatisfy({ term in entry.words.contains { $0.hasPrefix(term) } }) else { return nil }
-            let allWhole = terms.allSatisfy { term in entry.words.contains { Self.isWhole($0, term) } }
-            let inHead = terms.allSatisfy { term in entry.headWords.contains { Self.isWhole($0, term) } }
-            let headTier = inHead ? (entry.headWords.count == terms.count ? 0 : 1) : 2
-            let startsWith = entry.words.first.map { Self.isWhole($0, terms[0]) } ?? false
-            return (entry, [allWhole ? 0 : 1, headTier, startsWith ? 0 : 1, entry.isPlain ? 0 : 1, entry.parts, entry.length])
-        }
-        return ranked
+    private func ranked(_ terms: [String]) -> [Entry] {
+        entries
+            .compactMap { entry -> (entry: Entry, key: [Int])? in
+                guard terms.allSatisfy({ term in entry.words.contains { $0.hasPrefix(term) } }) else { return nil }
+                let allWhole = terms.allSatisfy { term in entry.words.contains { Self.isWhole($0, term) } }
+                let inHead = terms.allSatisfy { term in entry.headWords.contains { Self.isWhole($0, term) } }
+                let headTier = inHead ? (entry.headWords.count == terms.count ? 0 : 1) : 2
+                let startsWith = entry.words.first.map { Self.isWhole($0, terms[0]) } ?? false
+                return (entry, [allWhole ? 0 : 1, headTier, startsWith ? 0 : 1, entry.isPlain ? 0 : 1, entry.parts, entry.length])
+            }
             .sorted { lhs, rhs in
                 if lhs.key != rhs.key { return lhs.key.lexicographicallyPrecedes(rhs.key) }
                 return lhs.entry.food.name < rhs.entry.food.name
             }
-            .prefix(limit)
-            .map(\.entry.food)
+            .map(\.entry)
     }
 }
 

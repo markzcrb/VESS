@@ -74,6 +74,57 @@ struct GenericFoodTests {
         #expect(index.search("chickpea", limit: 1).first?.id == "16056")
     }
 
+    @Test("UK and EU names find the USDA food", arguments: [
+        ("courgette", "Squash, zucchini, baby, raw"),
+        ("aubergine", "Eggplant, raw"),
+        ("coriander", "Coriander (cilantro) leaves, raw"),
+        ("rocket", "Arugula, raw"),
+        ("prawns", "Crustaceans, shrimp, raw (not previously frozen)"),
+        ("spring onions", "Onions, spring or scallions (includes tops and bulb), raw"),
+        ("beetroot", "Beets, raw"),
+        ("chickpeas", "Chickpeas (garbanzo beans, bengal gram), mature seeds, raw"),
+        ("baby spinach", "Spinach, raw"),
+        ("bok choy", "Cabbage, chinese (pak-choi), raw"),
+        ("jasmine rice", "Rice, white, long-grain, regular, raw, enriched"),
+        ("basmati rice", "Rice, white, long-grain, regular, raw, enriched"),
+        ("minced beef", "Beef, grass-fed, ground, raw"),
+        ("minced turkey", "Ground turkey, raw"),
+        ("double cream", "Cream, fluid, heavy whipping"),
+        ("single cream", "Cream, fluid, light (coffee cream or table cream)"),
+        ("icing sugar", "Sugars, powdered"),
+        ("caster sugar", "Sugars, granulated"),
+        ("plain flour", "Wheat flour, white, all-purpose, unenriched"),
+        ("wholemeal flour", "Wheat flour, whole-grain"),
+        ("wholemeal bread", "Bread, whole-wheat, commercially prepared"),
+        ("porridge oats", "Oats"),
+        ("swede", "Rutabagas, raw"),
+        ("mangetout", "Peas, edible-podded, raw"),
+        ("sweetcorn", "Corn, sweet, white, raw"),
+        ("rapeseed oil", "Oil, canola"),
+        ("gherkins", "Pickles, cucumber, sour"),
+    ])
+    func synonyms(query: String, top: String) {
+        #expect(Self.index.search(query, limit: 3).first?.name == top)
+    }
+
+    @Test("Quark, tvaroh, skyr and oat drink have no USDA match, so Open Food Facts is used instead")
+    func noMatch() {
+        for query in ["quark", "tvaroh", "Skyr", "oat drink", "oat drink unsweetened"] {
+            #expect(Self.index.search(query, limit: 3).isEmpty, "\(query)")
+        }
+    }
+
+    @Test("Original words come before their synonyms; other searches are unchanged")
+    func originalFirst() {
+        let coriander = Self.index.search("coriander", limit: 5).map(\.name)
+        #expect(coriander.first == "Coriander (cilantro) leaves, raw")
+        #expect(coriander.contains("Spices, coriander seed"))
+        #expect(Self.index.search("spinach", limit: 1).first?.name == "Spinach, raw")
+        #expect(Self.index.search("courgettes", limit: 1).first?.name == "Squash, zucchini, baby, raw")
+    }
+
+    static let index = GenericFoodIndex(foods: foods)
+
     @Test("Household portions become units after grams; nutrition scales by weight")
     func units() {
         let canned = food("16358", "Chickpeas, canned, drained", kcal: 139, portions: [ServingOption(label: "1 can, drained", amount: 253)])
