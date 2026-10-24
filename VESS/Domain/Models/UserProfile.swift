@@ -32,6 +32,10 @@ nonisolated struct UserProfile: Identifiable, Codable, Hashable, Sendable {
     /// Cycle tracking, opt-in from You. `nil` (every profile from earlier
     /// builds) is off.
     var cycleTrackingEnabled: Bool? = nil
+    /// Diet, preferences, avoid list and meal times (P01). `nil` in profiles
+    /// from earlier builds until `UserProfile.migrated(_:)` fills it from
+    /// `dietaryPreference`, `customDietDescription` and `otherRestrictions`.
+    var nutritionPreferences: NutritionPreferences? = nil
 
     static let defaultStepsTarget = 8_000
 

@@ -48,6 +48,87 @@ struct PreferencesTests {
         #expect(!String(decoding: data, as: UTF8.self).contains("lactose"))
     }
 
+    private func migrated(diet: String, custom: String? = nil, other: [String] = [], allergies: [String] = []) throws -> UserProfile {
+        let old = try JSONDecoder().decode(UserProfile.self, from: Self.oldProfileJSON(diet: diet, custom: custom, other: other, allergies: allergies))
+        #expect(old.nutritionPreferences == nil)
+        return UserProfile.migrated(old)
+    }
+
+    @Test("Each earlier diet moves to one diet and its preferences")
+    func dietMigration() throws {
+        let cases: [(String, Diet, Set<FoodPreference>)] = [
+            ("everything", .noRestrictions, []),
+            ("vegetarian", .vegetarian, []),
+            ("vegan", .vegan, []),
+            ("highProtein", .noRestrictions, [.highProtein]),
+            ("lowCarb", .noRestrictions, [.lowerCarb]),
+        ]
+        for (old, diet, prefer) in cases {
+            let profile = try migrated(diet: old)
+            #expect(profile.preferences.diet == diet, "\(old)")
+            #expect(profile.preferences.alsoPrefer == prefer, "\(old)")
+            #expect(profile.preferences.avoidIngredients.isEmpty)
+        }
+    }
+
+    @Test("Custom text: a diet name sets the diet; one ingredient is avoided; anything longer is kept")
+    func customMigration() throws {
+        let pescatarian = try migrated(diet: "custom", custom: "Pescatarian")
+        #expect(pescatarian.preferences.diet == .pescatarian)
+        #expect(pescatarian.customDietDescription == nil)
+
+        let coriander = try migrated(diet: "custom", custom: "no coriander")
+        #expect(coriander.preferences.diet == .noRestrictions)
+        #expect(coriander.preferences.avoidIngredients == ["Coriander"])
+        #expect(coriander.customDietDescription == nil)
+
+        let long = try migrated(diet: "custom", custom: "Low FODMAP, mostly plants")
+        #expect(long.preferences.avoidIngredients.isEmpty)
+        #expect(long.customDietDescription == "Low FODMAP, mostly plants")
+
+        let mixed = try migrated(diet: "custom", custom: "Pescatarian, no spicy food")
+        #expect(mixed.preferences.diet == .pescatarian)
+        #expect(mixed.customDietDescription == "Pescatarian, no spicy food")
+    }
+
+    @Test("Other restrictions: single ingredients are avoided, without duplicates; the rest is kept")
+    func otherRestrictions() throws {
+        let profile = try migrated(diet: "vegetarian", other: ["Mushrooms", "mushrooms ", "blue cheese", "Nothing too spicy please"])
+        #expect(profile.preferences.diet == .vegetarian)
+        #expect(profile.preferences.avoidIngredients == ["Mushrooms", "Blue cheese"])
+        #expect(profile.customDietDescription == "Nothing too spicy please")
+        // The earlier fields stay as they were.
+        #expect(profile.otherRestrictions.count == 4)
+        #expect(profile.dietaryPreference == .vegetarian)
+    }
+
+    @Test("Nuts from an earlier build also cover peanuts; a migrated profile is left alone")
+    func nutsAndIdempotence() throws {
+        let profile = try migrated(diet: "everything", allergies: ["nuts", "lactose"])
+        #expect(profile.allergies == [.nuts, .peanuts, .milk])
+        var edited = profile
+        edited.allergies.remove(.peanuts)
+        #expect(UserProfile.migrated(edited) == edited)
+    }
+
+    @Test("The store migrates an earlier profile when it opens and keeps it on save")
+    @MainActor
+    func storeMigrates() throws {
+        let store = try LocalStore.inMemory()
+        let old = try JSONDecoder().decode(UserProfile.self, from: Self.oldProfileJSON())
+        try store.saveProfile(old)
+        let saved = try #require(store.profile)
+        #expect(saved.nutritionPreferences?.diet == .pescatarian)
+        #expect(saved.allergies == [.milk, .nuts, .peanuts])
+    }
+
+    @Test("The target calculator keeps getting one diet: high protein wins over lower carb")
+    func targetDiet() {
+        #expect(NutritionPreferences(alsoPrefer: [.lowerCarb, .highProtein]).targetDiet == .highProtein)
+        #expect(NutritionPreferences(alsoPrefer: [.lowerCarb]).targetDiet == .lowCarb)
+        #expect(NutritionPreferences(diet: .vegan).targetDiet == .everything)
+    }
+
     @Test("Open Food Facts tags map to the 14 allergens; peanuts are not tree nuts")
     func openFoodFactsTags() throws {
         let product: [String: Any] = [

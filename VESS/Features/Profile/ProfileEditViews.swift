@@ -137,7 +137,7 @@ struct GoalsView: View {
             weightKilograms: profile.weightKilograms,
             activityLevel: profile.activityLevel,
             goal: profile.goal,
-            dietaryPreference: profile.dietaryPreference
+            dietaryPreference: profile.preferences.targetDiet
         ))
     }
 }
@@ -269,45 +269,12 @@ struct NutritionPreferencesView: View {
 
     private let calendar = Calendar.current
 
-    private enum Diet: CaseIterable {
-        case everything, pescatarian, vegetarian, vegan
-
-        var title: LocalizedStringResource {
-            switch self {
-            case .everything: "No restrictions"
-            case .pescatarian: "Pescatarian"
-            case .vegetarian: "Vegetarian"
-            case .vegan: "Vegan"
-            }
-        }
-
-        func matches(_ profile: UserProfile) -> Bool {
-            switch self {
-            case .everything: profile.dietaryPreference == .everything
-            case .pescatarian: profile.dietaryPreference == .custom && profile.customDietDescription?.localizedCaseInsensitiveContains("pescatarian") == true
-            case .vegetarian: profile.dietaryPreference == .vegetarian
-            case .vegan: profile.dietaryPreference == .vegan
-            }
-        }
-
-        func apply(to profile: inout UserProfile) {
-            switch self {
-            case .everything: profile.dietaryPreference = .everything; profile.customDietDescription = nil
-            case .pescatarian: profile.dietaryPreference = .custom; profile.customDietDescription = "Pescatarian"
-            case .vegetarian: profile.dietaryPreference = .vegetarian; profile.customDietDescription = nil
-            case .vegan: profile.dietaryPreference = .vegan; profile.customDietDescription = nil
-            }
-        }
-    }
-
     var body: some View {
         if let profile = store.profile {
             let history = store.foodEntries(
                 from: calendar.date(byAdding: .day, value: -MealRegularity.historyDays, to: calendar.startOfDay(for: AppClock.now)) ?? AppClock.now,
                 to: calendar.startOfDay(for: AppClock.now)
             )
-            let otherDiet = !Diet.allCases.contains { $0.matches(profile) }
-
             ProfilePage(title: "Nutrition preferences") {
                 ProfileIntro(title: "Food that fits your life.")
 
@@ -315,12 +282,9 @@ struct NutritionPreferencesView: View {
                     VESSSectionHeader(title: "Diet")
                     VESSRowGroup {
                         ForEach(Diet.allCases, id: \.self) { diet in
-                            ProfileCheckRow(title: Text(diet.title), isSelected: diet.matches(profile)) {
-                                update { diet.apply(to: &$0) }
+                            ProfileCheckRow(title: Text(diet.title), isSelected: profile.preferences.diet == diet) {
+                                update { var preferences = $0.preferences; preferences.diet = diet; $0.nutritionPreferences = preferences }
                             }
-                        }
-                        if otherDiet {
-                            ProfileCheckRow(title: Text(profile.dietTitle), isSelected: true) {}
                         }
                     }
                     .vessHairlineBottom()

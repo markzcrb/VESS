@@ -121,6 +121,32 @@ extension ActivityLevel {
     }
 }
 
+extension Diet {
+    var title: LocalizedStringResource {
+        switch self {
+        case .noRestrictions: "No restrictions"
+        case .pescatarian: "Pescatarian"
+        case .vegetarian: "Vegetarian"
+        case .vegan: "Vegan"
+        case .flexitarian: "Flexitarian"
+        }
+    }
+}
+
+extension FoodPreference {
+    var title: LocalizedStringResource {
+        switch self {
+        case .highProtein: "High-protein"
+        case .lowerCarb: "Lower-carb"
+        case .mediterranean: "Mediterranean"
+        case .glutenFree: "Gluten-free"
+        case .dairyFree: "Dairy-free"
+        case .halal: "Halal"
+        case .kosher: "Kosher"
+        }
+    }
+}
+
 extension DietaryPreference {
     var title: LocalizedStringResource {
         switch self {

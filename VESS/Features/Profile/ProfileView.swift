@@ -416,12 +416,12 @@ extension WellnessGoal {
 
 extension UserProfile {
     /// "Pescatarian", "No restrictions", "Vegetarian".
+    /// A description kept from an earlier build stands in for "No restrictions".
     var dietTitle: LocalizedStringResource {
-        switch dietaryPreference {
-        case .everything: "No restrictions"
-        case .custom: customDietDescription.map { LocalizedStringResource(stringLiteral: $0) } ?? dietaryPreference.title
-        default: dietaryPreference.title
+        if preferences.diet == .noRestrictions, let customDietDescription {
+            return LocalizedStringResource(stringLiteral: customDietDescription)
         }
+        return preferences.diet.title
     }
 }
 

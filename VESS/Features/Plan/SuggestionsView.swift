@@ -111,7 +111,7 @@ struct SuggestionsView: View {
     static func dietRules(_ profile: UserProfile?) -> [String] {
         guard let profile else { return [] }
         var rules: [String] = []
-        if profile.dietaryPreference != .everything {
+        if profile.preferences.diet != .noRestrictions {
             rules.append(String(localized: profile.dietTitle).lowercased())
         }
         rules += Allergen.allCases.filter { profile.allergies.contains($0) }.map { String(localized: $0.freeFrom) }

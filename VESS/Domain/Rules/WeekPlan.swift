@@ -193,19 +193,14 @@ nonisolated enum MealSuggestions {
     }
 
     /// Whether a recipe's diets suit the user. The user's own logged meals
-    /// (`nil`) always do. A custom diet is matched by its description.
+    /// (`nil`) always do.
     static func fits(diets: Set<Recipe.Diet>?, profile: UserProfile) -> Bool {
         guard let diets else { return true }
-        switch profile.dietaryPreference {
+        switch profile.preferences.diet {
         case .vegan: return diets.contains(.vegan)
         case .vegetarian: return !diets.isDisjoint(with: [.vegetarian, .vegan])
-        case .custom:
-            let description = FoodSearch.normalized(profile.customDietDescription ?? "")
-            if description.contains("vegan") { return diets.contains(.vegan) }
-            if description.contains("vegetarian") { return !diets.isDisjoint(with: [.vegetarian, .vegan]) }
-            if description.contains("pescatarian") { return !diets.isDisjoint(with: [.pescatarian, .vegetarian, .vegan]) }
-            return true
-        case .everything, .highProtein, .lowCarb: return true
+        case .pescatarian: return !diets.isDisjoint(with: [.pescatarian, .vegetarian, .vegan])
+        case .noRestrictions, .flexitarian: return true
         }
     }
 

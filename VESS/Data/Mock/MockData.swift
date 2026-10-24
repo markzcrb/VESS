@@ -60,7 +60,7 @@ nonisolated struct MockData: Sendable {
             activityLevel: .moderate,
             dietaryPreference: .custom,
             customDietDescription: "Pescatarian",
-            allergies: [.nuts],
+            allergies: [.nuts, .peanuts],
             otherRestrictions: [],
             focusAreas: [.nutrition, .hydration, .mealPlanning],
             nutritionTargets: NutritionTargets(
@@ -71,7 +71,13 @@ nonisolated struct MockData: Sendable {
             ),
             waterTargetMilliliters: 2200,
             createdAt: day(-84),
-            updatedAt: day(-1)
+            updatedAt: day(-1),
+            // P01: pescatarian, high-protein, no coriander, mushrooms or blue cheese.
+            nutritionPreferences: NutritionPreferences(
+                diet: .pescatarian,
+                alsoPrefer: [.highProtein],
+                avoidIngredients: ["Coriander", "Mushrooms", "Blue cheese"]
+            )
         )
 
         // MARK: Foods (values per serving, which is also the logged portion)

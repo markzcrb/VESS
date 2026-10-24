@@ -74,7 +74,8 @@ final class LocalStore {
     // MARK: Profile
 
     func saveProfile(_ newProfile: UserProfile) throws {
-        var updated = newProfile
+        // Profiles from onboarding or earlier builds get their nutrition preferences here.
+        var updated = UserProfile.migrated(newProfile)
         updated.updatedAt = .now
         let payload = try encoder.encode(updated)
 
@@ -91,7 +92,7 @@ final class LocalStore {
     private func loadProfile() -> UserProfile? {
         do {
             guard let record = try context.fetch(FetchDescriptor<StoredProfile>()).first else { return nil }
-            return try decoder.decode(UserProfile.self, from: record.payload)
+            return UserProfile.migrated(try decoder.decode(UserProfile.self, from: record.payload))
         } catch {
             logger.error("Loading profile failed: \(error.localizedDescription, privacy: .public)")
             return nil

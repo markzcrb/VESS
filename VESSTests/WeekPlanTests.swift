@@ -36,6 +36,8 @@ struct WeekPlanTests {
         profile.dietaryPreference = diet
         profile.customDietDescription = description
         profile.allergies = allergies
+        // As from onboarding: the diet comes from the fields above.
+        profile.nutritionPreferences = nil
         return profile
     }
 
