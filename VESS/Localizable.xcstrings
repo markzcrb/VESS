@@ -4617,9 +4617,6 @@
     "Your change wasn't saved. Please try again." : {
 
     },
-    "Your data stays on this iPhone." : {
-
-    },
     "Your data stays yours." : {
 
     },
@@ -4630,6 +4627,9 @@
 
     },
     "Your food" : {
+
+    },
+    "Your log stays on this iPhone." : {
 
     },
     "Your log, profile and history stay on this iPhone." : {
