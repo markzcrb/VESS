@@ -74,9 +74,10 @@ struct CoachView: View {
                 withAnimation(reduceMotion ? nil : VESSMotion.selection) { proxy.scrollTo("bottom", anchor: .bottom) }
             }
         }
+        // Messages fade out at the nav bar instead of running under COACH.
+        .vessFadeUnderNavBar()
         .safeAreaInset(edge: .bottom, spacing: 0) { composer(isEmpty: messages.isEmpty) }
         .vessScreenBackground(.fuel, clipsUnderBar: false)
-        .scrollEdgeEffectStyle(.soft, for: .top)
         .vessDetailTitle("Coach")
         .toolbar(.hidden, for: .tabBar)
         .toolbar {

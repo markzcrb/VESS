@@ -173,6 +173,19 @@ extension View {
         modifier(VESSScreenBackground(metric: metric, clipsUnderBar: clipsUnderBar))
     }
 
+    /// Content stops at the bottom of the nav bar and fades in over 24 pt
+    /// there, so nothing (even at AX5) sits under the title or its buttons.
+    func vessFadeUnderNavBar() -> some View {
+        mask {
+            VStack(spacing: 0) {
+                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                    .frame(height: VESSSpacing.xl)
+                Rectangle()
+            }
+            .ignoresSafeArea(edges: .bottom)
+        }
+    }
+
     /// The gap above a screen's first content: `standalone` on its own, the
     /// same 24 pt under the carousel's hairline for every Add sheet type.
     func vessContentTop(_ standalone: CGFloat) -> some View {
