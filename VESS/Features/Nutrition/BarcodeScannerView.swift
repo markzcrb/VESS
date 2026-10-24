@@ -296,7 +296,7 @@ struct BarcodeScannerView: View {
 
 /// VisionKit's live scanner, limited to product barcodes. `ScannerController`
 /// starts it, restarts it when it stops, and owns the torch.
-private struct BarcodeDataScanner: UIViewControllerRepresentable {
+struct BarcodeDataScanner: UIViewControllerRepresentable {
     let controller: ScannerController
     let onCode: (String) -> Void
 

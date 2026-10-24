@@ -93,6 +93,53 @@ struct RecipeRulesTests {
         #expect(!RecipeNutritionCalculator.isHighProtein(facts(100, 14.9)))
     }
 
+    // MARK: Derivation
+
+    @Test("Allergens from ingredient names match every Discover ingredient's allergens")
+    func allergenKeywords() {
+        for recipe in Self.recipes {
+            for ingredient in recipe.ingredients {
+                #expect(RecipeDerivation.allergens(forName: ingredient.name) == ingredient.allergens, "\(recipe.id): \(ingredient.name)")
+            }
+        }
+        #expect(RecipeDerivation.allergens(forName: "Soy sauce") == [.soy, .gluten])
+        #expect(RecipeDerivation.allergens(forName: "Basil pesto") == [.nuts, .milk])
+        #expect(RecipeDerivation.allergens(forName: "Mayonnaise") == [.eggs])
+        #expect(RecipeDerivation.allergens(forName: "Tahini") == [.sesame])
+        #expect(RecipeDerivation.allergens(forName: "Squid rings") == [.molluscs])
+        #expect(RecipeDerivation.allergens(forName: "Dry white wine") == [.sulphites])
+        #expect(RecipeDerivation.allergens(forName: "Vegetable stock cube") == [.celery])
+        #expect(RecipeDerivation.allergens(forName: "Coconut milk").isEmpty)
+        #expect(RecipeDerivation.allergens(forName: "Butter beans").isEmpty)
+        #expect(RecipeDerivation.allergens(forName: "Peanut butter") == [.peanuts])
+    }
+
+    @Test("Contents and the vegan / vegetarian / pescatarian tag come from the ingredients, as in the data")
+    func contentsAndTags() {
+        for recipe in Self.recipes {
+            let contents = RecipeDerivation.contents(of: recipe.ingredients)
+            #expect(contents == recipe.contains, "\(recipe.id)")
+            let tags = RecipeDerivation.dietTags(contents: contents, allergens: recipe.allergens, ingredients: recipe.ingredients)
+            let primary: Set<Recipe.DietTag> = [.vegan, .vegetarian, .pescatarian, .omnivore]
+            #expect(tags.intersection(primary) == recipe.dietTags.intersection(primary), "\(recipe.id)")
+        }
+    }
+
+    @Test("A recipe the user makes gets its nutrition, allergens and tags worked out; added allergens stay")
+    func completeUserRecipe() {
+        let beans = NutritionFacts(calories: 114, proteinGrams: 7.3, carbohydrateGrams: 20, fatGrams: 0.3, fiberGrams: 6.3)
+        let base = make("Stew", ingredients: [
+            ingredient("White beans", grams: 240, per100: beans),
+            ingredient("Soy sauce", grams: 15, per100: NutritionFacts(calories: 53, proteinGrams: 8, carbohydrateGrams: 5, fatGrams: 0), allergens: [.soy, .gluten]),
+        ], tags: [], contains: [])
+        let (recipe, partial) = RecipeDerivation.complete(base, extraAllergens: [.sesame]) { _ in nil }
+        #expect(!partial)
+        #expect(recipe.allergens == [.soy, .gluten, .sesame])
+        #expect(recipe.dietTags == [.vegan, .dairyFree])
+        #expect(abs(recipe.nutrition.calories - (114 * 2.4 + 53 * 0.15) / 2) < 0.001)
+        #expect(recipe.nutrition.fiberGrams == nil, "Soy sauce has no fibre value")
+    }
+
     // MARK: Fit
 
     @Test("Allergens are a hard filter, even with \"Show recipes that don't fit\" on")

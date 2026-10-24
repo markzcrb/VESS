@@ -581,6 +581,18 @@ final class LocalStore {
         try save()
     }
 
+    /// For every recipe logged at least once: how often, and when last.
+    var cookedRecipes: [String: (count: Int, last: Date)] {
+        _ = revision
+        var result: [String: (count: Int, last: Date)] = [:]
+        for entry in fetchDecoded(FetchDescriptor<StoredFoodLogEntry>(), as: FoodLogEntry.self, payload: { $0.payload }) {
+            guard let id = entry.recipeID else { continue }
+            let current = result[id]
+            result[id] = ((current?.count ?? 0) + 1, max(current?.last ?? .distantPast, entry.loggedAt))
+        }
+        return result
+    }
+
     /// How often a recipe was logged ("Cooked 3×"). A recipe logs as one
     /// entry, so this counts entries.
     func cookedCount(recipeID: String) -> Int {

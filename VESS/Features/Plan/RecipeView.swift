@@ -15,6 +15,8 @@ struct RecipeView: View {
     @State private var servings: Int
     @State private var showError = false
     @State private var addedToGrocery = false
+    @State private var edits = false
+    @State private var confirmsDelete = false
 
     private let calendar = Calendar.current
 
@@ -108,6 +110,31 @@ struct RecipeView: View {
         .toolbar {
             // The photo carries the screen; the bar shows only the back button.
             ToolbarItem(placement: .principal) { Color.clear.frame(width: 1, height: 1).accessibilityHidden(true) }
+            // The user's own and saved AI recipes can be changed or deleted.
+            if recipe.origin != .discover {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button { edits = true } label: { Label("Edit", systemImage: "pencil") }
+                        Button(role: .destructive) { confirmsDelete = true } label: { Label("Delete recipe", systemImage: "trash") }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .frame(width: VESSHitTarget.minimum, height: VESSHitTarget.minimum)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("More")
+                    .accessibilityIdentifier("recipe.more")
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $edits) {
+            RecipeEditorView(recipe: store.userRecipes.first { $0.id == recipe.id } ?? recipe)
+        }
+        .confirmationDialog("Delete \(recipe.name)?", isPresented: $confirmsDelete, titleVisibility: .visible) {
+            Button("Delete recipe", role: .destructive) {
+                do { try store.deleteRecipe(id: recipe.id); dismiss() } catch { showError = true }
+            }
+        } message: {
+            Text("It's removed from this iPhone. Meals you logged from it stay in your log.")
         }
         .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom) {

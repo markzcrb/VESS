@@ -138,6 +138,10 @@ struct AppRootView: View {
                     if arguments.contains("-habitsDemo") {
                         try MockData.seedHabits(into: store, now: AppClock.now, calendar: .current)
                     }
+                    // R02: six own recipes, two from AI Chef, some cooked before.
+                    if arguments.contains("-recipesDemo") {
+                        try MockData.seedRecipes(into: store, now: AppClock.now, calendar: .current)
+                    }
                     // 13: cycle tracking on, with six cycles of history
                     // (`-cycleOn`) or nothing logged yet (`-cycleOnEmpty`).
                     if arguments.contains("-cycleOn") || arguments.contains("-cycleOnEmpty"), var profile = store.profile {

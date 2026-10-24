@@ -223,6 +223,9 @@
         }
       }
     },
+    "%@ ×" : {
+
+    },
     "%@ × %@ · %@" : {
       "localizations" : {
         "en" : {
@@ -310,6 +313,12 @@
         }
       }
     },
+    "%@ g fibre" : {
+
+    },
+    "%@ g protein" : {
+
+    },
     "%@ g protein · %@ g carbs · %@ g fat" : {
       "localizations" : {
         "en" : {
@@ -342,6 +351,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ kcal · %2$@ g protein"
+          }
+        }
+      }
+    },
+    "%@ kcal · %@ g protein · %@ g carbs · %@ g fat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ kcal · %2$@ g protein · %3$@ g carbs · %4$@ g fat"
           }
         }
       }
@@ -708,6 +727,16 @@
     "%@. What's on your mind?" : {
 
     },
+    "%@Open Food Facts · per 100 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@Open Food Facts · per 100 %2$@"
+          }
+        }
+      }
+    },
     "%lld" : {
 
     },
@@ -811,6 +840,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld min · %2$@ kcal · %3$@ g protein"
+          }
+        }
+      }
+    },
+    "%lld min · ^[%lld serving](inflect: true) · %@ kcal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld min · ^[%2$lld serving](inflect: true) · %3$@ kcal"
           }
         }
       }
@@ -1135,6 +1174,19 @@
     "^[%lld question](inflect: true) left today · Coach can make mistakes." : {
 
     },
+    "^[%lld recipe](inflect: true)" : {
+
+    },
+    "^[%lld recipe](inflect: true) · %lld saved from AI Chef" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld recipe](inflect: true) · %2$lld saved from AI Chef"
+          }
+        }
+      }
+    },
     "^[%lld serving](inflect: true)" : {
 
     },
@@ -1267,6 +1319,9 @@
     "A steady day." : {
 
     },
+    "A–Z" : {
+
+    },
     "about %@ kcal" : {
 
     },
@@ -1332,6 +1387,16 @@
         }
       }
     },
+    "Add %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add %1$@ %2$@"
+          }
+        }
+      }
+    },
     "Add %@ ml" : {
 
     },
@@ -1366,10 +1431,16 @@
     "Add a note (optional)" : {
 
     },
+    "Add a photo" : {
+
+    },
     "Add a snack" : {
 
     },
     "Add a supplement" : {
+
+    },
+    "Add allergen" : {
 
     },
     "Add an item yourself" : {
@@ -1390,6 +1461,9 @@
     "Add habit" : {
 
     },
+    "Add ingredient" : {
+
+    },
     "Add item" : {
 
     },
@@ -1397,6 +1471,9 @@
 
     },
     "Add manually" : {
+
+    },
+    "Add step" : {
 
     },
     "Add supplement" : {
@@ -1505,6 +1582,9 @@
     "AI" : {
 
     },
+    "AI · Checked by you" : {
+
+    },
     "AI Chef" : {
 
     },
@@ -1521,6 +1601,9 @@
 
     },
     "All" : {
+
+    },
+    "All · %@" : {
 
     },
     "All at home" : {
@@ -1676,6 +1759,9 @@
     "Brand" : {
 
     },
+    "Brands · OFF" : {
+
+    },
     "Break down my day" : {
 
     },
@@ -1701,6 +1787,9 @@
 
     },
     "Calories not reported" : {
+
+    },
+    "Camera" : {
 
     },
     "Camera access is off for VESS. Pick a photo, or turn it on in Settings." : {
@@ -1748,6 +1837,15 @@
     "celery-free" : {
 
     },
+    "Change" : {
+
+    },
+    "Change ingredient" : {
+
+    },
+    "Change, or delete" : {
+
+    },
     "Changes the strength" : {
 
     },
@@ -1770,6 +1868,12 @@
 
     },
     "Checking…" : {
+
+    },
+    "Choose food" : {
+
+    },
+    "Choose the food that matches %@. VESS remembers it for next time." : {
 
     },
     "Choose the one that matters most right now." : {
@@ -1847,6 +1951,9 @@
     "Connected" : {
 
     },
+    "Contains" : {
+
+    },
     "Contains %@" : {
 
     },
@@ -1860,6 +1967,9 @@
 
     },
     "Cook tonight · uses what expires soon" : {
+
+    },
+    "Cooked %lld×" : {
 
     },
     "Copy this week's plan" : {
@@ -1997,6 +2107,9 @@
     "Delete" : {
 
     },
+    "Delete %@?" : {
+
+    },
     "Delete account" : {
 
     },
@@ -2022,6 +2135,9 @@
 
     },
     "Delete last glass" : {
+
+    },
+    "Delete recipe" : {
 
     },
     "Delete this day" : {
@@ -2073,6 +2189,12 @@
 
     },
     "Direction" : {
+
+    },
+    "Discard" : {
+
+    },
+    "Discard your changes?" : {
 
     },
     "Discover" : {
@@ -2161,6 +2283,9 @@
 
     },
     "Edit or delete" : {
+
+    },
+    "Edit recipe" : {
 
     },
     "Edit supplements" : {
@@ -2273,6 +2398,9 @@
     "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone unless you share it with Coach." : {
 
     },
+    "Estimates from USDA FoodData Central and Open Food Facts. Diet tags and allergens are worked out from the ingredients." : {
+
+    },
     "Evening" : {
 
     },
@@ -2376,6 +2504,9 @@
 
     },
     "Fitness" : {
+
+    },
+    "Fits" : {
 
     },
     "Fits you: %@" : {
@@ -2484,6 +2615,12 @@
     "From your breakfast log" : {
 
     },
+    "From your pantry" : {
+
+    },
+    "From your pantry · %@" : {
+
+    },
     "Fuel" : {
 
     },
@@ -2512,6 +2649,12 @@
 
     },
     "Gaining weight" : {
+
+    },
+    "Generic · USDA" : {
+
+    },
+    "Generic · USDA · per 100 g" : {
 
     },
     "Get started" : {
@@ -2741,10 +2884,19 @@
     "In pantry" : {
 
     },
+    "In your pantry · %@ · No nutrition data" : {
+
+    },
+    "In your pantry · %@ · per 100 g" : {
+
+    },
     "In your system" : {
 
     },
     "Ingredients" : {
+
+    },
+    "Ingredients · %lld" : {
 
     },
     "Insights need about %lld days of logging so a pattern isn't just one odd week. Keep logging and they'll show up here." : {
@@ -2772,6 +2924,9 @@
 
     },
     "It only goes up as you log. The one thing that lowers it is going well past your energy target." : {
+
+    },
+    "It's removed from this iPhone. Meals you logged from it stay in your log." : {
 
     },
     "It's removed from your pantry and not counted as used or thrown away." : {
@@ -2822,6 +2977,9 @@
     "Keep data on this iPhone" : {
 
     },
+    "Keep editing" : {
+
+    },
     "Keep it here" : {
 
     },
@@ -2856,6 +3014,9 @@
 
     },
     "L" : {
+
+    },
+    "Label values" : {
 
     },
     "Language" : {
@@ -2913,6 +3074,9 @@
 
     },
     "Less" : {
+
+    },
+    "Library" : {
 
     },
     "Light" : {
@@ -3237,6 +3401,9 @@
     "My foods" : {
 
     },
+    "My pantry" : {
+
+    },
     "My recipes" : {
 
     },
@@ -3256,6 +3423,9 @@
 
     },
     "New habit" : {
+
+    },
+    "New recipe" : {
 
     },
     "Next day" : {
@@ -3309,7 +3479,19 @@
     "No food found. Try another photo or search instead." : {
 
     },
+    "No foods match “%@”." : {
+
+    },
+    "No matches here, and Open Food Facts can't be reached right now." : {
+
+    },
     "No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
+
+    },
+    "No nutrition data · Choose food" : {
+
+    },
+    "No nutrition data. It's added, and the recipe's total says Partial." : {
 
     },
     "No other products found." : {
@@ -3349,6 +3531,9 @@
 
     },
     "None" : {
+
+    },
+    "None of the 14 allergens" : {
 
     },
     "Not %@" : {
@@ -3552,6 +3737,9 @@
     "Open Food Facts" : {
 
     },
+    "Open Food Facts can't be reached right now, so only generic foods and your pantry are shown." : {
+
+    },
     "Open Food Facts didn't respond. Foods on this iPhone are still available above." : {
 
     },
@@ -3586,6 +3774,9 @@
 
     },
     "Optional" : {
+
+    },
+    "Optional. Stays on this iPhone." : {
 
     },
     "or with a code by email" : {
@@ -3628,6 +3819,12 @@
 
     },
     "Per 100 %@" : {
+
+    },
+    "Per serving · calculated" : {
+
+    },
+    "Per serving · calculated · partial" : {
 
     },
     "Performance" : {
@@ -3826,6 +4023,9 @@
     "Quick breakfasts" : {
 
     },
+    "Quickest" : {
+
+    },
     "Quiet hours" : {
 
     },
@@ -3850,7 +4050,19 @@
     "Recent cycles" : {
 
     },
+    "Recently added" : {
+
+    },
+    "Recently cooked" : {
+
+    },
+    "Recipe name" : {
+
+    },
     "Recipes" : {
+
+    },
+    "Recipes you create stay on this iPhone. Nutrition is calculated from USDA FoodData Central and Open Food Facts." : {
 
     },
     "Recorded" : {
@@ -3877,6 +4089,9 @@
     "Reminders" : {
 
     },
+    "Remove" : {
+
+    },
     "Remove %@" : {
 
     },
@@ -3893,6 +4108,9 @@
 
     },
     "Remove item" : {
+
+    },
+    "Remove step %lld" : {
 
     },
     "Replace meal" : {
@@ -3922,10 +4140,16 @@
     "Save" : {
 
     },
+    "Save %@" : {
+
+    },
     "Save changes" : {
 
     },
     "Save food" : {
+
+    },
+    "Save recipe" : {
 
     },
     "Save to My foods" : {
@@ -3964,7 +4188,13 @@
     "Search %lld recipes" : {
 
     },
+    "Search foods" : {
+
+    },
     "Search foods or brands" : {
+
+    },
+    "Search for a food, such as chickpeas or oats. Generic foods come from USDA FoodData Central; products from Open Food Facts." : {
 
     },
     "Search instead" : {
@@ -4016,6 +4246,9 @@
 
     },
     "Serving" : {
+
+    },
+    "Servings" : {
 
     },
     "sesame" : {
@@ -4159,6 +4392,9 @@
     "Something went wrong. Try again in a moment." : {
 
     },
+    "Sort" : {
+
+    },
     "Source · %@. Energy is a recorded measurement, not an estimate entered in VESS." : {
 
     },
@@ -4199,6 +4435,9 @@
 
     },
     "Status" : {
+
+    },
+    "Step %lld" : {
 
     },
     "Step %lld of %lld" : {
@@ -4676,6 +4915,9 @@
     "Updates the weight in your profile. Weight from Apple Health is read, never written." : {
 
     },
+    "USDA · generic" : {
+
+    },
     "Use another email" : {
 
     },
@@ -5045,6 +5287,9 @@
     "Your food" : {
 
     },
+    "Your kitchen." : {
+
+    },
     "Your log stays on this iPhone." : {
 
     },
@@ -5063,6 +5308,9 @@
     "Your own food, saved on this iPhone." : {
 
     },
+    "Your own recipes and the ones you save from AI Chef live here." : {
+
+    },
     "Your own supplements and doses, kept apart from food. VESS never suggests one." : {
 
     },
@@ -5079,6 +5327,9 @@
 
     },
     "Your recipe" : {
+
+    },
+    "Your values" : {
 
     },
     "Your week fills in as you go." : {

@@ -42,6 +42,7 @@ nonisolated struct Recipe: Identifiable, Hashable, Codable, Sendable {
         case slice
         case tablespoon = "tbsp"
         case teaspoon = "tsp"
+        case cup
         case clove
         case pinch
 
@@ -55,6 +56,7 @@ nonisolated struct Recipe: Identifiable, Hashable, Codable, Sendable {
             case .slice: .slice
             case .tablespoon: .tablespoon
             case .teaspoon: .teaspoon
+            case .cup: .cup
             case .clove, .pinch: nil
             }
         }

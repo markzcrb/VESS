@@ -153,7 +153,7 @@ nonisolated extension Recipe {
 nonisolated enum ContentKeywords {
     static let words: [Recipe.Content: [String]] = [
         .poultry: ["chicken", "turkey", "duck"],
-        .meat: ["beef", "lamb", "veal", "pork", "bacon", "ham", "sausage", "chorizo", "salami", "prosciutto", "pancetta"],
+        .meat: ["beef", "lamb", "veal", "pork", "bacon", "ham", "chorizo", "salami", "prosciutto", "pancetta"],
         .pork: ["pork", "bacon", "ham", "chorizo", "salami", "prosciutto", "pancetta"],
         .fish: ["fish", "cod", "salmon", "tuna", "trout", "mackerel", "sardine", "anchovy", "sea bass", "haddock", "herring", "pollock"],
         .shellfish: ["prawn", "shrimp", "crab", "lobster", "langoustine"],
@@ -165,7 +165,10 @@ nonisolated enum ContentKeywords {
 
     /// Words that look like a content word but aren't ("coconut milk",
     /// "peanut butter").
-    static let exceptions = ["coconut milk", "peanut butter", "cocoa butter", "oat milk", "soy milk", "almond milk", "cream of tartar"]
+    static let exceptions = [
+        "coconut milk", "peanut butter", "cocoa butter", "oat milk", "soy milk", "almond milk", "oat drink", "soy drink",
+        "cream of tartar", "soy yogurt", "soy yoghurt", "coconut yogurt", "oat yogurt", "butter lettuce", "butter beans", "cider vinegar",
+    ]
 
     /// Whether an ingredient name holds this kind of content.
     static func matches(_ name: String, _ content: Recipe.Content) -> Bool {
