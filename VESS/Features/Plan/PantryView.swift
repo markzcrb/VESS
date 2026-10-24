@@ -154,6 +154,7 @@ private struct AddPantryRequest: Identifiable {
     var product: Food?
 }
 
+#if DEBUG
 #Preview("Pantry") {
     NavigationStack { PantryView() }
         .previewEnvironment(LocalStore.preview())
@@ -163,3 +164,4 @@ private struct AddPantryRequest: Identifiable {
     NavigationStack { PantryView() }
         .previewEnvironment(LocalStore.preview(.profileOnly))
 }
+#endif

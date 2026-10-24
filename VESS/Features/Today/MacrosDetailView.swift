@@ -291,8 +291,10 @@ private struct MacrosInfoSheet: View {
     }
 }
 
+#if DEBUG
 #Preview("Macros · Dark") {
     NavigationStack { MacrosDetailView() }
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }
+#endif

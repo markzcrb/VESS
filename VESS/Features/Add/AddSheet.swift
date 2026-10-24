@@ -289,6 +289,7 @@ struct AddWeightContent: View {
     }
 }
 
+#if DEBUG
 #Preview("Add · Food") {
     AddSheet(request: AddFoodRequest(meal: .dinner, day: AppClock.now, type: .food))
         .previewEnvironment(LocalStore.preview())
@@ -300,3 +301,4 @@ struct AddWeightContent: View {
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }
+#endif

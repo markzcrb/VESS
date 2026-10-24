@@ -438,8 +438,10 @@ struct EnergyInfoSheet: View {
     }
 }
 
+#if DEBUG
 #Preview("Energy · Dark") {
     NavigationStack { EnergyDetailView() }
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }
+#endif

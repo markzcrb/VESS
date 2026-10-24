@@ -274,6 +274,7 @@ private extension WorkoutType {
     }
 }
 
+#if DEBUG
 #Preview("Dark") {
     NavigationStack {
         AddWorkoutView()
@@ -289,3 +290,4 @@ private extension WorkoutType {
     .previewEnvironment(LocalStore.preview(), health: .notConnected)
     .preferredColorScheme(.light)
 }
+#endif

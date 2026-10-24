@@ -380,6 +380,7 @@ private struct ActivityInfoSheet: View {
     }
 }
 
+#if DEBUG
 #Preview("Connected") {
     NavigationStack {
         ActivityView()
@@ -403,3 +404,4 @@ private struct ActivityInfoSheet: View {
     .previewEnvironment(LocalStore.preview(), health: .notConnected)
     .preferredColorScheme(.dark)
 }
+#endif

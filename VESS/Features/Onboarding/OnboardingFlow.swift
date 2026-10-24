@@ -199,7 +199,9 @@ private extension OnboardingStep {
     }
 }
 
+#if DEBUG
 #Preview("Onboarding") {
     OnboardingFlow()
         .environment(LocalStore.preview(.empty))
 }
+#endif

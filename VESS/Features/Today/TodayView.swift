@@ -228,6 +228,7 @@ struct TodayView: View {
     }
 }
 
+#if DEBUG
 #Preview("Today · Dark") {
     @Previewable @State var tab = AppTab.today
     TodayView(selectedTab: $tab)
@@ -255,3 +256,4 @@ struct TodayView: View {
         .previewEnvironment(LocalStore.preview(), health: .syncing)
         .preferredColorScheme(.dark)
 }
+#endif

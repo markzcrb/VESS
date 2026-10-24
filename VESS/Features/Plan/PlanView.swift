@@ -580,10 +580,12 @@ struct PlanView: View {
     }
 }
 
+#if DEBUG
 #Preview("Plan") {
     PlanView()
         .previewEnvironment(LocalStore.preview())
 }
+#endif
 
 /// The Plan title row: title and controls side by side while the title
 /// fits at `minimumScale`, otherwise the controls go under the title.

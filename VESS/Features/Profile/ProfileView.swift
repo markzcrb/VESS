@@ -438,8 +438,10 @@ extension HealthSyncState {
     }
 }
 
+#if DEBUG
 #Preview {
     ProfileView()
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }
+#endif

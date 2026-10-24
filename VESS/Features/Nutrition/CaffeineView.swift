@@ -273,6 +273,7 @@ private struct CaffeineCurve: View {
     }
 }
 
+#if DEBUG
 #Preview("Caffeine · Dark") {
     NavigationStack {
         CaffeineView(day: AppClock.now)
@@ -288,3 +289,4 @@ private struct CaffeineCurve: View {
     .previewEnvironment(LocalStore.preview())
     .preferredColorScheme(.light)
 }
+#endif

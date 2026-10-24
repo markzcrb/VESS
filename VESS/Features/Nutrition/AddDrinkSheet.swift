@@ -798,6 +798,7 @@ struct HydrationTimeline: View {
     }
 }
 
+#if DEBUG
 #Preview("Add a drink") {
     Color.clear
         .sheet(isPresented: .constant(true)) {
@@ -806,3 +807,4 @@ struct HydrationTimeline: View {
         }
         .preferredColorScheme(.dark)
 }
+#endif

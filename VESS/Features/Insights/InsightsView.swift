@@ -179,6 +179,7 @@ struct InsightsView: View {
     #endif
 }
 
+#if DEBUG
 #Preview("04 demo") {
     NavigationStack {
         InsightsView()
@@ -193,3 +194,4 @@ struct InsightsView: View {
     }
     .previewEnvironment(LocalStore.preview())
 }
+#endif

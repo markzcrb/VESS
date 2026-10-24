@@ -144,6 +144,7 @@ struct NutritionView: View {
     }
 }
 
+#if DEBUG
 #Preview("Sample day") {
     NutritionView()
         .previewEnvironment(LocalStore.preview())
@@ -159,3 +160,4 @@ struct NutritionView: View {
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.dark)
 }
+#endif
