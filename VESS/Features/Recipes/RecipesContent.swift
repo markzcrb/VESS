@@ -14,7 +14,7 @@ struct RecipesContent: View {
             switch tab {
             case .mine: MyRecipesContent()
             case .discover: DiscoverContent()
-            case .chef: AIChefContent()
+            case .chef: AIChefContent { tab = .mine }
             }
         }
     }

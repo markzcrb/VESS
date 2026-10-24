@@ -133,6 +133,19 @@
         }
       }
     },
+    "%@ · AI draft" : {
+
+    },
+    "%@ · AI draft · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · AI draft · %2$@"
+          }
+        }
+      }
+    },
     "%@ · Apple Health" : {
 
     },
@@ -209,6 +222,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ %2$@ is light on protein."
+          }
+        }
+      }
+    },
+    "%@ %@Check amounts and steps; nutrition is recalculated from USDA data, not taken from the AI." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@Check amounts and steps; nutrition is recalculated from USDA data, not taken from the AI."
           }
         }
       }
@@ -1206,6 +1229,9 @@
     "^[%lld time](inflect: true) a week" : {
 
     },
+    "+ Pick more" : {
+
+    },
     "+250 ml" : {
 
     },
@@ -1473,6 +1499,9 @@
     "Add manually" : {
 
     },
+    "Add missing to grocery" : {
+
+    },
     "Add step" : {
 
     },
@@ -1517,6 +1546,9 @@
 
     },
     "Add what you have at home, or check off groceries and tap Done shopping to move them here." : {
+
+    },
+    "Add what's in your fridge and cupboards, and AI Chef suggests recipes that use it." : {
 
     },
     "Add workout" : {
@@ -1588,6 +1620,9 @@
     "AI Chef" : {
 
     },
+    "AI draft · not saved yet" : {
+
+    },
     "AI features" : {
 
     },
@@ -1619,6 +1654,12 @@
 
     },
     "Allow" : {
+
+    },
+    "Allow 1–2 missing items if needed" : {
+
+    },
+    "Always" : {
 
     },
     "Americano" : {
@@ -1695,6 +1736,9 @@
     "Ask Coach" : {
 
     },
+    "At home: %@" : {
+
+    },
     "Average %lld days · range %lld–%lld days over ^[%lld cycle](inflect: true)." : {
       "localizations" : {
         "en" : {
@@ -1733,6 +1777,12 @@
 
     },
     "Before noon" : {
+
+    },
+    "Best match" : {
+
+    },
+    "Best matches" : {
 
     },
     "Black" : {
@@ -1939,6 +1989,9 @@
     "Collections" : {
 
     },
+    "Comfort" : {
+
+    },
     "Community data from Open Food Facts · not verified" : {
 
     },
@@ -1967,6 +2020,9 @@
 
     },
     "Cook tonight · uses what expires soon" : {
+
+    },
+    "Cook what you have." : {
 
     },
     "Cooked %lld×" : {
@@ -2003,6 +2059,12 @@
 
     },
     "Create a food" : {
+
+    },
+    "Create recipe" : {
+
+    },
+    "Create with AI" : {
 
     },
     "cup" : {
@@ -2180,6 +2242,9 @@
 
     },
     "Diet" : {
+
+    },
+    "Diet and avoid" : {
 
     },
     "Dinner" : {
@@ -2509,10 +2574,16 @@
     "Fits" : {
 
     },
+    "Fits you: " : {
+
+    },
     "Fits you: %@" : {
 
     },
     "Fits you: everything" : {
+
+    },
+    "Fits your diet: %@. " : {
 
     },
     "Flash off" : {
@@ -2579,6 +2650,9 @@
 
     },
     "From" : {
+
+    },
+    "From ^[%lld item](inflect: true) in your pantry. Use-soon first, then the most you already have." : {
 
     },
     "From Apple Health" : {
@@ -3085,6 +3159,9 @@
     "Light so far" : {
 
     },
+    "Lighter" : {
+
+    },
     "Log" : {
 
     },
@@ -3199,6 +3276,19 @@
     "Macros · optional" : {
 
     },
+    "Made from your pantry for %@." : {
+
+    },
+    "Made from your pantry for a %@ %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Made from your pantry for a %1$@ %2$@."
+          }
+        }
+      }
+    },
     "Main meals logged" : {
 
     },
@@ -3209,6 +3299,9 @@
 
     },
     "Maintaining" : {
+
+    },
+    "Make a new recipe from what you have." : {
 
     },
     "Make VESS feel familiar." : {
@@ -3295,6 +3388,9 @@
     "Missing · optional" : {
 
     },
+    "Missing: %@" : {
+
+    },
     "ml" : {
 
     },
@@ -3362,6 +3458,9 @@
     "Most often: %@." : {
 
     },
+    "Most protein" : {
+
+    },
     "Mostly sitting, little exercise" : {
 
     },
@@ -3387,6 +3486,9 @@
 
     },
     "Mug" : {
+
+    },
+    "Must use" : {
 
     },
     "mustard" : {
@@ -3497,6 +3599,9 @@
     "No other products found." : {
 
     },
+    "No photo yet · add one after you cook it" : {
+
+    },
     "No product found" : {
 
     },
@@ -3569,6 +3674,9 @@
     "Nothing else" : {
 
     },
+    "Nothing fits these filters with what's at home. Try fewer filters, or create a recipe with AI." : {
+
+    },
     "Nothing fits this slot yet. Meals you log and foods you save show up here." : {
 
     },
@@ -3609,6 +3717,9 @@
 
     },
     "Nothing planned yet" : {
+
+    },
+    "Nothing quite right?" : {
 
     },
     "Nothing shared" : {
@@ -3728,6 +3839,9 @@
     "Only for Coach and photo estimates. Your log stays on this iPhone." : {
 
     },
+    "Only what I have" : {
+
+    },
     "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through VESS's server, once. VESS doesn't store them." : {
 
     },
@@ -3747,6 +3861,9 @@
 
     },
     "Open Food Facts didn't respond. Try again later." : {
+
+    },
+    "Open Pantry" : {
 
     },
     "Open Settings" : {
@@ -3804,6 +3921,9 @@
 
     },
     "Pantry staples" : {
+
+    },
+    "Partial: some ingredients have no nutrition data." : {
 
     },
     "pcs" : {
@@ -4014,6 +4134,9 @@
         }
       }
     },
+    "Quick (≤ 20 min)" : {
+
+    },
     "Quick add" : {
 
     },
@@ -4155,6 +4278,9 @@
     "Save to My foods" : {
 
     },
+    "Save to My recipes" : {
+
+    },
     "Save your own food or recipe" : {
 
     },
@@ -4237,6 +4363,9 @@
 
     },
     "Sends the photo you take or pick." : {
+
+    },
+    "Sends your pantry list, diet and avoid list and these choices to %@ through VESS's server. Nothing else from your log. You review the recipe before it's saved." : {
 
     },
     "Sends your question and a summary of recent logs." : {
@@ -4528,6 +4657,16 @@
     "Supplements" : {
 
     },
+    "Swap %@ for %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Swap %1$@ for %2$@"
+          }
+        }
+      }
+    },
     "swim" : {
 
     },
@@ -4796,6 +4935,9 @@
     "Today's caffeine" : {
 
     },
+    "tomorrow" : {
+
+    },
     "Tomorrow" : {
 
     },
@@ -4821,6 +4963,9 @@
 
     },
     "Try again" : {
+
+    },
+    "Try another" : {
 
     },
     "Try another photo" : {
@@ -4882,6 +5027,9 @@
     "Under 20 min" : {
 
     },
+    "Under 30 min" : {
+
+    },
     "Undo" : {
 
     },
@@ -4939,6 +5087,9 @@
     "Use soon · %@" : {
 
     },
+    "Use soon · %lld" : {
+
+    },
     "Use soon · ^[%lld item](inflect: true)" : {
 
     },
@@ -4991,6 +5142,15 @@
           }
         }
       }
+    },
+    "Uses use-soon" : {
+
+    },
+    "Uses your pantry, diet and avoid list, and today's protein gap (%@ g left). You check it before saving." : {
+
+    },
+    "Uses your pantry, diet and avoid list. You check it before saving." : {
+
     },
     "Usual meal times" : {
 

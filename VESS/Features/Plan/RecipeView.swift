@@ -14,7 +14,6 @@ struct RecipeView: View {
 
     @State private var servings: Int
     @State private var showError = false
-    @State private var addedToGrocery = false
     @State private var edits = false
     @State private var confirmsDelete = false
 
@@ -83,27 +82,24 @@ struct RecipeView: View {
                         }
                     }
                     .vessHairlineBottom()
-                    pantrySummary(use)
+                    RecipePantrySummary(use: use, scale: Double(servings) / Double(max(recipe.servings, 1)))
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
 
                 RecipeMethod(steps: recipe.steps, tip: recipe.tip)
                     .padding(.horizontal, VESSSpacing.screenInset)
+
+                // At accessibility sizes the buttons end the page instead of
+                // covering half of it.
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(spacing: VESSSpacing.sm) { actions(cooked, now: now) }
+                        .padding(.horizontal, VESSSpacing.screenInset)
+                }
             }
             .padding(.bottom, VESSSpacing.huge)
         }
         .ignoresSafeArea(edges: .top)
-        // Text scrolled up fades out under the back button and status bar.
-        .overlay(alignment: .top) {
-            GeometryReader { proxy in
-                LinearGradient(colors: [VESSColor.background, VESSColor.background.opacity(0)], startPoint: .top, endPoint: .bottom)
-                    // Down to the bottom of the nav bar and its back button.
-                    .frame(height: proxy.safeAreaInsets.top + VESSHitTarget.minimum + VESSSpacing.xxxl)
-                    .ignoresSafeArea(edges: .top)
-            }
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-        }
+        .recipeTopFade()
         .vessScreenBackground(clipsUnderBar: false)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(Text(recipe.name))
@@ -138,15 +134,17 @@ struct RecipeView: View {
         }
         .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom) {
-            // Side by side, or one under the other at large text sizes.
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: VESSSpacing.sm) { actions(cooked, now: now) }
-                VStack(spacing: VESSSpacing.sm) { actions(cooked, now: now) }
+            if !dynamicTypeSize.isAccessibilitySize {
+                // Side by side, or one under the other when they don't fit.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: VESSSpacing.sm) { actions(cooked, now: now) }
+                    VStack(spacing: VESSSpacing.sm) { actions(cooked, now: now) }
+                }
+                .padding(.horizontal, VESSSpacing.screenInset)
+                .padding(.vertical, VESSSpacing.sm)
+                .background(VESSColor.background)
+                .overlay(alignment: .top) { VESSHairline() }
             }
-            .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.vertical, VESSSpacing.sm)
-            .background(VESSColor.background)
-            .overlay(alignment: .top) { VESSHairline() }
         }
         .vessErrorAlert(isPresented: $showError)
     }
@@ -165,9 +163,11 @@ struct RecipeView: View {
                  : "Plan for \(now.formatted(.dateTime.weekday(.abbreviated)))")
         }
         .buttonStyle(.vessSecondary)
+        .lineLimit(1)
         .disabled(isPlannedToday)
         .accessibilityIdentifier("recipe.plan")
         Button("Cook & log") { cookAndLog(cooked) }
+            .lineLimit(1)
             .buttonStyle(.vessPrimary)
             .accessibilityIdentifier("recipe.log")
     }
@@ -182,40 +182,6 @@ struct RecipeView: View {
         return .plain
     }
 
-    /// "6 of 7 at home · uses 2 use-soon" and "Add to grocery list".
-    @ViewBuilder
-    private func pantrySummary(_ use: AIChef.PantryUse) -> some View {
-        if use.countedTotal > 0 {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: VESSSpacing.sm) { summaryText(use); Spacer(minLength: 0); groceryButton(use) }
-                VStack(alignment: .leading, spacing: VESSSpacing.sm) { summaryText(use); groceryButton(use) }
-            }
-            .padding(.top, VESSSpacing.sm)
-        }
-    }
-
-    private func summaryText(_ use: AIChef.PantryUse) -> some View {
-        Text(RecipeText.atHome(use))
-            .vessTextStyle(.bodyS)
-            .foregroundStyle(VESSColor.secondaryText)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    @ViewBuilder
-    private func groceryButton(_ use: AIChef.PantryUse) -> some View {
-        if !use.missing.isEmpty || !use.missingOptional.isEmpty {
-            Button { addMissing(use) } label: {
-                Label(addedToGrocery ? "On your grocery list" : "Add to grocery list", systemImage: addedToGrocery ? "checkmark" : "plus")
-                    .vessTextStyle(.bodyMStrong)
-            }
-            .buttonStyle(.vessSecondary)
-            // Its own width beside the summary; wraps at large text sizes.
-            .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
-            .disabled(addedToGrocery)
-            .accessibilityIdentifier("recipe.addMissing")
-        }
-    }
-
     /// Already planned for today's slot.
     private var isPlannedToday: Bool {
         let today = calendar.startOfDay(for: AppClock.now)
@@ -224,15 +190,6 @@ struct RecipeView: View {
     }
 
     // MARK: Actions
-
-    private func addMissing(_ use: AIChef.PantryUse) {
-        do {
-            try RecipeGrocery.add(use.missing + use.missingOptional, servingsScale: Double(servings) / Double(max(recipe.servings, 1)), store: store)
-            addedToGrocery = true
-        } catch {
-            showError = true
-        }
-    }
 
     /// Plans one serving for today's slot, replacing what was planned there.
     private func planForToday(_ cooked: Recipe) {
@@ -257,6 +214,23 @@ struct RecipeView: View {
             dismiss()
         } catch {
             showError = true
+        }
+    }
+}
+
+extension View {
+    /// Text scrolled up fades out under the back button and status bar, on
+    /// screens whose photo runs under the bar.
+    func recipeTopFade() -> some View {
+        overlay(alignment: .top) {
+            GeometryReader { proxy in
+                LinearGradient(colors: [VESSColor.background, VESSColor.background.opacity(0)], startPoint: .top, endPoint: .bottom)
+                    // Down to the bottom of the nav bar and its back button.
+                    .frame(height: proxy.safeAreaInsets.top + VESSHitTarget.minimum + VESSSpacing.xxxl)
+                    .ignoresSafeArea(edges: .top)
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
         }
     }
 }
@@ -296,8 +270,10 @@ struct RecipePhotoHeader: View {
                     .overlay { photo.resizable().scaledToFill() }
                     .clipped()
             } else {
-                VESSColor.fill
-                    .frame(height: min(height, 380) * 0.8)
+                // No photo: a soft fade into the canvas, the same height.
+                LinearGradient(colors: [VESSColor.fill, VESSColor.fill.opacity(0)], startPoint: .top, endPoint: .bottom)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: min(height, 380) * 0.9)
                     .overlay {
                         if let placeholder {
                             placeholder
@@ -479,6 +455,57 @@ struct RecipeMethod: View {
                 .padding(.top, VESSSpacing.xs)
                 .accessibilityElement(children: .combine)
             }
+        }
+    }
+}
+
+/// "6 of 7 at home · uses 2 use-soon" and "Add to grocery list".
+struct RecipePantrySummary: View {
+    let use: AIChef.PantryUse
+    var scale: Double = 1
+
+    @Environment(LocalStore.self) private var store
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var added = false
+    @State private var showError = false
+
+    var body: some View {
+        if use.countedTotal > 0 {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: VESSSpacing.sm) { summary; Spacer(minLength: 0); groceryButton }
+                VStack(alignment: .leading, spacing: VESSSpacing.sm) { summary; groceryButton }
+            }
+            .padding(.top, VESSSpacing.sm)
+            .vessErrorAlert(isPresented: $showError)
+        }
+    }
+
+    private var summary: some View {
+        Text(RecipeText.atHome(use))
+            .vessTextStyle(.bodyS)
+            .foregroundStyle(VESSColor.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private var groceryButton: some View {
+        if !use.missing.isEmpty || !use.missingOptional.isEmpty {
+            Button {
+                do {
+                    try RecipeGrocery.add(use.missing + use.missingOptional, servingsScale: scale, store: store)
+                    added = true
+                } catch {
+                    showError = true
+                }
+            } label: {
+                Label(added ? "On your grocery list" : "Add to grocery list", systemImage: added ? "checkmark" : "plus")
+                    .vessTextStyle(.bodyMStrong)
+            }
+            .buttonStyle(.vessSecondary)
+            // Its own width beside the summary; wraps at large text sizes.
+            .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
+            .disabled(added)
+            .accessibilityIdentifier("recipe.addMissing")
         }
     }
 }
