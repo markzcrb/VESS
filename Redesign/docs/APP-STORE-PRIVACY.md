@@ -37,8 +37,6 @@ Everything VESS stores (profile, food log, drinks, workouts, pantry, plans, supp
 - The dialog offers "Delete account" (the log stays on the iPhone) and "Delete account and all data" (also runs Delete all data).
 
 ## Review notes (App Review Information › Notes)
-> Coach and photo estimates are optional and need a free account (email one-time code; Sign in with Apple when enabled). Before the first use of each, the app asks for consent and names the processor (Google Gemini, through our server). Requests are forwarded once and not stored by us; the server keeps only the account and a daily usage counter (free beta limits: Coach 20, photos 10 per day). Nothing from a photo estimate is logged without the user's confirmation. Accounts can be deleted in the app (You › Account › Delete account).
+> Coach and photo estimates are optional and need a free account. To review them, use Sign in with Apple (You › Account). Sign-in with a one-time code by email also exists, as a fallback. Before the first use of each, the app asks for consent and names the processor (Google Gemini, through our server). Requests are forwarded once and not stored by us; the server keeps only the account and a daily usage counter (free beta limits: Coach 20, photos 10 per day). Nothing from a photo estimate is logged without the user's confirmation. Accounts can be deleted in the app (You › Account › Delete account).
 >
 > Cycle tracking is opt-in (You › Preferences). Cycle data is stored only on the device and is not shared with HealthKit; it is sent to Coach only if the user turns on "Share cycle with Coach" (off by default). The estimate is labelled as an estimate, not medical advice and not contraception; there are no fertility, ovulation or pregnancy features. HealthKit is read-only (steps, workouts, active energy, weight).
->
-> To review without an email inbox, use the demo account we provide in App Review Information (sign-in code via the email field).
