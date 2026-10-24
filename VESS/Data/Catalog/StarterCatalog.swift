@@ -107,14 +107,14 @@ nonisolated enum StarterCatalog {
         Entry(key: "lentils.cooked", name: "Lentils, cooked", unit: .gram, kcal: 116, protein: 9.0, carbs: 20.1, fat: 0.4, fiber: 7.9, sugar: 1.8, portions: [("1 cup", 198)]),
         Entry(key: "chickpeas.cooked", name: "Chickpeas, cooked", unit: .gram, kcal: 164, protein: 8.9, carbs: 27.4, fat: 2.6, fiber: 7.6, sugar: 4.8, portions: [("1 cup", 164)]),
         // Dairy
-        Entry(key: "yogurt.greek-2", name: "Greek yogurt 2%, plain", unit: .gram, kcal: 73, protein: 9.9, carbs: 3.9, fat: 2.0, fiber: 0, sugar: 3.6, portions: [("1 pot", 170)], allergens: [.lactose]),
-        Entry(key: "milk.2", name: "Milk 2%", unit: .milliliter, kcal: 50, protein: 3.3, carbs: 4.8, fat: 2.0, fiber: 0, sugar: 5.1, portions: [("1 glass", 250)], allergens: [.lactose]),
-        Entry(key: "cheddar", name: "Cheddar cheese", unit: .gram, kcal: 403, protein: 24.9, carbs: 1.3, fat: 33.1, fiber: 0, sugar: 0.5, portions: [("1 slice", 28)], allergens: [.lactose]),
+        Entry(key: "yogurt.greek-2", name: "Greek yogurt 2%, plain", unit: .gram, kcal: 73, protein: 9.9, carbs: 3.9, fat: 2.0, fiber: 0, sugar: 3.6, portions: [("1 pot", 170)], allergens: [.milk]),
+        Entry(key: "milk.2", name: "Milk 2%", unit: .milliliter, kcal: 50, protein: 3.3, carbs: 4.8, fat: 2.0, fiber: 0, sugar: 5.1, portions: [("1 glass", 250)], allergens: [.milk]),
+        Entry(key: "cheddar", name: "Cheddar cheese", unit: .gram, kcal: 403, protein: 24.9, carbs: 1.3, fat: 33.1, fiber: 0, sugar: 0.5, portions: [("1 slice", 28)], allergens: [.milk]),
         // Nuts, fats and extras
         Entry(key: "almonds", name: "Almonds", unit: .gram, kcal: 579, protein: 21.2, carbs: 21.6, fat: 49.9, fiber: 12.5, sugar: 4.4, portions: [("1 handful", 28)], allergens: [.nuts]),
         Entry(key: "peanut-butter", name: "Peanut butter", unit: .gram, kcal: 588, protein: 25.1, carbs: 20.0, fat: 50.4, fiber: 6.0, sugar: 9.2, portions: [("1 tbsp", 16)], allergens: [.nuts]),
         Entry(key: "olive-oil", name: "Olive oil", unit: .gram, kcal: 884, protein: 0, carbs: 0, fat: 100, fiber: 0, sugar: 0, portions: [("1 tbsp", 13.5)]),
-        Entry(key: "butter", name: "Butter", unit: .gram, kcal: 717, protein: 0.9, carbs: 0.1, fat: 81.1, fiber: 0, sugar: 0.1, portions: [("1 tbsp", 14)], allergens: [.lactose]),
+        Entry(key: "butter", name: "Butter", unit: .gram, kcal: 717, protein: 0.9, carbs: 0.1, fat: 81.1, fiber: 0, sugar: 0.1, portions: [("1 tbsp", 14)], allergens: [.milk]),
         Entry(key: "honey", name: "Honey", unit: .gram, kcal: 304, protein: 0.3, carbs: 82.4, fat: 0, fiber: 0.2, sugar: 82.1, portions: [("1 tbsp", 21)]),
         Entry(key: "dark-chocolate", name: "Dark chocolate 70–85%", unit: .gram, kcal: 598, protein: 7.8, carbs: 45.9, fat: 42.6, fiber: 10.9, sugar: 24.0, portions: [("1 square", 10)]),
     ]

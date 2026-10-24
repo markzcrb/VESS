@@ -1607,6 +1607,12 @@
     "Category" : {
 
     },
+    "Celery" : {
+
+    },
+    "celery-free" : {
+
+    },
     "Changes the strength" : {
 
     },
@@ -2183,6 +2189,9 @@
     "Fish" : {
 
     },
+    "fish-free" : {
+
+    },
     "Fit the whole plate in the frame." : {
 
     },
@@ -2326,9 +2335,6 @@
 
     },
     "Glass" : {
-
-    },
-    "Gluten" : {
 
     },
     "gluten-free" : {
@@ -2639,12 +2645,6 @@
     "L" : {
 
     },
-    "Lactose" : {
-
-    },
-    "lactose-free" : {
-
-    },
     "Language" : {
 
     },
@@ -2804,6 +2804,12 @@
     "Lungo" : {
 
     },
+    "Lupin" : {
+
+    },
+    "lupin-free" : {
+
+    },
     "Macros" : {
 
     },
@@ -2870,6 +2876,9 @@
     "Milk" : {
 
     },
+    "milk-free" : {
+
+    },
     "min" : {
 
     },
@@ -2892,6 +2901,12 @@
 
     },
     "moderate effort" : {
+
+    },
+    "mollusc-free" : {
+
+    },
+    "Molluscs" : {
 
     },
     "Month" : {
@@ -2956,6 +2971,12 @@
 
     },
     "Mug" : {
+
+    },
+    "Mustard" : {
+
+    },
+    "mustard-free" : {
 
     },
     "My foods" : {
@@ -3180,9 +3201,6 @@
     "Nutrition preferences" : {
 
     },
-    "Nuts" : {
-
-    },
     "of %@" : {
 
     },
@@ -3325,6 +3343,12 @@
 
     },
     "pcs" : {
+
+    },
+    "peanut-free" : {
+
+    },
+    "Peanuts" : {
 
     },
     "Per 100 %@" : {
@@ -3691,6 +3715,12 @@
     "Serving" : {
 
     },
+    "Sesame" : {
+
+    },
+    "sesame-free" : {
+
+    },
     "Settings" : {
 
     },
@@ -3704,6 +3734,12 @@
 
     },
     "Share of energy counts 4 kcal per gram of protein and carbs and 9 kcal per gram of fat. The target split comes from your daily targets." : {
+
+    },
+    "Shellfish" : {
+
+    },
+    "shellfish-free" : {
 
     },
     "Shorter" : {
@@ -3909,6 +3945,12 @@
 
     },
     "Suggestions" : {
+
+    },
+    "sulphite-free" : {
+
+    },
+    "Sulphites" : {
 
     },
     "Supplement" : {
@@ -4204,6 +4246,9 @@
 
     },
     "Tracks itself from your log" : {
+
+    },
+    "Tree nuts" : {
 
     },
     "Try again" : {
@@ -4502,6 +4547,9 @@
 
     },
     "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105 %." : {
+
+    },
+    "Wheat / gluten" : {
 
     },
     "When" : {

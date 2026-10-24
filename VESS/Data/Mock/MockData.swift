@@ -115,13 +115,13 @@ nonisolated struct MockData: Sendable {
 
         // Breakfast 674 kcal, lunch 894 kcal, snack 272 kcal: 1,840 kcal, 108 g
         // protein, 196 g carbs, 58 g fat and 21 g fibre (DATA.md).
-        let yogurt = food("Greek yogurt", serving: 260, unit: .gram, kcal: 189, protein: 23, carbs: 9, fat: 6, sugar: 9, allergens: [.lactose], processing: .processed)
+        let yogurt = food("Greek yogurt", serving: 260, unit: .gram, kcal: 189, protein: 23, carbs: 9, fat: 6, sugar: 9, allergens: [.milk], processing: .processed)
         let oats = food("Oats", serving: 95, unit: .gram, kcal: 369, protein: 12, carbs: 54, fat: 8, fiber: 7.5, sugar: 1, allergens: [.gluten])
         let blueberries = food("Blueberries", serving: 200, unit: .gram, kcal: 116, protein: 1, carbs: 23, fat: 1, fiber: 3.5, sugar: 19)
         let salmonPoke = food("Salmon poke", serving: 155, unit: .gram, kcal: 324, protein: 31, carbs: 0, fat: 24)
         let edamame = food("Edamame", serving: 105, unit: .gram, kcal: 126, protein: 11, carbs: 8, fat: 6, fiber: 4, allergens: [.soy])
         let brownRice = food("Brown rice", serving: 325, unit: .gram, kcal: 444, protein: 8, carbs: 77, fat: 4, fiber: 4)
-        let skyr = food("Skyr", serving: 195, unit: .gram, kcal: 123, protein: 18, carbs: 7, fat: 0.5, sugar: 7, allergens: [.lactose], processing: .processed)
+        let skyr = food("Skyr", serving: 195, unit: .gram, kcal: 123, protein: 18, carbs: 7, fat: 0.5, sugar: 7, allergens: [.milk], processing: .processed)
         let pumpkinSeeds = food("Pumpkin seeds", serving: 13, unit: .gram, kcal: 73, protein: 3.7, carbs: 2, fat: 8.2, fiber: 0.6)
         let apple = food("Apple", serving: 1, unit: .piece, kcal: 76, protein: 0.3, carbs: 16, fat: 0.3, fiber: 1.4, sugar: 12)
         foods = [yogurt, oats, blueberries, salmonPoke, edamame, brownRice, skyr, pumpkinSeeds, apple]
@@ -370,7 +370,7 @@ nonisolated extension MockData {
         servingUnit: .gram,
         nutrition: NutritionFacts(calories: 95, proteinGrams: 17, carbohydrateGrams: 6, fatGrams: 0.3),
         ingredients: [],
-        allergens: [.lactose],
+        allergens: [.milk],
         quality: nil,
         source: .barcodeScan,
         createdAt: AppClock.now,
@@ -445,7 +445,7 @@ nonisolated extension MockData {
                    steps: [], diets: [.vegetarian, .vegan], allergens: [.gluten]),
             Recipe(id: "overnight-oats", name: "Overnight oats, berries", mealType: .breakfast, minutes: 5, servings: 1,
                    nutrition: facts(420), ingredients: [ingredient("Rolled oats"), ingredient("Mixed berries"), ingredient("Skyr")],
-                   steps: [], diets: [.vegetarian], allergens: [.gluten, .lactose]),
+                   steps: [], diets: [.vegetarian], allergens: [.gluten, .milk]),
             Recipe(id: "eggs-on-rye", name: "Eggs on rye", mealType: .breakfast, minutes: 10, servings: 1,
                    nutrition: facts(430), ingredients: [ingredient("Eggs"), ingredient("Rye bread")],
                    steps: [], diets: [.vegetarian], allergens: [.eggs, .gluten]),

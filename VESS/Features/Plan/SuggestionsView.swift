@@ -152,10 +152,19 @@ private extension Allergen {
     var freeFrom: LocalizedStringResource {
         switch self {
         case .gluten: "gluten-free"
-        case .lactose: "lactose-free"
-        case .nuts: "nut-free"
-        case .soy: "soy-free"
+        case .crustaceans: "shellfish-free"
         case .eggs: "egg-free"
+        case .fish: "fish-free"
+        case .peanuts: "peanut-free"
+        case .soy: "soy-free"
+        case .milk: "milk-free"
+        case .nuts: "nut-free"
+        case .celery: "celery-free"
+        case .mustard: "mustard-free"
+        case .sesame: "sesame-free"
+        case .sulphites: "sulphite-free"
+        case .lupin: "lupin-free"
+        case .molluscs: "mollusc-free"
         }
     }
 }

@@ -71,12 +71,32 @@ nonisolated struct Portion: Hashable, Sendable {
     var baseAmount: Double { option.amount * count }
 }
 
+/// The 14 allergens EU food labels must declare, in the regulation's order.
+/// `nuts` are tree nuts; `crustaceans` are shellfish.
 nonisolated enum Allergen: String, Codable, CaseIterable, Sendable {
     case gluten
-    case lactose
-    case nuts
-    case soy
+    case crustaceans
     case eggs
+    case fish
+    case peanuts
+    case soy
+    case milk
+    case nuts
+    case celery
+    case mustard
+    case sesame
+    case sulphites
+    case lupin
+    case molluscs
+
+    /// Earlier builds stored milk as "lactose".
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        guard let value = raw == "lactose" ? .milk : Allergen(rawValue: raw) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "Unknown allergen \(raw)"))
+        }
+        self = value
+    }
 }
 
 /// Where a food's data came from. Estimates and community data are always

@@ -123,10 +123,19 @@ nonisolated enum OpenFoodFactsMapper {
         for tag in tags {
             switch tag.lowercased() {
             case "en:gluten": result.insert(.gluten)
-            case "en:milk": result.insert(.lactose)
-            case "en:nuts", "en:peanuts": result.insert(.nuts)
-            case "en:soybeans": result.insert(.soy)
+            case "en:crustaceans": result.insert(.crustaceans)
             case "en:eggs": result.insert(.eggs)
+            case "en:fish": result.insert(.fish)
+            case "en:peanuts": result.insert(.peanuts)
+            case "en:soybeans": result.insert(.soy)
+            case "en:milk": result.insert(.milk)
+            case "en:nuts": result.insert(.nuts)
+            case "en:celery": result.insert(.celery)
+            case "en:mustard": result.insert(.mustard)
+            case "en:sesame-seeds": result.insert(.sesame)
+            case "en:sulphur-dioxide-and-sulphites": result.insert(.sulphites)
+            case "en:lupin": result.insert(.lupin)
+            case "en:molluscs": result.insert(.molluscs)
             default: break
             }
         }

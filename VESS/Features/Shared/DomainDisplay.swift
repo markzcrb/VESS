@@ -137,11 +137,20 @@ extension DietaryPreference {
 extension Allergen {
     var title: LocalizedStringResource {
         switch self {
-        case .gluten: "Gluten"
-        case .lactose: "Lactose"
-        case .nuts: "Nuts"
-        case .soy: "Soy"
+        case .gluten: "Wheat / gluten"
+        case .crustaceans: "Shellfish"
         case .eggs: "Eggs"
+        case .fish: "Fish"
+        case .peanuts: "Peanuts"
+        case .soy: "Soy"
+        case .milk: "Milk"
+        case .nuts: "Tree nuts"
+        case .celery: "Celery"
+        case .mustard: "Mustard"
+        case .sesame: "Sesame"
+        case .sulphites: "Sulphites"
+        case .lupin: "Lupin"
+        case .molluscs: "Molluscs"
         }
     }
 }

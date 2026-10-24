@@ -93,7 +93,7 @@ struct OpenFoodFactsMapperTests {
         #expect(food.nutrition.sodiumMilligrams?.isApproximately(42.8) == true)
         #expect(food.nutrition.additional[.saturatedFat] == 10.6)
         #expect(food.servingOptions == [ServingOption(label: "15 g", amount: 15)])
-        #expect(food.allergens == [.lactose, .nuts, .soy])
+        #expect(food.allergens == [.milk, .nuts, .soy])
         #expect(food.quality?.processingLevel == .ultraProcessed)
         #expect(food.source == .openFoodFacts)
         #expect(food.id == UUID(stableKey: "openfoodfacts.3017620422003"))
