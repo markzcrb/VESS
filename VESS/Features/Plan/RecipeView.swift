@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 /// 08: a recipe, with its photo on top (R07's layout). Ingredients are
@@ -16,6 +17,7 @@ struct RecipeView: View {
     @State private var showError = false
     @State private var edits = false
     @State private var confirmsDelete = false
+    @State private var scrolledUnderBar = false
 
     private let calendar = Calendar.current
 
@@ -30,10 +32,11 @@ struct RecipeView: View {
         let skipped = fit?.skipped ?? []
         let cooked = recipe.without(skipped)
         let use = AIChef.pantryUse(cooked, pantry: store.inventory, now: now, calendar: calendar)
+        let photo = recipe.photoImage(store: store)
 
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                RecipePhotoHeader(photo: recipe.photoImage(store: store))
+                RecipePhotoHeader(photo: photo, onAddPhoto: recipe.origin == .discover ? nil : { (data: Data) in addPhoto(data) })
 
                 VStack(alignment: .leading, spacing: VESSSpacing.sm) {
                     recipe.detailKicker
@@ -54,7 +57,7 @@ struct RecipeView: View {
 
                 VStack(alignment: .leading, spacing: VESSSpacing.lg) {
                     RecipeStats(minutes: recipe.minutes, extraTime: recipe.extraTime, nutrition: cooked.nutrition)
-                    RecipeMacroKey(nutrition: cooked.nutrition)
+                    RecipeMacroKey(nutrition: cooked.nutrition, includesProtein: false)
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
 
@@ -98,8 +101,10 @@ struct RecipeView: View {
             }
             .padding(.bottom, VESSSpacing.huge)
         }
-        .ignoresSafeArea(edges: .top)
-        .recipeTopFade()
+        .onPhotoScrolled { scrolledUnderBar = $0 }
+        // With a photo it runs under the bar; without one the page starts below it.
+        .ignoresSafeArea(edges: photo == nil ? [] : .top)
+        .modifier(RecipeTopFadeIfPhoto(hasPhoto: photo != nil, isScrolled: scrolledUnderBar))
         .vessScreenBackground(clipsUnderBar: false)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(Text(recipe.name))
@@ -153,6 +158,15 @@ struct RecipeView: View {
         Text("Ingredients")
             .vessTextStyle(.labelCaps)
             .foregroundStyle(VESSColor.secondaryText)
+    }
+
+    /// A photo for one of the user's own recipes.
+    private func addPhoto(_ data: Data) {
+        do {
+            try store.save(store.userRecipes.first { $0.id == recipe.id } ?? recipe, photo: data)
+        } catch {
+            showError = true
+        }
     }
 
     @ViewBuilder
@@ -219,18 +233,40 @@ struct RecipeView: View {
 }
 
 extension View {
-    /// Text scrolled up fades out under the back button and status bar, on
-    /// screens whose photo runs under the bar.
-    func recipeTopFade() -> some View {
+    /// On screens whose photo runs under the bar: a light fade over the
+    /// photo, and once the photo has scrolled by (`isScrolled`), a solid
+    /// scrim behind the bar, so no text shows behind the back button.
+    func recipeTopFade(isScrolled: Bool) -> some View {
         overlay(alignment: .top) {
             GeometryReader { proxy in
-                LinearGradient(colors: [VESSColor.background, VESSColor.background.opacity(0)], startPoint: .top, endPoint: .bottom)
-                    // Down to the bottom of the nav bar and its back button.
-                    .frame(height: proxy.safeAreaInsets.top + VESSHitTarget.minimum + VESSSpacing.xxxl)
-                    .ignoresSafeArea(edges: .top)
+                let bar = proxy.safeAreaInsets.top + VESSHitTarget.minimum
+                VStack(spacing: 0) {
+                    VESSColor.background
+                        .frame(height: bar)
+                        .opacity(isScrolled ? 1 : 0)
+                    LinearGradient(colors: [VESSColor.background, VESSColor.background.opacity(0)], startPoint: .top, endPoint: .bottom)
+                        .frame(height: VESSSpacing.xl)
+                        .opacity(isScrolled ? 1 : 0)
+                }
+                .overlay(alignment: .top) {
+                    LinearGradient(colors: [VESSColor.background.opacity(0.7), VESSColor.background.opacity(0)], startPoint: .top, endPoint: .bottom)
+                        .frame(height: bar + VESSSpacing.xl)
+                        .opacity(isScrolled ? 0 : 1)
+                }
+                .animation(.easeOut(duration: 0.15), value: isScrolled)
+                .ignoresSafeArea(edges: .top)
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
+        }
+    }
+
+    /// Whether a photo header has scrolled up under the bar.
+    func onPhotoScrolled(_ action: @escaping (Bool) -> Void) -> some View {
+        onScrollGeometryChange(for: Bool.self) { geometry in
+            geometry.contentOffset.y + geometry.contentInsets.top > RecipePhotoHeader.photoHeight - 160
+        } action: { _, scrolled in
+            action(scrolled)
         }
     }
 }
@@ -252,16 +288,22 @@ extension Recipe {
 // MARK: - Parts shared with the AI draft (R07) and the editor
 
 /// The recipe photo, full width under the bar, fading into the canvas.
-/// Without one, a quiet tile with a symbol, or `placeholder`.
+/// Without one, a short quiet strip under the bar with "Add photo".
 struct RecipePhotoHeader: View {
     let photo: Image?
     var placeholder: Text?
+    /// A photo the user picked, made smaller and without metadata.
+    var onAddPhoto: ((Data) -> Void)?
 
-    @ScaledMetric(relativeTo: .body) private var height: CGFloat = 300
+    /// Height of the photo; the scrim covers the bar once this has scrolled by.
+    static let photoHeight: CGFloat = 300
+
+    @ScaledMetric(relativeTo: .body) private var height: CGFloat = RecipePhotoHeader.photoHeight
+    @State private var pickerItem: PhotosPickerItem?
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            if let photo {
+        if let photo {
+            ZStack(alignment: .bottom) {
                 // The frame first, the photo inside it: a filled photo is
                 // wider than the screen and would widen the whole page.
                 Color.clear
@@ -269,27 +311,62 @@ struct RecipePhotoHeader: View {
                     .frame(height: min(height, 380))
                     .overlay { photo.resizable().scaledToFill() }
                     .clipped()
-            } else {
-                // No photo: a soft fade into the canvas, the same height.
-                LinearGradient(colors: [VESSColor.fill, VESSColor.fill.opacity(0)], startPoint: .top, endPoint: .bottom)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: min(height, 380) * 0.9)
-                    .overlay {
-                        if let placeholder {
-                            placeholder
-                                .vessTextStyle(.caption)
-                                .foregroundStyle(VESSColor.tertiaryText)
-                        } else {
-                            Image(systemName: "fork.knife")
-                                .font(.title)
-                                .foregroundStyle(VESSColor.decorative)
-                        }
-                    }
+                LinearGradient(colors: [VESSColor.background.opacity(0), VESSColor.background], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 96)
             }
-            LinearGradient(colors: [VESSColor.background.opacity(0), VESSColor.background], startPoint: .top, endPoint: .bottom)
-                .frame(height: 96)
+            .accessibilityHidden(true)
+        } else {
+            HStack(spacing: VESSSpacing.md) {
+                Image(systemName: "fork.knife")
+                    .font(.body)
+                    .foregroundStyle(VESSColor.decorative)
+                    .accessibilityHidden(true)
+                (placeholder ?? Text("No photo yet"))
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                if onAddPhoto != nil {
+                    PhotosPicker(selection: $pickerItem, matching: .images, photoLibrary: .shared()) {
+                        Label("Add photo", systemImage: "camera")
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.text)
+                            .padding(.horizontal, VESSSpacing.sm)
+                            .frame(minHeight: VESSHitTarget.minimum)
+                            .background(Capsule().fill(VESSColor.fill).padding(.vertical, VESSSpacing.xxs))
+                            .contentShape(Capsule())
+                    }
+                    .accessibilityIdentifier("recipe.addPhoto")
+                }
+            }
+            .padding(.horizontal, VESSSpacing.md)
+            .frame(minHeight: 76)
+            .frame(maxWidth: .infinity)
+            .background(VESSColor.card, in: RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
+            .padding(.horizontal, VESSSpacing.screenInset)
+            .onChange(of: pickerItem) { _, item in
+                Task {
+                    if let data = try? await item?.loadTransferable(type: Data.self) {
+                        onAddPhoto?(PhotoPreparation.jpeg(from: data) ?? data)
+                    }
+                    pickerItem = nil
+                }
+            }
         }
-        .accessibilityHidden(true)
+    }
+}
+
+/// The fade and scrim only where a photo runs under the bar.
+struct RecipeTopFadeIfPhoto: ViewModifier {
+    let hasPhoto: Bool
+    let isScrolled: Bool
+
+    func body(content: Content) -> some View {
+        if hasPhoto {
+            content.recipeTopFade(isScrolled: isScrolled)
+        } else {
+            content.scrollEdgeEffectStyle(.soft, for: .top)
+        }
     }
 }
 
@@ -333,13 +410,15 @@ struct RecipeStats: View {
 /// "● 42 g protein  ● 58 g carbs  ● 21 g fat", reported values only.
 struct RecipeMacroKey: View {
     let nutrition: NutritionFacts
+    /// Off where the stats above already show protein.
+    var includesProtein = true
 
     var body: some View {
         let parts: [(nutrient: CoreNutrient, grams: Double, name: LocalizedStringResource, color: Color)] = [
             (.protein, nutrition.proteinGrams, "protein", VESSColor.protein),
             (.carbohydrates, nutrition.carbohydrateGrams, "carbs", VESSColor.carbs),
             (.fat, nutrition.fatGrams, "fat", VESSColor.fat),
-        ].filter { nutrition.isReported($0.nutrient) }
+        ].filter { nutrition.isReported($0.nutrient) && (includesProtein || $0.nutrient != .protein) }
         VESSChipFlow(spacing: VESSSpacing.lg) {
             ForEach(parts, id: \.nutrient) { part in
                 HStack(spacing: VESSSpacing.xs) {
@@ -392,6 +471,7 @@ struct RecipeIngredientRow: View {
     let now: Date
 
     @ScaledMetric(relativeTo: .body) private var amountWidth: CGFloat = 64
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     private let calendar = Calendar.current
 
     var body: some View {
@@ -412,7 +492,8 @@ struct RecipeIngredientRow: View {
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(status == .skipped ? VESSColor.tertiaryText : VESSColor.secondaryText)
                     .strikethrough(status == .skipped, color: VESSColor.tertiaryText)
-                    .frame(minWidth: amountWidth, alignment: .trailing)
+                    // Under the name at accessibility sizes, so no column.
+                    .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : amountWidth, alignment: .trailing)
             }
         }
         .accessibilityElement(children: .combine)

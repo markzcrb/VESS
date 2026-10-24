@@ -160,6 +160,8 @@ struct AddIngredientSheet: View {
     /// "Choose food" on a pantry item: the USDA food picked next is remembered for it.
     @State private var matchingItem: InventoryItem?
     @State private var showsScanner = false
+    @State private var moreGeneric = false
+    @State private var moreBrands = false
 
     private let calendar = Calendar.current
 
@@ -219,6 +221,7 @@ struct AddIngredientSheet: View {
                 }
             }
             .task(id: query) { await searchProducts() }
+            .onChange(of: query) { moreGeneric = false; moreBrands = false }
             .task { await foods.load() }
             .onAppear(perform: startWithExisting)
             .sheet(isPresented: $showsScanner) { scanner }
@@ -234,9 +237,15 @@ struct AddIngredientSheet: View {
     @ViewBuilder
     private var results: some View {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
-        let generic = source == .all || source == .generic ? foods.search(trimmed, limit: source == .all ? 6 : 30) : []
-        let brands = source == .all || source == .brands ? Array(products.prefix(source == .all ? 6 : 20)) : []
+        let all = source == .all
+        // With All: six of each, more on request.
+        let genericFound = source == .all || source == .generic ? foods.search(trimmed, limit: 30) : []
+        let generic = all && !moreGeneric ? Array(genericFound.prefix(Self.allLimit)) : genericFound
+        let brandsFound = source == .all || source == .brands ? Array(products.prefix(20)) : []
+        let brands = all && !moreBrands ? Array(brandsFound.prefix(Self.allLimit)) : brandsFound
         let pantry = source == .all || source == .pantry ? pantryItems(trimmed) : []
+        // "Skyr", "quark" or a brand: USDA hasn't got it, so products first.
+        let productsFirst = all && !trimmed.isEmpty && !foods.hasOwnNameMatch(trimmed)
 
         if trimmed.isEmpty && source != .pantry {
             Text("Search for a food, such as chickpeas or oats. Generic foods come from USDA FoodData Central; products from Open Food Facts.")
@@ -254,12 +263,12 @@ struct AddIngredientSheet: View {
                 .padding(.vertical, VESSSpacing.sm)
         } else {
             VESSRowGroup {
-                ForEach(generic) { food in
-                    resultRow(IngredientChoice(kind: .generic(food)), subtitle: Text("Generic · USDA · per 100 g"))
-                }
-                ForEach(brands) { food in
-                    let brand = food.brand.map { "\($0) · " } ?? ""
-                    resultRow(IngredientChoice(kind: .product(food)), subtitle: Text("\(brand)Open Food Facts · per 100 \(food.servingUnit == .milliliter ? "ml" : "g")"))
+                if productsFirst {
+                    brandRows(brands, showsMore: all && !moreBrands && brandsFound.count > Self.allLimit)
+                    genericRows(generic, showsMore: all && !moreGeneric && genericFound.count > Self.allLimit)
+                } else {
+                    genericRows(generic, showsMore: all && !moreGeneric && genericFound.count > Self.allLimit)
+                    brandRows(brands, showsMore: all && !moreBrands && brandsFound.count > Self.allLimit)
                 }
                 ForEach(pantry, id: \.id) { item in
                     let match = foods.food(for: item)
@@ -274,6 +283,37 @@ struct AddIngredientSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    /// Results per source under All.
+    static let allLimit = 6
+
+    @ViewBuilder
+    private func genericRows(_ foods: [GenericFood], showsMore: Bool) -> some View {
+        ForEach(foods) { food in
+            resultRow(IngredientChoice(kind: .generic(food)), subtitle: Text("Generic · USDA · per 100 g"))
+        }
+        if showsMore { showMoreRow("Show more generic foods") { moreGeneric = true } }
+    }
+
+    @ViewBuilder
+    private func brandRows(_ products: [Food], showsMore: Bool) -> some View {
+        ForEach(products) { food in
+            let brand = food.brand.map { "\($0) · " } ?? ""
+            resultRow(IngredientChoice(kind: .product(food)), subtitle: Text("\(brand)Open Food Facts · per 100 \(food.servingUnit == .milliliter ? "ml" : "g")"))
+        }
+        if showsMore { showMoreRow("Show more products") { moreBrands = true } }
+    }
+
+    private func showMoreRow(_ title: LocalizedStringResource, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .vessTextStyle(.labelCapsLink)
+                .foregroundStyle(VESSColor.accent)
+                .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func pantryItems(_ query: String) -> [InventoryItem] {

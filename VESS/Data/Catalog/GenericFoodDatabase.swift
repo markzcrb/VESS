@@ -59,6 +59,11 @@ final class GenericFoodDatabase {
         index.search(query, limit: limit)
     }
 
+    /// Whether USDA has the food itself ("skyr", "quark" or a brand don't).
+    func hasOwnNameMatch(_ query: String) -> Bool {
+        index.hasOwnNameMatch(query)
+    }
+
     /// The food for a pantry item's nutrition: the one the user chose, or
     /// else the best match for its name.
     func food(for item: InventoryItem) -> GenericFood? {
@@ -184,6 +189,15 @@ nonisolated struct GenericFoodIndex: Sendable {
             .filter { seen.insert($0.food.id).inserted }
             .prefix(limit)
             .map(\.food)
+    }
+
+    /// Some food has every query word, whole, in its own name (before the
+    /// first comma), or a UK or EU name maps to one ("courgette").
+    func hasOwnNameMatch(_ query: String) -> Bool {
+        let terms = Self.words(query)
+        guard !terms.isEmpty, !Self.noMatch.contains(where: { Self.range(of: Self.words($0), in: terms) != nil }) else { return false }
+        if Self.synonyms.contains(where: { Self.range(of: Self.words($0.phrase), in: terms) != nil }) { return true }
+        return entries.contains { entry in terms.allSatisfy { term in entry.headWords.contains { Self.isWhole($0, term) } } }
     }
 
     private static func range(of phrase: [String], in terms: [String]) -> Range<Int>? {

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// R06: what a new AI recipe should use and be. What is sent is only what's
 /// on this sheet, the pantry list, and the diet and avoid list.
@@ -202,15 +203,23 @@ private struct PantryPicker: View {
                 .vessHairlineBottom()
                 .padding(.horizontal, VESSSpacing.screenInset)
             }
+            .safeAreaInset(edge: .bottom) {
+                Button("Done") { dismiss() }
+                    .buttonStyle(.vessPrimary)
+                    .padding(.horizontal, VESSSpacing.screenInset)
+                    .padding(.vertical, VESSSpacing.sm)
+                    .background(VESSColor.card)
+            }
             .background(VESSColor.card)
             .vessDetailTitle("Must use")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
+                    VESSIconButton(systemImage: "xmark", label: "Close") { dismiss() }
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        // Full height: a medium sheet is drawn scaled down, below 44 pt targets.
+        .presentationDetents([.large])
         .presentationBackground(VESSColor.card)
     }
 }
@@ -230,6 +239,8 @@ struct AIRecipeReviewView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var servings: Int
+    @State private var draftPhoto: Data?
+    @State private var scrolledUnderBar = false
     @State private var edits = false
     @State private var showError = false
 
@@ -251,7 +262,11 @@ struct AIRecipeReviewView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                    RecipePhotoHeader(photo: nil, placeholder: Text("No photo yet · add one after you cook it"))
+                    RecipePhotoHeader(
+                        photo: draftPhoto.flatMap(UIImage.init(data:)).map(Image.init(uiImage:)),
+                        placeholder: Text("No photo yet · add one after you cook it"),
+                        onAddPhoto: { draftPhoto = $0 }
+                    )
 
                     VStack(alignment: .leading, spacing: VESSSpacing.sm) {
                         draftKicker
@@ -270,7 +285,7 @@ struct AIRecipeReviewView: View {
 
                     VStack(alignment: .leading, spacing: VESSSpacing.lg) {
                         RecipeStats(minutes: draft.minutes, extraTime: draft.extraTime, nutrition: draft.nutrition)
-                        RecipeMacroKey(nutrition: draft.nutrition)
+                        RecipeMacroKey(nutrition: draft.nutrition, includesProtein: false)
                         if isPartial {
                             Text("Partial: some ingredients have no nutrition data.")
                                 .vessTextStyle(.caption)
@@ -307,8 +322,9 @@ struct AIRecipeReviewView: View {
                 }
                 .padding(.bottom, VESSSpacing.huge)
             }
-            .ignoresSafeArea(edges: .top)
-            .recipeTopFade()
+            .onPhotoScrolled { scrolledUnderBar = $0 }
+            .ignoresSafeArea(edges: draftPhoto == nil ? [] : .top)
+            .modifier(RecipeTopFadeIfPhoto(hasPhoto: draftPhoto != nil, isScrolled: scrolledUnderBar))
             .vessScreenBackground(clipsUnderBar: false)
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle(Text(draft.name))
@@ -396,7 +412,7 @@ struct AIRecipeReviewView: View {
     }
 
     private var saveButton: some View {
-        Button("Save to My recipes", action: save)
+        Button("Save recipe", action: save)
             .buttonStyle(.vessPrimary)
             .accessibilityIdentifier("draft.save")
     }
@@ -415,7 +431,7 @@ struct AIRecipeReviewView: View {
         saved.origin = .ai
         saved.createdAt = AppClock.now
         do {
-            try store.save(saved)
+            try store.save(saved, photo: draftPhoto)
             dismiss()
             onSaved()
         } catch {

@@ -471,25 +471,26 @@ private struct MealTimesSheet: View {
                     .buttonStyle(.vessSecondary)
                 }
                 Spacer()
+                Button("Save") {
+                    onSave(MealTimes(breakfast: Self.minutes(breakfast), lunch: Self.minutes(lunch), dinner: Self.minutes(dinner)))
+                    dismiss()
+                }
+                .buttonStyle(.vessPrimary)
+                .padding(.bottom, VESSSpacing.sm)
+                .accessibilityIdentifier("mealTimes.save")
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .padding(.top, VESSSpacing.md)
             .background(VESSColor.card)
             .vessDetailTitle("Usual meal times")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
-                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        onSave(MealTimes(breakfast: Self.minutes(breakfast), lunch: Self.minutes(lunch), dinner: Self.minutes(dinner)))
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
+                    VESSIconButton(systemImage: "xmark", label: "Close") { dismiss() }
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        // Full height: a medium sheet is drawn scaled down, below 44 pt targets.
+        .presentationDetents([.large])
         .presentationBackground(VESSColor.card)
     }
 

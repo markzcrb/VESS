@@ -123,6 +123,17 @@ struct GenericFoodTests {
         #expect(Self.index.search("courgettes", limit: 1).first?.name == "Squash, zucchini, baby, raw")
     }
 
+    @Test("USDA has the food itself for chickpeas and courgette, not for skyr, quark or a brand: products come first then")
+    func ownNameMatch() {
+        #expect(Self.index.hasOwnNameMatch("chickpeas"))
+        #expect(Self.index.hasOwnNameMatch("spinach"))
+        #expect(Self.index.hasOwnNameMatch("courgette"), "Through the synonym")
+        #expect(!Self.index.hasOwnNameMatch("skyr"))
+        #expect(!Self.index.hasOwnNameMatch("quark"))
+        #expect(!Self.index.hasOwnNameMatch("Alpro"))
+        #expect(!Self.index.hasOwnNameMatch("  "))
+    }
+
     static let index = GenericFoodIndex(foods: foods)
 
     @Test("Household portions become units after grams; nutrition scales by weight")

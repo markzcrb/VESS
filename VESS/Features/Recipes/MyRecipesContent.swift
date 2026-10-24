@@ -30,7 +30,7 @@ struct MyRecipesContent: View {
             .filter { cooked[$0.id] != nil }
             .sorted { (cooked[$0.id]?.last ?? .distantPast) > (cooked[$1.id]?.last ?? .distantPast) }
             .prefix(Self.recentCount)
-        let rest = sorted(recipes.filter { recipe in !recent.contains { $0.id == recipe.id } })
+        let rest = sorted(recipes)
         let fromAI = recipes.count { $0.origin == .ai }
 
         VStack(alignment: .leading, spacing: VESSSpacing.xl) {

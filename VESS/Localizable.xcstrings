@@ -1505,6 +1505,9 @@
     "Add missing to grocery" : {
 
     },
+    "Add photo" : {
+
+    },
     "Add step" : {
 
     },
@@ -3638,6 +3641,9 @@
     "No other products found." : {
 
     },
+    "No photo yet" : {
+
+    },
     "No photo yet · add one after you cook it" : {
 
     },
@@ -4320,9 +4326,6 @@
     "Save to My foods" : {
 
     },
-    "Save to My recipes" : {
-
-    },
     "Save your own food or recipe" : {
 
     },
@@ -4456,6 +4459,12 @@
 
     },
     "Shorter" : {
+
+    },
+    "Show more generic foods" : {
+
+    },
+    "Show more products" : {
 
     },
     "Show recipes that don't fit" : {
