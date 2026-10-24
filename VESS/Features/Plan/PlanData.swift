@@ -14,7 +14,7 @@ enum PlanCandidates {
             allergens: { store.food(id: $0)?.allergens ?? [] },
             calendar: calendar
         )
-        return logged + recipes(catalog)
+        return logged + recipes(catalog, profile: store.profile)
     }
 
     /// Saved foods (favourites and your own), each as a one-item meal.
@@ -36,9 +36,14 @@ enum PlanCandidates {
         }
     }
 
-    static func recipes(_ catalog: RecipeCatalog) -> [MealSuggestions.Candidate] {
+    /// Recipes that fit the user (`RecipeFit`): diet, allergens and the
+    /// ingredients they don't eat.
+    static func recipes(_ catalog: RecipeCatalog, profile: UserProfile?) -> [MealSuggestions.Candidate] {
         #if DEBUG
-        catalog.recipes.map(MealSuggestions.Candidate.init(recipe:))
+        guard let profile else { return [] }
+        return catalog.recipes
+            .filter { RecipeFit.check($0, preferences: profile.preferences, allergies: profile.allergies).fits }
+            .map(MealSuggestions.Candidate.init(recipe:))
         #else
         []
         #endif

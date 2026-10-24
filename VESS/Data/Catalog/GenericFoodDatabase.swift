@@ -108,12 +108,11 @@ nonisolated struct GenericFoodIndex: Sendable {
     }
 
     private static func words(_ text: String) -> [String] {
-        FoodSearch.normalized(text).split { !$0.isLetter && !$0.isNumber }.map(String.init)
+        IngredientMatcher.words(text)
     }
 
-    /// `word` is `term` or its simple plural or singular ("egg", "eggs").
     private static func isWhole(_ word: String, _ term: String) -> Bool {
-        word == term || word == term + "s" || word == term + "es" || (term.hasSuffix("s") && word == term.dropLast())
+        IngredientMatcher.isWhole(word, term)
     }
 
     /// UK and EU names for what USDA calls something else. Each phrase is
@@ -184,13 +183,8 @@ nonisolated struct GenericFoodIndex: Sendable {
             .map(\.food)
     }
 
-    /// Where `phrase` appears in `terms`, word by word, allowing plurals.
     private static func range(of phrase: [String], in terms: [String]) -> Range<Int>? {
-        guard !phrase.isEmpty, terms.count >= phrase.count else { return nil }
-        for start in 0...(terms.count - phrase.count) where phrase.indices.allSatisfy({ isWhole(terms[start + $0], phrase[$0]) }) {
-            return start..<(start + phrase.count)
-        }
-        return nil
+        IngredientMatcher.range(of: phrase, in: terms)
     }
 
     /// Foods matching every term, best first:
