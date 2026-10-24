@@ -1,15 +1,22 @@
 import Foundation
 import OSLog
 
-/// DEBUG: how long a cold launch takes, and any main-thread stall in the
-/// first 15 s. Console: subsystem "VESS", category "Launch".
+/// How long a cold launch takes, and any main-thread stall in the first
+/// 15 s. On in DEBUG, or in any build with `-launchTiming` (to measure
+/// Release). Console: subsystem "VESS", category "Launch".
 ///
 /// - `process → init`: dyld and the runtime, before any VESS code.
 /// - `init → store`: opening (and, with DEBUG flags, seeding) the store.
 /// - `→ first frame`: until the first screen is on screen.
 /// - `stall N ms`: the main thread didn't answer a ping for N ms.
 enum LaunchTiming {
-    #if DEBUG
+    private static let isOn: Bool = {
+        #if DEBUG
+        return true
+        #else
+        return ProcessInfo.processInfo.arguments.contains("-launchTiming")
+        #endif
+    }()
     private static let logger = Logger(subsystem: "VESS", category: "Launch")
     nonisolated(unsafe) private static var initDate: Date?
     nonisolated(unsafe) private static var reportedFirstFrame = false
@@ -27,31 +34,36 @@ enum LaunchTiming {
     private static func ms(_ from: Date?, _ to: Date = .now) -> Int {
         from.map { Int(to.timeIntervalSince($0) * 1000) } ?? -1
     }
-    #endif
 
     static func appInit() {
-        #if DEBUG
+        guard isOn else { return }
         initDate = .now
         logger.notice("process → init \(ms(processStart), privacy: .public) ms")
         startWatchdog()
-        #endif
     }
 
     static func mark(_ step: StaticString) {
-        #if DEBUG
+        guard isOn else { return }
         logger.notice("init → \(step, privacy: .public) \(ms(initDate), privacy: .public) ms")
-        #endif
     }
 
     static func firstFrame() {
-        #if DEBUG
-        guard !reportedFirstFrame else { return }
+        guard isOn, !reportedFirstFrame else { return }
         reportedFirstFrame = true
         logger.notice("process → first frame \(ms(processStart), privacy: .public) ms (init → first frame \(ms(initDate), privacy: .public) ms)")
-        #endif
     }
 
-    #if DEBUG
+    /// Runs `work` and logs it when it takes over 50 ms (during the first
+    /// 15 s), to name main-thread stalls.
+    static func timed<T>(_ label: StaticString, _ work: () -> T) -> T {
+        guard isOn, let initDate, Date().timeIntervalSince(initDate) < 15 else { return work() }
+        let start = Date()
+        let result = work()
+        let took = ms(start)
+        if took > 50 { logger.notice("\(label, privacy: .public) \(took, privacy: .public) ms at +\(ms(initDate, start), privacy: .public) ms") }
+        return result
+    }
+
     /// Pings the main thread every 100 ms for 15 s; logs answers later than 250 ms.
     private static func startWatchdog() {
         Thread.detachNewThread {
@@ -70,5 +82,4 @@ enum LaunchTiming {
             logger.notice("watchdog done")
         }
     }
-    #endif
 }

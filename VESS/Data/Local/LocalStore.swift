@@ -38,6 +38,13 @@ final class LocalStore {
         LocalStore(container: try makeContainer(inMemory: false))
     }
 
+    /// The on-disk store's container, for opening it off the main thread:
+    /// the first open after an update migrates (about 3 s on a cold
+    /// simulator), which used to freeze the launch.
+    nonisolated static func liveContainer() throws -> ModelContainer {
+        try makeContainer(inMemory: false)
+    }
+
     /// An empty store that is discarded on exit. Used by previews and UI tests.
     static func inMemory() throws -> LocalStore {
         LocalStore(container: try makeContainer(inMemory: true))
@@ -51,7 +58,7 @@ final class LocalStore {
 
     /// Every entity. New entities are added at the end and are always
     /// additive, so stores from earlier builds open unchanged.
-    static var schema: Schema {
+    nonisolated static var schema: Schema {
         Schema([
             StoredProfile.self, StoredFoodLogEntry.self, StoredHydrationLog.self, StoredFood.self,
             StoredInventoryItem.self, StoredPlannedMeal.self, StoredGroceryItem.self, StoredWorkout.self, StoredSupplement.self,
@@ -60,7 +67,7 @@ final class LocalStore {
         ])
     }
 
-    private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
+    nonisolated private static func makeContainer(inMemory: Bool) throws -> ModelContainer {
         try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory))
     }
 

@@ -85,9 +85,9 @@ struct RootTabView: View {
         }) { request in
             AddSheet(request: request)
         }
-        // Pre-warm (first "+" took 1–1.5 s): once the first frame is on
-        // screen, build the sheet's content and search field one time,
-        // invisibly, so the first tap only has to present it.
+        // Pre-warm (first "+" took 1–1.5 s): a few seconds after launch,
+        // build the sheet's content and search field one time, invisibly,
+        // so a later first tap only has to present it.
         .background {
             if isPrewarming {
                 AddSheet(request: AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now, type: .food))
@@ -104,7 +104,11 @@ struct RootTabView: View {
         .task {
             guard !didPrewarm else { return }
             didPrewarm = true
-            try? await Task.sleep(for: .seconds(1))
+            // Late enough not to compete with the first taps after launch
+            // (at 1 s it landed right on them); a "+" before then just
+            // builds the sheet itself.
+            try? await Task.sleep(for: .seconds(4))
+            guard addRequest == nil else { return }
             isPrewarming = true
         }
     }
@@ -124,16 +128,26 @@ struct RootTabView: View {
         }
     }
 
+    /// Made once per icon and state: building them on every body pass cost
+    /// ~110 ms of the first frame.
+    private static var tabImages: [String: Image] = [:]
+
     private func tabImage(_ icon: TabIcon, isSelected: Bool) -> Image {
+        let key: String = switch icon {
+        case .symbol(let name): "\(name).\(isSelected)"
+        case .asset(let resource): "\(String(describing: resource)).\(isSelected)"
+        }
+        if let cached = Self.tabImages[key] { return cached }
         let base: UIImage? = switch icon {
         case .symbol(let name): UIImage(systemName: name)
         case .asset(let resource): UIImage(resource: resource)
         }
         guard let base else { return Image(systemName: "questionmark") }
-        if isSelected {
-            return Image(uiImage: base.withRenderingMode(.alwaysTemplate))
-        }
-        return Image(uiImage: base.withTintColor(UIColor(VESSColor.tertiaryText), renderingMode: .alwaysOriginal))
+        let image = isSelected
+            ? Image(uiImage: base.withRenderingMode(.alwaysTemplate))
+            : Image(uiImage: base.withTintColor(UIColor(VESSColor.tertiaryText), renderingMode: .alwaysOriginal))
+        Self.tabImages[key] = image
+        return image
     }
 
     /// Opens the Add sheet, or, while the last one is still going down,
@@ -173,6 +187,7 @@ struct RootTabView: View {
     }
 }
 
+#if DEBUG
 #Preview("Dark") {
     RootTabView()
         .previewEnvironment(LocalStore.preview())
@@ -184,6 +199,7 @@ struct RootTabView: View {
         .previewEnvironment(LocalStore.preview())
         .preferredColorScheme(.light)
 }
+#endif
 
 /// DEBUG: how long the first "+" takes, tap to the sheet's content on
 /// screen. Console: subsystem "VESS", category "Timing".

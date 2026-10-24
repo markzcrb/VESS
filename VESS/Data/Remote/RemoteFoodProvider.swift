@@ -30,10 +30,12 @@ nonisolated protocol HTTPClient: Sendable {
 }
 
 nonisolated struct URLSessionHTTPClient: HTTPClient {
-    var session: URLSession = .shared
+    /// `nil` uses `.shared`, looked up at the first request: touching it at
+    /// launch set up the networking stack before the first frame (~120 ms).
+    var session: URLSession?
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
-        try await session.data(for: request)
+        try await (session ?? .shared).data(for: request)
     }
 }
 

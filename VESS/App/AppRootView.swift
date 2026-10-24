@@ -15,11 +15,17 @@ struct AppRootView: View {
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The on-disk store is opening off the main thread.
+    @State private var isOpening: Bool
 
     init() {
-        let store = Self.makeStore()
+        // DEBUG flags build an in-memory store at once (captures, UI tests);
+        // the real store opens in the background (see `openLiveStore`).
+        let store = Self.makeDebugStore()
         _store = State(initialValue: store)
         _lookup = State(initialValue: store.map { Self.makeLookup(store: $0) })
+        _isOpening = State(initialValue: store == nil)
+        if store != nil { LaunchTiming.mark("store") }
     }
 
     var body: some View {
@@ -44,24 +50,25 @@ struct AppRootView: View {
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 // One success tap for every log, wherever it came from.
                 .vessHaptic(.success, trigger: foodUndo.loggedCount)
+            } else if isOpening {
+                // The launch screen's colour while the store opens.
+                VESSColor.background
+                    .ignoresSafeArea()
+                    .task { await openLiveStore() }
             } else {
                 StoreUnavailableView {
-                    store = Self.makeStore()
-                    lookup = store.map { Self.makeLookup(store: $0) }
+                    isOpening = true
                 }
             }
         }
         .vessHapticsHost(haptics)
         // Chrome is greyscale; links and CTAs set the link accent themselves.
         .tint(VESSColor.text)
+        .onAppear { LaunchTiming.firstFrame() }
         .preferredColorScheme(appearance.colorScheme)
         // Apple Health is read when the app opens and each time it returns.
         .onChange(of: scenePhase, initial: true) { _, phase in
-            guard phase == .active, let store, let profile = store.profile else { return }
-            Task {
-                await health.refresh(stepsTarget: profile.dailyStepsTarget)
-                await reminders.sync(store: store)
-            }
+            if phase == .active { refreshOnActive() }
         }
         // A meal logged today drops its reminder.
         .onChange(of: store?.foodEntries(on: AppClock.now, calendar: .current).count) {
@@ -75,7 +82,34 @@ struct AppRootView: View {
     /// - `-seedProfileOnly`: a profile with history but nothing logged today (S1).
     /// - `-seedSampleData`: start with clearly labeled sample data, in memory,
     ///   never written to the real store.
-    private static func makeStore() -> LocalStore? {
+    private func refreshOnActive() {
+        guard let store, let profile = store.profile else { return }
+        Task {
+            await health.refresh(stepsTarget: profile.dailyStepsTarget)
+            await reminders.sync(store: store)
+        }
+    }
+
+    /// Opens the on-disk store: the container (and any migration) off the
+    /// main thread, then the store on it.
+    private func openLiveStore() async {
+        do {
+            let container = try await Task.detached(priority: .userInitiated) { try LocalStore.liveContainer() }.value
+            let opened = LocalStore(container: container)
+            store = opened
+            lookup = Self.makeLookup(store: opened)
+            LaunchTiming.mark("store")
+            // The launch's "became active" came before the store was open.
+            if scenePhase == .active { refreshOnActive() }
+        } catch {
+            Logger(subsystem: "VESS", category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
+        }
+        isOpening = false
+    }
+
+    /// With DEBUG launch flags, an in-memory store with sample data; otherwise
+    /// `nil`, and the real store opens in the background.
+    private static func makeDebugStore() -> LocalStore? {
         do {
             #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
@@ -111,7 +145,7 @@ struct AppRootView: View {
                 return store
             }
             #endif
-            return try LocalStore.live()
+            return nil
         } catch {
             Logger(subsystem: "VESS", category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
             return nil
