@@ -8,6 +8,10 @@ import OSLog
 @Observable
 final class HealthDataStore {
     var state: HealthSyncState
+    /// The last authorization or read error, as text (shown on the Debug
+    /// Apple Health screen). Kinds that failed alone are in the snapshot's
+    /// `readIssues`.
+    private(set) var lastError: String?
 
     private let service: (any HealthService)?
     /// Whether the user has been through the permission sheet. Health never
@@ -16,6 +20,18 @@ final class HealthDataStore {
     /// Off for demo stores, so a demo never marks the real app as connected.
     private let remembersAccess: Bool
     private let logger = Logger(subsystem: "VESS", category: "Health")
+    /// Asked for newly added types this launch already.
+    private var didAskForNewTypes = false
+
+    /// DEBUG `-healthNoReask`: read as an older build would, without asking
+    /// for new types first, to see the errors that causes.
+    private static var skipsReask: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-healthNoReask")
+        #else
+        false
+        #endif
+    }
 
     private static let accessKey = "health.didRequestAccess"
 
@@ -35,7 +51,8 @@ final class HealthDataStore {
         do {
             try await service.requestAuthorization()
         } catch {
-            logger.error("Health authorization failed: \(error.localizedDescription, privacy: .public)")
+            lastError = HealthReadLog.describe(error)
+            logger.error("Health authorization failed: \(self.lastError ?? "", privacy: .public)")
             state = .failed(lastKnown: state.snapshot)
             return
         }
@@ -50,14 +67,29 @@ final class HealthDataStore {
         guard let service, didRequestAccess else { return }
         let lastKnown = state.snapshot
         if lastKnown == nil { state = .syncing }
+        // Connected with a build that read fewer types: ask once for the new
+        // ones (the sheet lists only those), so they don't stay undetermined.
+        if !didAskForNewTypes, !Self.skipsReask, await service.needsAuthorization() {
+            didAskForNewTypes = true
+            do {
+                try await service.requestAuthorization()
+            } catch {
+                lastError = HealthReadLog.describe(error)
+                logger.error("Health authorization for new types failed: \(self.lastError ?? "", privacy: .public)")
+            }
+        }
         do {
             if let snapshot = try await service.snapshot(now: AppClock.now, calendar: .current, stepsTarget: stepsTarget) {
+                // Kinds that failed alone are listed in the snapshot; the rest show.
                 state = .available(snapshot)
+                lastError = snapshot.readIssues.isEmpty ? nil : HealthReadFailure(issues: snapshot.readIssues).description
             } else {
                 state = .nothingShared
+                lastError = nil
             }
         } catch {
-            logger.error("Health read failed: \(error.localizedDescription, privacy: .public)")
+            lastError = (error as? HealthReadFailure)?.description ?? HealthReadLog.describe(error)
+            logger.error("Health read failed: \(self.lastError ?? "", privacy: .public)")
             state = .failed(lastKnown: lastKnown)
         }
     }

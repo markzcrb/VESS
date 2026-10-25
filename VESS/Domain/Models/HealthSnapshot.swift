@@ -38,11 +38,20 @@ nonisolated struct HealthSnapshot: Equatable, Sendable {
     var bodyFat: MeasurementSample? = nil
     /// The latest waist circumference, in cm.
     var waist: MeasurementSample? = nil
+    /// Kinds whose read failed this time, with the error. The rest are
+    /// shown as usual: steps keep working when sleep fails.
+    var readIssues: [HealthDataKind: String] = [:]
 
     /// 0...1 of the step goal.
     var stepsFraction: Double {
         stepsTarget > 0 ? min(Double(steps) / Double(stepsTarget), 1) : 0
     }
+}
+
+/// One kind of Apple Health data VESS reads, each read on its own.
+nonisolated enum HealthDataKind: String, CaseIterable, Sendable {
+    case steps, activeEnergy, workouts, weight, sleep, restingHeartRate, walkingHeartRate
+    case heartRateVariability, heartRate, stateOfMind, mindfulMinutes, bodyFat, waist
 }
 
 /// A sum over one hour, starting at `start`.

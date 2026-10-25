@@ -41,6 +41,21 @@ struct AppleHealthView: View {
                 ActivityFootnote(text: Text("iOS decides what VESS can read and doesn't tell apps what you turned off, so a type without data may simply be off. To change access, open the Health app, tap your profile, then Apps › VESS."))
             }
 
+            #if DEBUG
+            // The real error, per kind, for device testing.
+            if let error = health.lastError {
+                VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                    VESSSectionHeader(title: "Debug · last error")
+                    Text(verbatim: error)
+                        .vessTextStyle(.caption)
+                        .foregroundStyle(VESSColor.secondaryText)
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("health.debugError")
+                }
+            }
+            #endif
+
             switch health.state {
             case .notConnected where health.canConnect:
                 Button("Connect Apple Health") { Task { await health.connect(stepsTarget: stepsTarget) } }

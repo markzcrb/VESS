@@ -1,17 +1,34 @@
 import Foundation
 import HealthKit
+import OSLog
 
 /// Reads activity from Apple Health. Read-only: VESS asks for no write
 /// access. Views never use this directly; `HealthDataStore` does.
 nonisolated protocol HealthService: Sendable {
     /// Whether this device has Apple Health.
     var isAvailable: Bool { get }
-    /// Shows the system sheet for steps, workouts, active energy and weight.
+    /// Shows the system sheet for the types VESS reads. Only types iOS
+    /// accepts are asked for, so one unavailable type can't block the rest.
     func requestAuthorization() async throws
+    /// True when some type VESS reads hasn't been asked for yet: a build
+    /// that reads more (sleep, heart) than the one the user connected with.
+    func needsAuthorization() async -> Bool
     /// The last `HealthKitService.historyDays` days. `nil` when Health shares
     /// nothing at all: access is off, or there is no data. Health doesn't
-    /// say which.
+    /// say which. Each kind is read on its own; a kind that fails is listed
+    /// in `readIssues` and the others are kept. Throws only when every read
+    /// failed.
     func snapshot(now: Date, calendar: Calendar, stepsTarget: Int) async throws -> HealthSnapshot?
+}
+
+extension HealthService {
+    func needsAuthorization() async -> Bool { false }
+}
+
+/// Every read failed; `issues` says why, per kind.
+nonisolated struct HealthReadFailure: Error, CustomStringConvertible {
+    let issues: [HealthDataKind: String]
+    var description: String { issues.map { "\($0.key.rawValue): \($0.value)" }.sorted().joined(separator: "; ") }
 }
 
 /// The live reader, built on HealthKit's async query descriptors.
@@ -20,10 +37,11 @@ nonisolated struct HealthKitService: HealthService {
     static let historyDays = 61
 
     private let store = HKHealthStore()
+    private let logger = Logger(subsystem: "VESS", category: "Health")
 
     /// Read only. Sleep, heart and stress (H01–H03), body fat and waist
     /// (H04), State of Mind and mindful minutes as stress signals.
-    private var readTypes: Set<HKObjectType> {
+    private static var candidateTypes: [HKObjectType] {
         [
             HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.bodyMass), HKObjectType.workoutType(),
             HKCategoryType(.sleepAnalysis), HKQuantityType(.restingHeartRate), HKQuantityType(.heartRateVariabilitySDNN),
@@ -37,39 +55,80 @@ nonisolated struct HealthKitService: HealthService {
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
+    /// The types iOS accepts, checked one by one without showing anything,
+    /// so an invalid or unavailable type is left out instead of failing
+    /// the whole request.
+    private func readTypes() async -> Set<HKObjectType> {
+        var accepted: Set<HKObjectType> = []
+        for type in Self.candidateTypes {
+            do {
+                _ = try await store.statusForAuthorizationRequest(toShare: [], read: [type])
+                accepted.insert(type)
+            } catch {
+                logger.error("Health type \(type.identifier, privacy: .public) can't be requested: \(HealthReadLog.describe(error), privacy: .public)")
+            }
+        }
+        return accepted
+    }
+
     func requestAuthorization() async throws {
-        try await store.requestAuthorization(toShare: [], read: readTypes)
+        let types = await readTypes()
+        do {
+            try await store.requestAuthorization(toShare: [], read: types)
+        } catch {
+            logger.error("Health authorization failed: \(HealthReadLog.describe(error), privacy: .public)")
+            throw error
+        }
+    }
+
+    func needsAuthorization() async -> Bool {
+        let types = await readTypes()
+        do {
+            let status = try await store.statusForAuthorizationRequest(toShare: [], read: types)
+            logger.notice("Health request status for \(types.count) types: \(status.rawValue) (1 = should request, 2 = unnecessary)")
+            return status == .shouldRequest
+        } catch {
+            logger.error("Health request status failed: \(HealthReadLog.describe(error), privacy: .public)")
+            return false
+        }
     }
 
     func snapshot(now: Date, calendar: Calendar, stepsTarget: Int) async throws -> HealthSnapshot? {
         let today = calendar.startOfDay(for: now)
         guard let start = calendar.date(byAdding: .day, value: -(Self.historyDays - 1), to: today),
               let end = calendar.date(byAdding: .day, value: 1, to: today) else { return nil }
-
-        async let steps = hourly(.stepCount, unit: .count(), from: start, to: end)
-        async let energy = hourly(.activeEnergyBurned, unit: .kilocalorie(), from: start, to: end)
-        async let workouts = workouts(from: start, to: end)
-        async let weight = latestWeight()
-        async let weightHistory = weights(since: calendar.date(byAdding: .weekOfYear, value: -12, to: today) ?? today)
-        let (hourlySteps, hourlyEnergy, recorded, latestWeight, weights) = try await (steps, energy, workouts, weight, weightHistory)
-
         let sleepStart = calendar.date(byAdding: .day, value: -Self.sleepDays, to: today) ?? start
+        let weightStart = calendar.date(byAdding: .weekOfYear, value: -12, to: today) ?? today
         let beatsPerMinute = HKUnit.count().unitDivided(by: .minute())
-        async let sleep = sleepSamples(from: sleepStart, to: end)
-        async let resting = daily(.restingHeartRate, unit: beatsPerMinute, from: start, to: end)
-        async let walking = daily(.walkingHeartRateAverage, unit: beatsPerMinute, from: start, to: end)
-        async let variability = samples(.heartRateVariabilitySDNN, unit: .secondUnit(with: .milli), from: start, to: end)
-        async let heartToday = hourlyRange(.heartRate, unit: beatsPerMinute, from: today, to: end)
-        async let mood = stateOfMind(from: start, to: end)
-        async let mindful = mindfulMinutes(from: today, to: end)
-        async let fat = latest(.bodyFatPercentage, unit: .percent())
-        async let waistSize = latest(.waistCircumference, unit: .meterUnit(with: .centi))
+        let log = HealthReadLog()
+
+        async let steps = log.read(.steps, empty: []) { try await hourly(.stepCount, unit: .count(), from: start, to: end) }
+        async let energy = log.read(.activeEnergy, empty: []) { try await hourly(.activeEnergyBurned, unit: .kilocalorie(), from: start, to: end) }
+        async let workouts = log.read(.workouts, empty: []) { try await workouts(from: start, to: end) }
+        async let weight = log.read(.weight, empty: nil) { try await latestWeight() }
+        async let weightHistory = log.read(.weight, empty: []) { try await weights(since: weightStart) }
+        async let sleep = log.read(.sleep, empty: []) { try await sleepSamples(from: sleepStart, to: end) }
+        async let resting = log.read(.restingHeartRate, empty: []) { try await daily(.restingHeartRate, unit: beatsPerMinute, from: start, to: end) }
+        async let walking = log.read(.walkingHeartRate, empty: []) { try await daily(.walkingHeartRateAverage, unit: beatsPerMinute, from: start, to: end) }
+        async let variability = log.read(.heartRateVariability, empty: []) { try await samples(.heartRateVariabilitySDNN, unit: .secondUnit(with: .milli), from: start, to: end) }
+        async let heartToday = log.read(.heartRate, empty: []) { try await hourlyRange(.heartRate, unit: beatsPerMinute, from: today, to: end) }
+        async let mood = log.read(.stateOfMind, empty: []) { try await stateOfMind(from: start, to: end) }
+        async let mindful = log.read(.mindfulMinutes, empty: nil) { try await mindfulMinutes(from: today, to: end) }
+        async let fat = log.read(.bodyFat, empty: nil) { try await latest(.bodyFatPercentage, unit: .percent()) }
+        async let waistSize = log.read(.waist, empty: nil) { try await latest(.waistCircumference, unit: .meterUnit(with: .centi)) }
+
+        let (hourlySteps, hourlyEnergy, recorded, latestWeight, weights) = await (steps, energy, workouts, weight, weightHistory)
         let (sleepSamples, restingHR, walkingHR, hrv, heartRanges, moods, mindfulToday, bodyFat, waist) =
-            try await (sleep, resting, walking, variability, heartToday, mood, mindful, fat, waistSize)
+            await (sleep, resting, walking, variability, heartToday, mood, mindful, fat, waistSize)
+        let issues = log.issues
 
         let hasAny = !hourlySteps.isEmpty || !hourlyEnergy.isEmpty || !recorded.isEmpty || !sleepSamples.isEmpty
             || !restingHR.isEmpty || !hrv.isEmpty || latestWeight != nil || bodyFat != nil
-        guard hasAny else { return nil }
+        guard hasAny else {
+            // Nothing at all: "nothing shared" if every read worked, else the reads failed.
+            if issues.isEmpty { return nil }
+            throw HealthReadFailure(issues: issues)
+        }
         return HealthSnapshot(
             steps: Int(ActivityTrends.total(hourlySteps, on: now, calendar: calendar) ?? 0),
             stepsTarget: stepsTarget,
@@ -88,7 +147,8 @@ nonisolated struct HealthKitService: HealthService {
             stateOfMind: moods,
             mindfulMinutesToday: mindfulToday,
             bodyFat: bodyFat.map { MeasurementSample(value: $0.value * 100, measuredAt: $0.measuredAt) },
-            waist: waist
+            waist: waist,
+            readIssues: issues
         )
     }
 
