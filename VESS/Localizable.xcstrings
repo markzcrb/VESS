@@ -4712,6 +4712,9 @@
     "Replace meal" : {
 
     },
+    "resets %@" : {
+
+    },
     "Resets at %@." : {
 
     },
@@ -5377,19 +5380,6 @@
     "The number under the barcode." : {
 
     },
-    "The photo is used only to estimate this meal, then dropped." : {
-
-    },
-    "The photo is used only to estimate this meal, then dropped. · ^[%lld estimate](inflect: true) left today · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "The photo is used only to estimate this meal, then dropped. · ^[%1$lld estimate](inflect: true) left today · %2$@"
-          }
-        }
-      }
-    },
     "The photo, made smaller and without location or other details from the camera." : {
 
     },
@@ -5704,6 +5694,9 @@
 
     },
     "Used only for the energy estimate." : {
+
+    },
+    "Used only for this estimate, then deleted." : {
 
     },
     "Used only to estimate energy needs" : {

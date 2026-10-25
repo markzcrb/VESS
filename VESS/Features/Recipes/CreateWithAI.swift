@@ -259,6 +259,11 @@ enum AIQuotaText {
     static func resets(after now: Date) -> String {
         String(localized: "Resets at \(AIQuota.resetTime(after: now).formatted(date: .omitted, time: .shortened)).")
     }
+
+    /// "resets 1:00", for a short line after "9 left today ·".
+    static func resetsShort(after now: Date) -> String {
+        String(localized: "resets \(AIQuota.resetTime(after: now).formatted(date: .omitted, time: .shortened))")
+    }
 }
 
 /// "+ Pick more": any pantry item as a must-use.

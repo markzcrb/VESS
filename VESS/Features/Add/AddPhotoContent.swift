@@ -16,6 +16,10 @@ struct AddPhotoContent: View {
     @Environment(LocalStore.self) private var store
     @Environment(FoodLogUndo.self) private var undo
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// The camera page's visible height, so the square viewfinder leaves
+    /// room for the shutter on a small screen (SE).
+    @State private var visibleHeight: CGFloat = 0
 
     @AppStorage("photo.remaining") private var remaining = -1
     @AppStorage("photo.remainingDay") private var remainingDay = ""
@@ -127,9 +131,9 @@ struct AddPhotoContent: View {
                         .padding(VESSSpacing.lg)
                     }
                 }
-                // Square, so the shutter stays on screen.
+                // Square, and at most half the page, so the shutter stays on screen.
                 .aspectRatio(1, contentMode: .fit)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: visibleHeight > 0 ? visibleHeight * 0.5 : nil)
                 .accessibilityElement(children: .combine)
 
                 HStack {
@@ -177,22 +181,41 @@ struct AddPhotoContent: View {
                 }
                 #endif
 
-                Group {
-                    if let left = remainingToday {
-                        Text("The photo is used only to estimate this meal, then dropped. · ^[\(left) estimate](inflect: true) left today · \(AIQuotaText.resets(after: AppClock.now))")
-                    } else {
-                        Text("The photo is used only to estimate this meal, then dropped.")
-                    }
-                }
-                .vessTextStyle(.caption)
-                .foregroundStyle(VESSColor.tertiaryText)
-                .fixedSize(horizontal: false, vertical: true)
+
+                // At accessibility sizes it ends the page, so the shutter comes first.
+                if dynamicTypeSize.isAccessibilitySize { footer.padding(.horizontal, -VESSSpacing.screenInset) }
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .vessContentTop(VESSSpacing.md)
-            .padding(.bottom, VESSSpacing.xl)
+            .padding(.bottom, VESSSpacing.md)
         }
+        // Pinned above the safe area, so it's never cut off at the bottom.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !dynamicTypeSize.isAccessibilitySize { footer }
+        }
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { visibleHeight = $0 }
         .task { await camera.start() }
+    }
+
+    /// Two short lines: what happens to the photo, then what's left today.
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+            Text("Used only for this estimate, then deleted.")
+                .foregroundStyle(VESSColor.secondaryText)
+            if let left = remainingToday {
+                Text("\(left) left today · \(AIQuotaText.resetsShort(after: AppClock.now))")
+                    .foregroundStyle(VESSColor.tertiaryText)
+            }
+        }
+        .vessTextStyle(.caption)
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, VESSSpacing.screenInset)
+        .padding(.top, VESSSpacing.sm)
+        .padding(.bottom, VESSSpacing.xs)
+        .background(VESSColor.background)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("photo.footer")
     }
 
     private var looking: some View {
@@ -444,6 +467,9 @@ private struct EstimatedItemRow: View {
     let onDelete: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// The camera page's visible height, so the square viewfinder leaves
+    /// room for the shutter on a small screen (SE).
+    @State private var visibleHeight: CGFloat = 0
     @State private var kcalText = ""
 
     /// Items added by hand: kcal typed, not an estimate.
