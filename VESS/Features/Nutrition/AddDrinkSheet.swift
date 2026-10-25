@@ -650,7 +650,7 @@ struct DrinkTimeRow: View {
     }
 }
 
-/// One drink: time, icon, name, and its volume with "counts N" when only a
+/// One drink: time, icon, name, and its volume with "counts as N ml" when only a
 /// share counts toward water.
 struct DrinkLogRow: View {
     enum Value { case volume, caffeine }
@@ -681,16 +681,26 @@ struct DrinkLogRow: View {
                     }
                     .vessTextStyle(.caption)
                     .monospacedDigit()
+                    .fixedSize()
                     // The screen's one data hue: water here, caffeine on Caffeine.
                     Image(systemName: log.drinkType.symbol)
                         .foregroundStyle(value == .caffeine ? VESSColor.carbs : VESSColor.water)
                         .frame(width: VESSSize.rowIcon)
-                    name
-                    Spacer(minLength: VESSSpacing.sm)
-                    Text(amount)
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.secondaryText)
-                        .layoutPriority(1)
+                    // The name takes the flexible width; the amount keeps its
+                    // natural width beside it, or moves under the name when
+                    // both don't fit, so no word is ever broken.
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: VESSSpacing.sm) {
+                            name.fixedSize()
+                            Spacer(minLength: VESSSpacing.sm)
+                            amountText.fixedSize()
+                        }
+                        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                            name.fixedSize(horizontal: false, vertical: true)
+                            amountText.fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
         }
@@ -706,7 +716,13 @@ struct DrinkLogRow: View {
             .foregroundStyle(VESSColor.text)
     }
 
-    /// "500 ml", "300 ml · counts 270" for a partial share, or
+    private var amountText: some View {
+        Text(amount)
+            .vessTextStyle(.bodyS)
+            .foregroundStyle(VESSColor.secondaryText)
+    }
+
+    /// "500 ml", "300 ml · counts as 270 ml" for a partial share, or
     /// "330 ml · 1.3 drinks" for alcohol.
     private var amount: String {
         let volume = VESSFormat.milliliters(log.volumeMilliliters)
@@ -720,7 +736,7 @@ struct DrinkLogRow: View {
                 : String(localized: "\(volume) ml · \(number) drinks")
         }
         guard log.hydrationContributionPercent < 100 else { return String(localized: "\(volume) ml") }
-        return String(localized: "\(volume) ml · counts \(VESSFormat.milliliters(log.hydrationMilliliters))")
+        return String(localized: "\(volume) ml · counts as \(VESSFormat.milliliters(log.hydrationMilliliters)) ml")
     }
 
     private static let widestTime: Date = {
@@ -729,7 +745,8 @@ struct DrinkLogRow: View {
 }
 
 /// TODAY: one dot per drink from 06 to 24 (larger for big drinks), and a
-/// line at now. Decorative for VoiceOver beyond its summary.
+/// line at now. From 00 when any drink (or now) is before 06, so nothing is
+/// drawn away from its real time. Decorative for VoiceOver beyond its summary.
 struct HydrationTimeline: View {
     let logs: [HydrationLog]
     /// `nil` for a past day.
@@ -738,13 +755,17 @@ struct HydrationTimeline: View {
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = 36
 
-    private static let startHour = 6
-    private static let spanMinutes = Double((24 - startHour) * 60)
+    /// 06, or 00 when a drink or now is earlier than 06.
+    static func startHour(logs: [HydrationLog], now: Date?, calendar: Calendar) -> Int {
+        let times = logs.map(\.loggedAt) + (now.map { [$0] } ?? [])
+        return times.contains { calendar.component(.hour, from: $0) < 6 } ? 0 : 6
+    }
     /// Dot diameters: a drink of 400 ml or more is drawn larger.
     private static let smallDot: CGFloat = 9
     private static let largeDot: CGFloat = 13
 
     var body: some View {
+        let start = Self.startHour(logs: logs, now: now, calendar: calendar)
         VStack(spacing: VESSSpacing.xs) {
             GeometryReader { proxy in
                 let width = proxy.size.width
@@ -759,19 +780,19 @@ struct HydrationTimeline: View {
                         Circle()
                             .fill(VESSColor.water)
                             .frame(width: diameter, height: diameter)
-                            .position(x: x(for: log.loggedAt, width: width, inset: diameter / 2), y: middle)
+                            .position(x: x(for: log.loggedAt, start: start, width: width, inset: diameter / 2), y: middle)
                     }
                     if let now {
                         Rectangle()
                             .fill(VESSColor.secondaryText)
                             .frame(width: 1, height: proxy.size.height)
-                            .position(x: x(for: now, width: width, inset: 0.5), y: middle)
+                            .position(x: x(for: now, start: start, width: width, inset: 0.5), y: middle)
                     }
                 }
             }
             .frame(height: height)
             HStack {
-                ForEach([6, 12, 18, 24], id: \.self) { hour in
+                ForEach(Array(stride(from: start, through: 24, by: 6)), id: \.self) { hour in
                     Text(verbatim: String(format: "%02d", hour))
                     if hour != 24 { Spacer(minLength: 0) }
                 }
@@ -785,10 +806,10 @@ struct HydrationTimeline: View {
         .accessibilityValue(summary)
     }
 
-    private func x(for date: Date, width: CGFloat, inset: CGFloat) -> CGFloat {
+    private func x(for date: Date, start: Int, width: CGFloat, inset: CGFloat) -> CGFloat {
         let parts = calendar.dateComponents([.hour, .minute], from: date)
-        let minutes = Double(((parts.hour ?? 0) - Self.startHour) * 60 + (parts.minute ?? 0))
-        let fraction = min(max(minutes / Self.spanMinutes, 0), 1)
+        let minutes = Double(((parts.hour ?? 0) - start) * 60 + (parts.minute ?? 0))
+        let fraction = min(max(minutes / Double((24 - start) * 60), 0), 1)
         return min(max(CGFloat(fraction) * width, inset), width - inset)
     }
 

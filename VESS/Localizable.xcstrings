@@ -496,12 +496,12 @@
     "%@ ml · 1 drink" : {
 
     },
-    "%@ ml · counts %@" : {
+    "%@ ml · counts as %@ ml" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ ml · counts %2$@"
+            "value" : "%1$@ ml · counts as %2$@ ml"
           }
         }
       }
