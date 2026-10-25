@@ -158,13 +158,18 @@ struct AccountSignInForm: View {
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
                 .accessibilityIdentifier("account.code")
-                // A new try clears the last message.
-                .onChange(of: code) { error = nil }
+                // Pasted or autofilled codes keep only their 6 digits; a new
+                // try clears the last message.
+                .onChange(of: code) { _, new in
+                    let normalized = EmailCode.normalized(new)
+                    if normalized != new { code = normalized }
+                    error = nil
+                }
             Button(action: verify) {
                 Text(isWorking ? "Checking…" : "Sign in")
             }
             .buttonStyle(.vessPrimary)
-            .disabled(code.filter(\.isNumber).count < 6 || isWorking)
+            .disabled(!EmailCode.isComplete(code) || isWorking)
             .accessibilityIdentifier("account.verify")
             // Side by side; stacked at accessibility sizes.
             let layout = dynamicTypeSize.isAccessibilitySize
@@ -200,8 +205,8 @@ struct AccountSignInForm: View {
     }
 
     private func verify() {
-        guard case .code(let address) = step else { return }
-        run { try await account.verifyEmailCode(code.filter(\.isNumber), email: address) }
+        guard case .code(let address) = step, EmailCode.isComplete(code) else { return }
+        run { try await account.verifyEmailCode(code, email: address) }
     }
 
     // MARK: Sign in with Apple

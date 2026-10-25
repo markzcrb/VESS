@@ -107,7 +107,9 @@ nonisolated struct AuthClient: Sendable {
     }
 
     func verifyEmailCode(_ code: String, email: String) async throws -> AuthSession {
-        try await session(path: "verify", body: ["type": "email", "email": email, "token": code])
+        // Never sent unless it is exactly 6 digits.
+        guard EmailCode.isComplete(code) else { throw BackendError.authRejected("invalid_code") }
+        return try await session(path: "verify", body: ["type": "email", "email": email, "token": code])
     }
 
     func refresh(_ refreshToken: String) async throws -> AuthSession {
@@ -237,4 +239,20 @@ nonisolated final class MemorySessionStore: SessionStore, @unchecked Sendable {
     func load() -> AuthSession? { lock.withLock { session } }
     func save(_ session: AuthSession) { lock.withLock { self.session = session } }
     func clear() { lock.withLock { session = nil } }
+}
+
+/// The sign-in code Supabase emails: exactly 6 digits (the template holds
+/// only `{{ .Token }}`, no link). Typed, pasted ("123 456", "123-456") or
+/// filled from Mail by iOS one-time-code autofill.
+nonisolated enum EmailCode {
+    static let length = 6
+
+    /// Digits only, at most 6: spaces and dashes from a paste are dropped.
+    static func normalized(_ text: String) -> String {
+        String(text.filter(\.isASCII).filter(\.isNumber).prefix(length))
+    }
+
+    static func isComplete(_ code: String) -> Bool {
+        code.count == length && code.allSatisfy { $0.isASCII && $0.isNumber }
+    }
 }

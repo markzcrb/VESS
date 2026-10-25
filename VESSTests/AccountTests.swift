@@ -79,6 +79,22 @@ struct AccountTests {
         #expect(account.isSignedIn && store.load()?.accessToken == "a1")
     }
 
+    @Test("The email code: pasted spaces and dashes are dropped, exactly 6 digits, nothing else is sent")
+    func emailCodeFormat() async {
+        #expect(EmailCode.normalized(" 123 456 ") == "123456")
+        #expect(EmailCode.normalized("123-456") == "123456")
+        #expect(EmailCode.normalized("12345678") == "123456", "At most 6")
+        #expect(EmailCode.normalized("Your code: 482 913") == "482913")
+        #expect(EmailCode.isComplete("482913") && !EmailCode.isComplete("48291") && !EmailCode.isComplete("4829130"))
+        #expect(!EmailCode.isComplete("٤٨٢٩١٣"), "ASCII digits only")
+        let transport = ScriptedTransport([])
+        let account = AccountStore(config: config, transport: transport, store: MemorySessionStore())
+        await #expect(throws: BackendError.authRejected("invalid_code")) {
+            try await account.verifyEmailCode("12345", email: "mark@example.com")
+        }
+        #expect(transport.paths.isEmpty, "A short code never reaches the server")
+    }
+
     @Test("A wrong code is rejected and leaves you signed out")
     func wrongCode() async {
         let transport = ScriptedTransport([(403, #"{"error_code":"otp_expired","msg":"Token has expired or is invalid"}"#)])

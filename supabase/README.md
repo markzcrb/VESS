@@ -29,4 +29,8 @@ Headers: `Authorization: Bearer <access_token>`, `apikey: <publishable key>`.
 
 ## Auth
 - Sign in with Apple (native, `signInWithIdToken` / `grant_type=id_token`): enable the Apple provider with the app's bundle ID as Client ID. Needs a paid Apple Developer account.
-- Email one-time code (fallback and for testing before the paid account): Email provider on; the email template must include `{{ .Token }}`.
+- Email one-time code (fallback and for testing before the paid account): Email provider on.
+  - **Sending:** through Resend SMTP (Authentication › SMTP Settings), not Supabase's built-in mailer. Sender `"VESS" <vess@mail.commiscuisine.com>`. This address is temporary until VESS has its own domain; when it changes, verify the new domain in Resend and update the sender here and in SMTP Settings.
+  - **Templates:** "Confirm sign up" and "Magic link / OTP" contain only the code, `{{ .Token }}`, and no link. The app has no deep-link handling for sign-in.
+  - **Code:** Email OTP length 6 (Authentication › Providers › Email). The app accepts exactly 6 ASCII digits (`EmailCode` in `AuthClient.swift`): the field uses iOS one-time-code autofill (`.oneTimeCode`) and paste, drops spaces and dashes, and never sends anything shorter. Changing the length on the server means changing `EmailCode.length` and the "6-digit code" copy in `AccountView`.
+  - **Site URL:** set to a real URL, not localhost.
