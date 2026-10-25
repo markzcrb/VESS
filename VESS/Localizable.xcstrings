@@ -1899,6 +1899,9 @@
     "Apple Health isn't available on this device, so only workouts you enter appear." : {
 
     },
+    "Apple Health isn't sharing %@" : {
+
+    },
     "Apple Watch" : {
 
     },
@@ -2136,6 +2139,9 @@
 
     },
     "Changes the strength" : {
+
+    },
+    "Check access" : {
 
     },
     "Check this" : {
@@ -2409,6 +2415,9 @@
 
     },
     "Days" : {
+
+    },
+    "Days appear here once Apple Health has heart data. Resting heart rate needs Apple Watch." : {
 
     },
     "Days at %@ or more" : {
@@ -3128,6 +3137,9 @@
 
     },
     "Heart" : {
+
+    },
+    "heart data" : {
 
     },
     "Heart rate variability" : {
@@ -3911,7 +3923,7 @@
     "Needs an account. You can turn this off any time in You › Privacy and data." : {
 
     },
-    "Needs today's HRV and resting heart rate" : {
+    "Needs today's HRV and resting heart rate from Apple Watch" : {
 
     },
     "Neutral" : {
@@ -3944,6 +3956,9 @@
     "Next week" : {
 
     },
+    "Nights appear here once Apple Health has sleep data. Sleep needs Apple Watch or a sleep app." : {
+
+    },
     "no %@" : {
 
     },
@@ -3959,7 +3974,7 @@
     "No data" : {
 
     },
-    "No data today yet" : {
+    "No data today" : {
 
     },
     "No date" : {
@@ -4019,16 +4034,19 @@
     "No recipes match “%@”. Try an ingredient, such as salmon or oats." : {
 
     },
+    "No resting heart rate recorded today" : {
+
+    },
     "No restrictions" : {
 
     },
     "No saved or common foods match “%@”." : {
 
     },
-    "No sleep from last night" : {
+    "No sleep recorded" : {
 
     },
-    "No sleep from last night yet" : {
+    "No sleep recorded last night" : {
 
     },
     "No source connected" : {
@@ -4077,6 +4095,9 @@
 
     },
     "Not reported" : {
+
+    },
+    "Not shared · check access" : {
 
     },
     "Not signed in" : {
@@ -4974,6 +4995,9 @@
 
     },
     "Skipped · you don't eat it" : {
+
+    },
+    "sleep" : {
 
     },
     "Sleep" : {

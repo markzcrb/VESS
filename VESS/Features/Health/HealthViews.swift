@@ -23,12 +23,12 @@ struct HealthHubView: View {
                 let sleep = tile(.sleep, HealthTile(
                     systemImage: "moon", iconTint: VESSColor.sleep, label: "Sleep",
                     value: Text(verbatim: readings?.lastNight.map { HealthFormat.duration(minutes: $0.asleepMinutes) } ?? "—"),
-                    caption: readings?.lastNight == nil ? Text("No sleep from last night") : Text("Last night")
+                    caption: caption(readings?.lastNight != nil, kinds: [.sleep], normal: Text("Last night"), empty: Text("No sleep recorded"))
                 ))
                 let heart = tile(.heart, HealthTile(
                     systemImage: "heart", iconTint: VESSColor.heart, label: "Heart",
                     value: readings?.restingToday.map { Text("\(HealthFormat.whole($0)) bpm") } ?? Text(verbatim: "—"),
-                    caption: Text("Resting")
+                    caption: caption(readings?.restingToday != nil, kinds: [.restingHeartRate], normal: Text("Resting"), empty: Text("No data today"))
                 ))
                 let stress = tile(.stress, stressTile(readings?.stress))
                 let bodyLink = tile(.body, bodyTile(snapshot: snapshot, now: now))
@@ -84,6 +84,13 @@ struct HealthHubView: View {
         .toolbar(.hidden, for: .tabBar)
     }
 
+    /// The tile's caption; with no value, "Not shared" when Health isn't
+    /// sharing that kind, else the empty text.
+    private func caption(_ hasValue: Bool, kinds: [HealthDataKind], normal: Text, empty: Text) -> Text {
+        if hasValue { return normal }
+        return HealthAccessRow.isShown(health.state, kinds: kinds) ? Text("Not shared · check access") : empty
+    }
+
     private func tile(_ route: HealthRoute, _ content: HealthTile) -> some View {
         NavigationLink(value: route) { content }
             .buttonStyle(.plain)
@@ -97,7 +104,8 @@ struct HealthHubView: View {
             HealthTile(systemImage: "waveform.path.ecg", iconTint: VESSColor.water, label: "Stress", value: Text(verbatim: "—"),
                        caption: Text("Building your baseline · \(days) of \(StressRules.minimumDays) days"))
         case nil:
-            HealthTile(systemImage: "waveform.path.ecg", iconTint: VESSColor.water, label: "Stress", value: Text(verbatim: "—"), caption: Text("No data today yet"))
+            HealthTile(systemImage: "waveform.path.ecg", iconTint: VESSColor.water, label: "Stress", value: Text(verbatim: "—"),
+                       caption: caption(false, kinds: [.heartRateVariability, .restingHeartRate], normal: Text(verbatim: ""), empty: Text("No data today")))
         }
     }
 
@@ -162,11 +170,14 @@ struct SleepView: View {
             VESSScoreRing(
                 value: night.map { HealthFormat.duration(minutes: $0.asleepMinutes) } ?? "—",
                 label: "Sleep",
-                sublabel: night == nil ? Text("No sleep from last night yet") : Text("Last night · Apple Health"),
+                sublabel: Text("Last night · Apple Health"),
                 progress: (night?.asleepMinutes ?? 0) / Double(target),
-                metric: .sleep
+                metric: .sleep,
+                emptyCaption: Text("No sleep recorded last night")
             )
             .frame(maxWidth: .infinity)
+
+            HealthAccessRow(kinds: [.sleep], what: String(localized: "sleep"))
 
             if let line = readings.flatMap(editorial) {
                 Text(line)
@@ -182,7 +193,11 @@ struct SleepView: View {
                     title: "Last 7 nights",
                     detail: readings?.weekAverage.map { Text("Average \(HealthFormat.duration(minutes: $0))") }
                 )
-                HealthWeekBars(days: readings?.week ?? [], metric: .sleep)
+                if readings?.weekAverage == nil {
+                    HealthEmptyLine(text: Text("Nights appear here once Apple Health has sleep data. Sleep needs Apple Watch or a sleep app."))
+                } else {
+                    HealthWeekBars(days: readings?.week ?? [], metric: .sleep)
+                }
                 VESSRowGroup {
                     Button { editsTarget = true } label: {
                         VESSListRow(title: Text("Sleep target"), value: Text(verbatim: HealthFormat.hours(minutes: target)))
@@ -337,9 +352,12 @@ struct HeartView: View {
                 label: "Resting",
                 sublabel: readings?.restingUsual.map { Text("Today · your usual \(HealthFormat.range($0))") } ?? Text("Today"),
                 progress: readings.flatMap { r in r.restingToday.flatMap { today in r.restingUsual.map { HeartRules.ringFraction(today, in: $0) } } } ?? 0,
-                metric: .heart
+                metric: .heart,
+                emptyCaption: Text("No resting heart rate recorded today")
             )
             .frame(maxWidth: .infinity)
+
+            HealthAccessRow(kinds: [.restingHeartRate, .heartRateVariability, .heartRate], what: String(localized: "heart data"))
 
             if let line = readings.flatMap(editorial) {
                 Text(line)
@@ -377,11 +395,13 @@ struct HeartView: View {
                 }
             }
 
-            if let readings, readings.restingWeek.contains(where: { $0.value != nil }) {
-                VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                    VESSSectionHeader(title: "Resting · last 7 days")
+            VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                VESSSectionHeader(title: "Resting · last 7 days")
+                if let readings, readings.restingWeek.contains(where: { $0.value != nil }) {
                     // From 40 bpm, so day-to-day differences are visible.
                     HealthWeekBars(days: readings.restingWeek, metric: .heart, baseline: 40)
+                } else {
+                    HealthEmptyLine(text: Text("Days appear here once Apple Health has heart data. Resting heart rate needs Apple Watch."))
                 }
             }
 
@@ -482,6 +502,8 @@ struct StressView: View {
             ring(readings?.stress)
                 .frame(maxWidth: .infinity)
 
+            HealthAccessRow(kinds: [.heartRateVariability, .restingHeartRate], what: String(localized: "heart data"))
+
             if case .estimate(let today, let parts) = readings?.stress {
                 Text(editorial(today: today, parts: parts))
                     .vessTextStyle(.editorialM)
@@ -514,7 +536,8 @@ struct StressView: View {
             VESSScoreRing(value: "—", label: "Building your baseline", sublabel: Text("\(days) of \(StressRules.minimumDays) days"),
                           progress: Double(days) / Double(StressRules.minimumDays), metric: .water)
         case nil:
-            VESSScoreRing(value: "—", label: "Today, so far", sublabel: Text("Needs today's HRV and resting heart rate"), progress: 0, metric: .water)
+            VESSScoreRing(value: "—", label: "Today, so far", progress: 0, metric: .water,
+                          emptyCaption: Text("Needs today's HRV and resting heart rate from Apple Watch"))
         }
     }
 

@@ -284,3 +284,47 @@ struct HealthTile: View {
         .accessibilityElement(children: .combine)
     }
 }
+
+/// "Apple Health isn't sharing sleep · Check access", opening the Apple
+/// Health screen. Shown only when the sync failed, Health shares nothing,
+/// or reading these kinds failed; an empty but working read shows the
+/// screen's own empty line instead.
+struct HealthAccessRow: View {
+    let kinds: [HealthDataKind]
+    /// "sleep", "heart data".
+    let what: String
+
+    @Environment(HealthDataStore.self) private var health
+
+    static func isShown(_ state: HealthSyncState, kinds: [HealthDataKind]) -> Bool {
+        switch state {
+        case .available(let snapshot): kinds.contains { snapshot.readIssues[$0] != nil }
+        case .syncing: false
+        case .notConnected, .nothingShared, .failed: true
+        }
+    }
+
+    var body: some View {
+        if Self.isShown(health.state, kinds: kinds) {
+            NavigationLink(value: HealthRoute.appleHealth) {
+                VESSListRow(title: Text("Apple Health isn't sharing \(what)"), value: Text("Check access"))
+            }
+            .buttonStyle(.plain)
+            .vessHairlineBottom()
+            .accessibilityIdentifier("health.checkAccess")
+        }
+    }
+}
+
+/// One line where a chart would be, when there's nothing to draw yet.
+struct HealthEmptyLine: View {
+    let text: Text
+
+    var body: some View {
+        text
+            .vessTextStyle(.bodyS)
+            .foregroundStyle(VESSColor.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}

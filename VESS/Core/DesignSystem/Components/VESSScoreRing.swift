@@ -35,6 +35,9 @@ struct VESSScoreRing: View {
     let progress: Double
     var metric: VESSMetricKind = .fuel
     var diameter: CGFloat = VESSSize.heroRing
+    /// With no value: only "—" inside the ring and this one line under it
+    /// ("No sleep recorded last night"). Without it, the label stays inside.
+    var emptyCaption: Text?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -46,7 +49,14 @@ struct VESSScoreRing: View {
         // repeated at full size below it (J04).
         VStack(spacing: VESSSpacing.md) {
             ring
-            if dynamicTypeSize.isAccessibilitySize, let sublabel {
+            if isEmptyWithCaption, let emptyCaption {
+                emptyCaption
+                    .vessTextStyle(.bodyM)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityHidden(true)
+            } else if dynamicTypeSize.isAccessibilitySize, let sublabel {
                 sublabel
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.secondaryText)
@@ -61,7 +71,10 @@ struct VESSScoreRing: View {
         .accessibilityValue(accessibilityValue)
     }
 
+    private var isEmptyWithCaption: Bool { value == Self.empty && emptyCaption != nil }
+
     private var accessibilityValue: Text {
+        if isEmptyWithCaption, let emptyCaption { return emptyCaption }
         // "—" is read as "em dash"; say what it means instead.
         let value = self.value == Self.empty ? Text("No value yet") : Text(verbatim: "\(self.value)\(unit ?? "")")
         guard let sublabel else { return value }
@@ -94,11 +107,13 @@ struct VESSScoreRing: View {
                     }
                 }
                 .foregroundStyle(VESSColor.text)
-                Text(label)
-                    .vessTextStyle(.labelCaps)
-                    .foregroundStyle(VESSColor.text)
+                if !isEmptyWithCaption {
+                    Text(label)
+                        .vessTextStyle(.labelCaps)
+                        .foregroundStyle(VESSColor.text)
+                }
                 // At accessibility sizes the caption is shown once, below the ring.
-                if let sublabel, !dynamicTypeSize.isAccessibilitySize {
+                if let sublabel, !dynamicTypeSize.isAccessibilitySize, !isEmptyWithCaption {
                     sublabel
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.secondaryText)

@@ -56,6 +56,19 @@ struct HealthSyncTests {
         #expect(store.lastError == "sleep: y; steps: x")
     }
 
+    @Test("\"Isn't sharing · Check access\" shows when sync failed, nothing is shared, or that kind failed; not for an empty working read")
+    @MainActor
+    func accessRow() {
+        let fine = HealthSnapshot(steps: 1, stepsTarget: 8000, activeEnergyKilocalories: nil, updatedAt: .now)
+        var sleepFailed = fine
+        sleepFailed.readIssues = [.sleep: "com.apple.healthkit 5"]
+        #expect(!HealthAccessRow.isShown(.available(fine), kinds: [.sleep]), "Working read, just no sleep: the empty line instead")
+        #expect(HealthAccessRow.isShown(.available(sleepFailed), kinds: [.sleep]))
+        #expect(!HealthAccessRow.isShown(.available(sleepFailed), kinds: [.restingHeartRate]), "Heart isn't affected by sleep failing")
+        #expect(HealthAccessRow.isShown(.nothingShared, kinds: [.sleep]) && HealthAccessRow.isShown(.notConnected, kinds: [.sleep]))
+        #expect(HealthAccessRow.isShown(.failed(lastKnown: nil), kinds: [.sleep]) && !HealthAccessRow.isShown(.syncing, kinds: [.sleep]))
+    }
+
     @Test("Connected before new types were added: they're asked for once, then read")
     @MainActor
     func asksForNewTypesOnce() async {
