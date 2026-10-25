@@ -37,21 +37,37 @@ struct TodayMetricStrip: View {
     let summary: DaySummary
     let fuel: FuelScore?
     let health: HealthSnapshot?
+    /// Long-press (or the VoiceOver action) opens Health (H00).
+    var onHealth: () -> Void = {}
 
     var body: some View {
+        strip
+            .accessibilityAction(named: Text("Open Health"), onHealth)
+    }
+
+    /// Long-press on any ring opens the menu, also on the ones that link.
+    private var healthMenu: some View {
+        Button("Sleep, heart, stress and body", systemImage: "heart", action: onHealth)
+    }
+
+    private var strip: some View {
         VESSMetricStrip {
             VESSMetricStripItem(value: fuel.map { "\($0.value)" } ?? "—", label: "Fuel", progress: Double(fuel?.value ?? 0) / 100, metric: .fuel)
+                .contextMenu { healthMenu }
             NavigationLink(destination: EnergyDetailView()) {
                 percentItem(summary.consumed.calories, of: summary.targets.calories, label: "Energy", metric: .energy)
             }
             .buttonStyle(.plain)
+            .contextMenu { healthMenu }
             .accessibilityHint("Opens Energy")
             NavigationLink(destination: MacrosDetailView()) {
                 percentItem(summary.consumed.proteinGrams, of: summary.targets.proteinGrams, label: "Protein", metric: .protein)
             }
             .buttonStyle(.plain)
+            .contextMenu { healthMenu }
             .accessibilityHint("Opens Macros")
             percentItem(summary.hydration.consumedMilliliters, of: summary.hydration.targetMilliliters, label: "Water", metric: .water)
+                .contextMenu { healthMenu }
             NavigationLink(value: ActivityRoute.activity) {
                 VESSMetricStripItem(
                     value: health.map { "\(Int((Double($0.steps) / Double(max($0.stepsTarget, 1)) * 100).rounded()))" } ?? "—",
@@ -62,6 +78,7 @@ struct TodayMetricStrip: View {
                 )
             }
             .buttonStyle(.plain)
+            .contextMenu { healthMenu }
             .accessibilityHint("Opens Activity")
             .accessibilityIdentifier("today.activity")
         }

@@ -33,6 +33,7 @@ struct ProfileView: View {
                 .vessTabBarFade()
                 .toolbar(.hidden, for: .navigationBar)
                 .profileDestinations()
+                .healthDestinations()
                 .vessErrorAlert(isPresented: $showError)
             }
         }
@@ -52,7 +53,7 @@ struct ProfileView: View {
                     .vessTextStyle(.titleL)
                     .foregroundStyle(VESSColor.text)
                     .accessibilityAddTraits(.isHeader)
-                Text("\(Text(profile.goal.shortTitle)) · \(Text(profile.dietTitle)) · \(VESSFormat.calories(profile.nutritionTargets.calories)) kcal")
+                Text("\(Text(profile.effectiveGoal.shortTitle)) · \(Text(profile.dietTitle)) · \(VESSFormat.calories(profile.nutritionTargets.calories)) kcal")
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -142,6 +143,11 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: VESSSpacing.xs) {
             VESSSectionHeader(title: "More")
             VESSRowGroup {
+                NavigationLink(value: HealthRoute.hub) {
+                    VESSListRow(title: Text("Health"), subtitle: Text("Sleep, heart, stress and body"))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("you.health")
                 link(.body, title: "Body")
                 link(.habits, title: "Habits")
                 link(.supplements, title: "Supplements")

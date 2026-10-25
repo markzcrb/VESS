@@ -36,6 +36,21 @@ nonisolated struct UserProfile: Identifiable, Codable, Hashable, Sendable {
     /// from earlier builds until `UserProfile.migrated(_:)` fills it from
     /// `dietaryPreference`, `customDietDescription` and `otherRestrictions`.
     var nutritionPreferences: NutritionPreferences? = nil
+    /// Set in You › Body; kept on this iPhone. Hides BMI and anything about
+    /// losing weight.
+    var isPregnant: Bool? = nil
+    /// The sleep target on H01; `nil` is 8 h.
+    var sleepTargetMinutes: Int? = nil
+
+    static let defaultSleepTargetMinutes = 8 * 60
+
+    /// Offered unless Sex is Male; a stored value is ignored for Male.
+    var canBePregnant: Bool { sex != .male }
+    var pregnant: Bool { canBePregnant && (isPregnant ?? false) }
+    /// The goal screens and suggestions use: during pregnancy "lose weight"
+    /// counts as maintaining. The stored goal comes back when Pregnant is off.
+    var effectiveGoal: WellnessGoal { pregnant && goal == .loseWeight ? .maintainWeight : goal }
+    var dailySleepTargetMinutes: Int { sleepTargetMinutes ?? Self.defaultSleepTargetMinutes }
 
     static let defaultStepsTarget = 8_000
 

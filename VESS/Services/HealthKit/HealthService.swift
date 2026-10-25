@@ -21,9 +21,19 @@ nonisolated struct HealthKitService: HealthService {
 
     private let store = HKHealthStore()
 
+    /// Read only. Sleep, heart and stress (H01–H03), body fat and waist
+    /// (H04), State of Mind and mindful minutes as stress signals.
     private var readTypes: Set<HKObjectType> {
-        [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.bodyMass), HKObjectType.workoutType()]
+        [
+            HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.bodyMass), HKObjectType.workoutType(),
+            HKCategoryType(.sleepAnalysis), HKQuantityType(.restingHeartRate), HKQuantityType(.heartRateVariabilitySDNN),
+            HKQuantityType(.walkingHeartRateAverage), HKQuantityType(.heartRate), HKSampleType.stateOfMindType(),
+            HKCategoryType(.mindfulSession), HKQuantityType(.bodyFatPercentage), HKQuantityType(.waistCircumference),
+        ]
     }
+
+    /// Six weeks of sleep: 28 nights for "usual", five weeks for patterns.
+    static let sleepDays = 42
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
@@ -43,7 +53,23 @@ nonisolated struct HealthKitService: HealthService {
         async let weightHistory = weights(since: calendar.date(byAdding: .weekOfYear, value: -12, to: today) ?? today)
         let (hourlySteps, hourlyEnergy, recorded, latestWeight, weights) = try await (steps, energy, workouts, weight, weightHistory)
 
-        guard !hourlySteps.isEmpty || !hourlyEnergy.isEmpty || !recorded.isEmpty else { return nil }
+        let sleepStart = calendar.date(byAdding: .day, value: -Self.sleepDays, to: today) ?? start
+        let beatsPerMinute = HKUnit.count().unitDivided(by: .minute())
+        async let sleep = sleepSamples(from: sleepStart, to: end)
+        async let resting = daily(.restingHeartRate, unit: beatsPerMinute, from: start, to: end)
+        async let walking = daily(.walkingHeartRateAverage, unit: beatsPerMinute, from: start, to: end)
+        async let variability = samples(.heartRateVariabilitySDNN, unit: .secondUnit(with: .milli), from: start, to: end)
+        async let heartToday = hourlyRange(.heartRate, unit: beatsPerMinute, from: today, to: end)
+        async let mood = stateOfMind(from: start, to: end)
+        async let mindful = mindfulMinutes(from: today, to: end)
+        async let fat = latest(.bodyFatPercentage, unit: .percent())
+        async let waistSize = latest(.waistCircumference, unit: .meterUnit(with: .centi))
+        let (sleepSamples, restingHR, walkingHR, hrv, heartRanges, moods, mindfulToday, bodyFat, waist) =
+            try await (sleep, resting, walking, variability, heartToday, mood, mindful, fat, waistSize)
+
+        let hasAny = !hourlySteps.isEmpty || !hourlyEnergy.isEmpty || !recorded.isEmpty || !sleepSamples.isEmpty
+            || !restingHR.isEmpty || !hrv.isEmpty || latestWeight != nil || bodyFat != nil
+        guard hasAny else { return nil }
         return HealthSnapshot(
             steps: Int(ActivityTrends.total(hourlySteps, on: now, calendar: calendar) ?? 0),
             stepsTarget: stepsTarget,
@@ -53,8 +79,141 @@ nonisolated struct HealthKitService: HealthService {
             hourlyActiveEnergy: hourlyEnergy,
             workouts: recorded,
             latestWeight: latestWeight,
-            weights: weights
+            weights: weights,
+            sleep: sleepSamples,
+            restingHeartRate: restingHR,
+            heartRateVariability: hrv,
+            walkingHeartRate: walkingHR,
+            heartRateToday: heartRanges,
+            stateOfMind: moods,
+            mindfulMinutesToday: mindfulToday,
+            bodyFat: bodyFat.map { MeasurementSample(value: $0.value * 100, measuredAt: $0.measuredAt) },
+            waist: waist
         )
+    }
+
+    // MARK: Body signals
+
+    private func sleepSamples(from start: Date, to end: Date) async throws -> [SleepSample] {
+        let query = HKSampleQueryDescriptor(
+            predicates: [.categorySample(type: HKCategoryType(.sleepAnalysis), predicate: HKQuery.predicateForSamples(withStart: start, end: end))],
+            sortDescriptors: [SortDescriptor(\.startDate)],
+            limit: 5000
+        )
+        do {
+            return try await query.result(for: store).compactMap { sample in
+                guard let stage = Self.stage(HKCategoryValueSleepAnalysis(rawValue: sample.value)) else { return nil }
+                return SleepSample(
+                    start: sample.startDate, end: sample.endDate, stage: stage,
+                    isWatch: sample.sourceRevision.productType?.hasPrefix("Watch") == true
+                )
+            }
+        } catch let error as HKError where error.code == .errorNoData {
+            return []
+        }
+    }
+
+    private static func stage(_ value: HKCategoryValueSleepAnalysis?) -> SleepSample.Stage? {
+        switch value {
+        case .inBed: .inBed
+        case .asleepUnspecified: .asleep
+        case .asleepCore: .core
+        case .asleepDeep: .deep
+        case .asleepREM: .rem
+        case .awake: .awake
+        default: nil
+        }
+    }
+
+    /// One average per day.
+    private func daily(_ identifier: HKQuantityTypeIdentifier, unit: HKUnit, from start: Date, to end: Date) async throws -> [DailyValue] {
+        let query = HKStatisticsCollectionQueryDescriptor(
+            predicate: .quantitySample(type: HKQuantityType(identifier), predicate: HKQuery.predicateForSamples(withStart: start, end: end)),
+            options: .discreteAverage,
+            anchorDate: start,
+            intervalComponents: DateComponents(day: 1)
+        )
+        do {
+            return try await query.result(for: store).statistics().compactMap { statistics in
+                statistics.averageQuantity().map { DailyValue(day: statistics.startDate, value: $0.doubleValue(for: unit)) }
+            }
+        } catch let error as HKError where error.code == .errorNoData {
+            return []
+        }
+    }
+
+    private func samples(_ identifier: HKQuantityTypeIdentifier, unit: HKUnit, from start: Date, to end: Date) async throws -> [TimedValue] {
+        let query = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: HKQuantityType(identifier), predicate: HKQuery.predicateForSamples(withStart: start, end: end))],
+            sortDescriptors: [SortDescriptor(\.startDate)],
+            limit: 5000
+        )
+        do {
+            return try await query.result(for: store).map { TimedValue(date: $0.startDate, value: $0.quantity.doubleValue(for: unit)) }
+        } catch let error as HKError where error.code == .errorNoData {
+            return []
+        }
+    }
+
+    private func hourlyRange(_ identifier: HKQuantityTypeIdentifier, unit: HKUnit, from start: Date, to end: Date) async throws -> [HourlyRange] {
+        let query = HKStatisticsCollectionQueryDescriptor(
+            predicate: .quantitySample(type: HKQuantityType(identifier), predicate: HKQuery.predicateForSamples(withStart: start, end: end)),
+            options: [.discreteMin, .discreteMax],
+            anchorDate: start,
+            intervalComponents: DateComponents(hour: 1)
+        )
+        do {
+            return try await query.result(for: store).statistics().compactMap { statistics in
+                guard let low = statistics.minimumQuantity(), let high = statistics.maximumQuantity() else { return nil }
+                return HourlyRange(start: statistics.startDate, min: low.doubleValue(for: unit), max: high.doubleValue(for: unit))
+            }
+        } catch let error as HKError where error.code == .errorNoData {
+            return []
+        }
+    }
+
+    /// State of Mind, read only: the valence (−1 unpleasant … 1 pleasant).
+    private func stateOfMind(from start: Date, to end: Date) async throws -> [TimedValue] {
+        let query = HKSampleQueryDescriptor(
+            predicates: [.sample(type: HKSampleType.stateOfMindType(), predicate: HKQuery.predicateForSamples(withStart: start, end: end))],
+            sortDescriptors: [SortDescriptor(\.startDate)],
+            limit: 500
+        )
+        do {
+            return try await query.result(for: store).compactMap { sample in
+                (sample as? HKStateOfMind).map { TimedValue(date: $0.startDate, value: $0.valence) }
+            }
+        } catch let error as HKError where error.code == .errorNoData {
+            return []
+        }
+    }
+
+    private func mindfulMinutes(from start: Date, to end: Date) async throws -> Double? {
+        let query = HKSampleQueryDescriptor(
+            predicates: [.categorySample(type: HKCategoryType(.mindfulSession), predicate: HKQuery.predicateForSamples(withStart: start, end: end))],
+            sortDescriptors: [],
+            limit: 200
+        )
+        do {
+            let sessions = try await query.result(for: store)
+            guard !sessions.isEmpty else { return nil }
+            return sessions.reduce(0) { $0 + $1.endDate.timeIntervalSince($1.startDate) } / 60
+        } catch let error as HKError where error.code == .errorNoData {
+            return nil
+        }
+    }
+
+    private func latest(_ identifier: HKQuantityTypeIdentifier, unit: HKUnit) async throws -> MeasurementSample? {
+        let query = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: HKQuantityType(identifier))],
+            sortDescriptors: [SortDescriptor(\.endDate, order: .reverse)],
+            limit: 1
+        )
+        do {
+            return try await query.result(for: store).first.map { MeasurementSample(value: $0.quantity.doubleValue(for: unit), measuredAt: $0.endDate) }
+        } catch let error as HKError where error.code == .errorNoData {
+            return nil
+        }
     }
 
     // MARK: Queries

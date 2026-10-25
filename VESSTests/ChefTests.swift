@@ -167,6 +167,21 @@ struct ChefTests {
         #expect(try await full.remainingToday(kind: "chef") == 0)
     }
 
+    @Test("The app only reads ai_usage (GET); the only POST is the ai_daily_limit RPC")
+    @MainActor
+    func usageIsReadOnly() async throws {
+        let recorder = RecordingTransport()
+        let account = AccountStore(
+            config: SupabaseConfig(url: URL(string: "https://mock.vess.invalid")!, publishableKey: "key", appleSignInEnabled: false),
+            transport: recorder, store: MemorySessionStore(AIMockTransport.session)
+        )
+        _ = try await account.remainingToday(kind: "chef")
+        let requests = recorder.requests
+        let usage = requests.filter { $0.url?.path().contains("ai_usage") == true }
+        #expect(usage.count == 1 && usage.allSatisfy { $0.httpMethod == "GET" && $0.httpBody == nil })
+        #expect(requests.filter { $0.httpMethod != "GET" }.compactMap { $0.url?.path() } == ["/rest/v1/rpc/ai_daily_limit"])
+    }
+
     @Test("AI Chef has its own consent")
     func consent() {
         let defaults = UserDefaults(suiteName: "test.chef.\(UUID().uuidString)")!
@@ -175,5 +190,19 @@ struct ChefTests {
         #expect(!store.isGranted(.chef))
         store.grant(.chef)
         #expect(store.isGranted(.chef) && !store.isGranted(.photo))
+    }
+}
+
+/// Records what the app sends, and answers like the mock server.
+private final class RecordingTransport: HTTPTransport, @unchecked Sendable {
+    private let lock = NSLock()
+    private var recorded: [URLRequest] = []
+    private let mock = AIMockTransport(scenario: .ok)
+
+    var requests: [URLRequest] { lock.withLock { recorded } }
+
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        lock.withLock { recorded.append(request) }
+        return try await mock.send(request)
     }
 }

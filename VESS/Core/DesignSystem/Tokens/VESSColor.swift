@@ -59,6 +59,10 @@ enum VESSColor {
     static let activity = Color(.vessActivity)
     /// Cycle tracking: logged and estimated period days, the cycle ring.
     static let cycle = Color(.vessCycle)
+    /// Sleep (H01): the ring, stage bars, the hub icon.
+    static let sleep = Color(.vessSleep)
+    /// Heart (H02): the ring, range bars, the hub icon.
+    static let heart = Color(.vessHeart)
 
     // MARK: Status
 
@@ -123,7 +127,7 @@ enum VESSColor {
 
 /// Which metric a view is about. Drives its hue and screen atmosphere.
 enum VESSMetricKind {
-    case fuel, energy, protein, carbs, fat, water, activity, cycle
+    case fuel, energy, protein, carbs, fat, water, activity, cycle, sleep, heart
 
     var tint: Color {
         switch self {
@@ -135,12 +139,14 @@ enum VESSMetricKind {
         case .water: VESSColor.water
         case .activity: VESSColor.activity
         case .cycle: VESSColor.cycle
+        case .sleep: VESSColor.sleep
+        case .heart: VESSColor.heart
         }
     }
 
     var atmosphere: Color {
         switch self {
-        case .fuel, .carbs, .fat: VESSColor.atmosNeutral
+        case .fuel, .carbs, .fat, .sleep, .heart: VESSColor.atmosNeutral
         case .energy: VESSColor.atmosEnergy
         case .protein: VESSColor.atmosProtein
         case .water: VESSColor.atmosWater

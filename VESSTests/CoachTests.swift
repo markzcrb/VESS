@@ -72,6 +72,17 @@ struct CoachTests {
         #expect(!json.contains("cycle"), "No cycle key at all when not shared")
     }
 
+    @Test("\"pregnant\": true only when Pregnant is on in You › Body; no key otherwise")
+    func pregnant() throws {
+        let now = try TestClock.date(2026, 10, 6, 18, 40)
+        let off = String(decoding: CoachContextBuilder.json(CoachContextBuilder.build(input(now: now))), as: UTF8.self)
+        #expect(!off.contains("pregnant"))
+        var on = input(now: now)
+        on.pregnant = true
+        let json = String(decoding: CoachContextBuilder.json(CoachContextBuilder.build(on)), as: UTF8.self)
+        #expect(json.contains("\"pregnant\":true"))
+    }
+
     @Test("snake_case JSON, under 6 KB even with a very long day")
     func sizeCap() throws {
         let now = try TestClock.date(2026, 10, 6, 23)

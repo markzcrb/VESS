@@ -28,8 +28,8 @@ struct GoalsView: View {
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                     VESSSectionHeader(title: "Direction")
                     VESSRowGroup {
-                        ForEach(Self.directions(current: profile.goal), id: \.self) { goal in
-                            ProfileCheckRow(title: Text(goal.directionTitle), isSelected: profile.goal == goal) {
+                        ForEach(Self.directions(current: profile.effectiveGoal, pregnant: profile.pregnant), id: \.self) { goal in
+                            ProfileCheckRow(title: Text(goal.directionTitle), isSelected: profile.effectiveGoal == goal) {
                                 update { $0.goal = goal }
                             }
                         }
@@ -122,8 +122,9 @@ struct GoalsView: View {
     }
 
     /// Lose / Maintain / Gain, plus the current goal if it's another one.
-    private static func directions(current: WellnessGoal) -> [WellnessGoal] {
-        let main: [WellnessGoal] = [.loseWeight, .maintainWeight, .gainWeight]
+    /// Nothing about losing weight during pregnancy.
+    private static func directions(current: WellnessGoal, pregnant: Bool) -> [WellnessGoal] {
+        let main: [WellnessGoal] = pregnant ? [.maintainWeight, .gainWeight] : [.loseWeight, .maintainWeight, .gainWeight]
         return main.contains(current) ? main : main + [current]
     }
 
@@ -136,7 +137,7 @@ struct GoalsView: View {
             heightCentimeters: profile.heightCentimeters,
             weightKilograms: profile.weightKilograms,
             activityLevel: profile.activityLevel,
-            goal: profile.goal,
+            goal: profile.effectiveGoal,
             dietaryPreference: profile.preferences.targetDiet
         ))
     }
@@ -154,7 +155,9 @@ private extension WellnessGoal {
 // MARK: - E02 Body
 
 /// Height, weight, year of birth, sex and activity: the context for the
-/// target suggestion on Goals. Weight comes from Apple Health when it has one.
+/// target suggestion on Goals. Weight comes from Apple Health when it has
+/// a newer one. H04: BMI for adults (hidden under 18 and during pregnancy),
+/// waist and body fat read from Health, and the Pregnant switch.
 struct BodyView: View {
     @Environment(LocalStore.self) private var store
     @Environment(HealthDataStore.self) private var health
@@ -166,45 +169,107 @@ struct BodyView: View {
 
     @State private var editing: Field?
     @State private var showError = false
+    @State private var showInfo = false
 
     private let calendar = Calendar.current
 
     var body: some View {
         if let profile = store.profile {
-            let healthWeight = health.state.snapshot?.latestWeight
+            let snapshot = health.state.snapshot
+            let healthWeight = snapshot?.latestWeight
+            let now = AppClock.now
+            let bmi = BodyRules.showsBMI(profile: profile, now: now, calendar: calendar) ? BodyRules.bmi(profile: profile, health: healthWeight) : nil
 
             ProfilePage(title: "Body") {
-                ProfileIntro(title: "The context behind your targets.")
+                if let bmi {
+                    BodyMassIndexSection(bmi: bmi, weight: BodyRules.weight(profile: profile, health: healthWeight), height: profile.heightCentimeters)
+                } else {
+                    ProfileIntro(title: "The context behind your targets.")
+                }
 
-                VESSRowGroup {
-                    edit(.height, "Height", "\(VESSFormat.quantity(profile.heightCentimeters)) cm")
-                    if let healthWeight {
-                        VESSListRow(
-                            title: Text("Weight"),
-                            subtitle: Text("From Apple Health · \(healthWeight.measuredAt, format: .dateTime.day().month(.abbreviated))"),
-                            value: Text("\(VESSFormat.quantity(healthWeight.kilograms)) kg"),
-                            showsChevron: false
+                VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                    if bmi != nil { VESSSectionHeader(title: "Body") }
+                    VESSRowGroup {
+                        if let healthWeight, healthWeight.measuredAt > profile.updatedAt {
+                            VESSListRow(
+                                title: Text("Weight"),
+                                subtitle: Text("From Apple Health · \(Self.day(healthWeight.measuredAt, now: now, calendar: calendar))"),
+                                value: Text("\(VESSFormat.quantity(healthWeight.kilograms)) kg"),
+                                showsChevron: false
+                            )
+                        } else {
+                            edit(.weight, "Weight", "\(VESSFormat.quantity(profile.weightKilograms)) kg")
+                        }
+                        edit(.height, "Height", "\(VESSFormat.quantity(profile.heightCentimeters)) cm")
+                        // Read only, and only when Health has a value.
+                        if let waist = snapshot?.waist {
+                            VESSListRow(
+                                title: Text("Waist"),
+                                subtitle: Text("From Apple Health · \(Self.day(waist.measuredAt, now: now, calendar: calendar))"),
+                                value: Text("\(VESSFormat.quantity(waist.value)) cm"),
+                                showsChevron: false
+                            )
+                        }
+                        if let fat = snapshot?.bodyFat {
+                            VESSListRow(
+                                title: Text("Body fat"),
+                                subtitle: Text("From Apple Health · \(Self.day(fat.measuredAt, now: now, calendar: calendar))"),
+                                value: Text("\(VESSFormat.quantity(fat.value)) %"),
+                                showsChevron: false
+                            )
+                        }
+                        edit(.year, "Year of birth", profile.dateOfBirth.map { String(calendar.component(.year, from: $0)) } ?? "—")
+                        menuRow(title: "Sex", subtitle: "Used only to estimate energy needs", value: Text(profile.sex.title)) {
+                            ForEach(Sex.allCases, id: \.self) { sex in
+                                Button { update { $0.sex = sex } } label: { Text(sex.title) }
+                            }
+                        }
+                        menuRow(title: "Activity level", value: Text(profile.activityLevel.title)) {
+                            ForEach(ActivityLevel.allCases, id: \.self) { level in
+                                Button { update { $0.activityLevel = level } } label: { Text(level.title) }
+                            }
+                        }
+                        if profile.canBePregnant {
+                        ProfileToggleRow(
+                            title: Text("Pregnant"),
+                            subtitle: Text("Hides BMI and anything about losing weight. Stored on this iPhone; Coach is told, so it never suggests losing weight."),
+                            isOn: Binding(get: { profile.pregnant }, set: { isOn in update { $0.isPregnant = isOn } })
                         )
-                    } else {
-                        edit(.weight, "Weight", "\(VESSFormat.quantity(profile.weightKilograms)) kg")
-                    }
-                    edit(.year, "Year of birth", profile.dateOfBirth.map { String(calendar.component(.year, from: $0)) } ?? "—")
-                    menuRow(title: "Sex", subtitle: "Used only to estimate energy needs", value: Text(profile.sex.title)) {
-                        ForEach(Sex.allCases, id: \.self) { sex in
-                            Button { update { $0.sex = sex } } label: { Text(sex.title) }
+                        .accessibilityIdentifier("body.pregnant")
                         }
                     }
-                    menuRow(title: "Activity level", value: Text(profile.activityLevel.title)) {
-                        ForEach(ActivityLevel.allCases, id: \.self) { level in
-                            Button { update { $0.activityLevel = level } } label: { Text(level.title) }
+                    .vessHairlineBottom()
+                }
+
+                if bmi != nil {
+                    let trend = BodyRules.trend(snapshot?.weights ?? [], heightCentimeters: profile.heightCentimeters)
+                    if trend.count >= 2 {
+                        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                            VESSSectionHeader(title: "BMI · 12 weeks")
+                            BodyTrendLine(points: trend)
                         }
                     }
                 }
-                .vessHairlineBottom()
 
                 ActivityFootnote(text: healthWeight == nil
                     ? Text("Body settings help estimate your needs. Changing them doesn't change your targets; Goals shows a suggestion you can use.")
-                    : Text("Body settings help estimate your needs. Your weight is read from Apple Health. Changing these doesn't change your targets; Goals shows a suggestion you can use."))
+                    : Text("Body settings help estimate your needs. Weight, waist and body fat are read from Apple Health. Changing these doesn't change your targets; Goals shows a suggestion you can use."))
+                ActivityFootnote(text: Text("Adults only. BMI isn't shown for under-18s or during pregnancy, and VESS never sets goals from BMI alone."))
+            }
+            .toolbar {
+                // Only with the BMI section it explains.
+                if bmi != nil {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        HealthInfoButton(label: "About BMI") { showInfo = true }
+                    }
+                }
+            }
+            .sheet(isPresented: $showInfo) {
+                HealthInfoSheet(title: "About BMI", notes: [
+                    "BMI is your weight in kilograms divided by your height in metres, squared. The ranges are the WHO's adult ranges.",
+                    "It's a rough guide: it doesn't tell muscle from fat. VESS shows it only to adults, never during pregnancy, and never sets goals from it alone.",
+                    "When Apple Health has a weight newer than the one in your profile, that weight is used.",
+                ])
             }
             .sheet(item: $editing) { field in
                 switch field {
@@ -226,6 +291,13 @@ struct BodyView: View {
             }
             .vessErrorAlert(isPresented: $showError)
         }
+    }
+
+    /// "today", or "12 Oct".
+    private static func day(_ date: Date, now: Date, calendar: Calendar) -> String {
+        calendar.isDate(date, inSameDayAs: now)
+            ? String(localized: "today")
+            : date.formatted(.dateTime.day().month(.abbreviated))
     }
 
     private func edit(_ field: Field, _ title: LocalizedStringResource, _ value: String) -> some View {

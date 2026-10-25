@@ -42,7 +42,8 @@ enum CoachContextAssembler {
             workouts: store.workouts + (health?.workouts ?? []),
             supplementsTaken: taken,
             supplementsDue: due,
-            cycle: cycle
+            cycle: cycle,
+            pregnant: profile.pregnant
         )
         return CoachContextBuilder.build(input)
     }

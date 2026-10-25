@@ -70,9 +70,12 @@ nonisolated struct CoachContext: Codable, Equatable, Sendable {
     var workoutsLast7Days: [Workout]
     var supplementsToday: Checklist
     var cycle: Cycle?
+    /// Set (true) only when the user has switched on Pregnant in You › Body;
+    /// absent otherwise. The Coach must not suggest losing weight.
+    var pregnant: Bool? = nil
 
     enum CodingKeys: String, CodingKey {
-        case date, time, name, targets, today, cycle
+        case date, time, name, targets, today, cycle, pregnant
         case last7Days = "last_7_days"
         case mealsToday = "meals_today"
         case habitsToday = "habits_today"
@@ -101,6 +104,8 @@ nonisolated struct CoachContextInput: Sendable {
     var supplementsDue: [String]
     /// Only set when cycle tracking AND "Share cycle with Coach" are on.
     var cycle: CycleShare?
+    /// You › Body › Pregnant.
+    var pregnant = false
 
     struct CycleShare: Sendable {
         var cycleDay: Int?
@@ -190,7 +195,8 @@ nonisolated enum CoachContextBuilder {
                     nextPeriodTo: share.nextPeriod.map { day($0.end, calendar: calendar) },
                     note: "Estimate from logged periods, not a medical prediction."
                 )
-            }
+            },
+            pregnant: input.pregnant ? true : nil
         )
         return fitted(context)
     }

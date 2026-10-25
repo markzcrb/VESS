@@ -16,6 +16,7 @@ struct TodayView: View {
     @State private var showEnergy = false
     @State private var showCycle = false
     @State private var showHabits = false
+    @State private var showHealth = false
     @State private var undoLog: HydrationLog?
     @State private var undoDismissal: Task<Void, Never>?
     @State private var waterAddCount = 0
@@ -30,6 +31,7 @@ struct TodayView: View {
                     // Activity's pushes (workouts, history, statistics) are
                     // registered at the stack root so every link can find them.
                     .activityDestinations()
+                    .healthDestinations()
             }
         }
     }
@@ -72,7 +74,7 @@ struct TodayView: View {
                                 onCoach: { showCoach = true }
                             )
                             if !entries.isEmpty {
-                                TodayMetricStrip(summary: summary, fuel: fuel, health: health.state.snapshot)
+                                TodayMetricStrip(summary: summary, fuel: fuel, health: health.state.snapshot, onHealth: { showHealth = true })
                             }
                         }
 
@@ -148,6 +150,9 @@ struct TodayView: View {
         }
         .navigationDestination(isPresented: $showHabits) {
             HabitsView()
+        }
+        .navigationDestination(isPresented: $showHealth) {
+            HealthHubView()
         }
         .sheet(isPresented: $showFuelInfo) {
             FuelInfoSheet(fuel: fuel)

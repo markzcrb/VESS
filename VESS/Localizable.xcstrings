@@ -236,6 +236,9 @@
         }
       }
     },
+    "%@ %%" : {
+
+    },
     "%@ %lld min   %@ %@ kcal" : {
       "localizations" : {
         "en" : {
@@ -275,6 +278,12 @@
     "%@ ABV" : {
 
     },
+    "%@ BMI is a rough guide: it doesn't tell muscle from fat, so read it next to your weight trend and how you feel." : {
+
+    },
+    "%@ bpm" : {
+
+    },
     "%@ capsules" : {
       "comment" : "A fractional count of capsules, such as 1.5 capsules.",
       "localizations" : {
@@ -287,6 +296,9 @@
       }
     },
     "%@ cloves" : {
+
+    },
+    "%@ cm" : {
 
     },
     "%@ counts at %@ toward water. An estimate." : {
@@ -352,6 +364,9 @@
         }
       }
     },
+    "%@ h" : {
+
+    },
     "%@ is still selected. Your plan hasn't changed." : {
 
     },
@@ -399,6 +414,16 @@
     },
     "%@ kg" : {
 
+    },
+    "%@ kg · %@ cm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ kg · %2$@ cm"
+          }
+        }
+      }
     },
     "%@ kg in ^[%lld week](inflect: true)" : {
       "localizations" : {
@@ -480,6 +505,9 @@
           }
         }
       }
+    },
+    "%@ ms" : {
+
     },
     "%@ of %@ · from Apple Health" : {
       "localizations" : {
@@ -835,6 +863,16 @@
         }
       }
     },
+    "%lld h %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld h %2$@"
+          }
+        }
+      }
+    },
     "%lld have %@" : {
       "localizations" : {
         "en" : {
@@ -913,6 +951,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld at home"
+          }
+        }
+      }
+    },
+    "%lld of %lld days" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld days"
           }
         }
       }
@@ -1305,6 +1353,12 @@
     "30 minutes after a main meal's usual time, only if it isn't logged" : {
 
     },
+    "30-day average %@" : {
+
+    },
+    "30-day average %@ ms" : {
+
+    },
     "100 %@" : {
 
     },
@@ -1335,10 +1389,25 @@
     "A little about you" : {
 
     },
+    "a little above" : {
+
+    },
+    "A little above your 30-day average" : {
+
+    },
+    "a little below" : {
+
+    },
+    "A little below your 30-day average" : {
+
+    },
     "A little clarity." : {
 
     },
     "A little more water." : {
+
+    },
+    "A little short" : {
 
     },
     "A nudge, when it helps." : {
@@ -1381,10 +1450,39 @@
         }
       }
     },
+    "About %@ less than your usual %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About %1$@ less than your usual %2$@."
+          }
+        }
+      }
+    },
     "about %@ mg at 22:00" : {
 
     },
+    "About %@ more than your usual %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About %1$@ more than your usual %2$@."
+          }
+        }
+      }
+    },
     "About Activity" : {
+
+    },
+    "About BMI" : {
+
+    },
+    "About heart" : {
+
+    },
+    "About sleep" : {
 
     },
     "About the same as the 30 days before." : {
@@ -1396,10 +1494,25 @@
     "About these estimates" : {
 
     },
+    "About this estimate" : {
+
+    },
     "About usual" : {
 
     },
     "About you" : {
+
+    },
+    "above" : {
+
+    },
+    "Above 30 for your height." : {
+
+    },
+    "Above your 30-day average" : {
+
+    },
+    "Above your usual range" : {
 
     },
     "Account" : {
@@ -1631,6 +1744,15 @@
     "Adds it to %@" : {
 
     },
+    "Adults only. BMI isn't shown for under-18s or during pregnancy, and VESS never sets goals from BMI alone." : {
+
+    },
+    "afternoon" : {
+      "comment" : "Part of the day, inside a sentence"
+    },
+    "Afternoon" : {
+
+    },
     "Age" : {
 
     },
@@ -1694,6 +1816,9 @@
     "Allow 1–2 missing items if needed" : {
 
     },
+    "Allowed" : {
+
+    },
     "Also prefer · any" : {
 
     },
@@ -1728,6 +1853,9 @@
     "An account for AI features." : {
 
     },
+    "An estimate from Apple Watch data compared with your own baseline, not a medical measurement. If stress feels hard to manage, talk to someone you trust or a professional." : {
+
+    },
     "An estimate from your last ^[%lld cycle](inflect: true), which average %lld days. It can be off." : {
       "localizations" : {
         "en" : {
@@ -1739,6 +1867,9 @@
       }
     },
     "An estimate from your last ^[%lld cycle](inflect: true), which vary by more than a week, so it's less certain than usual. It can be off." : {
+
+    },
+    "An estimate, not a medical measurement." : {
 
     },
     "An estimate: caffeine halves about every %@ hours, and this differs from person to person." : {
@@ -1768,6 +1899,9 @@
     "Apple Health isn't available on this device, so only workouts you enter appear." : {
 
     },
+    "Apple Watch" : {
+
+    },
     "Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10 % counts as about usual." : {
 
     },
@@ -1777,7 +1911,13 @@
     "Ask Coach" : {
 
     },
+    "Asleep" : {
+
+    },
     "At home: %@" : {
+
+    },
+    "Average %@" : {
 
     },
     "Average %lld days · range %lld–%lld days over ^[%lld cycle](inflect: true)." : {
@@ -1790,7 +1930,13 @@
         }
       }
     },
+    "Average while walking" : {
+
+    },
     "Avoid" : {
+
+    },
+    "Awake" : {
 
     },
     "Back" : {
@@ -1820,6 +1966,18 @@
     "Before noon" : {
 
     },
+    "below" : {
+
+    },
+    "Below %@ for your height." : {
+
+    },
+    "Below your 30-day average" : {
+
+    },
+    "Below your usual range" : {
+
+    },
     "Best match" : {
 
     },
@@ -1835,13 +1993,31 @@
     "Bloating" : {
 
     },
+    "BMI · %@ kg" : {
+
+    },
+    "BMI · 12 weeks" : {
+
+    },
+    "BMI is your weight in kilograms divided by your height in metres, squared. The ranges are the WHO's adult ranges." : {
+
+    },
+    "BMI over 12 weeks" : {
+
+    },
     "Body" : {
+
+    },
+    "Body fat" : {
+
+    },
+    "Body mass index" : {
 
     },
     "Body settings help estimate your needs. Changing them doesn't change your targets; Goals shows a suggestion you can use." : {
 
     },
-    "Body settings help estimate your needs. Your weight is read from Apple Health. Changing these doesn't change your targets; Goals shows a suggestion you can use." : {
+    "Body settings help estimate your needs. Weight, waist and body fat are read from Apple Health. Changing these doesn't change your targets; Goals shows a suggestion you can use." : {
 
     },
     "Bottle" : {
@@ -1868,7 +2044,23 @@
     "Building" : {
 
     },
+    "Building your baseline" : {
+
+    },
+    "Building your baseline · %lld of %lld days" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Building your baseline · %1$lld of %2$lld days"
+          }
+        }
+      }
+    },
     "Caffeine" : {
+
+    },
+    "Calm" : {
 
     },
     "calories" : {
@@ -1991,6 +2183,15 @@
     "Close" : {
 
     },
+    "close to" : {
+
+    },
+    "Close to your 30-day average" : {
+
+    },
+    "Close to your usual %@." : {
+
+    },
     "Closes the month" : {
 
     },
@@ -2070,6 +2271,9 @@
 
     },
     "Copy this week's plan" : {
+
+    },
+    "Core" : {
 
     },
     "Couldn't look it up" : {
@@ -2208,6 +2412,9 @@
 
     },
     "Decaf" : {
+
+    },
+    "Deep" : {
 
     },
     "Delete" : {
@@ -2427,6 +2634,12 @@
     "Eggs" : {
 
     },
+    "Elevated" : {
+
+    },
+    "Elevated: HRV at least 15 % below your baseline and resting heart rate at least 5 % above. High: at least 30 % and 10 %." : {
+
+    },
     "Email" : {
 
     },
@@ -2515,6 +2728,9 @@
     },
     "Estimates from USDA FoodData Central and Open Food Facts. Diet tags and allergens are worked out from the ingredients." : {
 
+    },
+    "evening" : {
+      "comment" : "Part of the day, inside a sentence"
     },
     "Evening" : {
 
@@ -2690,6 +2906,9 @@
     "For example, pescatarian" : {
 
     },
+    "For information only, not a medical device. If you feel unwell or notice unusual readings, talk to a doctor." : {
+
+    },
     "Freezer" : {
 
     },
@@ -2701,6 +2920,16 @@
     },
     "From" : {
 
+    },
+    "From %@ to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "From %1$@ to %2$@"
+          }
+        }
+      }
     },
     "From ^[%lld item](inflect: true) in your pantry. Use-soon first, then the most you already have." : {
 
@@ -2715,6 +2944,9 @@
 
     },
     "From Apple Health. VESS never estimates steps." : {
+
+    },
+    "From HRV and resting heart rate" : {
 
     },
     "From Open Food Facts · check against the label" : {
@@ -2886,6 +3118,24 @@
     "Headache" : {
 
     },
+    "Health" : {
+
+    },
+    "Heart" : {
+
+    },
+    "Heart rate variability" : {
+
+    },
+    "Heart rate variability is the overnight value Apple Watch records, compared with your 30-day average." : {
+
+    },
+    "Heart rate, resting, HRV" : {
+
+    },
+    "Heart rate, resting, walking and HRV" : {
+
+    },
     "Heavy" : {
 
     },
@@ -2907,6 +3157,9 @@
     "Hide" : {
 
     },
+    "Hides BMI and anything about losing weight. Stored on this iPhone; Coach is told, so it never suggests losing weight." : {
+
+    },
     "Hides the calendar" : {
 
     },
@@ -2914,6 +3167,9 @@
 
     },
     "Hides the time picker" : {
+
+    },
+    "High" : {
 
     },
     "High protein" : {
@@ -2962,16 +3218,31 @@
     "How has my protein been this week?" : {
 
     },
+    "How Heart is read" : {
+
+    },
     "How macros are measured" : {
 
     },
     "How often" : {
 
     },
+    "How Sleep is read" : {
+
+    },
+    "How the estimate works" : {
+
+    },
     "How this is measured" : {
 
     },
+    "How your body is doing." : {
+
+    },
     "How's my water today?" : {
+
+    },
+    "HRV is %@ your 30-day average." : {
 
     },
     "Hydration" : {
@@ -3014,7 +3285,16 @@
     "In a week" : {
 
     },
+    "In bed" : {
+
+    },
     "In pantry" : {
+
+    },
+    "In the %@–25 range for your height." : {
+
+    },
+    "In the 25–30 range for your height." : {
 
     },
     "In your pantry · %@ · No nutrition data" : {
@@ -3024,6 +3304,9 @@
 
     },
     "In your system" : {
+
+    },
+    "In your usual range" : {
 
     },
     "Ingredient you don't eat" : {
@@ -3059,10 +3342,16 @@
     "Intervals" : {
 
     },
+    "iOS decides what VESS can read and doesn't tell apps what you turned off, so a type without data may simply be off. To change access, open the Health app, tap your profile, then Apps › VESS." : {
+
+    },
     "iOS decides what VESS can read. To change access, open the Health app, tap your profile, then Apps › VESS." : {
 
     },
     "It only goes up as you log. The one thing that lowers it is going well past your energy target." : {
+
+    },
+    "It's a rough guide: it doesn't tell muscle from fat. VESS shows it only to adults, never during pregnancy, and never sets goals from it alone." : {
 
     },
     "It's removed from this iPhone. Meals you logged from it stay in your log." : {
@@ -3182,10 +3471,22 @@
     "Last 7 days" : {
 
     },
+    "Last 7 nights" : {
+
+    },
     "Last at %@" : {
 
     },
     "Last drink %@." : {
+
+    },
+    "Last night" : {
+
+    },
+    "Last night · Apple Health" : {
+
+    },
+    "Last night is your main sleep that ended between 03:00 and 14:00 today. Naps don't count." : {
 
     },
     "Last sync" : {
@@ -3275,6 +3576,9 @@
     "Logged at %@" : {
 
     },
+    "Logged at %@ · Apple Health" : {
+
+    },
     "Logs it" : {
 
     },
@@ -3285,6 +3589,9 @@
 
     },
     "Longer" : {
+
+    },
+    "Longer than usual" : {
 
     },
     "Look up" : {
@@ -3318,6 +3625,9 @@
 
     },
     "Lower-carb" : {
+
+    },
+    "Lowest and highest" : {
 
     },
     "Lunch" : {
@@ -3438,6 +3748,9 @@
     "min" : {
 
     },
+    "Mindful minutes" : {
+
+    },
     "Minerals" : {
 
     },
@@ -3497,6 +3810,9 @@
     },
     "More than the week before." : {
 
+    },
+    "morning" : {
+      "comment" : "Part of the day, inside a sentence"
     },
     "Morning" : {
 
@@ -3589,6 +3905,12 @@
     "Needs an account. You can turn this off any time in You › Privacy and data." : {
 
     },
+    "Needs today's HRV and resting heart rate" : {
+
+    },
+    "Neutral" : {
+
+    },
     "New" : {
 
     },
@@ -3626,6 +3948,12 @@
 
     },
     "No daily target set." : {
+
+    },
+    "No data" : {
+
+    },
+    "No data today yet" : {
 
     },
     "No date" : {
@@ -3689,6 +4017,12 @@
 
     },
     "No saved or common foods match “%@”." : {
+
+    },
+    "No sleep from last night" : {
+
+    },
+    "No sleep from last night yet" : {
 
     },
     "No source connected" : {
@@ -3895,6 +4229,16 @@
     "On chosen days" : {
 
     },
+    "On nights you ate within 2 hours of falling asleep, you slept about %lld min less. A pattern from %lld weeks, not a cause." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "On nights you ate within 2 hours of falling asleep, you slept about %1$lld min less. A pattern from %2$lld weeks, not a cause."
+          }
+        }
+      }
+    },
     "On this habit's days, only if it isn't done. Never between 22:00 and 07:00." : {
 
     },
@@ -3944,6 +4288,9 @@
 
     },
     "Open Food Facts didn't respond. Try again later." : {
+
+    },
+    "Open Health" : {
 
     },
     "Open Pantry" : {
@@ -3997,6 +4344,16 @@
     "other workouts" : {
 
     },
+    "Over the last 5 weeks, %lld of %lld elevated afternoons came after a night with under 6 h of sleep. A pattern, not a cause." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Over the last 5 weeks, %1$lld of %2$lld elevated afternoons came after a night with under 6 h of sleep. A pattern, not a cause."
+          }
+        }
+      }
+    },
     "pack" : {
 
     },
@@ -4007,6 +4364,12 @@
 
     },
     "Partial: some ingredients have no nutrition data." : {
+
+    },
+    "Parts of the day compare that part's HRV with your baseline." : {
+
+    },
+    "Pattern" : {
 
     },
     "pcs" : {
@@ -4096,6 +4459,9 @@
     "Planned for %@" : {
 
     },
+    "Pleasant" : {
+
+    },
     "Please sign in again." : {
 
     },
@@ -4115,6 +4481,9 @@
 
     },
     "Preferences" : {
+
+    },
+    "Pregnant" : {
 
     },
     "Previous day" : {
@@ -4232,10 +4601,22 @@
     "Quiet hours" : {
 
     },
+    "Range today" : {
+
+    },
+    "Read from Apple Health. For information only, not a medical device. If you feel unwell or notice unusual readings, talk to a doctor." : {
+
+    },
+    "Read from Apple Health. Nothing here is a diagnosis." : {
+
+    },
+    "Read from Apple Health. VESS doesn't keep a copy and doesn't diagnose sleep problems." : {
+
+    },
     "Read from Health" : {
 
     },
-    "Read only: steps, workouts, active energy and weight. VESS shows them but doesn't keep a copy." : {
+    "Read only: steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, HRV, State of Mind and mindful minutes. VESS shows them but doesn't keep a copy. Only steps and recorded workouts go into Coach's summary, when you ask." : {
 
     },
     "Read-only, on your terms." : {
@@ -4278,6 +4659,9 @@
 
     },
     "Regular" : {
+
+    },
+    "REM" : {
 
     },
     "Remind me" : {
@@ -4323,6 +4707,24 @@
 
     },
     "Rest day" : {
+
+    },
+    "Resting" : {
+
+    },
+    "Resting · last 7 days" : {
+
+    },
+    "Resting heart rate" : {
+
+    },
+    "Resting heart rate is above your usual range." : {
+
+    },
+    "Resting heart rate is below your usual range." : {
+
+    },
+    "Resting heart rate is in your usual range." : {
 
     },
     "Results" : {
@@ -4472,6 +4874,9 @@
     "sesame-free" : {
 
     },
+    "Set in You › Body and stored on this iPhone. While it's on, Coach's summary says so, so Coach never suggests losing weight." : {
+
+    },
     "Settings" : {
 
     },
@@ -4497,6 +4902,9 @@
 
     },
     "Shorter" : {
+
+    },
+    "Shorter than usual" : {
 
     },
     "Show more generic foods" : {
@@ -4541,6 +4949,9 @@
     "Sign out" : {
 
     },
+    "Signals" : {
+
+    },
     "Signed in" : {
 
     },
@@ -4554,6 +4965,21 @@
 
     },
     "Sleep" : {
+
+    },
+    "Sleep analysis" : {
+
+    },
+    "Sleep last night" : {
+
+    },
+    "Sleep target" : {
+
+    },
+    "Sleep, Heart and Stress (You › Health) are read and estimated on your iPhone. Stress is an estimate against your own baseline, not a medical measurement." : {
+
+    },
+    "Sleep, heart, stress and body" : {
 
     },
     "slice" : {
@@ -4655,10 +5081,25 @@
     "Spotting" : {
 
     },
+    "Stages · %@" : {
+
+    },
+    "Stages come from Apple Watch only. VESS doesn't diagnose sleep problems." : {
+
+    },
+    "Stages need Apple Watch. This night shows the time in bed or asleep that Health has." : {
+
+    },
     "Started %@" : {
 
     },
     "Starting estimates from your answers, not medical advice. Targets are a guide, not a grade." : {
+
+    },
+    "State of Mind" : {
+
+    },
+    "State of Mind and mindful minutes are shown as signals. They don't change the estimate." : {
 
     },
     "Statistics" : {
@@ -4717,6 +5158,9 @@
 
     },
     "strength session" : {
+
+    },
+    "Stress" : {
 
     },
     "Stronger" : {
@@ -4881,6 +5325,16 @@
     "That's today's free uses. Back tomorrow." : {
 
     },
+    "The %@ was more strained than the %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The %1$@ was more strained than the %2$@."
+          }
+        }
+      }
+    },
     "The 14 allergens food labels must declare in the EU. Recipes and suggestions with any of these are hidden, and foods that list them get a warning." : {
 
     },
@@ -4928,6 +5382,9 @@
       }
     },
     "The photo, made smaller and without location or other details from the camera." : {
+
+    },
+    "The ring shows where today's resting heart rate sits within your usual range: the middle 80 % of your last 30 days. It isn't a score." : {
 
     },
     "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
@@ -5034,6 +5491,15 @@
         }
       }
     },
+    "Today · by part of day" : {
+
+    },
+    "Today · hourly range" : {
+
+    },
+    "Today · your usual %@" : {
+
+    },
     "Today vs. a typical %@" : {
 
     },
@@ -5041,6 +5507,9 @@
 
     },
     "Today, %@" : {
+
+    },
+    "Today, so far" : {
 
     },
     "today's" : {
@@ -5154,6 +5623,9 @@
 
     },
     "Unit: %@" : {
+
+    },
+    "Unpleasant" : {
 
     },
     "Up to %@ ml at a time." : {
@@ -5318,10 +5790,10 @@
     "VESS never estimates steps. Without Apple Health, steps show —." : {
 
     },
-    "VESS reads movement and body data from Apple Health to show it in Activity, Today and You. It never writes to Health." : {
+    "VESS reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health." : {
 
     },
-    "VESS reads steps, workouts, active energy and weight from Apple Health. It never writes to Health." : {
+    "VESS reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach." : {
 
     },
     "VESS records the dose you choose. It doesn't recommend supplements or doses." : {
@@ -5342,6 +5814,9 @@
     "Vitamins" : {
 
     },
+    "Waist" : {
+
+    },
     "walk" : {
 
     },
@@ -5349,6 +5824,9 @@
 
     },
     "walking" : {
+
+    },
+    "Walking heart rate" : {
 
     },
     "Water" : {
@@ -5397,6 +5875,9 @@
     "Weight" : {
 
     },
+    "Weight, body fat and waist" : {
+
+    },
     "Welcome" : {
 
     },
@@ -5439,7 +5920,13 @@
     "When" : {
 
     },
+    "When Apple Health has a weight newer than the one in your profile, that weight is used." : {
+
+    },
     "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent." : {
+
+    },
+    "When your Apple Watch and another app both recorded the same time, the Watch is used." : {
 
     },
     "Where these numbers come from" : {
@@ -5455,6 +5942,9 @@
 
     },
     "Without 3 days of history there's no regularity yet, so the other three parts make up the whole score." : {
+
+    },
+    "Without an Apple Watch, Sleep and Heart show only what your iPhone or other apps save to Health. VESS doesn't guess missing values." : {
 
     },
     "workout" : {
@@ -5502,6 +5992,12 @@
     "You can turn this off any time in You › Privacy and data." : {
 
     },
+    "You fell asleep %@ earlier than usual." : {
+
+    },
+    "You fell asleep %@ later than usual." : {
+
+    },
     "You finished most of your list on %lld of the last ^[%lld day](inflect: true)." : {
       "localizations" : {
         "en" : {
@@ -5547,6 +6043,18 @@
 
     },
     "You've logged enough days. Insights will appear here once VESS can compare them carefully." : {
+
+    },
+    "Your baseline is the middle value of 28 days of overnight HRV and resting heart rate. It needs 14 days before there's an estimate." : {
+
+    },
+    "Your body signals are a little further from your baseline than usual." : {
+
+    },
+    "Your body signals are further from your baseline than usual." : {
+
+    },
+    "Your body signals look close to your baseline." : {
 
     },
     "Your body. Better understood." : {
@@ -5613,6 +6121,9 @@
 
     },
     "Your recipe" : {
+
+    },
+    "Your usual is the middle value of the 28 nights before. The ring fills toward your sleep target." : {
 
     },
     "Your values" : {

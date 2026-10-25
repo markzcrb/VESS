@@ -13,7 +13,7 @@ struct AppleHealthView: View {
         let stepsTarget = store.profile?.dailyStepsTarget ?? UserProfile.defaultStepsTarget
 
         ProfilePage(title: "Apple Health") {
-            ProfileIntro(title: "Read-only, on your terms.", text: "VESS reads movement and body data from Apple Health to show it in Activity, Today and You. It never writes to Health.")
+            ProfileIntro(title: "Read-only, on your terms.", text: "VESS reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health.")
 
             VESSRowGroup {
                 VESSListRow(title: Text("Status"), value: Text(health.state.statusTitle), showsChevron: false)
@@ -31,10 +31,14 @@ struct AppleHealthView: View {
                     VESSListRow(title: Text("Steps"), showsChevron: false)
                     VESSListRow(title: Text("Workouts"), showsChevron: false)
                     VESSListRow(title: Text("Active energy"), showsChevron: false)
-                    VESSListRow(title: Text("Weight"), showsChevron: false)
+                    VESSListRow(title: Text("Weight, body fat and waist"), showsChevron: false)
+                    VESSListRow(title: Text("Sleep analysis"), showsChevron: false)
+                    VESSListRow(title: Text("Heart rate, resting, walking and HRV"), showsChevron: false)
+                    VESSListRow(title: Text("State of Mind"), showsChevron: false)
+                    VESSListRow(title: Text("Mindful minutes"), showsChevron: false)
                 }
                 .vessHairlineBottom()
-                ActivityFootnote(text: Text("iOS decides what VESS can read. To change access, open the Health app, tap your profile, then Apps › VESS."))
+                ActivityFootnote(text: Text("iOS decides what VESS can read and doesn't tell apps what you turned off, so a type without data may simply be off. To change access, open the Health app, tap your profile, then Apps › VESS."))
             }
 
             switch health.state {
@@ -154,7 +158,8 @@ struct PrivacyView: View {
                 fact("Account", "Only for Coach, photo estimates and AI Chef: your email or Apple ID and a daily count of AI uses. Delete it any time in Account.")
                 fact("Cycle tracking", "Off unless you turn it on. Cycle days stay on this iPhone and are never shared with Apple Health. Coach gets your cycle day and next estimated window only if you turn on Share cycle with Coach.")
                 fact("Open Food Facts", "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent.")
-                fact("Apple Health", "Read only: steps, workouts, active energy and weight. VESS shows them but doesn't keep a copy.")
+                fact("Apple Health", "Read only: steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, HRV, State of Mind and mindful minutes. VESS shows them but doesn't keep a copy. Only steps and recorded workouts go into Coach's summary, when you ask.")
+                fact("Pregnant", "Set in You › Body and stored on this iPhone. While it's on, Coach's summary says so, so Coach never suggests losing weight.")
                 fact("Reminders", "Scheduled on this iPhone, never on a server.")
                 fact("Nothing else", "No analytics and no ads. An account only if you use Coach, photo estimates or AI Chef.")
             }
@@ -330,7 +335,8 @@ enum HelpArticle: String, Hashable, CaseIterable {
             "The grocery list is built from the meals you've planned, minus what you already have. Checking an item doesn't store it; Done shopping moves checked items into your pantry.",
         ]
         case .appleHealth: [
-            "VESS reads steps, workouts, active energy and weight from Apple Health. It never writes to Health.",
+            "VESS reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach.",
+            "Sleep, Heart and Stress (You › Health) are read and estimated on your iPhone. Stress is an estimate against your own baseline, not a medical measurement.",
             "iOS decides what VESS can read. To change access, open the Health app, tap your profile, then Apps › VESS.",
         ]
         }

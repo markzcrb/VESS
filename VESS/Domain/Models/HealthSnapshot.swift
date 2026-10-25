@@ -20,6 +20,24 @@ nonisolated struct HealthSnapshot: Equatable, Sendable {
     var latestWeight: BodyMassSample? = nil
     /// Body mass over the last 12 weeks, oldest first.
     var weights: [BodyMassSample] = []
+    /// Sleep analysis over the last six weeks, from every source.
+    var sleep: [SleepSample] = []
+    /// Resting heart rate per day (bpm), oldest first.
+    var restingHeartRate: [DailyValue] = []
+    /// Heart rate variability (SDNN, ms) samples, oldest first.
+    var heartRateVariability: [TimedValue] = []
+    /// Walking heart rate average per day (bpm).
+    var walkingHeartRate: [DailyValue] = []
+    /// Today's heart rate, lowest and highest per hour.
+    var heartRateToday: [HourlyRange] = []
+    /// State of Mind entries (read only), oldest first.
+    var stateOfMind: [TimedValue] = []
+    /// Mindful minutes today; `nil` when Health has none.
+    var mindfulMinutesToday: Double? = nil
+    /// The latest body fat, in percent.
+    var bodyFat: MeasurementSample? = nil
+    /// The latest waist circumference, in cm.
+    var waist: MeasurementSample? = nil
 
     /// 0...1 of the step goal.
     var stepsFraction: Double {
@@ -35,6 +53,47 @@ nonisolated struct HourlyValue: Equatable, Sendable {
 
 nonisolated struct BodyMassSample: Equatable, Sendable {
     let kilograms: Double
+    let measuredAt: Date
+}
+
+/// One sleep analysis sample from Apple Health.
+nonisolated struct SleepSample: Equatable, Sendable {
+    nonisolated enum Stage: String, Sendable {
+        case inBed, asleep, core, deep, rem, awake
+
+        /// Counts toward time asleep.
+        var isAsleep: Bool { self == .asleep || self == .core || self == .deep || self == .rem }
+    }
+
+    let start: Date
+    let end: Date
+    let stage: Stage
+    /// Recorded by an Apple Watch; preferred where sources overlap.
+    let isWatch: Bool
+}
+
+/// One value for a day (its start).
+nonisolated struct DailyValue: Equatable, Sendable {
+    let day: Date
+    let value: Double
+}
+
+/// One value at a moment.
+nonisolated struct TimedValue: Equatable, Sendable {
+    let date: Date
+    let value: Double
+}
+
+/// The lowest and highest value within an hour.
+nonisolated struct HourlyRange: Equatable, Sendable {
+    let start: Date
+    let min: Double
+    let max: Double
+}
+
+/// A body measurement with when it was taken.
+nonisolated struct MeasurementSample: Equatable, Sendable {
+    let value: Double
     let measuredAt: Date
 }
 
