@@ -300,6 +300,7 @@ struct RecipePhotoHeader: View {
 
     @ScaledMetric(relativeTo: .body) private var height: CGFloat = RecipePhotoHeader.photoHeight
     @State private var pickerItem: PhotosPickerItem?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         if let photo {
@@ -316,7 +317,12 @@ struct RecipePhotoHeader: View {
             }
             .accessibilityHidden(true)
         } else {
-            HStack(spacing: VESSSpacing.md) {
+            // Stacked at accessibility sizes, so the button never squeezes.
+            let isStacked = dynamicTypeSize.isAccessibilitySize
+            let layout = isStacked
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.sm))
+                : AnyLayout(HStackLayout(spacing: VESSSpacing.md))
+            layout {
                 Image(systemName: "fork.knife")
                     .font(.body)
                     .foregroundStyle(VESSColor.decorative)
@@ -325,11 +331,13 @@ struct RecipePhotoHeader: View {
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.tertiaryText)
                     .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
+                if !isStacked { Spacer(minLength: 0) }
                 if onAddPhoto != nil {
                     PhotosPicker(selection: $pickerItem, matching: .images, photoLibrary: .shared()) {
                         Label("Add photo", systemImage: "camera")
                             .vessTextStyle(.bodyS)
+                            .lineLimit(1)
+                            .fixedSize()
                             .foregroundStyle(VESSColor.text)
                             .padding(.horizontal, VESSSpacing.sm)
                             .frame(minHeight: VESSHitTarget.minimum)
@@ -340,8 +348,9 @@ struct RecipePhotoHeader: View {
                 }
             }
             .padding(.horizontal, VESSSpacing.md)
+            .padding(.vertical, isStacked ? VESSSpacing.md : 0)
             .frame(minHeight: 76)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(VESSColor.card, in: RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
             .padding(.horizontal, VESSSpacing.screenInset)
             .onChange(of: pickerItem) { _, item in
@@ -389,6 +398,8 @@ struct RecipeStats: View {
             if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
             stat(Text("\(VESSFormat.grams(nutrition.proteinGrams)) g"), label: Text("protein / serving"))
         }
+        // Full width when stacked too, so the hairlines span the screen.
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, VESSSpacing.md)
         .overlay(alignment: .top) { VESSHairline() }
         .vessHairlineBottom()

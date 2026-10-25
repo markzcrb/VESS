@@ -58,16 +58,9 @@ struct CreateWithAISheet: View {
                                     mustUse.formSymmetricDifference([item.id])
                                 }
                             }
-                            Button { picksMore = true } label: {
-                                Text("+ Pick more")
-                                    .vessTextStyle(.bodyS)
-                                    .foregroundStyle(VESSColor.text)
-                                    .padding(.horizontal, VESSSpacing.sm + 2)
-                                    .frame(minHeight: VESSHitTarget.minimum)
-                                    .background(Capsule().strokeBorder(VESSColor.divider).padding(.vertical, VESSSpacing.xxs))
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("create.pickMore")
+                            // A chip like the others, so it grows with them.
+                            VESSChip(title: "+ Pick more", isSelected: false) { picksMore = true }
+                                .accessibilityIdentifier("create.pickMore")
                         }
                     }
                     section("Meal") {

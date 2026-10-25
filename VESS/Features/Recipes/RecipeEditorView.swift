@@ -22,6 +22,8 @@ struct RecipeEditorView: View {
     @State private var minutes: Int
     @State private var ingredients: [Recipe.Ingredient]
     @State private var steps: [String]
+    /// The step number's circle grows with the text.
+    @ScaledMetric(relativeTo: .subheadline) private var stepCircle: CGFloat = 28
     @State private var extraAllergens: Set<Allergen> = []
     @State private var photo: Data?
     @State private var removesPhoto = false
@@ -298,7 +300,7 @@ struct RecipeEditorView: View {
                     Text("\(index + 1)")
                         .vessTextStyle(.numberS)
                         .foregroundStyle(VESSColor.text)
-                        .frame(minWidth: 28, minHeight: 28)
+                        .frame(width: stepCircle, height: stepCircle)
                         .overlay(Circle().strokeBorder(VESSColor.divider))
                         .accessibilityHidden(true)
                     TextField("Step \(index + 1)", text: $steps[index], axis: .vertical)
@@ -334,9 +336,16 @@ struct RecipeEditorView: View {
         let recipe = draft.recipe
         let nutrition = recipe.nutrition
         return VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            Text(draft.isPartial ? "Per serving · calculated · partial" : "Per serving · calculated")
-                .vessTextStyle(.labelCaps)
-                .foregroundStyle(VESSColor.secondaryText)
+            // One line, or two at large sizes, never starting with "·".
+            ViewThatFits(in: .horizontal) {
+                Text(draft.isPartial ? "Per serving · calculated · partial" : "Per serving · calculated")
+                VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                    Text("Per serving")
+                    Text(draft.isPartial ? "Calculated · partial" : "Calculated")
+                }
+            }
+            .vessTextStyle(.labelCaps)
+            .foregroundStyle(VESSColor.secondaryText)
             VStack(alignment: .leading, spacing: VESSSpacing.md) {
                 HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
                     Text(VESSFormat.calories(nutrition.calories))

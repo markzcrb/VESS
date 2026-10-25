@@ -139,7 +139,7 @@ struct DiscoverContent: View {
                     }
                     .buttonStyle(.plain)
                 }
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: VESSSpacing.sm), GridItem(.flexible(), spacing: VESSSpacing.sm)], spacing: VESSSpacing.sm) {
+                CollectionGrid {
                     ForEach(collections.prefix(6), id: \.collection) { entry in
                         NavigationLink { collectionList(entry.collection, items: items, preferences: preferences) } label: {
                             CollectionTile(collection: entry.collection, count: entry.count)
@@ -276,6 +276,17 @@ struct DiscoverContent: View {
 }
 
 /// A collection tile: a hue dot, the name and how many fit.
+/// Two columns; one at accessibility sizes, so titles never split mid-word.
+private struct CollectionGrid<Content: View>: View {
+    @ViewBuilder let content: Content
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let columns = Array(repeating: GridItem(.flexible(), spacing: VESSSpacing.sm), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2)
+        LazyVGrid(columns: columns, spacing: VESSSpacing.sm) { content }
+    }
+}
+
 private struct CollectionTile: View {
     let collection: RecipeDiscover.Collection
     let count: Int
