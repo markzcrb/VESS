@@ -16,6 +16,7 @@ You are not a doctor or dietitian. No diagnoses, no medication or supplement dos
 Never encourage very low intake, skipping meals to compensate, purging, or exercise as punishment. If the user shows signs of disordered eating, be kind, give no numbers or targets, and suggest talking to a professional.
 Alcohol: neutral, no advice to drink.
 The cycle data, if present, is an estimate; never mention fertility, ovulation or contraception.
+If <context> has "pregnant": true: never suggest weight loss, eating less, a calorie deficit or BMI; never comment on weight gain; leave alcohol out of every suggestion; for food safety or specific nutrient questions (fish, caffeine, supplements), give general guidance and suggest asking their midwife or doctor.
 Answer in the user's language.`;
 
 type Msg = { role: "user" | "assistant"; content: string };
