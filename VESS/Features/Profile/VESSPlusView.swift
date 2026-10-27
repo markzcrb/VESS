@@ -29,6 +29,7 @@ struct VESSPlusView: View {
     }
 
     @Environment(\.openURL) private var openURL
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var plan: Plan = .annual
     @State private var products: [String: Product] = [:]
     @State private var isSubscribed = false
@@ -91,18 +92,23 @@ struct VESSPlusView: View {
                     .foregroundStyle(isSelected ? VESSColor.accent : VESSColor.tertiaryText)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-                    HStack(alignment: .firstTextBaseline) {
+                    // Stacked at accessibility sizes, so no word splits.
+                    let layout = dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xxs))
+                        : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+                    layout {
                         Text(option == .annual ? "Annual" : "Monthly")
                             .vessTextStyle(.bodyMStrong)
                             .foregroundStyle(VESSColor.text)
                         if option == .annual {
                             VESSTag(text: Text("7 days free"), tone: .accent)
                         }
-                        Spacer(minLength: VESSSpacing.xs)
+                        if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: VESSSpacing.xs) }
                         Text(option == .annual ? "\(price(.annual))/year" : "\(price(.monthly))/month")
                             .vessTextStyle(.bodyM)
                             .foregroundStyle(VESSColor.text)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                     if option == .annual {
                         Text("\(monthlyEquivalent)/month · save \(savingPercent) %")
                             .vessTextStyle(.bodyS)
@@ -193,7 +199,9 @@ struct VESSPlusView: View {
                     Text("Privacy Policy")
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.accent)
-                        .frame(minHeight: VESSHitTarget.minimum)
+                        .padding(.vertical, VESSSpacing.sm)
+                        .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

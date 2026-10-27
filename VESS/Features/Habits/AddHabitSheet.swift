@@ -175,7 +175,7 @@ struct AddHabitSheet: View {
                        symbol: "moon", category: .sleep, rule: .sleep(minutes: 7 * 60)),
             Suggestion(id: "mindful", name: String(localized: "10 mindful minutes"), detail: "From Apple Health",
                        symbol: "leaf", category: .other, rule: .mindfulMinutes(10)),
-            Suggestion(id: "caffeine", name: String(localized: "No caffeine after 14:00"), detail: "From the drinks you log",
+            Suggestion(id: "caffeine", name: String(localized: "No caffeine after \(Self.cutoff.formatted(date: .omitted, time: .shortened))"), detail: "From the drinks you log",
                        symbol: "cup.and.saucer", category: .nutrition, rule: .noCaffeineAfter(hour: 14)),
             Suggestion(id: "fiber", name: String(localized: "Fibre 25 g"), detail: "From your food log",
                        symbol: "carrot", category: .nutrition, rule: .fiber(grams: 25)),
@@ -240,13 +240,19 @@ struct AddHabitSheet: View {
         }
     }
 
+    /// 14:00 today, shown in the user's 12/24-hour format.
+    private static var cutoff: Date {
+        Calendar.current.date(bySettingHour: 14, minute: 0, second: 0, of: AppClock.now) ?? AppClock.now
+    }
+
     /// The icons offered for your own habit.
     private static let symbols = ["checkmark.circle", "figure.walk", "drop", "leaf", "moon", "book", "pills", "heart"]
 
     private var iconSection: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.md) {
             VESSSectionHeader(title: "Icon")
-            VESSChipFlow(spacing: VESSSpacing.xs) {
+            // Four a row, two rows.
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: VESSSpacing.xs), count: 4), spacing: VESSSpacing.xs) {
                 ForEach(Self.symbols, id: \.self) { option in
                     let isSelected = (symbol ?? Self.symbols[0]) == option
                     Button { symbol = option } label: {
