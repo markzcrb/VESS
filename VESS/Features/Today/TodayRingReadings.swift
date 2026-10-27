@@ -9,7 +9,7 @@ extension TodayRing {
         case .protein: "Protein"
         case .carbs: "Carbs"
         case .fat: "Fat"
-        case .fiber: "Fiber"
+        case .fiber: "Fibre"
         case .water: "Water"
         case .caffeine: "Caffeine"
         case .steps: "Steps"
@@ -31,7 +31,7 @@ extension TodayRing {
         case .protein: "Protein"
         case .carbs: "Carbs"
         case .fat: "Fat"
-        case .fiber: "Fiber"
+        case .fiber: "Fibre"
         case .water: "Water"
         case .caffeine: "Caffeine (vs the limit)"
         case .steps: "Steps"
@@ -103,6 +103,20 @@ struct TodayRingReading: Identifiable {
     let progress: Double
     let spoken: Text
     var id: TodayRing { ring }
+
+    /// "77 %", "180 mg", "58 bpm" for the rows at accessibility sizes,
+    /// where there's room for the unit.
+    var valueWithUnit: String {
+        guard value != Self.empty else { return value }
+        switch ring {
+        case .energy, .protein, .carbs, .fat, .fiber, .water, .steps: return "\(value) %"
+        case .caffeine: return String(localized: "\(value) mg")
+        case .activeEnergy: return String(localized: "\(value) kcal")
+        case .restingHeartRate: return String(localized: "\(value) bpm")
+        case .hrv: return String(localized: "\(value) ms")
+        default: return value
+        }
+    }
 
     static let empty = "—"
 

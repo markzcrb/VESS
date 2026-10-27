@@ -44,10 +44,14 @@ struct TodayMetricStrip: View {
     @State private var position = ScrollPosition(edge: .leading)
     @State private var width: CGFloat = 0
 
-    /// Four and a half rings fit the width after the leading margin, so the
-    /// half ring shows the strip scrolls.
-    private static let visibleRings: CGFloat = 4.5
+    /// Four full rings after the leading margin and half of the fifth at
+    /// the screen edge, which shows the strip scrolls.
+    private static let fullRings: CGFloat = 4
     private static let margin = VESSSpacing.screenInset
+
+    /// The ring's width in the strip (`VESSMetricStripItem` caps it at 64).
+    @ScaledMetric(relativeTo: .body) private var scaledRing = VESSSize.stripRing
+    private var ring: CGFloat { min(scaledRing, 64) }
 
     var body: some View {
         if dynamicTypeSize.isAccessibilitySize {
@@ -55,8 +59,11 @@ struct TodayMetricStrip: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(readings) { reading in
                     Button { onOpen(reading.ring) } label: {
-                        VESSMetricRow(systemImage: reading.ring.symbol, label: reading.ring.shortTitle, value: reading.value)
+                        VESSMetricRow(systemImage: reading.ring.symbol, label: reading.ring.shortTitle, value: reading.valueWithUnit)
                             .contentShape(Rectangle())
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(Text(reading.ring.shortTitle))
+                            .accessibilityValue(reading.spoken)
                     }
                     .buttonStyle(.plain)
                     .vessHairlineBottom()
@@ -67,7 +74,9 @@ struct TodayMetricStrip: View {
                     .accessibilityIdentifier("today.editRings")
             }
         } else {
-            let slot = width > 0 ? (width - Self.margin) / Self.visibleRings : VESSSize.stripRing + VESSSpacing.xl
+            // `width` is the screen width (the strip runs past the margins), so
+            // the fifth ring starts half a ring before the edge.
+            let slot = width > 0 ? (width - Self.margin - ring / 2) / Self.fullRings : ring + VESSSpacing.xl
             ScrollView(.horizontal) {
                 LazyHStack(alignment: .top, spacing: 0) {
                     ForEach(readings) { reading in
@@ -81,21 +90,21 @@ struct TodayMetricStrip: View {
                         .accessibilityIdentifier("today.ring.\(reading.ring.rawValue)")
                         .frame(width: slot, alignment: .leading)
                     }
+                    // Its own width, so it ends at the right margin.
                     TodayEditRingButton(action: onEdit)
-                        .frame(width: slot, alignment: .leading)
                 }
                 .scrollTargetLayout()
             }
             .scrollIndicators(.hidden)
             .contentMargins(.leading, Self.margin, for: .scrollContent)
-            // The last item stops at the right margin: the trailing margin
-            // is what's left of the last slot.
-            .contentMargins(.trailing, max(Self.margin - (slot - VESSSize.stripRing), 0), for: .scrollContent)
+            // The last item stops at the right margin.
+            .contentMargins(.trailing, Self.margin, for: .scrollContent)
             .scrollPosition($position)
             .modifier(RingSnapping(isOn: !reduceMotion))
             // Scrolls past the screen margins to the edges.
             .padding(.horizontal, -Self.margin)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+            // Measured inside the screen margins; the strip spans the screen.
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 + 2 * Self.margin }
             // Back to the start each time Today opens.
             .onAppear { position.scrollTo(edge: .leading) }
         }
