@@ -48,6 +48,8 @@ nonisolated struct AIMockTransport: HTTPTransport {
         case path.hasSuffix("/functions/v1/delete-account"):
             return reply(200, ["deleted": true])
         case path.contains("/functions/v1/"):
+            // Coach answers after 1.5 s, so the typing dots can be seen.
+            if path.hasSuffix("/coach") { try? await Task.sleep(for: .seconds(1.5)) }
             return functionReply(path)
         // Today's usage: two AI Chef recipes so far, ten a day.
         case path.hasSuffix("/rest/v1/ai_usage"):
