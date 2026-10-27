@@ -11,11 +11,13 @@ struct VESSPlusView: View {
         case monthly, annual
         var id: String { rawValue }
 
-        /// Proposed App Store Connect product IDs.
+        /// "<bundle id>.plus.monthly" / ".plus.annual" (App Store Connect
+        /// and VESS.storekit for local testing).
         var productID: String {
+            let bundle = Bundle.main.bundleIdentifier ?? "com.markgerasimovpersonalteam.VESS"
             switch self {
-            case .monthly: "com.vess.plus.monthly"
-            case .annual: "com.vess.plus.annual"
+            case .monthly: return "\(bundle).plus.monthly"
+            case .annual: return "\(bundle).plus.annual"
             }
         }
 

@@ -52,7 +52,7 @@ Approved 2026-10-20. Implemented in `StatusLevel` (`Domain/Rules/IntakeAnalysis.
 
 ### VESS+ plans and limits (proposal, not live)
 
-Plans: Monthly 7,99 €/month; Annual 49,99 €/year ("4,17 €/month · save 48 %"), 7-day free trial on the annual plan only. Proposed product IDs: `com.vess.plus.monthly`, `com.vess.plus.annual`.
+Plans: Monthly 7,99 €/month; Annual 49,99 €/year ("4,17 €/month · save 48 %"), 7-day free trial on the annual plan only. Product IDs use the bundle ID as prefix: `<bundle id>.plus.monthly` and `<bundle id>.plus.annual` (today `com.markgerasimovpersonalteam.VESS.plus.monthly` / `.plus.annual`). Both sit in one subscription group, "VESS+"; the annual plan has a 1-week free introductory offer. `VESS.storekit` (repo root, set in the VESS scheme's Run options) mirrors them for local testing.
 
 | Feature | Free | VESS+ |
 |---|---|---|
