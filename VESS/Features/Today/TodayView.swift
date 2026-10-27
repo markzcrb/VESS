@@ -16,7 +16,9 @@ struct TodayView: View {
     @State private var showEnergy = false
     @State private var showCycle = false
     @State private var showHabits = false
-    @State private var showHealth = false
+    /// A ring tapped in the strip, pushed to its detail screen.
+    @State private var openRing: TodayRing?
+    @State private var showEditRings = false
     @State private var undoLog: HydrationLog?
     @State private var undoDismissal: Task<Void, Never>?
     @State private var waterAddCount = 0
@@ -74,7 +76,11 @@ struct TodayView: View {
                                 onCoach: { showCoach = true }
                             )
                             if !entries.isEmpty {
-                                TodayMetricStrip(summary: summary, fuel: fuel, health: health.state.snapshot, onHealth: { showHealth = true })
+                                TodayMetricStrip(
+                                    readings: ringReadings(profile: profile, summary: summary, fuel: fuel, drinks: drinks, now: now),
+                                    onOpen: { open($0, now: now) },
+                                    onEdit: { showEditRings = true }
+                                )
                             }
                         }
 
@@ -151,8 +157,11 @@ struct TodayView: View {
         .navigationDestination(isPresented: $showHabits) {
             HabitsView()
         }
-        .navigationDestination(isPresented: $showHealth) {
-            HealthHubView()
+        .navigationDestination(item: $openRing) { ring in
+            ringDetail(ring, now: now)
+        }
+        .sheet(isPresented: $showEditRings) {
+            EditRingsSheet()
         }
         .sheet(isPresented: $showFuelInfo) {
             FuelInfoSheet(fuel: fuel)
@@ -179,6 +188,60 @@ struct TodayView: View {
     }
 
     /// Trends for the breakdown rows, from the last 30 days and today so far.
+    // MARK: Rings
+
+    private func ringReadings(profile: UserProfile, summary: DaySummary, fuel: FuelScore?, drinks: [HydrationLog], now: Date) -> [TodayRingReading] {
+        let rings = profile.todayRingList
+        var habitsDone = 0
+        var habitsListed = 0
+        if rings.contains(.habits) {
+            let log = HabitLogLoader.log(store: store, health: health.state.snapshot,
+                                         from: HabitRules.week(containing: now, calendar: calendar).first ?? now, through: now, calendar: calendar)
+            let status = HabitRules.status(store.habits, on: now, today: now, log: log, calendar: calendar)
+            habitsDone = status.done
+            habitsListed = status.listed
+        }
+        var cycleDay: Int?
+        var cycleLength: Double?
+        if rings.contains(.cycleDay) {
+            let cycle = CyclePrediction.summary(store.cycleDays, today: now, calendar: calendar)
+            cycleDay = cycle.cycleDay
+            let lengths = cycle.completedCycles.compactMap(\.lengthDays)
+            cycleLength = lengths.isEmpty ? nil : Double(lengths.reduce(0, +)) / Double(lengths.count)
+        }
+        return TodayRingReading.readings(rings, input: .init(
+            profile: profile, summary: summary, fuel: fuel, snapshot: health.state.snapshot,
+            caffeineMilligrams: CaffeineModel.total(drinks, on: now, calendar: calendar),
+            habitsDone: habitsDone, habitsListed: habitsListed, cycleDay: cycleDay, cycleLength: cycleLength,
+            now: now, calendar: calendar
+        ))
+    }
+
+    /// Fuel explains itself in a sheet and Water opens the drink sheet;
+    /// every other ring pushes its own screen.
+    private func open(_ ring: TodayRing, now: Date) {
+        switch ring {
+        case .fuel: showFuelInfo = true
+        case .water: openAdd(.drink)
+        default: openRing = ring
+        }
+    }
+
+    @ViewBuilder
+    private func ringDetail(_ ring: TodayRing, now: Date) -> some View {
+        switch ring {
+        case .energy, .fuel: EnergyDetailView()
+        case .protein, .carbs, .fat, .fiber: MacrosDetailView()
+        case .water, .caffeine: CaffeineView(day: now)
+        case .steps, .activeEnergy: ActivityView()
+        case .sleep: SleepView()
+        case .restingHeartRate, .hrv: HeartView()
+        case .stress: StressView()
+        case .habits: HabitsView()
+        case .cycleDay: CycleView()
+        }
+    }
+
     private func trends(now: Date) -> TodayBreakdown.Trends {
         let start = calendar.date(byAdding: .day, value: -TrendRule.windowDays, to: calendar.startOfDay(for: now)) ?? now
         let food = store.foodEntries(from: start, to: now)

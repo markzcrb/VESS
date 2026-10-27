@@ -278,6 +278,9 @@
     "%@ ABV" : {
 
     },
+    "%@ beats per minute" : {
+
+    },
     "%@ BMI is a rough guide: it doesn't tell muscle from fat, so read it next to your weight trend and how you feel." : {
 
     },
@@ -435,6 +438,9 @@
         }
       }
     },
+    "%@ kilocalories" : {
+
+    },
     "%@ km" : {
 
     },
@@ -456,6 +462,9 @@
           }
         }
       }
+    },
+    "%@ milliseconds" : {
+
     },
     "%@ ml" : {
 
@@ -585,6 +594,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ of %2$@ mg"
+          }
+        }
+      }
+    },
+    "%@ of %@ milligrams" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ milligrams"
           }
         }
       }
@@ -762,6 +781,9 @@
           }
         }
       }
+    },
+    "%@, an estimate" : {
+
     },
     "%@, through VESS's server." : {
 
@@ -1044,6 +1066,9 @@
           }
         }
       }
+    },
+    "%lld of 100" : {
+
     },
     "%lld on" : {
 
@@ -1533,6 +1558,9 @@
     "Add" : {
 
     },
+    "Add · %@" : {
+
+    },
     "Add %@" : {
 
     },
@@ -1742,6 +1770,9 @@
 
     },
     "Adds it to %@" : {
+
+    },
+    "Adds this ring" : {
 
     },
     "Adults only. BMI isn't shown for under-18s or during pregnancy, and VESS never sets goals from BMI alone." : {
@@ -2061,6 +2092,9 @@
       }
     },
     "Caffeine" : {
+
+    },
+    "Caffeine (vs the limit)" : {
 
     },
     "Calculated" : {
@@ -2568,6 +2602,9 @@
     "Double-tap to change" : {
 
     },
+    "Drag to reorder. At least 1 ring, up to %lld." : {
+
+    },
     "Drank 2 L or more" : {
 
     },
@@ -2625,6 +2662,9 @@
     "Edit recipe" : {
 
     },
+    "Edit rings" : {
+
+    },
     "Edit supplements" : {
 
     },
@@ -2659,6 +2699,9 @@
 
     },
     "Energy" : {
+
+    },
+    "Energy (kcal)" : {
 
     },
     "Energy drink" : {
@@ -2820,6 +2863,9 @@
 
     },
     "Fewer than the week before." : {
+
+    },
+    "Fiber" : {
 
     },
     "Fibre" : {
@@ -3103,6 +3149,9 @@
     "Habits" : {
 
     },
+    "Habits (done today)" : {
+
+    },
     "Habits today" : {
 
     },
@@ -3258,6 +3307,9 @@
 
     },
     "How's my water today?" : {
+
+    },
+    "HRV" : {
 
     },
     "HRV is %@ your 30-day average." : {
@@ -3764,6 +3816,9 @@
 
     },
     "min" : {
+
+    },
+    "Mind" : {
 
     },
     "Mindful minutes" : {
@@ -4302,6 +4357,9 @@
     "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. VESS doesn't store it, and nothing is logged until you confirm." : {
 
     },
+    "Open details" : {
+
+    },
     "Open Food Facts" : {
 
     },
@@ -4317,22 +4375,10 @@
     "Open Food Facts didn't respond. Try again later." : {
 
     },
-    "Open Health" : {
-
-    },
     "Open Pantry" : {
 
     },
     "Open Settings" : {
-
-    },
-    "Opens Activity" : {
-
-    },
-    "Opens Energy" : {
-
-    },
-    "Opens Macros" : {
 
     },
     "Opens Nutrition" : {
@@ -5003,6 +5049,9 @@
     "Sleep" : {
 
     },
+    "Sleep (last night vs target)" : {
+
+    },
     "Sleep analysis" : {
 
     },
@@ -5197,6 +5246,9 @@
 
     },
     "Stress" : {
+
+    },
+    "Stress (estimate)" : {
 
     },
     "Stronger" : {
@@ -6147,6 +6199,9 @@
 
     },
     "Your recipe" : {
+
+    },
+    "Your rings" : {
 
     },
     "Your usual is the middle value of the 28 nights before. The ring fills toward your sleep target." : {

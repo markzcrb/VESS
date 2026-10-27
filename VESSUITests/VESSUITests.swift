@@ -360,8 +360,12 @@ final class VESSUITests: XCTestCase {
     @MainActor
     func testActivityOpensFromToday() throws {
         let app = launch(seeded: true)
-        let activity = app.buttons["today.activity"]
-        scrollUntilHittable(activity, in: app)
+        // Steps is the fifth ring, half off screen: scroll the strip to it.
+        let activity = app.buttons["today.ring.steps"]
+        XCTAssertTrue(activity.waitForExistence(timeout: 10), "Missing \(activity)")
+        for _ in 0..<3 where !activity.isHittable {
+            app.buttons["today.ring.fuel"].firstMatch.swipeLeft()
+        }
         activity.tap()
         XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 10))
     }

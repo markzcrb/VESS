@@ -31,69 +31,133 @@ struct TodayHeader: View {
 
 // MARK: - Metric strip
 
-/// Fuel, then energy, protein and water as plain percentages of target, then
-/// steps from Apple Health ("—" until it is connected; steps are never estimated).
+/// The user's rings, in their order, as a horizontal scroll that snaps to
+/// ring edges, ending with an Edit ring. Each opens its detail; long-press
+/// for Edit rings / Open details. A vertical list of rows at AX sizes.
 struct TodayMetricStrip: View {
-    let summary: DaySummary
-    let fuel: FuelScore?
-    let health: HealthSnapshot?
-    /// Long-press (or the VoiceOver action) opens Health (H00).
-    var onHealth: () -> Void = {}
+    let readings: [TodayRingReading]
+    let onOpen: (TodayRing) -> Void
+    let onEdit: () -> Void
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var position = ScrollPosition(edge: .leading)
+    @State private var width: CGFloat = 0
+
+    /// Four and a half rings fit the width after the leading margin, so the
+    /// half ring shows the strip scrolls.
+    private static let visibleRings: CGFloat = 4.5
+    private static let margin = VESSSpacing.screenInset
 
     var body: some View {
-        strip
-            .accessibilityAction(named: Text("Open Health"), onHealth)
-    }
-
-    /// Long-press on any ring opens the menu, also on the ones that link.
-    private var healthMenu: some View {
-        Button("Sleep, heart, stress and body", systemImage: "heart", action: onHealth)
-    }
-
-    private var strip: some View {
-        VESSMetricStrip {
-            VESSMetricStripItem(value: fuel.map { "\($0.value)" } ?? "—", label: "Fuel", progress: Double(fuel?.value ?? 0) / 100, metric: .fuel)
-                .contextMenu { healthMenu }
-            NavigationLink(destination: EnergyDetailView()) {
-                percentItem(summary.consumed.calories, of: summary.targets.calories, label: "Energy", metric: .energy)
+        if dynamicTypeSize.isAccessibilitySize {
+            // AX sizes: a vertical list of rows (J04).
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(readings) { reading in
+                    Button { onOpen(reading.ring) } label: {
+                        VESSMetricRow(systemImage: reading.ring.symbol, label: reading.ring.shortTitle, value: reading.value)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .vessHairlineBottom()
+                    .modifier(RingActions(reading: reading, onOpen: onOpen, onEdit: onEdit))
+                }
+                Button("Edit rings", systemImage: "plus", action: onEdit)
+                    .buttonStyle(.vessQuiet)
+                    .accessibilityIdentifier("today.editRings")
             }
-            .buttonStyle(.plain)
-            .contextMenu { healthMenu }
-            .accessibilityHint("Opens Energy")
-            NavigationLink(destination: MacrosDetailView()) {
-                percentItem(summary.consumed.proteinGrams, of: summary.targets.proteinGrams, label: "Protein", metric: .protein)
+        } else {
+            let slot = width > 0 ? (width - Self.margin) / Self.visibleRings : VESSSize.stripRing + VESSSpacing.xl
+            ScrollView(.horizontal) {
+                LazyHStack(alignment: .top, spacing: 0) {
+                    ForEach(readings) { reading in
+                        Button { onOpen(reading.ring) } label: {
+                            VESSMetricStripItem(value: reading.value, label: reading.ring.shortTitle, progress: reading.progress,
+                                                metric: reading.ring.metric, spokenValue: reading.spoken)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .modifier(RingActions(reading: reading, onOpen: onOpen, onEdit: onEdit))
+                        .accessibilityIdentifier("today.ring.\(reading.ring.rawValue)")
+                        .frame(width: slot, alignment: .leading)
+                    }
+                    TodayEditRingButton(action: onEdit)
+                        .frame(width: slot, alignment: .leading)
+                }
+                .scrollTargetLayout()
             }
-            .buttonStyle(.plain)
-            .contextMenu { healthMenu }
-            .accessibilityHint("Opens Macros")
-            percentItem(summary.hydration.consumedMilliliters, of: summary.hydration.targetMilliliters, label: "Water", metric: .water)
-                .contextMenu { healthMenu }
-            NavigationLink(value: ActivityRoute.activity) {
-                VESSMetricStripItem(
-                    value: health.map { "\(Int((Double($0.steps) / Double(max($0.stepsTarget, 1)) * 100).rounded()))" } ?? "—",
-                    label: "Steps",
-                    progress: health?.stepsFraction ?? 0,
-                    metric: .activity,
-                    spokenValue: health.map { Text("\(VESSFormat.steps(Double($0.steps))) of \(VESSFormat.steps(Double($0.stepsTarget))) steps") }
-                )
-            }
-            .buttonStyle(.plain)
-            .contextMenu { healthMenu }
-            .accessibilityHint("Opens Activity")
-            .accessibilityIdentifier("today.activity")
+            .scrollIndicators(.hidden)
+            .contentMargins(.leading, Self.margin, for: .scrollContent)
+            // The last item stops at the right margin: the trailing margin
+            // is what's left of the last slot.
+            .contentMargins(.trailing, max(Self.margin - (slot - VESSSize.stripRing), 0), for: .scrollContent)
+            .scrollPosition($position)
+            .modifier(RingSnapping(isOn: !reduceMotion))
+            // Scrolls past the screen margins to the edges.
+            .padding(.horizontal, -Self.margin)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+            // Back to the start each time Today opens.
+            .onAppear { position.scrollTo(edge: .leading) }
         }
     }
+}
 
-    private func percentItem(_ value: Double, of target: Double, label: LocalizedStringResource, metric: VESSMetricKind) -> some View {
-        let fraction = target > 0 ? value / target : 0
-        let percent = Int((fraction * 100).rounded())
-        return VESSMetricStripItem(
-            value: "\(percent)",
-            label: label,
-            progress: min(fraction, 1),
-            metric: metric,
-            spokenValue: Text("\(percent) percent of target")
-        )
+/// Long-press menu and the VoiceOver action on each ring.
+private struct RingActions: ViewModifier {
+    let reading: TodayRingReading
+    let onOpen: (TodayRing) -> Void
+    let onEdit: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .contextMenu {
+                Button("Edit rings", systemImage: "slider.horizontal.3", action: onEdit)
+                Button("Open details", systemImage: "chevron.right") { onOpen(reading.ring) }
+            }
+            .accessibilityAction(named: Text("Edit rings"), onEdit)
+    }
+}
+
+/// Snaps to ring edges; free scrolling with Reduce Motion.
+private struct RingSnapping: ViewModifier {
+    let isOn: Bool
+
+    func body(content: Content) -> some View {
+        if isOn {
+            content.scrollTargetBehavior(.viewAligned)
+        } else {
+            content
+        }
+    }
+}
+
+/// The strip's last item: a dashed ring with a plus.
+struct TodayEditRingButton: View {
+    let action: () -> Void
+
+    @ScaledMetric(relativeTo: .body) private var scaledDiameter = VESSSize.stripRing
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: VESSSpacing.xs) {
+                Circle()
+                    .strokeBorder(VESSColor.borderStrong, style: StrokeStyle(lineWidth: 1.5, dash: [3, 4]))
+                    .overlay {
+                        Image(systemName: "plus")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(VESSColor.secondaryText)
+                    }
+                    .frame(width: min(scaledDiameter, 64), height: min(scaledDiameter, 64))
+                Text("Edit")
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .lineLimit(1)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Edit rings")
+        .accessibilityIdentifier("today.editRings")
     }
 }
 
