@@ -6,6 +6,7 @@ import SwiftUI
 struct EditRingsSheet: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showError = false
 
     var body: some View {
@@ -26,12 +27,15 @@ struct EditRingsSheet: View {
                         HStack(spacing: VESSSpacing.sm) {
                             row(ring)
                             if TodayRingRules.canRemove(rings) {
-                                Button("Remove") { save(TodayRingRules.removing(ring, from: rings)) }
-                                    .buttonStyle(.borderless)
-                                    .vessTextStyle(.bodyS)
-                                    .foregroundStyle(VESSColor.secondaryText)
-                                    .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
-                                    .accessibilityLabel(Text("Remove \(Text(ring.title))"))
+                                Button { save(TodayRingRules.removing(ring, from: rings)) } label: {
+                                    Text("Remove")
+                                        .vessTextStyle(.bodyS)
+                                        .foregroundStyle(VESSColor.secondaryText)
+                                        .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel(Text("Remove \(Text(ring.title))"))
                             }
                         }
                         .listRowBackground(Color.clear)
@@ -90,7 +94,12 @@ struct EditRingsSheet: View {
     }
 
     private func row(_ ring: TodayRing) -> some View {
-        HStack(spacing: VESSSpacing.sm) {
+        // At accessibility sizes the icon sits above the text, so it never
+        // covers a wrapped line.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xxs))
+            : AnyLayout(HStackLayout(spacing: VESSSpacing.sm))
+        return layout {
             Image(systemName: ring.symbol)
                 .foregroundStyle(ring.metric.tint)
                 .frame(width: VESSSize.rowIcon)
