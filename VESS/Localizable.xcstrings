@@ -2342,6 +2342,9 @@
     "Couldn't look it up" : {
 
     },
+    "Couldn't reach Apple Health." : {
+
+    },
     "Couldn't reach Apple Health. Showing known data from %@." : {
 
     },

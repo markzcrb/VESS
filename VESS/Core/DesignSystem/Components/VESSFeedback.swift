@@ -12,10 +12,14 @@ struct VESSUndoToast: View {
                 .font(.subheadline)
                 .foregroundStyle(VESSColor.text)
             Spacer(minLength: 0)
-            Button("Undo", action: undo)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(VESSColor.accent)
-                .frame(minHeight: VESSHitTarget.minimum)
+            Button(action: undo) {
+                Text("Undo")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(VESSColor.accent)
+                    .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
                 .accessibilityIdentifier("undoToast.undo")
         }
         .padding(.horizontal, VESSSpacing.lg)

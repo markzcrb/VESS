@@ -20,6 +20,22 @@ struct HealthHubView: View {
             VStack(alignment: .leading, spacing: VESSSpacing.section) {
                 ProfileIntro(title: "How your body is doing.", text: "Read from Apple Health. Nothing here is a diagnosis.")
 
+                // The last sync failed: the values shown are the last known ones.
+                if case .failed(let lastKnown) = health.state {
+                    VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                        Text(lastKnown.map { "Couldn't reach Apple Health. Showing what was read at \($0.updatedAt.formatted(date: .omitted, time: .shortened))." }
+                             ?? String(localized: "Couldn't reach Apple Health."))
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.warningText)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button("Retry") {
+                            Task { await health.refresh(stepsTarget: store.profile?.dailyStepsTarget ?? UserProfile.defaultStepsTarget) }
+                        }
+                        .buttonStyle(.vessQuick)
+                        .accessibilityIdentifier("health.hub.retry")
+                    }
+                }
+
                 let sleep = tile(.sleep, HealthTile(
                     systemImage: "moon", iconTint: VESSColor.sleep, label: "Sleep",
                     value: Text(verbatim: readings?.lastNight.map { HealthFormat.duration(minutes: $0.asleepMinutes) } ?? "—"),

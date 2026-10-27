@@ -26,7 +26,7 @@ struct VESSSegmented<Value: Hashable>: View {
                         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                         .padding(.horizontal, VESSSpacing.xs)
                         .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
-                        .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum - 6)
+                        .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
                         .background {
                             if isSelected {
                                 Capsule()

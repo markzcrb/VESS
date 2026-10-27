@@ -234,7 +234,7 @@ struct PrivacyView: View {
     }
 
     private func fact(_ title: LocalizedStringResource, _ detail: LocalizedStringResource) -> some View {
-        VESSRow(title: Text(title), subtitle: Text(detail), subtitleLineLimit: 4) { EmptyView() } trailing: { EmptyView() }
+        VESSRow(title: Text(title), subtitle: Text(detail), subtitleLineLimit: 12) { EmptyView() } trailing: { EmptyView() }
             .accessibilityElement(children: .combine)
     }
 
