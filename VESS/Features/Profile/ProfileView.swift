@@ -30,6 +30,7 @@ struct ProfileView: View {
                     .padding(.bottom, VESSSpacing.huge)
                 }
                 .vessScreenBackground()
+                .vessScrollsToTopOnReselect()
                 .vessTabBarFade()
                 .toolbar(.hidden, for: .navigationBar)
                 .profileDestinations()

@@ -54,6 +54,7 @@ struct PlanView: View {
             // Content fades under the title and segments instead of a hard cut.
             .vessScreenBackground(clipsUnderBar: false)
             .scrollEdgeEffectStyle(.soft, for: .top)
+            .vessScrollsToTopOnReselect()
             .vessTabBarFade()
             .vessDetailTitle("Plan")
             .vessErrorAlert(isPresented: $showError)

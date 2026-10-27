@@ -26,6 +26,8 @@ struct RootTabView: View {
     /// Builds the Add sheet once, off screen, soon after launch.
     @State private var isPrewarming = false
     @State private var didPrewarm = false
+    /// Counts re-selections per tab: each scrolls that tab to the top.
+    @State private var reselects: [AppTab: Int] = [:]
 
     private let calendar = Calendar.current
 
@@ -36,24 +38,28 @@ struct RootTabView: View {
             Tab(value: .today) {
                 TodayView(selectedTab: $selection)
                     .vessFoodUndoToast()
+                    .environment(\.vessTabReselect, reselects[.today, default: 0])
             } label: {
                 tabLabel("Today", icon: .symbol("sun.max"), tab: .today)
             }
             Tab(value: .nutrition) {
                 NutritionView()
                     .vessFoodUndoToast()
+                    .environment(\.vessTabReselect, reselects[.nutrition, default: 0])
             } label: {
                 tabLabel("Nutrition", icon: .asset(.tabFork), tab: .nutrition)
             }
             Tab(value: .plan) {
                 PlanView()
                     .vessFoodUndoToast()
+                    .environment(\.vessTabReselect, reselects[.plan, default: 0])
             } label: {
                 tabLabel("Plan", icon: .asset(.tabCalendar), tab: .plan)
             }
             Tab(value: .you) {
                 ProfileView()
                     .vessFoodUndoToast()
+                    .environment(\.vessTabReselect, reselects[.you, default: 0])
             } label: {
                 tabLabel("You", icon: .symbol("person"), tab: .you)
             }
@@ -125,6 +131,8 @@ struct RootTabView: View {
             Text(title)
         } icon: {
             tabImage(icon, isSelected: selection == tab)
+                // A small bounce when the tab is chosen (none with Reduce Motion).
+                .symbolEffect(.bounce, value: selection == tab)
         }
     }
 
@@ -174,6 +182,8 @@ struct RootTabView: View {
             get: { selection },
             set: { newValue in
                 guard newValue == .add else {
+                    // The current tab again: back to its top.
+                    if newValue == selection { reselects[newValue, default: 0] += 1 }
                     selection = newValue
                     return
                 }

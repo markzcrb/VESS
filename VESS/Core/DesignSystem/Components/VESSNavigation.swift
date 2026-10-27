@@ -249,3 +249,30 @@ private struct VESSScreenAtmosphere: ViewModifier {
         }
     }
 }
+
+extension EnvironmentValues {
+    /// Goes up by one each time the current tab is selected again.
+    @Entry var vessTabReselect = 0
+}
+
+extension View {
+    /// A tab root's scroll view: back to the top when its tab is selected
+    /// again (at once with Reduce Motion).
+    func vessScrollsToTopOnReselect() -> some View {
+        modifier(VESSScrollToTopOnReselect())
+    }
+}
+
+private struct VESSScrollToTopOnReselect: ViewModifier {
+    @Environment(\.vessTabReselect) private var reselect
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var position = ScrollPosition(edge: .top)
+
+    func body(content: Content) -> some View {
+        content
+            .scrollPosition($position)
+            .onChange(of: reselect) {
+                withAnimation(reduceMotion ? nil : .smooth(duration: 0.35)) { position.scrollTo(edge: .top) }
+            }
+    }
+}

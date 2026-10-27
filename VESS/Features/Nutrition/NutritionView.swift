@@ -88,6 +88,7 @@ struct NutritionView: View {
             .padding(.bottom, VESSSpacing.huge)
         }
         .vessScreenBackground()
+        .vessScrollsToTopOnReselect()
         .vessTabBarFade()
         .vessDetailTitle("Nutrition")
         .sheet(item: $addFood) { request in

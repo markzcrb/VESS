@@ -146,6 +146,7 @@ struct TodayView: View {
             .padding(.bottom, VESSSpacing.huge)
         }
         .vessScreenBackground(.fuel)
+        .vessScrollsToTopOnReselect()
         .vessTabBarFade()
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $showEnergy) {
