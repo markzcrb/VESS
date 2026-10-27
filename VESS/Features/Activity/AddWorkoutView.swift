@@ -89,7 +89,7 @@ struct AddWorkoutView: View {
     /// "≈ 137 kcal active energy · estimate".
     private func estimateLine(_ estimate: Double?) -> some View {
         VESSMetric(
-            value: Text(verbatim: estimate.map { "≈ \(VESSFormat.calories($0))" } ?? "—"),
+            value: Text(verbatim: estimate.map { "≈\u{00A0}\(VESSFormat.calories($0))" } ?? "—"),
             context: Text("kcal active energy · estimate"),
             style: .numberRow,
             contextStyle: .bodyS
@@ -129,16 +129,16 @@ struct AddWorkoutView: View {
         return VStack(alignment: .leading, spacing: VESSSpacing.md) {
             VESSChipFlow {
                 ForEach(Self.presets, id: \.self) { preset in
-                    VESSChip(title: "\(preset) min", isSelected: !isCustom && minutes == preset) {
+                    VESSChip(title: "\(preset)\u{00A0}min", isSelected: !isCustom && minutes == preset) {
                         minutes = preset
                         withAnimation(reduceMotion ? nil : VESSMotion.selection) { showCustomDuration = false }
                     }
                 }
                 // Shows the length only when it isn't one of the presets.
-                VESSChip(title: Self.presets.contains(minutes) ? "Custom" : "\(minutes) min", isSelected: isCustom) {
+                VESSChip(title: Self.presets.contains(minutes) ? "Custom" : "\(minutes)\u{00A0}min", isSelected: isCustom) {
                     withAnimation(reduceMotion ? nil : VESSMotion.selection) { showCustomDuration = true }
                 }
-                .accessibilityLabel(isCustom ? Text("Custom, \(minutes) min") : Text("Custom"))
+                .accessibilityLabel(isCustom ? Text("Custom, \(minutes)\u{00A0}min") : Text("Custom"))
                 .accessibilityIdentifier("addWorkout.customDuration")
             }
             if isCustom {
@@ -147,7 +147,7 @@ struct AddWorkoutView: View {
                         minutes = max(Self.durationRange.lowerBound, minutes - Self.durationStep)
                     }
                     .disabled(minutes <= Self.durationRange.lowerBound)
-                    Text("\(minutes) min")
+                    Text("\(minutes)\u{00A0}min")
                         .vessTextStyle(.numberRow)
                         .foregroundStyle(VESSColor.text)
                         .contentTransition(.numericText())
@@ -159,7 +159,7 @@ struct AddWorkoutView: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Duration")
-                .accessibilityValue(Text("\(minutes) min"))
+                .accessibilityValue(Text("\(minutes)\u{00A0}min"))
             }
         }
     }

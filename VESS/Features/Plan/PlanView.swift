@@ -323,7 +323,7 @@ struct PlanView: View {
         let average = loggedDays.isEmpty ? 0 : loggedDays.reduce(0) { $0 + $1.logged.totalNutrition.calories } / Double(loggedDays.count)
         return Text(meals == 0
                     ? "Nothing was logged this week."
-                    : "^[\(meals) meal](inflect: true) logged, about \(VESSFormat.calories(average)) kcal a day.")
+                    : "^[\(meals) meal](inflect: true) logged, about \(VESSFormat.calories(average))\u{00A0}kcal a day.")
             .vessTextStyle(.bodyM)
             .foregroundStyle(VESSColor.secondaryText)
     }
@@ -423,7 +423,7 @@ struct PlanView: View {
                 systemImage: "checkmark",
                 title: Text(MealSuggestions.Candidate.mealName(entries.map(\.foodName))),
                 subtitle: Text("\(Text(meal.title)) · eaten"),
-                value: Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal"),
+                value: Text("\(VESSFormat.calories(entries.totalNutrition.calories))\u{00A0}kcal"),
                 showsChevron: false
             )
         case .planned(let plannedMeal):
@@ -434,7 +434,7 @@ struct PlanView: View {
                     systemImage: "clock",
                     title: Text(plannedMeal.name),
                     subtitle: Text("\(Text(meal.title)) · planned"),
-                    value: Text("\(VESSFormat.calories(plannedMeal.nutrition.calories)) kcal")
+                    value: Text("\(VESSFormat.calories(plannedMeal.nutrition.calories))\u{00A0}kcal")
                 )
             }
             .buttonStyle(.plain)
@@ -507,11 +507,11 @@ struct PlanView: View {
                             .foregroundStyle(VESSColor.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Text("\(Image(systemName: "clock")) \(recipe.minutes) min   \(Image(systemName: "flame")) \(VESSFormat.calories(recipe.nutrition.calories)) kcal")
+                    Text("\(Image(systemName: "clock")) \(recipe.minutes)\u{00A0}min   \(Image(systemName: "flame")) \(VESSFormat.calories(recipe.nutrition.calories))\u{00A0}kcal")
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.secondaryText)
                         // Without the inline symbols' names ("clock", "flame").
-                        .accessibilityLabel(Text("\(recipe.minutes) min, \(VESSFormat.calories(recipe.nutrition.calories)) kcal"))
+                        .accessibilityLabel(Text("\(recipe.minutes)\u{00A0}min, \(VESSFormat.calories(recipe.nutrition.calories))\u{00A0}kcal"))
                 }
                 .padding(VESSSpacing.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)

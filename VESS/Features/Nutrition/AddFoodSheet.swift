@@ -138,13 +138,13 @@ struct QuickAddForm: View {
             : AnyLayout(HStackLayout(alignment: .top, spacing: VESSSpacing.sm))
         return layout {
             // One section label above; each field names itself inside.
-            VESSTextField("Protein", text: $protein, unit: "g", error: NutrientInput.grams(protein) == nil ? Text("0–1,000 g") : nil, titleInside: true) { focusedField = .protein }
+            VESSTextField("Protein", text: $protein, unit: "g", error: NutrientInput.grams(protein) == nil ? Text("0–1,000\u{00A0}g") : nil, titleInside: true) { focusedField = .protein }
                 .id(Field.protein)
                 .keyboardType(.decimalPad)
-            VESSTextField("Carbs", text: $carbs, unit: "g", error: NutrientInput.grams(carbs) == nil ? Text("0–1,000 g") : nil, titleInside: true) { focusedField = .carbs }
+            VESSTextField("Carbs", text: $carbs, unit: "g", error: NutrientInput.grams(carbs) == nil ? Text("0–1,000\u{00A0}g") : nil, titleInside: true) { focusedField = .carbs }
                 .id(Field.carbs)
                 .keyboardType(.decimalPad)
-            VESSTextField("Fat", text: $fat, unit: "g", error: NutrientInput.grams(fat) == nil ? Text("0–1,000 g") : nil, titleInside: true) { focusedField = .fat }
+            VESSTextField("Fat", text: $fat, unit: "g", error: NutrientInput.grams(fat) == nil ? Text("0–1,000\u{00A0}g") : nil, titleInside: true) { focusedField = .fat }
                 .id(Field.fat)
                 .keyboardType(.decimalPad)
         }
@@ -185,7 +185,7 @@ struct QuickAddForm: View {
         if calories.trimmingCharacters(in: .whitespaces).isEmpty {
             return hasContent([protein, carbs, fat]) ? Text("Add calories to save.") : nil
         }
-        return kcal == nil ? Text("Enter between 0 and 5,000 kcal.") : nil
+        return kcal == nil ? Text("Enter between 0 and 5,000\u{00A0}kcal.") : nil
     }
 
     /// Nutrition for one serving, or `nil` while the form is incomplete or invalid.

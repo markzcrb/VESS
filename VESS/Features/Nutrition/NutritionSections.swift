@@ -81,7 +81,7 @@ struct DiaryTotals: View {
         VESSMacroBar(
             name: name,
             value: VESSFormat.grams(consumed),
-            target: target > 0 ? "/ \(VESSFormat.grams(target)) g" : "g",
+            target: target > 0 ? "/ \(VESSFormat.grams(target))\u{00A0}g" : "g",
             adding: target > 0 ? consumed / target : 0,
             metric: metric
         )
@@ -95,19 +95,19 @@ struct DiaryTotals: View {
         let balance = remaining >= 0
             ? String(localized: "\(VESSFormat.calories(remaining)) left")
             : String(localized: "\(VESSFormat.calories(-remaining)) above")
-        return String(localized: "of \(VESSFormat.calories(target)) kcal · \(balance)")
+        return String(localized: "of \(VESSFormat.calories(target))\u{00A0}kcal · \(balance)")
     }
 
     private var accessibilityValue: String {
         let consumed = VESSFormat.calories(summary.consumed.calories)
         guard summary.targets.calories > 0 else {
-            return String(localized: "\(consumed) kcal. No daily target set.")
+            return String(localized: "\(consumed)\u{00A0}kcal. No daily target set.")
         }
         let remaining = summary.caloriesRemaining
         let balance = remaining >= 0
-            ? String(localized: "\(VESSFormat.calories(remaining)) kcal left")
-            : String(localized: "\(VESSFormat.calories(-remaining)) kcal above your target")
-        return String(localized: "\(consumed) of \(VESSFormat.calories(summary.targets.calories)) kcal. \(balance)")
+            ? String(localized: "\(VESSFormat.calories(remaining))\u{00A0}kcal left")
+            : String(localized: "\(VESSFormat.calories(-remaining))\u{00A0}kcal above your target")
+        return String(localized: "\(consumed) of \(VESSFormat.calories(summary.targets.calories))\u{00A0}kcal. \(balance)")
     }
 
     /// Macro totals only count what was reported; say so rather than imply zero.
@@ -170,7 +170,7 @@ struct MealDiarySection: View {
             onEdit(entry)
         } label: {
             VESSRow(title: Text(entry.foodName), subtitle: subtitle(for: entry)) {
-                Text("\(VESSFormat.calories(entry.nutrition.calories)) kcal")
+                Text("\(VESSFormat.calories(entry.nutrition.calories))\u{00A0}kcal")
                     .vessTextStyle(.bodyM)
                     .monospacedDigit()
                     .foregroundStyle(VESSColor.secondaryText)
@@ -189,7 +189,7 @@ struct MealDiarySection: View {
 
     private var detail: Text? {
         guard let first = entries.first else { return nil }
-        return Text("\(VESSFormat.calories(entries.totalNutrition.calories)) kcal · \(first.loggedAt, format: .dateTime.hour().minute())")
+        return Text("\(VESSFormat.calories(entries.totalNutrition.calories))\u{00A0}kcal · \(first.loggedAt, format: .dateTime.hour().minute())")
     }
 
     /// "1 tbsp · 21 g", "200 g", "150 g · Estimated" or "Quick add".
@@ -199,7 +199,7 @@ struct MealDiarySection: View {
         }
         if entry.foodID == nil {
             guard entry.nutrition.isReported(.protein) else { return Text("Quick add") }
-            return Text("Quick add · \(VESSFormat.grams(entry.nutrition.proteinGrams)) g protein")
+            return Text("Quick add · \(VESSFormat.grams(entry.nutrition.proteinGrams))\u{00A0}g protein")
         }
         if let label = entry.portionLabel, entry.portionAmount != nil {
             let count = entry.portionCount
@@ -247,7 +247,7 @@ struct DrinksDiarySection: View {
                     systemImage: "cup.and.saucer",
                     title: Text("Caffeine"),
                     subtitle: logs.last(where: { $0.caffeineMilligrams > 0 }).map { Text("Last at \($0.loggedAt, format: .dateTime.hour().minute())") },
-                    value: Text("\(VESSFormat.grams(caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams)) mg")
+                    value: Text("\(VESSFormat.grams(caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams))\u{00A0}mg")
                 )
             }
             .buttonStyle(.plain)
@@ -299,13 +299,13 @@ struct DrinksDiarySection: View {
         if group.logs.count > 1 {
             return Text("^[\(group.logs.count) glass](inflect: true) · last at \(time)")
         }
-        let volume = Text("\(VESSFormat.milliliters(latest.volumeMilliliters)) ml")
+        let volume = Text("\(VESSFormat.milliliters(latest.volumeMilliliters))\u{00A0}ml")
         // "330 ml · 18:40 · 13 g alcohol · 1.3 drinks"
         if latest.isAlcoholic, let grams = latest.alcoholGrams {
-            return Text("\(volume) · \(time) · \(VESSFormat.grams(grams)) g alcohol · \(DrinkFacts.drinksText(StandardDrink.count(alcoholGrams: grams)))")
+            return Text("\(volume) · \(time) · \(VESSFormat.grams(grams))\u{00A0}g alcohol · \(DrinkFacts.drinksText(StandardDrink.count(alcoholGrams: grams)))")
         }
         if latest.hydrationContributionPercent < 100 {
-            return Text("\(volume) · \(time) · counts as \(VESSFormat.milliliters(latest.hydrationMilliliters)) ml")
+            return Text("\(volume) · \(time) · counts as \(VESSFormat.milliliters(latest.hydrationMilliliters))\u{00A0}ml")
         }
         return Text("\(volume) · \(time)")
     }
@@ -314,13 +314,13 @@ struct DrinksDiarySection: View {
     /// drink has any; otherwise the volume (litres for a group).
     private func value(for group: DrinkGroup) -> String {
         let alcoholCalories = group.logs.reduce(0) { $0 + $1.alcoholCalories }
-        if group.logs.contains(where: \.isAlcoholic) { return "\(VESSFormat.calories(alcoholCalories)) kcal" }
+        if group.logs.contains(where: \.isAlcoholic) { return "\(VESSFormat.calories(alcoholCalories))\u{00A0}kcal" }
         let caffeine = group.logs.reduce(0) { $0 + $1.caffeineMilligrams }
-        if caffeine > 0 { return "\(VESSFormat.grams(caffeine)) mg" }
+        if caffeine > 0 { return "\(VESSFormat.grams(caffeine))\u{00A0}mg" }
         let volume = group.logs.reduce(0) { $0 + $1.volumeMilliliters }
         return group.logs.count > 1
-            ? "\(VESSFormat.liters(fromMilliliters: volume)) L"
-            : "\(VESSFormat.milliliters(volume)) ml"
+            ? "\(VESSFormat.liters(fromMilliliters: volume))\u{00A0}L"
+            : "\(VESSFormat.milliliters(volume))\u{00A0}ml"
     }
 }
 

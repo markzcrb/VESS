@@ -111,7 +111,7 @@ struct InsightsView: View {
 
         // Examples of what will appear, faded and silent for VoiceOver.
         VStack(spacing: VESSSpacing.sm) {
-            VESSImpactRow(label: "Drank 2 L or more", impactPercent: 14, isPlaceholder: true)
+            VESSImpactRow(label: "Drank 2\u{00A0}L or more", impactPercent: 14, isPlaceholder: true)
             VESSImpactRow(label: "Protein at breakfast", impactPercent: 14, isPlaceholder: true)
             VESSImpactRow(label: "Dinner after 21:00", impactPercent: -7, isPlaceholder: true)
         }
@@ -129,7 +129,7 @@ struct InsightsView: View {
     }
 
     private static let demoRows: [(label: LocalizedStringResource, percent: Int, isNew: Bool)] = [
-        ("Drank 2 L or more", 24, false),
+        ("Drank 2\u{00A0}L or more", 24, false),
         ("Protein at breakfast", 21, false),
         ("Cooked at home", 13, false),
         ("Workout day", 6, false),

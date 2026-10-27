@@ -396,7 +396,7 @@ struct RecipeStats: View {
             if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
             stat(Text(VESSFormat.calories(nutrition.calories)), label: Text("kcal / serving"))
             if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
-            stat(Text("\(VESSFormat.grams(nutrition.proteinGrams)) g"), label: Text("protein / serving"))
+            stat(Text("\(VESSFormat.grams(nutrition.proteinGrams))\u{00A0}g"), label: Text("protein / serving"))
         }
         // Full width when stacked too, so the hairlines span the screen.
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -434,7 +434,7 @@ struct RecipeMacroKey: View {
             ForEach(parts, id: \.nutrient) { part in
                 HStack(spacing: VESSSpacing.xs) {
                     Circle().fill(part.color).frame(width: 6, height: 6).accessibilityHidden(true)
-                    Text("\(VESSFormat.grams(part.grams)) g \(Text(part.name))")
+                    Text("\(VESSFormat.grams(part.grams))\u{00A0}g \(Text(part.name))")
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.secondaryText)
                 }

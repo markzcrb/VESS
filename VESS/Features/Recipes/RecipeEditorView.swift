@@ -80,7 +80,7 @@ struct RecipeEditorView: View {
                         }
                         .buttonStyle(.plain)
                         Button { editsTime = true } label: {
-                            VESSListRow(title: Text("Time"), value: Text("\(minutes) min"))
+                            VESSListRow(title: Text("Time"), value: Text("\(minutes)\u{00A0}min"))
                         }
                         .buttonStyle(.plain)
                     }
@@ -359,7 +359,7 @@ struct RecipeEditorView: View {
                 if let fiber = nutrition.fiberGrams {
                     HStack(spacing: VESSSpacing.xs) {
                         Circle().fill(VESSColor.secondaryText).frame(width: 6, height: 6).accessibilityHidden(true)
-                        Text("\(VESSFormat.grams(fiber)) g fibre")
+                        Text("\(VESSFormat.grams(fiber))\u{00A0}g fibre")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                     }

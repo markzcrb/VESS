@@ -165,19 +165,19 @@ struct AddHabitSheet: View {
         let target = store.profile?.waterTargetMilliliters ?? 2000
         let steps = store.profile?.dailyStepsTarget ?? UserProfile.defaultStepsTarget
         return [
-            Suggestion(id: "water", name: String(localized: "Water \(VESSFormat.liters(fromMilliliters: target)) L"), detail: "From the drinks you log",
+            Suggestion(id: "water", name: String(localized: "Water \(VESSFormat.liters(fromMilliliters: target))\u{00A0}L"), detail: "From the drinks you log",
                        symbol: "drop", category: .nutrition, rule: .waterTarget),
             Suggestion(id: "protein", name: String(localized: "Protein at breakfast"), detail: "From your breakfast log",
                        symbol: "fish", category: .nutrition, rule: .proteinAtBreakfast),
             Suggestion(id: "steps", name: String(localized: "\(VESSFormat.steps(Double(steps))) steps"), detail: "From Apple Health",
                        symbol: "figure.walk", category: .movement, rule: .steps(steps)),
-            Suggestion(id: "sleep", name: String(localized: "Sleep 7 h"), detail: "From Apple Health",
+            Suggestion(id: "sleep", name: String(localized: "Sleep 7\u{00A0}h"), detail: "From Apple Health",
                        symbol: "moon", category: .sleep, rule: .sleep(minutes: 7 * 60)),
             Suggestion(id: "mindful", name: String(localized: "10 mindful minutes"), detail: "From Apple Health",
                        symbol: "leaf", category: .other, rule: .mindfulMinutes(10)),
             Suggestion(id: "caffeine", name: String(localized: "No caffeine after \(Self.cutoff.formatted(date: .omitted, time: .shortened))"), detail: "From the drinks you log",
                        symbol: "cup.and.saucer", category: .nutrition, rule: .noCaffeineAfter(hour: 14)),
-            Suggestion(id: "fiber", name: String(localized: "Fibre 25 g"), detail: "From your food log",
+            Suggestion(id: "fiber", name: String(localized: "Fibre 25\u{00A0}g"), detail: "From your food log",
                        symbol: "carrot", category: .nutrition, rule: .fiber(grams: 25)),
             Suggestion(id: "veg", name: String(localized: "3 portions of veg"), detail: "Tick each one",
                        symbol: "leaf.circle", category: .nutrition, rule: nil, timesPerDay: 3),

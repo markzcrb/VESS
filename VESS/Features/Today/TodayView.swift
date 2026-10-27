@@ -176,7 +176,7 @@ struct TodayView: View {
             if health.state == .syncing {
                 TodaySyncingLabel()
             } else if let undoLog {
-                VESSUndoToast(message: Text("Added \(VESSFormat.milliliters(undoLog.volumeMilliliters)) ml of water")) {
+                VESSUndoToast(message: Text("Added \(VESSFormat.milliliters(undoLog.volumeMilliliters))\u{00A0}ml of water")) {
                     undo(undoLog)
                 }
                 .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))

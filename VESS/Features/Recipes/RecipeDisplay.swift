@@ -19,7 +19,7 @@ extension ChefGoal {
         switch self {
         case .highProtein: "High-protein"
         case .lighter: "Lighter"
-        case .quick: "Quick (≤ 20 min)"
+        case .quick: "Quick (≤ 20\u{00A0}min)"
         case .comfort: "Comfort"
         }
     }
@@ -48,7 +48,7 @@ extension RecipeDiscover.Collection {
         case .glutenFree: "Gluten-free"
         case .dairyFree: "Dairy-free"
         case .highProtein: "High-protein"
-        case .under20Minutes: "Under 20 min"
+        case .under20Minutes: "Under 20\u{00A0}min"
         }
     }
 
@@ -86,7 +86,7 @@ extension Recipe {
 
     /// "25 min · 620 kcal · 42 g protein".
     var metaLine: Text {
-        Text("\(minutes) min · \(VESSFormat.calories(nutrition.calories)) kcal · \(VESSFormat.grams(nutrition.proteinGrams)) g protein")
+        Text("\(minutes)\u{00A0}min · \(VESSFormat.calories(nutrition.calories))\u{00A0}kcal · \(VESSFormat.grams(nutrition.proteinGrams))\u{00A0}g protein")
     }
 
     /// The bundled photo, or the user's own; `nil` for the quiet tile.

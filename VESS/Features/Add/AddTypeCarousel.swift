@@ -158,7 +158,7 @@ struct AddTypeCarousel: View {
                 }
                 .onScrollPhaseChange { old, phase in
                     #if DEBUG
-                    Self.log.debug("phase \(String(describing: old)) → \(String(describing: phase)), centred \(centred?.rawValue ?? "-")")
+                    Self.log.debug("phase \(String(describing: old)) →\u{00A0}\(String(describing: phase)), centred \(centred?.rawValue ?? "-")")
                     #endif
                     // Fallback: whatever is centred once everything stops.
                     if isReady, phase == .idle, let centred, centred != selection { selection = centred }

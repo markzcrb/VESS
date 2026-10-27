@@ -157,7 +157,7 @@ struct AIChefContent: View {
         VESSBleedingRow {
             HStack(spacing: VESSSpacing.xs) {
                 VESSChip(title: meal.title, isSelected: mealFilterOn) { mealFilterOn.toggle() }
-                VESSChip(title: "Under 30 min", isSelected: under30) { under30.toggle() }
+                VESSChip(title: "Under 30\u{00A0}min", isSelected: under30) { under30.toggle() }
                 VESSChip(title: "High-protein", isSelected: highProtein) { highProtein.toggle() }
                 VESSChip(title: "Uses use-soon", isSelected: usesUseSoon) { usesUseSoon.toggle() }
             }
@@ -292,7 +292,7 @@ struct AIChefContent: View {
                 .foregroundStyle(VESSColor.text)
                 .fixedSize(horizontal: false, vertical: true)
             Text(remaining.proteinGrams > 0
-                 ? "Uses your pantry, diet and avoid list, and today's protein gap (\(VESSFormat.grams(remaining.proteinGrams)) g left). You check it before saving."
+                 ? "Uses your pantry, diet and avoid list, and today's protein gap (\(VESSFormat.grams(remaining.proteinGrams))\u{00A0}g left). You check it before saving."
                  : "Uses your pantry, diet and avoid list. You check it before saving.")
                 .vessTextStyle(.bodyS)
                 .foregroundStyle(VESSColor.secondaryText)

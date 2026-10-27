@@ -44,7 +44,7 @@ struct MoveMealSheet: View {
                             .vessTextStyle(.editorialL)
                             .foregroundStyle(VESSColor.text)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text("\(Text(meal.day, format: .dateTime.weekday(.wide))) · \(Text(meal.mealType.title)) · \(VESSFormat.calories(meal.nutrition.calories)) kcal")
+                        Text("\(Text(meal.day, format: .dateTime.weekday(.wide))) · \(Text(meal.mealType.title)) · \(VESSFormat.calories(meal.nutrition.calories))\u{00A0}kcal")
                             .vessTextStyle(.bodyM)
                             .foregroundStyle(VESSColor.secondaryText)
                     }

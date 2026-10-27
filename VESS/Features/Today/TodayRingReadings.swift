@@ -55,7 +55,7 @@ extension TodayRing {
         case .fuel: "today's summary"
         case .energy: "kcal vs your target"
         case .protein, .carbs, .fat, .water: "vs your target"
-        case .fiber: "vs 30 g a day"
+        case .fiber: "vs 30\u{00A0}g a day"
         case .caffeine: "vs your limit"
         case .steps: "vs your goal"
         case .activeEnergy: "vs your 7\u{2011}day average"
@@ -138,12 +138,12 @@ struct TodayRingReading: Identifiable {
     var valueWithUnit: String {
         guard value != Self.empty else { return value }
         switch ring {
-        case .energy, .protein, .carbs, .fat, .fiber, .water, .steps: return "\(value) %"
-        case .caffeine: return String(localized: "\(value) mg")
-        case .activeEnergy: return String(localized: "\(value) kcal")
-        case .restingHeartRate: return String(localized: "\(value) bpm")
-        case .hrv: return String(localized: "\(value) ms")
-        case .weight: return String(localized: "\(value) kg")
+        case .energy, .protein, .carbs, .fat, .fiber, .water, .steps: return "\(value)\u{00A0}%"
+        case .caffeine: return String(localized: "\(value)\u{00A0}mg")
+        case .activeEnergy: return String(localized: "\(value)\u{00A0}kcal")
+        case .restingHeartRate: return String(localized: "\(value)\u{00A0}bpm")
+        case .hrv: return String(localized: "\(value)\u{00A0}ms")
+        case .weight: return String(localized: "\(value)\u{00A0}kg")
         default: return value
         }
     }

@@ -54,7 +54,7 @@ struct SuggestionsView: View {
                                     .foregroundStyle(deselected.contains(index) ? VESSColor.tertiaryText : VESSColor.text)
                                     .frame(width: VESSSize.rowIcon)
                             } trailing: {
-                                Text("\(VESSFormat.calories(suggestion.candidate.nutrition.calories)) kcal")
+                                Text("\(VESSFormat.calories(suggestion.candidate.nutrition.calories))\u{00A0}kcal")
                                     .vessTextStyle(.bodyM)
                                     .foregroundStyle(VESSColor.secondaryText)
                             }

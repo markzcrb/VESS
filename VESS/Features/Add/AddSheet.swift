@@ -251,7 +251,7 @@ struct AddWeightContent: View {
                     VESSIconButton(systemImage: "minus", label: "Less") { value = max(Self.range.lowerBound, weight - Self.step) }
                         .disabled(weight <= Self.range.lowerBound)
                     Spacer()
-                    Text(verbatim: "\(weight.formatted(.number.precision(.fractionLength(1)))) kg")
+                    Text(verbatim: "\(weight.formatted(.number.precision(.fractionLength(1))))\u{00A0}kg")
                         .vessTextStyle(.displayM)
                         .monospacedDigit()
                         .foregroundStyle(VESSColor.text)
@@ -261,7 +261,7 @@ struct AddWeightContent: View {
                         .disabled(weight >= Self.range.upperBound)
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityValue(Text(verbatim: "\(weight.formatted(.number.precision(.fractionLength(1)))) kg"))
+                .accessibilityValue(Text(verbatim: "\(weight.formatted(.number.precision(.fractionLength(1))))\u{00A0}kg"))
                 Text("Updates the weight in your profile. Weight from Apple Health is read, never written.")
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.tertiaryText)

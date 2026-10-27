@@ -490,7 +490,7 @@ struct PhotoReviewView: View {
                 .accessibilityIdentifier("photo.addItem")
 
                 HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                    Text("≈ \(VESSFormat.calories(total.calories))")
+                    Text("≈\u{00A0}\(VESSFormat.calories(total.calories))")
                         .vessTextStyle(.displayM)
                         .foregroundStyle(VESSColor.text)
                     Text("kcal · Estimated")
@@ -579,14 +579,14 @@ private struct EstimatedItemRow: View {
                             item.perUnit = NutritionFacts(calories: kcal / max(item.amount, 1), proteinGrams: 0, carbohydrateGrams: 0, fatGrams: 0)
                         }
                 } else {
-                    Text("\(VESSFormat.calories(nutrition.calories)) kcal")
+                    Text("\(VESSFormat.calories(nutrition.calories))\u{00A0}kcal")
                         .vessTextStyle(.numberS)
                         .foregroundStyle(VESSColor.text)
                 }
             }
 
             if !isManual {
-                Text("\(VESSFormat.grams(nutrition.proteinGrams)) g protein · \(VESSFormat.grams(nutrition.carbohydrateGrams)) g carbs · \(VESSFormat.grams(nutrition.fatGrams)) g fat")
+                Text("\(VESSFormat.grams(nutrition.proteinGrams))\u{00A0}g protein · \(VESSFormat.grams(nutrition.carbohydrateGrams))\u{00A0}g carbs · \(VESSFormat.grams(nutrition.fatGrams))\u{00A0}g fat")
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)

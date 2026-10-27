@@ -47,7 +47,7 @@ struct BodyMassIndexSection: View {
     }
 
     private var measures: some View {
-        Text("\(VESSFormat.quantity(weight)) kg · \(VESSFormat.quantity(height)) cm")
+        Text("\(VESSFormat.quantity(weight))\u{00A0}kg · \(VESSFormat.quantity(height))\u{00A0}cm")
             .vessTextStyle(.bodyM)
             .foregroundStyle(VESSColor.secondaryText)
     }

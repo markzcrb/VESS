@@ -236,11 +236,11 @@ struct WorkoutDetailView: View {
                 VESSRowGroup {
                     VESSListRow(
                         title: Text("Active energy"),
-                        value: Text(ActivityWorkoutRow.energyValue(workout).map { "\($0) kcal" } ?? "—"),
+                        value: Text(ActivityWorkoutRow.energyValue(workout).map { "\($0)\u{00A0}kcal" } ?? "—"),
                         showsChevron: false
                     )
                     if let meters = workout.distanceMeters, meters > 0 {
-                        VESSListRow(title: Text("Distance"), value: Text("\(VESSFormat.kilometers(fromMeters: meters)) km"), showsChevron: false)
+                        VESSListRow(title: Text("Distance"), value: Text("\(VESSFormat.kilometers(fromMeters: meters))\u{00A0}km"), showsChevron: false)
                     }
                     if let effort = workout.effort {
                         VESSListRow(title: Text("Effort"), value: Text(effort.title), showsChevron: false)

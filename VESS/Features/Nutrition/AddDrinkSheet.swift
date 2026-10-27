@@ -163,11 +163,11 @@ struct AddDrinkSheet: View {
                     }
                     .accessibilityIdentifier("addDrink.size.\(Int(size))")
                 }
-                VESSChip(title: options.contains(volume) ? "Custom" : "\(VESSFormat.milliliters(volume)) ml",
+                VESSChip(title: options.contains(volume) ? "Custom" : "\(VESSFormat.milliliters(volume))\u{00A0}ml",
                          isSelected: isCustom) {
                     withAnimation(reduceMotion ? nil : VESSMotion.selection) { showCustomSize = true }
                 }
-                .accessibilityLabel(isCustom ? Text("Custom, \(VESSFormat.milliliters(volume)) ml") : Text("Custom"))
+                .accessibilityLabel(isCustom ? Text("Custom, \(VESSFormat.milliliters(volume))\u{00A0}ml") : Text("Custom"))
                 .accessibilityIdentifier("addDrink.custom")
             }
             if isCustom {
@@ -175,7 +175,7 @@ struct AddDrinkSheet: View {
                 HStack(spacing: VESSSpacing.md) {
                     VESSIconButton(systemImage: "minus", label: "Smaller amount") { setVolume(max(step, volume - step)) }
                         .disabled(volume <= step)
-                    Text("\(VESSFormat.milliliters(volume)) ml")
+                    Text("\(VESSFormat.milliliters(volume))\u{00A0}ml")
                         .vessTextStyle(.numberRow)
                         .foregroundStyle(VESSColor.text)
                         .contentTransition(.numericText())
@@ -186,7 +186,7 @@ struct AddDrinkSheet: View {
                 .vessHaptic(.selection, trigger: volume)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Amount")
-                .accessibilityValue(Text("\(VESSFormat.milliliters(volume)) ml"))
+                .accessibilityValue(Text("\(VESSFormat.milliliters(volume))\u{00A0}ml"))
             }
         }
     }
@@ -310,7 +310,7 @@ struct AddDrinkSheet: View {
             try store.add(log)
             lastPreset = preset.rawValue
             lastSizes = DrinkFacts.remembering(volume, for: preset, in: lastSizes)
-            undo.show(Text("Added \(VESSFormat.milliliters(volume)) ml of \(drink.name.localizedLowercase)")) { store in
+            undo.show(Text("Added \(VESSFormat.milliliters(volume))\u{00A0}ml of \(drink.name.localizedLowercase)")) { store in
                 try store.deleteHydrationLog(id: log.id)
                 haptics.play(.warning)
             }
@@ -337,15 +337,15 @@ struct DrinkEstimate {
 
     /// "330 ml", or "≈ 64 mg" for a caffeinated drink.
     var value: String {
-        caffeine >= 1 ? "≈ \(VESSFormat.grams(caffeine)) mg" : "\(VESSFormat.milliliters(volume)) ml"
+        caffeine >= 1 ? "≈\u{00A0}\(VESSFormat.grams(caffeine))\u{00A0}mg" : "\(VESSFormat.milliliters(volume))\u{00A0}ml"
     }
 
     var context: String {
-        let water = String(localized: "→\u{00A0}\(VESSFormat.liters(fromMilliliters: waterToday + counted)) of \(VESSFormat.liters(fromMilliliters: waterTarget)) L with this")
+        let water = String(localized: "→\u{00A0}\(VESSFormat.liters(fromMilliliters: waterToday + counted)) of \(VESSFormat.liters(fromMilliliters: waterTarget))\u{00A0}L with this")
         if caffeine >= 1 {
             return [String(localized: "caffeine"),
-                    String(localized: "counts as \(VESSFormat.milliliters(counted)) ml water"),
-                    String(localized: "→\u{00A0}\(VESSFormat.grams(caffeineToday + caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams)) mg with this")]
+                    String(localized: "counts as \(VESSFormat.milliliters(counted))\u{00A0}ml water"),
+                    String(localized: "→\u{00A0}\(VESSFormat.grams(caffeineToday + caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams))\u{00A0}mg with this")]
                 .joined(separator: " · ")
         }
         if alcoholGrams > 0 {
@@ -355,7 +355,7 @@ struct DrinkEstimate {
         }
         let share = contributionPercent >= 100
             ? String(localized: "toward water")
-            : String(localized: "counts as \(VESSFormat.milliliters(counted)) ml water")
+            : String(localized: "counts as \(VESSFormat.milliliters(counted))\u{00A0}ml water")
         return waterTarget > 0 ? share + " · " + water : share
     }
 }
@@ -379,7 +379,7 @@ private struct MoreDrinksView: View {
                         ForEach(saved) { drink in
                             Button { onSelectSaved(drink) } label: {
                                 row(symbol: drink.basedOn.symbol, title: Text(verbatim: drink.name),
-                                    subtitle: Text("\(VESSFormat.milliliters(drink.volumeMilliliters)) ml"),
+                                    subtitle: Text("\(VESSFormat.milliliters(drink.volumeMilliliters))\u{00A0}ml"),
                                     isSelected: drink.id == savedSelection)
                             }
                             .buttonStyle(.plain)
@@ -604,7 +604,7 @@ enum DrinkFacts {
 
     /// "250 ml"; espresso names its shots: "Single · 30 ml".
     static func sizeTitle(_ size: Double, for preset: DrinkPreset?) -> String {
-        let amount = "\(VESSFormat.milliliters(size)) ml"
+        let amount = "\(VESSFormat.milliliters(size))\u{00A0}ml"
         guard preset == .espresso, let serving = DrinkPreset.espresso.servings.first(where: { $0.milliliters == size }) else { return amount }
         return String(localized: serving.name.title) + " · " + amount
     }
@@ -615,9 +615,9 @@ enum DrinkFacts {
         // AttributedString resolves the plural ("1 drink", "4 drinks").
         let drinks = String(AttributedString(localized: "^[\(logs.count) drink](inflect: true)").characters)
         let water = logs.reduce(0) { $0 + $1.hydrationMilliliters }
-        var parts = [drinks, String(localized: "\(VESSFormat.liters(fromMilliliters: water)) L of water")]
+        var parts = [drinks, String(localized: "\(VESSFormat.liters(fromMilliliters: water))\u{00A0}L of water")]
         let caffeine = CaffeineModel.total(logs, on: day, calendar: calendar)
-        if caffeine >= 1 { parts.append(String(localized: "\(VESSFormat.grams(caffeine)) mg caffeine")) }
+        if caffeine >= 1 { parts.append(String(localized: "\(VESSFormat.grams(caffeine))\u{00A0}mg caffeine")) }
         return parts.joined(separator: " · ")
     }
 
@@ -680,13 +680,13 @@ enum DrinkFacts {
         let caffeine = drink.caffeineMilligramsPer100Milliliters * factor
         let alcohol = drink.alcoholGramsPer100Milliliters * factor
         if alcohol > 0 {
-            return Text("Typical values: \(VESSFormat.grams(alcohol)) g alcohol (\(drinksText(StandardDrink.count(alcoholGrams: alcohol)))), about \(VESSFormat.calories(kcal)) kcal.")
+            return Text("Typical values: \(VESSFormat.grams(alcohol))\u{00A0}g alcohol (\(drinksText(StandardDrink.count(alcoholGrams: alcohol)))), about \(VESSFormat.calories(kcal))\u{00A0}kcal.")
         }
         switch (kcal >= 1, caffeine >= 1) {
         // Drink kcal count in the day's energy and in Fuel (alcohol: energy only).
-        case (true, true): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal and \(VESSFormat.grams(caffeine)) mg caffeine. The kcal count in your energy.")
-        case (true, false): return Text("Typical values: about \(VESSFormat.calories(kcal)) kcal, counted in your energy.")
-        case (false, true): return Text("Typical values: \(VESSFormat.grams(caffeine)) mg caffeine.")
+        case (true, true): return Text("Typical values: about \(VESSFormat.calories(kcal))\u{00A0}kcal and \(VESSFormat.grams(caffeine))\u{00A0}mg caffeine. The kcal count in your energy.")
+        case (true, false): return Text("Typical values: about \(VESSFormat.calories(kcal))\u{00A0}kcal, counted in your energy.")
+        case (false, true): return Text("Typical values: \(VESSFormat.grams(caffeine))\u{00A0}mg caffeine.")
         case (false, false): return nil
         }
     }
@@ -854,16 +854,16 @@ struct DrinkLogRow: View {
     private var amount: String {
         let volume = VESSFormat.milliliters(log.volumeMilliliters)
         if value == .caffeine {
-            return String(localized: "\(volume) ml · \(VESSFormat.grams(log.caffeineMilligrams)) mg")
+            return String(localized: "\(volume)\u{00A0}ml · \(VESSFormat.grams(log.caffeineMilligrams))\u{00A0}mg")
         }
         if log.isAlcoholic, let drinks = log.standardDrinks {
             let number = VESSFormat.quantity(drinks)
             return number == VESSFormat.quantity(1)
-                ? String(localized: "\(volume) ml · 1 drink")
-                : String(localized: "\(volume) ml · \(number) drinks")
+                ? String(localized: "\(volume)\u{00A0}ml · 1 drink")
+                : String(localized: "\(volume)\u{00A0}ml · \(number) drinks")
         }
-        guard log.hydrationContributionPercent < 100 else { return String(localized: "\(volume) ml") }
-        return String(localized: "\(volume) ml · counts as \(VESSFormat.milliliters(log.hydrationMilliliters)) ml")
+        guard log.hydrationContributionPercent < 100 else { return String(localized: "\(volume)\u{00A0}ml") }
+        return String(localized: "\(volume)\u{00A0}ml · counts as \(VESSFormat.milliliters(log.hydrationMilliliters))\u{00A0}ml")
     }
 
     private static let widestTime: Date = {

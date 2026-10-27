@@ -78,13 +78,13 @@ enum TodayInsight {
             let target = VESSFormat.calories(summary.targets.calories)
             let above = summary.consumed.calories - summary.targets.calories
             if above > 0 {
-                return Content(text: String(localized: "Energy is at \(consumed) of \(target) kcal, \(VESSFormat.calories(above)) above your guide. One day doesn't define a pattern."))
+                return Content(text: String(localized: "Energy is at \(consumed) of \(target)\u{00A0}kcal, \(VESSFormat.calories(above)) above your guide. One day doesn't define a pattern."))
             }
-            return Content(text: String(localized: "Energy is at \(consumed) of \(target) kcal, right at your guide."))
+            return Content(text: String(localized: "Energy is at \(consumed) of \(target)\u{00A0}kcal, right at your guide."))
         }
 
         if summary.isProteinBehind {
-            var sentence = String(localized: "Protein is at \(protein) of \(proteinTarget) g")
+            var sentence = String(localized: "Protein is at \(protein) of \(proteinTarget)\u{00A0}g")
             let total = summary.consumed.proteinGrams
             let afterNoon = entries
                 .filter { calendar.component(.hour, from: $0.loggedAt) >= 12 }
@@ -104,7 +104,7 @@ enum TodayInsight {
         if summary.isWaterBehind {
             let water = VESSFormat.liters(fromMilliliters: summary.hydration.consumedMilliliters)
             let waterTarget = VESSFormat.liters(fromMilliliters: summary.hydration.targetMilliliters)
-            return Content(text: String(localized: "Water is at \(water) of \(waterTarget) L so far today."))
+            return Content(text: String(localized: "Water is at \(water) of \(waterTarget)\u{00A0}L so far today."))
         }
         return nil
     }

@@ -133,8 +133,8 @@ struct FoodDetailView: View {
         let total = "\(VESSFormat.grams(logged + adding))"
         return VESSMacroBar(
             name: name,
-            value: "+\(VESSFormat.grams(adding)) g",
-            target: target > 0 ? "→ \(total) / \(VESSFormat.grams(target)) g" : "→ \(total) g",
+            value: "+\(VESSFormat.grams(adding))\u{00A0}g",
+            target: target > 0 ? "→\u{00A0}\(total) / \(VESSFormat.grams(target))\u{00A0}g" : "→\u{00A0}\(total)\u{00A0}g",
             logged: target > 0 ? logged / target : 0,
             adding: target > 0 ? adding / target : 0,
             metric: metric
@@ -210,13 +210,13 @@ struct FoodDetailView: View {
                 VESSListRow(systemImage: "info.circle", title: Text(per100.title), value: per100.value, showsChevron: false)
             }
             if let fiber = nutrition.fiberGrams {
-                VESSListRow(title: Text("Fibre"), value: Text("\(VESSFormat.quantity(fiber)) g"), showsChevron: false)
+                VESSListRow(title: Text("Fibre"), value: Text("\(VESSFormat.quantity(fiber))\u{00A0}g"), showsChevron: false)
             }
             if let sugar = nutrition.sugarGrams {
-                VESSListRow(title: Text("Sugars"), value: Text("\(VESSFormat.quantity(sugar)) g"), showsChevron: false)
+                VESSListRow(title: Text("Sugars"), value: Text("\(VESSFormat.quantity(sugar))\u{00A0}g"), showsChevron: false)
             }
             if let sodium = nutrition.sodiumMilligrams {
-                VESSListRow(title: Text("Sodium"), value: Text("\(VESSFormat.milliliters(sodium)) mg"), showsChevron: false)
+                VESSListRow(title: Text("Sodium"), value: Text("\(VESSFormat.milliliters(sodium))\u{00A0}mg"), showsChevron: false)
             }
         }
         .vessHairlineBottom()
@@ -247,7 +247,7 @@ struct FoodDetailView: View {
             }
             Button(action: add) {
                 if portion != nil, food.nutrition.canBeLogged {
-                    Text("\(Text(meal.addToTitle)) · \(VESSFormat.calories(nutrition.calories)) kcal")
+                    Text("\(Text(meal.addToTitle)) · \(VESSFormat.calories(nutrition.calories))\u{00A0}kcal")
                 } else {
                     Text(meal.addToTitle)
                 }
@@ -355,9 +355,9 @@ struct FoodDetailView: View {
         let facts = food.nutrition(forQuantity: 100)
         let title: LocalizedStringResource = "Per 100 \(String(localized: food.servingUnit.abbreviation))"
         guard facts.isReported(.protein) else {
-            return (title, Text("\(VESSFormat.calories(facts.calories)) kcal"))
+            return (title, Text("\(VESSFormat.calories(facts.calories))\u{00A0}kcal"))
         }
-        return (title, Text("\(VESSFormat.calories(facts.calories)) kcal · \(VESSFormat.quantity(facts.proteinGrams)) g protein"))
+        return (title, Text("\(VESSFormat.calories(facts.calories))\u{00A0}kcal · \(VESSFormat.quantity(facts.proteinGrams))\u{00A0}g protein"))
     }
 
     private var logTime: Date {

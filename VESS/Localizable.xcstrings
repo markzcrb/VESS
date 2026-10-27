@@ -43,62 +43,62 @@
         }
       }
     },
-    "%@ · %@ · %@ g alcohol · %@" : {
+    "%@ · %@ · %@ g alcohol · %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · %2$@ · %3$@ g alcohol · %4$@"
+            "value" : "%1$@ · %2$@ · %3$@ g alcohol · %4$@"
           }
         }
       }
     },
-    "%@ · %@ · %@ kcal" : {
+    "%@ · %@ · %@ kcal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · %2$@ · %3$@ kcal"
+            "value" : "%1$@ · %2$@ · %3$@ kcal"
           }
         }
       }
     },
-    "%@ · %@ · counts as %@ ml" : {
+    "%@ · %@ · counts as %@ ml" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · %2$@ · counts as %3$@ ml"
+            "value" : "%1$@ · %2$@ · counts as %3$@ ml"
           }
         }
       }
     },
-    "%@ · %@ kcal" : {
+    "%@ · %@ kcal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · %2$@ kcal"
+            "value" : "%1$@ · %2$@ kcal"
           }
         }
       }
     },
-    "%@ · %@ kcal left" : {
+    "%@ · %@ kcal left" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · %2$@ kcal left"
+            "value" : "%1$@ · %2$@ kcal left"
           }
         }
       }
     },
-    "%@ · %@ km" : {
+    "%@ · %@ km" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · %2$@ km"
+            "value" : "%1$@ · %2$@ km"
           }
         }
       }
@@ -123,12 +123,12 @@
         }
       }
     },
-    "%@ · %lld %%" : {
+    "%@ · %lld %%" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · %2$lld %%"
+            "value" : "%1$@ · %2$lld %%"
           }
         }
       }
@@ -226,15 +226,15 @@
         }
       }
     },
-    "%@ %%" : {
+    "%@ %%" : {
 
     },
-    "%@ %lld min   %@ %@ kcal" : {
+    "%@ %lld min   %@ %@ kcal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ %2$lld min   %3$@ %4$@ kcal"
+            "value" : "%1$@ %2$lld min   %3$@ %4$@ kcal"
           }
         }
       }
@@ -271,7 +271,7 @@
     "%@ BMI is a rough guide: it doesn't tell muscle from fat, so read it next to your weight trend and how you feel." : {
 
     },
-    "%@ bpm" : {
+    "%@ bpm" : {
 
     },
     "%@ capsules" : {
@@ -298,7 +298,7 @@
     "%@ cloves" : {
 
     },
-    "%@ cm" : {
+    "%@ cm" : {
 
     },
     "%@ counts at %@. An estimate you can change." : {
@@ -325,102 +325,102 @@
     "%@ drinks" : {
 
     },
-    "%@ g" : {
+    "%@ g" : {
 
     },
-    "%@ g %@" : {
+    "%@ g %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ g %2$@"
+            "value" : "%1$@ g %2$@"
           }
         }
       }
     },
-    "%@ g fibre" : {
+    "%@ g fibre" : {
 
     },
-    "%@ g protein" : {
+    "%@ g protein" : {
 
     },
-    "%@ g protein · %@ g carbs · %@ g fat" : {
+    "%@ g protein · %@ g carbs · %@ g fat" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ g protein · %2$@ g carbs · %3$@ g fat"
+            "value" : "%1$@ g protein · %2$@ g carbs · %3$@ g fat"
           }
         }
       }
     },
-    "%@ h" : {
+    "%@ h" : {
 
     },
     "%@ is still selected. Your plan hasn't changed." : {
 
     },
-    "%@ kcal" : {
+    "%@ kcal" : {
 
     },
-    "%@ kcal · %@" : {
+    "%@ kcal · %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ kcal · %2$@"
+            "value" : "%1$@ kcal · %2$@"
           }
         }
       }
     },
-    "%@ kcal · %@ g protein" : {
+    "%@ kcal · %@ g protein" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ kcal · %2$@ g protein"
+            "value" : "%1$@ kcal · %2$@ g protein"
           }
         }
       }
     },
-    "%@ kcal · %@ g protein · %@ g carbs · %@ g fat" : {
+    "%@ kcal · %@ g protein · %@ g carbs · %@ g fat" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ kcal · %2$@ g protein · %3$@ g carbs · %4$@ g fat"
+            "value" : "%1$@ kcal · %2$@ g protein · %3$@ g carbs · %4$@ g fat"
           }
         }
       }
     },
-    "%@ kcal above your target" : {
+    "%@ kcal above your target" : {
 
     },
-    "%@ kcal left" : {
+    "%@ kcal left" : {
 
     },
-    "%@ kcal. No daily target set." : {
+    "%@ kcal. No daily target set." : {
 
     },
-    "%@ kg" : {
+    "%@ kg" : {
 
     },
-    "%@ kg · %@ cm" : {
+    "%@ kg · %@ cm" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ kg · %2$@ cm"
+            "value" : "%1$@ kg · %2$@ cm"
           }
         }
       }
     },
-    "%@ kg in ^[%lld week](inflect: true)" : {
+    "%@ kg in ^[%lld week](inflect: true)" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ kg in ^[%2$lld week](inflect: true)"
+            "value" : "%1$@ kg in ^[%2$lld week](inflect: true)"
           }
         }
       }
@@ -431,32 +431,32 @@
     "%@ kilograms" : {
 
     },
-    "%@ km" : {
+    "%@ km" : {
 
     },
-    "%@ L" : {
+    "%@ L" : {
 
     },
-    "%@ L of water" : {
+    "%@ L of water" : {
 
     },
     "%@ left" : {
 
     },
-    "%@ mg" : {
+    "%@ mg" : {
 
     },
-    "%@ mg above the %@ mg daily limit." : {
+    "%@ mg above the %@ mg daily limit." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ mg above the %2$@ mg daily limit."
+            "value" : "%1$@ mg above the %2$@ mg daily limit."
           }
         }
       }
     },
-    "%@ mg caffeine" : {
+    "%@ mg caffeine" : {
 
     },
     "%@ milligrams" : {
@@ -465,28 +465,15 @@
     "%@ milliseconds" : {
 
     },
-    "%@ ml" : {
-
-    },
     "%@ ml" : {
 
     },
-    "%@ ml · %@ drinks" : {
+    "%@ ml · %@ drinks" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ ml · %2$@ drinks"
-          }
-        }
-      }
-    },
-    "%@ ml · %@ mg" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ ml · %2$@ mg"
+            "value" : "%1$@ ml · %2$@ drinks"
           }
         }
       }
@@ -501,20 +488,20 @@
         }
       }
     },
-    "%@ ml · 1 drink" : {
+    "%@ ml · 1 drink" : {
 
     },
-    "%@ ml · counts as %@ ml" : {
+    "%@ ml · counts as %@ ml" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ ml · counts as %2$@ ml"
+            "value" : "%1$@ ml · counts as %2$@ ml"
           }
         }
       }
     },
-    "%@ ms" : {
+    "%@ ms" : {
 
     },
     "%@ of %@ · from Apple Health" : {
@@ -547,32 +534,32 @@
         }
       }
     },
-    "%@ of %@ kcal" : {
+    "%@ of %@ kcal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of %2$@ kcal"
+            "value" : "%1$@ of %2$@ kcal"
           }
         }
       }
     },
-    "%@ of %@ kcal. %@" : {
+    "%@ of %@ kcal. %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of %2$@ kcal. %3$@"
+            "value" : "%1$@ of %2$@ kcal. %3$@"
           }
         }
       }
     },
-    "%@ of %@ L · from your log" : {
+    "%@ of %@ L · from your log" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of %2$@ L · from your log"
+            "value" : "%1$@ of %2$@ L · from your log"
           }
         }
       }
@@ -587,12 +574,12 @@
         }
       }
     },
-    "%@ of %@ mg" : {
+    "%@ of %@ mg" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of %2$@ mg"
+            "value" : "%1$@ of %2$@ mg"
           }
         }
       }
@@ -617,32 +604,32 @@
         }
       }
     },
-    "%@ of %lld g · from your log" : {
+    "%@ of %lld g · from your log" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of %2$lld g · from your log"
+            "value" : "%1$@ of %2$lld g · from your log"
           }
         }
       }
     },
-    "%@ of %lld min · from Apple Health" : {
+    "%@ of %lld min · from Apple Health" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of %2$lld min · from Apple Health"
+            "value" : "%1$@ of %2$lld min · from Apple Health"
           }
         }
       }
     },
-    "%@ of your %@ kcal target" : {
+    "%@ of your %@ kcal target" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of your %2$@ kcal target"
+            "value" : "%1$@ of your %2$@ kcal target"
           }
         }
       }
@@ -751,12 +738,12 @@
         }
       }
     },
-    "%@, %@ ml, %@ mg caffeine" : {
+    "%@, %@ ml, %@ mg caffeine" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@, %2$@ ml, %3$@ mg caffeine"
+            "value" : "%1$@, %2$@ ml, %3$@ mg caffeine"
           }
         }
       }
@@ -771,12 +758,12 @@
         }
       }
     },
-    "%@, %@, %@ kcal, %@" : {
+    "%@, %@, %@ kcal, %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@, %2$@, %3$@ kcal, %4$@"
+            "value" : "%1$@, %2$@, %3$@ kcal, %4$@"
           }
         }
       }
@@ -894,16 +881,6 @@
         }
       }
     },
-    "%lld h %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld h %2$@"
-          }
-        }
-      }
-    },
     "%lld have %@" : {
       "localizations" : {
         "en" : {
@@ -933,35 +910,35 @@
         }
       }
     },
-    "%lld min" : {
+    "%lld min" : {
 
     },
-    "%lld min · %@ kcal · %@ g protein" : {
+    "%lld min · %@ kcal · %@ g protein" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$lld min · %2$@ kcal · %3$@ g protein"
+            "value" : "%1$lld min · %2$@ kcal · %3$@ g protein"
           }
         }
       }
     },
-    "%lld min · ^[%lld serving](inflect: true) · %@ kcal" : {
+    "%lld min · ^[%lld serving](inflect: true) · %@ kcal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$lld min · ^[%2$lld serving](inflect: true) · %3$@ kcal"
+            "value" : "%1$lld min · ^[%2$lld serving](inflect: true) · %3$@ kcal"
           }
         }
       }
     },
-    "%lld min, %@ kcal" : {
+    "%lld min, %@ kcal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$lld min, %2$@ kcal"
+            "value" : "%1$lld min, %2$@ kcal"
           }
         }
       }
@@ -1286,12 +1263,12 @@
     "^[%lld item](inflect: true) estimated. Check each one; nothing is logged until you add it." : {
 
     },
-    "^[%lld meal](inflect: true) logged, about %@ kcal a day." : {
+    "^[%lld meal](inflect: true) logged, about %@ kcal a day." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "^[%1$lld meal](inflect: true) logged, about %2$@ kcal a day."
+            "value" : "^[%1$lld meal](inflect: true) logged, about %2$@ kcal a day."
           }
         }
       }
@@ -1344,22 +1321,22 @@
     "^[%lld time](inflect: true) a week" : {
 
     },
-    "→ %@ of %@ L with this" : {
+    "→ %@ of %@ L with this" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "→ %1$@ of %2$@ L with this"
+            "value" : "→ %1$@ of %2$@ L with this"
           }
         }
       }
     },
-    "→ %@ of %@ mg with this" : {
+    "→ %@ of %@ mg with this" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "→ %1$@ of %2$@ mg with this"
+            "value" : "→ %1$@ of %2$@ mg with this"
           }
         }
       }
@@ -1367,23 +1344,23 @@
     "+ Pick more" : {
 
     },
-    "+250 ml" : {
+    "+250 ml" : {
 
     },
-    "≈ %@" : {
+    "≈ %@" : {
 
     },
-    "≈ %@ mg in your system at %@" : {
+    "≈ %@ mg in your system at %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "≈ %1$@ mg in your system at %2$@"
+            "value" : "≈ %1$@ mg in your system at %2$@"
           }
         }
       }
     },
-    "0–1,000 g" : {
+    "0–1,000 g" : {
 
     },
     "1 clove" : {
@@ -1422,7 +1399,7 @@
     "30-day average %@" : {
 
     },
-    "30-day average %@ ms" : {
+    "30-day average %@ ms" : {
 
     },
     "100 %@" : {
@@ -1503,7 +1480,7 @@
     "About" : {
 
     },
-    "about %@ kcal" : {
+    "about %@ kcal" : {
 
     },
     "About %@ less than your usual %@." : {
@@ -1516,7 +1493,7 @@
         }
       }
     },
-    "about %@ mg at 22:00" : {
+    "about %@ mg at 22:00" : {
 
     },
     "About %@ more than your usual %@." : {
@@ -1618,7 +1595,7 @@
         }
       }
     },
-    "Add %@ ml" : {
+    "Add %@ ml" : {
 
     },
     "Add %lld‑minute %@" : {
@@ -1755,17 +1732,17 @@
     "Added" : {
 
     },
-    "Added %@ ml of %@" : {
+    "Added %@ ml of %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Added %1$@ ml of %2$@"
+            "value" : "Added %1$@ ml of %2$@"
           }
         }
       }
     },
-    "Added %@ ml of water" : {
+    "Added %@ ml of water" : {
 
     },
     "Added %lld-minute %@" : {
@@ -1967,7 +1944,7 @@
     "Apple Watch" : {
 
     },
-    "Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10 % counts as about usual." : {
+    "Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10 % counts as about usual." : {
 
     },
     "As needed" : {
@@ -2061,7 +2038,7 @@
     "BMI" : {
 
     },
-    "BMI · %@ kg" : {
+    "BMI · %@ kg" : {
 
     },
     "BMI · 12 weeks" : {
@@ -2386,10 +2363,10 @@
     "Counter" : {
 
     },
-    "Counts as %@ ml toward water." : {
+    "Counts as %@ ml toward water." : {
 
     },
-    "counts as %@ ml water" : {
+    "counts as %@ ml water" : {
 
     },
     "Cramps" : {
@@ -2422,10 +2399,10 @@
     "Custom amount" : {
 
     },
-    "Custom, %@ ml" : {
+    "Custom, %@ ml" : {
 
     },
-    "Custom, %lld min" : {
+    "Custom, %lld min" : {
 
     },
     "Cycle" : {
@@ -2476,10 +2453,10 @@
     "Dark" : {
 
     },
-    "Dashed line is your %@ kcal target." : {
+    "Dashed line is your %@ kcal target." : {
 
     },
-    "Dashed line is your %@ kcal target. Today is still in progress." : {
+    "Dashed line is your %@ kcal target. Today is still in progress." : {
 
     },
     "Data sources" : {
@@ -2663,7 +2640,7 @@
     "Drag to reorder. At least 1 ring, up to %lld." : {
 
     },
-    "Drank 2 L or more" : {
+    "Drank 2 L or more" : {
 
     },
     "Drink" : {
@@ -2750,7 +2727,7 @@
     "Elevated" : {
 
     },
-    "Elevated: HRV at least 15 % below your baseline and resting heart rate at least 5 % above. High: at least 30 % and 10 %." : {
+    "Elevated: HRV at least 15 % below your baseline and resting heart rate at least 5 % above. High: at least 30 % and 10 %." : {
 
     },
     "Email" : {
@@ -2768,22 +2745,22 @@
     "Energy for workouts you enter is estimated from type, duration, effort and your weight, so it's shown with ≈. Recorded workouts use Apple Health's measurement." : {
 
     },
-    "Energy is at %@ of %@ kcal, %@ above your guide. One day doesn't define a pattern." : {
+    "Energy is at %@ of %@ kcal, %@ above your guide. One day doesn't define a pattern." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Energy is at %1$@ of %2$@ kcal, %3$@ above your guide. One day doesn't define a pattern."
+            "value" : "Energy is at %1$@ of %2$@ kcal, %3$@ above your guide. One day doesn't define a pattern."
           }
         }
       }
     },
-    "Energy is at %@ of %@ kcal, right at your guide." : {
+    "Energy is at %@ of %@ kcal, right at your guide." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Energy is at %1$@ of %2$@ kcal, right at your guide."
+            "value" : "Energy is at %1$@ of %2$@ kcal, right at your guide."
           }
         }
       }
@@ -2803,10 +2780,10 @@
     "Enter a number of servings, up to 100." : {
 
     },
-    "Enter between 0 and 5,000 kcal." : {
+    "Enter between 0 and 5,000 kcal." : {
 
     },
-    "Enter between 1 and %@ ml" : {
+    "Enter between 1 and %@ ml" : {
 
     },
     "Entered" : {
@@ -2929,7 +2906,7 @@
     "Fibre" : {
 
     },
-    "Fibre 25 g" : {
+    "Fibre 25 g" : {
 
     },
     "Filled days are logged, dashed days are estimated, and the outlined day is today" : {
@@ -3083,12 +3060,12 @@
     "From the product database · check against the label" : {
 
     },
-    "From your body and direction, VESS would suggest %@ kcal, %@ g protein, %@ g carbs and %@ g fat." : {
+    "From your body and direction, VESS would suggest %@ kcal, %@ g protein, %@ g carbs and %@ g fat." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "From your body and direction, VESS would suggest %1$@ kcal, %2$@ g protein, %3$@ g carbs and %4$@ g fat."
+            "value" : "From your body and direction, VESS would suggest %1$@ kcal, %2$@ g protein, %3$@ g carbs and %4$@ g fat."
           }
         }
       }
@@ -3123,7 +3100,7 @@
     "Full day" : {
 
     },
-    "Full marks at 100–105 % of your target, a little less above" : {
+    "Full marks at 100–105 % of your target, a little less above" : {
 
     },
     "g" : {
@@ -3138,7 +3115,7 @@
     "Generic · USDA" : {
 
     },
-    "Generic · USDA · per 100 g" : {
+    "Generic · USDA · per 100 g" : {
 
     },
     "Generic foods: USDA FoodData Central (public domain). Products: Open Food Facts, ODbL." : {
@@ -3315,12 +3292,12 @@
     "History" : {
 
     },
-    "Hit target on %lld of %lld days. Average %@ g." : {
+    "Hit target on %lld of %lld days. Average %@ g." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Hit target on %1$lld of %2$lld days. Average %3$@ g."
+            "value" : "Hit target on %1$lld of %2$lld days. Average %3$@ g."
           }
         }
       }
@@ -3331,7 +3308,7 @@
     "How active is a typical week?" : {
 
     },
-    "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100 %; two hours away or more scores 0 %." : {
+    "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100 %; two hours away or more scores 0 %." : {
 
     },
     "How did I sleep?" : {
@@ -3388,12 +3365,12 @@
     "Hydration" : {
 
     },
-    "Hydration · %@ of %@ L %@" : {
+    "Hydration · %@ of %@ L %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Hydration · %1$@ of %2$@ L %3$@"
+            "value" : "Hydration · %1$@ of %2$@ L %3$@"
           }
         }
       }
@@ -3413,7 +3390,7 @@
     "Improve energy" : {
 
     },
-    "in %@ ml" : {
+    "in %@ ml" : {
 
     },
     "in %lld days" : {
@@ -3446,7 +3423,7 @@
     "In your pantry · %@ · No nutrition data" : {
 
     },
-    "In your pantry · %@ · per 100 g" : {
+    "In your pantry · %@ · per 100 g" : {
 
     },
     "In your system" : {
@@ -3530,7 +3507,7 @@
     "kcal · %@" : {
 
     },
-    "kcal · %@ g protein" : {
+    "kcal · %@ g protein" : {
 
     },
     "kcal · Estimated" : {
@@ -4345,7 +4322,7 @@
     "Now · %@" : {
 
     },
-    "Now about %@ mg; " : {
+    "Now about %@ mg; " : {
 
     },
     "nut-free" : {
@@ -4379,22 +4356,22 @@
         }
       }
     },
-    "of %@ kcal · %@" : {
+    "of %@ kcal · %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "of %1$@ kcal · %2$@"
+            "value" : "of %1$@ kcal · %2$@"
           }
         }
       }
     },
-    "of %@ mg %@" : {
+    "of %@ mg %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "of %1$@ mg %2$@"
+            "value" : "of %1$@ mg %2$@"
           }
         }
       }
@@ -4411,12 +4388,12 @@
     "On chosen days" : {
 
     },
-    "On nights you ate within 2 hours of falling asleep, you slept about %lld min less. A pattern from %lld weeks, not a cause." : {
+    "On nights you ate within 2 hours of falling asleep, you slept about %lld min less. A pattern from %lld weeks, not a cause." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "On nights you ate within 2 hours of falling asleep, you slept about %1$lld min less. A pattern from %2$lld weeks, not a cause."
+            "value" : "On nights you ate within 2 hours of falling asleep, you slept about %1$lld min less. A pattern from %2$lld weeks, not a cause."
           }
         }
       }
@@ -4523,12 +4500,12 @@
     "other workouts" : {
 
     },
-    "Over the last 5 weeks, %lld of %lld elevated afternoons came after a night with under 6 h of sleep. A pattern, not a cause." : {
+    "Over the last 5 weeks, %lld of %lld elevated afternoons came after a night with under 6 h of sleep. A pattern, not a cause." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Over the last 5 weeks, %1$lld of %2$lld elevated afternoons came after a night with under 6 h of sleep. A pattern, not a cause."
+            "value" : "Over the last 5 weeks, %1$lld of %2$lld elevated afternoons came after a night with under 6 h of sleep. A pattern, not a cause."
           }
         }
       }
@@ -4714,12 +4691,12 @@
     "protein / serving" : {
 
     },
-    "Protein %@, carbs %@, fat %@ of target. %@ kcal." : {
+    "Protein %@, carbs %@, fat %@ of target. %@ kcal." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Protein %1$@, carbs %2$@, fat %3$@ of target. %4$@ kcal."
+            "value" : "Protein %1$@, carbs %2$@, fat %3$@ of target. %4$@ kcal."
           }
         }
       }
@@ -4733,18 +4710,18 @@
     "Protein has reached your target." : {
 
     },
-    "Protein is %@ g short of your target." : {
+    "Protein is %@ g short of your target." : {
 
     },
-    "Protein is %@ g short with dinner still to come." : {
+    "Protein is %@ g short with dinner still to come." : {
 
     },
-    "Protein is at %@ of %@ g" : {
+    "Protein is at %@ of %@ g" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Protein is at %1$@ of %2$@ g"
+            "value" : "Protein is at %1$@ of %2$@ g"
           }
         }
       }
@@ -4768,13 +4745,13 @@
         }
       }
     },
-    "Quick (≤ 20 min)" : {
+    "Quick (≤ 20 min)" : {
 
     },
     "Quick add" : {
 
     },
-    "Quick add · %@ g protein" : {
+    "Quick add · %@ g protein" : {
 
     },
     "Quick breakfasts" : {
@@ -5080,7 +5057,7 @@
     "Share of energy" : {
 
     },
-    "Share of energy counts 4 kcal per gram of protein and carbs and 9 kcal per gram of fat. The target split comes from your daily targets." : {
+    "Share of energy counts 4 kcal per gram of protein and carbs and 9 kcal per gram of fat. The target split comes from your daily targets." : {
 
     },
     "shellfish" : {
@@ -5170,7 +5147,7 @@
     "Sleep" : {
 
     },
-    "Sleep 7 h" : {
+    "Sleep 7 h" : {
 
     },
     "Sleep analysis" : {
@@ -5580,7 +5557,7 @@
     "The photo, made smaller and without location or other details from the camera." : {
 
     },
-    "The ring shows where today's resting heart rate sits within your usual range: the middle 80 % of your last 30 days. It isn't a score." : {
+    "The ring shows where today's resting heart rate sits within your usual range: the middle 80 % of your last 30 days. It isn't a score." : {
 
     },
     "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
@@ -5786,36 +5763,36 @@
     "Typical values from USDA FoodData Central" : {
 
     },
-    "Typical values: %@ g alcohol (%@), about %@ kcal." : {
+    "Typical values: %@ g alcohol (%@), about %@ kcal." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Typical values: %1$@ g alcohol (%2$@), about %3$@ kcal."
+            "value" : "Typical values: %1$@ g alcohol (%2$@), about %3$@ kcal."
           }
         }
       }
     },
-    "Typical values: %@ mg caffeine." : {
+    "Typical values: %@ mg caffeine." : {
 
     },
-    "Typical values: about %@ kcal and %@ mg caffeine. The kcal count in your energy." : {
+    "Typical values: about %@ kcal and %@ mg caffeine. The kcal count in your energy." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Typical values: about %1$@ kcal and %2$@ mg caffeine. The kcal count in your energy."
+            "value" : "Typical values: about %1$@ kcal and %2$@ mg caffeine. The kcal count in your energy."
           }
         }
       }
     },
-    "Typical values: about %@ kcal, counted in your energy." : {
+    "Typical values: about %@ kcal, counted in your energy." : {
 
     },
-    "Under 20 min" : {
+    "Under 20 min" : {
 
     },
-    "Under 30 min" : {
+    "Under 30 min" : {
 
     },
     "Undo" : {
@@ -5833,7 +5810,7 @@
     "Unpleasant" : {
 
     },
-    "Up to %@ ml at a time." : {
+    "Up to %@ ml at a time." : {
 
     },
     "Up to your protein target" : {
@@ -5943,7 +5920,7 @@
     "Uses use-soon" : {
 
     },
-    "Uses your pantry, diet and avoid list, and today's protein gap (%@ g left). You check it before saving." : {
+    "Uses your pantry, diet and avoid list, and today's protein gap (%@ g left). You check it before saving." : {
 
     },
     "Uses your pantry, diet and avoid list. You check it before saving." : {
@@ -6022,7 +5999,7 @@
     "Vitamins" : {
 
     },
-    "vs 30 g a day" : {
+    "vs 30 g a day" : {
 
     },
     "vs your 7‑day average" : {
@@ -6058,15 +6035,15 @@
     "Water" : {
 
     },
-    "Water %@ L" : {
+    "Water %@ L" : {
 
     },
-    "Water is at %@ of %@ L so far today." : {
+    "Water is at %@ of %@ L so far today." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Water is at %1$@ of %2$@ L so far today."
+            "value" : "Water is at %1$@ of %2$@ L so far today."
           }
         }
       }
@@ -6134,7 +6111,7 @@
     "What you eat and drink, how you move, and what's at home, understood together." : {
 
     },
-    "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105 %." : {
+    "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105 %." : {
 
     },
     "Wheat / gluten" : {

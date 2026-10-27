@@ -145,8 +145,8 @@ struct PlannedMealView: View {
         }
         return VESSMacroBar(
             name: name,
-            value: "\(VESSFormat.grams(grams)) g",
-            target: target > 0 ? "/ \(VESSFormat.grams(target)) g" : "",
+            value: "\(VESSFormat.grams(grams))\u{00A0}g",
+            target: target > 0 ? "/ \(VESSFormat.grams(target))\u{00A0}g" : "",
             adding: target > 0 ? grams / target : 0,
             metric: metric
         )

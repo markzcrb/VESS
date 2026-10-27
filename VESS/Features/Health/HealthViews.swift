@@ -43,7 +43,7 @@ struct HealthHubView: View {
                 ))
                 let heart = tile(.heart, HealthTile(
                     systemImage: "heart", iconTint: VESSColor.heart, label: "Heart",
-                    value: readings?.restingToday.map { Text("\(HealthFormat.whole($0)) bpm") } ?? Text(verbatim: "—"),
+                    value: readings?.restingToday.map { Text("\(HealthFormat.whole($0))\u{00A0}bpm") } ?? Text(verbatim: "—"),
                     caption: caption(readings?.restingToday != nil, kinds: [.restingHeartRate], normal: Text("Resting"), empty: Text("No data today"))
                 ))
                 let stress = tile(.stress, stressTile(readings?.stress))
@@ -134,11 +134,11 @@ struct HealthHubView: View {
             return HealthTile(
                 systemImage: "scalemass", iconTint: VESSColor.secondaryText, label: "Body",
                 value: Text(verbatim: bmi.formatted(.number.precision(.fractionLength(1)))),
-                caption: Text("BMI · \(VESSFormat.quantity(weight)) kg")
+                caption: Text("BMI · \(VESSFormat.quantity(weight))\u{00A0}kg")
             )
         }
         return HealthTile(systemImage: "scalemass", iconTint: VESSColor.secondaryText, label: "Body",
-                          value: Text("\(VESSFormat.quantity(weight)) kg"), caption: Text("Weight"))
+                          value: Text("\(VESSFormat.quantity(weight))\u{00A0}kg"), caption: Text("Weight"))
     }
 
     /// iOS doesn't tell apps what they may read, so the status says what
@@ -228,7 +228,7 @@ struct SleepView: View {
             if let readings, let pattern = TrendRule.lateDinnerSleep(
                 nights: readings.nights, entries: patternEntries(now: now), now: now, calendar: calendar
             ) {
-                HealthPatternCard(text: Text("On nights you ate within 2 hours of falling asleep, you slept about \(pattern.minutesLess) min less. A pattern from \(pattern.weeks) weeks, not a cause."))
+                HealthPatternCard(text: Text("On nights you ate within 2 hours of falling asleep, you slept about \(pattern.minutesLess)\u{00A0}min less. A pattern from \(pattern.weeks) weeks, not a cause."))
             }
 
             ActivityFootnote(text: Text("Read from Apple Health. VESS doesn't keep a copy and doesn't diagnose sleep problems."))
@@ -357,7 +357,7 @@ struct HeartView: View {
         HealthPage(
             title: "Heart", metric: .heart, infoLabel: "About heart",
             info: HealthInfoSheet(title: "How Heart is read", notes: [
-                "The ring shows where today's resting heart rate sits within your usual range: the middle 80 % of your last 30 days. It isn't a score.",
+                "The ring shows where today's resting heart rate sits within your usual range: the middle 80\u{00A0}% of your last 30 days. It isn't a score.",
                 "Heart rate variability is the overnight value Apple Watch records, compared with your 30-day average.",
                 "For information only, not a medical device. If you feel unwell or notice unusual readings, talk to a doctor.",
             ])
@@ -386,19 +386,19 @@ struct HeartView: View {
                 VESSRowGroup {
                     if let resting = readings.restingToday {
                         VESSListRow(title: Text("Resting heart rate"), subtitle: readings.restingAverage.map { Text("30-day average \(HealthFormat.whole($0))") },
-                                    value: Text("\(HealthFormat.whole(resting)) bpm"), showsChevron: false)
+                                    value: Text("\(HealthFormat.whole(resting))\u{00A0}bpm"), showsChevron: false)
                     }
                     if let hrv = readings.hrvToday {
-                        VESSListRow(title: Text("Heart rate variability"), subtitle: readings.hrvAverage.map { Text("30-day average \(HealthFormat.whole($0)) ms") },
-                                    value: Text("\(HealthFormat.whole(hrv)) ms"), showsChevron: false)
+                        VESSListRow(title: Text("Heart rate variability"), subtitle: readings.hrvAverage.map { Text("30-day average \(HealthFormat.whole($0))\u{00A0}ms") },
+                                    value: Text("\(HealthFormat.whole(hrv))\u{00A0}ms"), showsChevron: false)
                     }
                     if let walking = readings.walkingToday {
                         VESSListRow(title: Text("Walking heart rate"), subtitle: Text("Average while walking"),
-                                    value: Text("\(HealthFormat.whole(walking)) bpm"), showsChevron: false)
+                                    value: Text("\(HealthFormat.whole(walking))\u{00A0}bpm"), showsChevron: false)
                     }
                     if let range = readings.rangeToday {
                         VESSListRow(title: Text("Range today"), subtitle: Text("Lowest and highest"),
-                                    value: Text("\(HealthFormat.range(range)) bpm"), showsChevron: false)
+                                    value: Text("\(HealthFormat.range(range))\u{00A0}bpm"), showsChevron: false)
                     }
                 }
                 .vessHairlineBottom()
@@ -509,7 +509,7 @@ struct StressView: View {
             title: "Stress", metric: .water, infoLabel: "About this estimate",
             info: HealthInfoSheet(title: "How the estimate works", notes: [
                 "Your baseline is the middle value of 28 days of overnight HRV and resting heart rate. It needs 14 days before there's an estimate.",
-                "Elevated: HRV at least 15 % below your baseline and resting heart rate at least 5 % above. High: at least 30 % and 10 %.",
+                "Elevated: HRV at least 15\u{00A0}% below your baseline and resting heart rate at least 5\u{00A0}% above. High: at least 30\u{00A0}% and 10\u{00A0}%.",
                 "Parts of the day compare that part's HRV with your baseline.",
                 "State of Mind and mindful minutes are shown as signals. They don't change the estimate.",
                 "An estimate, not a medical measurement.",
@@ -535,7 +535,7 @@ struct StressView: View {
             if let readings, let pattern = TrendRule.shortSleepAfternoons(
                 nights: readings.nights, afternoons: readings.pastAfternoons, now: now, calendar: calendar
             ) {
-                HealthPatternCard(text: Text("Over the last 5 weeks, \(pattern.afterShort) of \(pattern.elevated) elevated afternoons came after a night with under 6 h of sleep. A pattern, not a cause."))
+                HealthPatternCard(text: Text("Over the last 5 weeks, \(pattern.afterShort) of \(pattern.elevated) elevated afternoons came after a night with under 6\u{00A0}h of sleep. A pattern, not a cause."))
             }
 
             ActivityFootnote(text: Text("An estimate from Apple Watch data compared with your own baseline, not a medical measurement. If stress feels hard to manage, talk to someone you trust or a professional."))
@@ -578,11 +578,11 @@ struct StressView: View {
                 if let hrv = readings.hrvToday {
                     VESSListRow(title: Text("Heart rate variability"),
                                 subtitle: readings.hrvComparison.map { Text($0.signal) },
-                                value: Text("\(HealthFormat.whole(hrv)) ms"), showsChevron: false)
+                                value: Text("\(HealthFormat.whole(hrv))\u{00A0}ms"), showsChevron: false)
                 }
                 if let resting = readings.restingToday {
                     VESSListRow(title: Text("Resting heart rate"), subtitle: restingSubtitle(readings.restingComparison),
-                                value: Text("\(HealthFormat.whole(resting)) bpm"), showsChevron: false)
+                                value: Text("\(HealthFormat.whole(resting))\u{00A0}bpm"), showsChevron: false)
                 }
                 if let night = readings.lastNight {
                     VESSListRow(title: Text("Sleep last night"), subtitle: sleepSubtitle(readings.sleepDifference),

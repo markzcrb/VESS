@@ -112,7 +112,7 @@ struct VESSPlusView: View {
                     }
                     .fixedSize(horizontal: false, vertical: true)
                     if option == .annual {
-                        Text("\(monthlyEquivalent)/month · save \(savingPercent) %")
+                        Text("\(monthlyEquivalent)/month · save \(savingPercent)\u{00A0}%")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                     }

@@ -67,9 +67,9 @@ struct MacrosDetailView: View {
                 .frame(maxWidth: .infinity)
 
                 VStack(spacing: 22) {
-                    VESSMacroBar(name: "Protein", value: VESSFormat.grams(protein), target: "/ \(VESSFormat.grams(targets.proteinGrams)) g", adding: fraction(protein, targets.proteinGrams), metric: .protein)
-                    VESSMacroBar(name: "Carbs", value: VESSFormat.grams(carbs), target: "/ \(VESSFormat.grams(targets.carbohydrateGrams)) g", adding: fraction(carbs, targets.carbohydrateGrams), metric: .carbs)
-                    VESSMacroBar(name: "Fat", value: VESSFormat.grams(fat), target: "/ \(VESSFormat.grams(targets.fatGrams)) g", adding: fraction(fat, targets.fatGrams), metric: .fat)
+                    VESSMacroBar(name: "Protein", value: VESSFormat.grams(protein), target: "/ \(VESSFormat.grams(targets.proteinGrams))\u{00A0}g", adding: fraction(protein, targets.proteinGrams), metric: .protein)
+                    VESSMacroBar(name: "Carbs", value: VESSFormat.grams(carbs), target: "/ \(VESSFormat.grams(targets.carbohydrateGrams))\u{00A0}g", adding: fraction(carbs, targets.carbohydrateGrams), metric: .carbs)
+                    VESSMacroBar(name: "Fat", value: VESSFormat.grams(fat), target: "/ \(VESSFormat.grams(targets.fatGrams))\u{00A0}g", adding: fraction(fat, targets.fatGrams), metric: .fat)
                 }
 
                 if let split = IntakeAnalysis.energySplit(proteinGrams: protein, carbGrams: carbs, fatGrams: fat) {
@@ -99,11 +99,11 @@ struct MacrosDetailView: View {
             VESSWeekBars(
                 bars: week.map { .init(day: $0.day, value: $0.nutrition.proteinGrams) },
                 target: target,
-                targetLabel: "\(VESSFormat.grams(target)) g",
+                targetLabel: "\(VESSFormat.grams(target))\u{00A0}g",
                 tint: VESSColor.protein
             )
             if let average {
-                Text("Hit target on \(hits) of \(logged) days. Average \(VESSFormat.grams(average)) g.")
+                Text("Hit target on \(hits) of \(logged) days. Average \(VESSFormat.grams(average))\u{00A0}g.")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.text)
             }
@@ -139,8 +139,8 @@ struct MacrosDetailView: View {
             let dinnerToCome = entries.entries(for: .dinner).isEmpty
                 && calendar.component(.hour, from: now) < MealType.dinner.suggestionEndHour
             parts.append(dinnerToCome
-                ? String(localized: "Protein is \(VESSFormat.grams(proteinShort)) g short with dinner still to come.")
-                : String(localized: "Protein is \(VESSFormat.grams(proteinShort)) g short of your target."))
+                ? String(localized: "Protein is \(VESSFormat.grams(proteinShort))\u{00A0}g short with dinner still to come.")
+                : String(localized: "Protein is \(VESSFormat.grams(proteinShort))\u{00A0}g short of your target."))
         } else {
             parts.append(String(localized: "Protein has reached your target."))
         }
@@ -183,7 +183,7 @@ private struct MacroRings: View {
         .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.ringSweep) { shown = true } }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Macros")
-        .accessibilityValue(Text("Protein \(percent(protein)), carbs \(percent(carbs)), fat \(percent(fat)) of target. \(VESSFormat.calories(calories)) kcal."))
+        .accessibilityValue(Text("Protein \(percent(protein)), carbs \(percent(carbs)), fat \(percent(fat)) of target. \(VESSFormat.calories(calories))\u{00A0}kcal."))
     }
 
     private func ring(_ value: Double, _ tint: Color, diameter: CGFloat, width: CGFloat) -> some View {
@@ -269,7 +269,7 @@ private struct MacrosInfoSheet: View {
                         .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("Share of energy counts 4 kcal per gram of protein and carbs and 9 kcal per gram of fat. The target split comes from your daily targets.")
+                    Text("Share of energy counts 4\u{00A0}kcal per gram of protein and carbs and 9\u{00A0}kcal per gram of fat. The target split comes from your daily targets.")
                         .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)

@@ -86,7 +86,7 @@ struct ActivityView: View {
                 VESSMetricRow(
                     systemImage: "bolt",
                     label: "Active energy",
-                    value: snapshot.activeEnergyKilocalories.map { "\(VESSFormat.calories($0)) kcal" } ?? "—",
+                    value: snapshot.activeEnergyKilocalories.map { "\(VESSFormat.calories($0))\u{00A0}kcal" } ?? "—",
                     trend: energyTrend
                 )
                 VESSMetricRow(systemImage: "dumbbell", label: "Workouts", value: "\(todayWorkouts.count)")
@@ -261,7 +261,7 @@ struct ActivityView: View {
                 VESSListRow(title: Text("Steps"), value: Text(VESSFormat.steps(Double(lastKnown.steps))), showsChevron: false)
                 VESSListRow(
                     title: Text("Active energy"),
-                    value: Text(lastKnown.activeEnergyKilocalories.map { "\(VESSFormat.calories($0)) kcal" } ?? "—"),
+                    value: Text(lastKnown.activeEnergyKilocalories.map { "\(VESSFormat.calories($0))\u{00A0}kcal" } ?? "—"),
                     showsChevron: false
                 )
                 VESSListRow(title: Text("Workouts"), value: Text("\(data.workouts(since: data.today).count)"), showsChevron: false)
@@ -356,7 +356,7 @@ private struct ActivityInfoSheet: View {
                         .foregroundStyle(VESSColor.text)
                     note("Steps, active energy and recorded workouts come from Apple Health. VESS only reads them; it never writes to Health.")
                     note("Workouts you enter are kept in VESS. Their energy is an estimate from type, duration and effort, so it's shown with ≈.")
-                    note("Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10 % counts as about usual.")
+                    note("Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10\u{00A0}% counts as about usual.")
                     note("VESS never estimates steps. Without Apple Health, steps show —.")
                 }
                 .padding(VESSSpacing.screenInset)

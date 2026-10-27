@@ -112,7 +112,7 @@ struct MyRecipesContent: View {
                         photo: recipe.photoImage(store: store),
                         kicker: recipe.kicker,
                         title: Text(recipe.name),
-                        meta: Text("\(recipe.minutes) min · ^[\(recipe.servings) serving](inflect: true) · \(VESSFormat.calories(recipe.nutrition.calories)) kcal"),
+                        meta: Text("\(recipe.minutes)\u{00A0}min · ^[\(recipe.servings) serving](inflect: true) · \(VESSFormat.calories(recipe.nutrition.calories))\u{00A0}kcal"),
                         badges: badges(recipe, cookedCount: showsCooked ? cooked[recipe.id]?.count ?? 0 : 0, showsProtein: showsCooked)
                     )
                 }
@@ -128,7 +128,7 @@ struct MyRecipesContent: View {
         if recipe.origin == .ai { return [.init(text: Text("AI · Checked by you"))] }
         if cookedCount >= 2 { return [.init(text: Text("Cooked \(cookedCount)×"))] }
         if showsProtein, recipe.highProtein {
-            return [.init(text: Text("\(VESSFormat.grams(recipe.nutrition.proteinGrams)) g protein"), tone: .positive)]
+            return [.init(text: Text("\(VESSFormat.grams(recipe.nutrition.proteinGrams))\u{00A0}g protein"), tone: .positive)]
         }
         return []
     }

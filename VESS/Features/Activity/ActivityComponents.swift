@@ -81,7 +81,7 @@ struct ActivityWorkoutRow: View {
         parts.append(subtitle)
         if let kcal = workout.activeEnergyKilocalories {
             let value = VESSFormat.calories(kcal)
-            parts.append(workout.isRecorded ? Text("\(value) kcal") : Text("about \(value) kcal"))
+            parts.append(workout.isRecorded ? Text("\(value)\u{00A0}kcal") : Text("about \(value)\u{00A0}kcal"))
         }
         parts.append(workout.isRecorded ? Text("Recorded") : Text("Entered"))
         return parts.dropFirst().reduce(parts[0]) { Text("\($0), \($1)") }
@@ -99,7 +99,7 @@ struct ActivityWorkoutRow: View {
                 subtitle
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)
-                Text("\(Self.energyValue(workout) ?? "—") kcal")
+                Text("\(Self.energyValue(workout) ?? "—")\u{00A0}kcal")
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)
             }
@@ -154,7 +154,7 @@ struct ActivityWorkoutRow: View {
 
     private var titleText: Text {
         if let meters = workout.distanceMeters, meters > 0 {
-            return Text("\(Text(workout.type.title)) · \(VESSFormat.kilometers(fromMeters: meters)) km")
+            return Text("\(Text(workout.type.title)) · \(VESSFormat.kilometers(fromMeters: meters))\u{00A0}km")
         }
         return Text(workout.type.title)
     }
@@ -170,7 +170,7 @@ struct ActivityWorkoutRow: View {
     }
 
     private var subtitle: Text {
-        let minutes = Text("\(workout.durationMinutes ?? 0) min")
+        let minutes = Text("\(workout.durationMinutes ?? 0)\u{00A0}min")
         if workout.isRecorded {
             if let device = workout.deviceName { return Text("\(minutes) · \(device)") }
             return Text("\(minutes) · Apple Health")
@@ -183,7 +183,7 @@ struct ActivityWorkoutRow: View {
     static func energyValue(_ workout: Workout) -> String? {
         guard let kcal = workout.activeEnergyKilocalories else { return nil }
         let value = VESSFormat.calories(kcal)
-        return workout.isRecorded ? value : "≈ \(value)"
+        return workout.isRecorded ? value : "≈\u{00A0}\(value)"
     }
 }
 

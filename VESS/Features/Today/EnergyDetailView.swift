@@ -76,7 +76,7 @@ struct EnergyDetailView: View {
                         value: hasEnergy ? "\(Int((share * 100).rounded()))" : "—",
                         unit: hasEnergy ? "%" : nil,
                         label: "Energy",
-                        sublabel: Text("\(VESSFormat.calories(consumed)) of \(VESSFormat.calories(target)) kcal"),
+                        sublabel: Text("\(VESSFormat.calories(consumed)) of \(VESSFormat.calories(target))\u{00A0}kcal"),
                         progress: min(share, 1),
                         metric: .energy
                     )
@@ -184,8 +184,8 @@ struct EnergyDetailView: View {
                 tint: VESSColor.calories
             )
             Text(isToday
-                 ? "Dashed line is your \(VESSFormat.calories(target)) kcal target. Today is still in progress."
-                 : "Dashed line is your \(VESSFormat.calories(target)) kcal target.")
+                 ? "Dashed line is your \(VESSFormat.calories(target))\u{00A0}kcal target. Today is still in progress."
+                 : "Dashed line is your \(VESSFormat.calories(target))\u{00A0}kcal target.")
                 .vessTextStyle(.bodyS)
                 .foregroundStyle(VESSColor.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -196,7 +196,7 @@ struct EnergyDetailView: View {
     static func share(_ value: Double, target: Double) -> String {
         guard target > 0 else { return "" }
         let percent = (value / target).formatted(.percent.precision(.fractionLength(0)))
-        return String(localized: "\(percent) of your \(VESSFormat.calories(target)) kcal target")
+        return String(localized: "\(percent) of your \(VESSFormat.calories(target))\u{00A0}kcal target")
     }
 
     private func percent(_ value: Double) -> String {
@@ -314,7 +314,7 @@ private struct EnergyThroughDayChart: View {
         // (as minutes since midnight), so the chart is replaced by one summary.
         .accessibilityRepresentation {
             Text("Energy through the day")
-                .accessibilityValue(isEmpty ? Text("Nothing logged yet") : Text("\(VESSFormat.calories(total)) of \(VESSFormat.calories(target)) kcal"))
+                .accessibilityValue(isEmpty ? Text("Nothing logged yet") : Text("\(VESSFormat.calories(total)) of \(VESSFormat.calories(target))\u{00A0}kcal"))
         }
     }
 
@@ -404,8 +404,8 @@ struct EnergyInfoSheet: View {
                     Text("How energy is measured")
                         .vessTextStyle(.editorialM)
                         .foregroundStyle(VESSColor.text)
-                    item("Energy vs. target", "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105 %.")
-                    item("Meal regularity", "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100 %; two hours away or more scores 0 %.")
+                    item("Energy vs. target", "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105\u{00A0}%.")
+                    item("Meal regularity", "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100\u{00A0}%; two hours away or more scores 0\u{00A0}%.")
                     item("Before noon", "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat.")
                     item("Last 7 days", "The average covers days with at least one meal logged, not counting today, and needs three of them.")
                     Text("Everything here comes from what you log. It describes your logging, not your health.")

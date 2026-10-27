@@ -30,17 +30,17 @@ struct DrinkSheetTests {
     func waterEstimate() {
         let line = DrinkEstimate(volume: 330, contributionPercent: 100, caffeine: 0, alcoholGrams: 0,
                                  waterToday: 1600, waterTarget: 2500, caffeineToday: 64)
-        #expect(line.value == "\(VESSFormat.milliliters(330)) ml")
+        #expect(line.value == "\(VESSFormat.milliliters(330))\u{00A0}ml")
         #expect(line.context.hasPrefix("toward water · "))
-        #expect(line.context.contains("→\u{00A0}\(VESSFormat.liters(fromMilliliters: 1930)) of \(VESSFormat.liters(fromMilliliters: 2500)) L with this"))
+        #expect(line.context.contains("→\u{00A0}\(VESSFormat.liters(fromMilliliters: 1930)) of \(VESSFormat.liters(fromMilliliters: 2500))\u{00A0}L with this"))
     }
 
     @Test("Espresso: ≈ mg, the share toward water and the day's caffeine including it")
     func caffeineEstimate() {
         let line = DrinkEstimate(volume: 30, contributionPercent: 80, caffeine: 63.6, alcoholGrams: 0,
                                  waterToday: 1600, waterTarget: 2500, caffeineToday: 64)
-        #expect(line.value == "≈ 64 mg")
-        #expect(line.context == "caffeine · counts as 24 ml water · →\u{00A0}128 of 400 mg with this")
+        #expect(line.value == "≈\u{00A0}64\u{00A0}mg")
+        #expect(line.context == "caffeine · counts as 24\u{00A0}ml water · →\u{00A0}128 of 400\u{00A0}mg with this")
     }
 
     @Test("Alcohol doesn't count toward water")
@@ -61,8 +61,8 @@ struct DrinkSheetTests {
 
     @Test("Espresso sizes name the shot; More lists every drink not on a tile, once")
     func titlesAndMore() {
-        #expect(DrinkFacts.sizeTitle(30, for: .espresso).hasSuffix("· 30 ml"))
-        #expect(DrinkFacts.sizeTitle(330, for: .water) == "330 ml")
+        #expect(DrinkFacts.sizeTitle(30, for: .espresso).hasSuffix("· 30\u{00A0}ml"))
+        #expect(DrinkFacts.sizeTitle(330, for: .water) == "330\u{00A0}ml")
         let more = DrinkFacts.moreSections.flatMap(\.presets)
         #expect(Set(more).isDisjoint(with: DrinkFacts.sheetPresets))
         #expect(more.count == Set(more).count)

@@ -433,7 +433,7 @@ struct FoodSearchHome: View {
                     Text(VESSFormat.calories(total.calories))
                         .vessTextStyle(.numberRow)
                         .foregroundStyle(VESSColor.text)
-                    Text("kcal · \(VESSFormat.grams(total.proteinGrams)) g protein")
+                    Text("kcal · \(VESSFormat.grams(total.proteinGrams))\u{00A0}g protein")
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.secondaryText)
                 }

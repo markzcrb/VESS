@@ -77,7 +77,7 @@ struct AddToSlotView: View {
                                     subtitle: MealSuggestions.reason(candidate, day: day, pantry: store.inventory, now: now, calendar: calendar).text,
                                     subtitleLineLimit: 2
                                 ) {
-                                    Text("\(VESSFormat.calories(candidate.nutrition.calories)) kcal")
+                                    Text("\(VESSFormat.calories(candidate.nutrition.calories))\u{00A0}kcal")
                                         .vessTextStyle(.bodyM)
                                         .foregroundStyle(VESSColor.secondaryText)
                                 }

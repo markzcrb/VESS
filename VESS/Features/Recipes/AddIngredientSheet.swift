@@ -121,7 +121,7 @@ struct IngredientChoice: Identifiable {
         var label = unit.label
         if label.hasPrefix("1 ") { label.removeFirst(2) }
         let plain = ["cup", "tbsp", "tsp"].contains(FoodSearch.normalized(label))
-        return plain ? label : "\(label) (\(VESSFormat.quantity(unit.amount)) g)"
+        return plain ? label : "\(label) (\(VESSFormat.quantity(unit.amount))\u{00A0}g)"
     }
 }
 
@@ -291,7 +291,7 @@ struct AddIngredientSheet: View {
     @ViewBuilder
     private func genericRows(_ foods: [GenericFood], showsMore: Bool) -> some View {
         ForEach(foods) { food in
-            resultRow(IngredientChoice(kind: .generic(food)), subtitle: Text("Generic · USDA · per 100 g"))
+            resultRow(IngredientChoice(kind: .generic(food)), subtitle: Text("Generic · USDA · per 100\u{00A0}g"))
         }
         if showsMore { showMoreRow("Show more generic foods") { moreGeneric = true } }
     }
@@ -329,7 +329,7 @@ struct AddIngredientSheet: View {
     private func pantrySubtitle(_ item: InventoryItem, match: GenericFood?) -> Text {
         let amount = item.quantity.map { "\(VESSFormat.quantity($0)) \(String(localized: item.unit.abbreviation))" } ?? String(localized: "some")
         guard match != nil else { return Text("In your pantry · \(amount) · No nutrition data") }
-        return Text("In your pantry · \(amount) · per 100 g")
+        return Text("In your pantry · \(amount) · per 100\u{00A0}g")
     }
 
     private func resultRow(_ choice: IngredientChoice, subtitle: Text, pantryItem: InventoryItem? = nil) -> some View {
@@ -364,7 +364,7 @@ struct AddIngredientSheet: View {
                 }
                 if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: VESSSpacing.sm) }
                 if let per100 = choice.per100 {
-                    Text("\(VESSFormat.calories(per100.calories)) kcal")
+                    Text("\(VESSFormat.calories(per100.calories))\u{00A0}kcal")
                         .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.secondaryText)
                         .monospacedDigit()
@@ -416,7 +416,7 @@ struct AddIngredientSheet: View {
                     }
                     if let per100 = selected.per100 {
                         let facts = per100.scaled(by: (ingredient.grams ?? 0) / 100)
-                        Text("\(VESSFormat.calories(facts.calories)) kcal · \(VESSFormat.grams(facts.proteinGrams)) g protein · \(VESSFormat.grams(facts.carbohydrateGrams)) g carbs · \(VESSFormat.grams(facts.fatGrams)) g fat")
+                        Text("\(VESSFormat.calories(facts.calories))\u{00A0}kcal · \(VESSFormat.grams(facts.proteinGrams))\u{00A0}g protein · \(VESSFormat.grams(facts.carbohydrateGrams))\u{00A0}g carbs · \(VESSFormat.grams(facts.fatGrams))\u{00A0}g fat")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)

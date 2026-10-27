@@ -208,7 +208,7 @@ struct VESSMealRow: View {
                     detail
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.secondaryText)
-                    Text("\(calories) kcal · \(time, format: .dateTime.hour().minute())")
+                    Text("\(calories)\u{00A0}kcal · \(time, format: .dateTime.hour().minute())")
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.secondaryText)
                 }
@@ -223,7 +223,7 @@ struct VESSMealRow: View {
         // "Breakfast, Greek yogurt, oats, blueberries, 674 kcal, 7:45 AM":
         // kcal in one phrase with its number, the time after the meal.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(title), \(detail), \(calories) kcal, \(time, format: .dateTime.hour().minute())"))
+        .accessibilityLabel(Text("\(title), \(detail), \(calories)\u{00A0}kcal, \(time, format: .dateTime.hour().minute())"))
     }
 
     private var regular: some View {

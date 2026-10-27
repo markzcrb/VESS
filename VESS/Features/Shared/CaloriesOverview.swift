@@ -90,13 +90,13 @@ struct CaloriesOverview: View {
     private var accessibilityValue: String {
         let consumed = VESSFormat.calories(summary.consumed.calories)
         guard summary.targets.calories > 0 else {
-            return String(localized: "\(consumed) kcal. No daily target set.")
+            return String(localized: "\(consumed)\u{00A0}kcal. No daily target set.")
         }
         let remaining = summary.caloriesRemaining
         let balance = remaining >= 0
-            ? String(localized: "\(VESSFormat.calories(remaining)) kcal left")
-            : String(localized: "\(VESSFormat.calories(-remaining)) kcal above your target")
-        return String(localized: "\(consumed) of \(VESSFormat.calories(summary.targets.calories)) kcal. \(balance)")
+            ? String(localized: "\(VESSFormat.calories(remaining))\u{00A0}kcal left")
+            : String(localized: "\(VESSFormat.calories(-remaining))\u{00A0}kcal above your target")
+        return String(localized: "\(consumed) of \(VESSFormat.calories(summary.targets.calories))\u{00A0}kcal. \(balance)")
     }
 
     /// Macro totals only count what was reported; say so rather than imply zero.

@@ -217,7 +217,7 @@ struct HabitTodayList: View {
         case .waterTarget:
             let consumed = VESSFormat.liters(fromMilliliters: data?.hydrationMilliliters ?? 0)
             let target = VESSFormat.liters(fromMilliliters: data?.waterTargetMilliliters ?? 0)
-            return Text("\(consumed) of \(target) L · from your log")
+            return Text("\(consumed) of \(target)\u{00A0}L · from your log")
         case .proteinAtBreakfast:
             return Text("Daily · from your log")
         case .steps(let target):
@@ -227,11 +227,11 @@ struct HabitTodayList: View {
             guard let asleep = data?.sleepMinutes else { return Text("From Apple Health, when connected") }
             return Text("\(HealthFormat.duration(minutes: asleep)) of \(HealthFormat.duration(minutes: Double(minutes))) · from Apple Health")
         case .mindfulMinutes(let minutes):
-            return Text("\(HealthFormat.whole(data?.mindfulMinutes ?? 0)) of \(minutes) min · from Apple Health")
+            return Text("\(HealthFormat.whole(data?.mindfulMinutes ?? 0)) of \(minutes)\u{00A0}min · from Apple Health")
         case .noCaffeineAfter(let hour):
             return Text("After \(hour):00 · from your drinks")
         case .fiber(let grams):
-            return Text("\(VESSFormat.grams(data?.fiberGrams ?? 0)) of \(grams) g · from your log")
+            return Text("\(VESSFormat.grams(data?.fiberGrams ?? 0)) of \(grams)\u{00A0}g · from your log")
         case .supplementsTaken:
             return Text("\(data?.supplementsTaken ?? 0) of \(data?.supplementsDue ?? 0) · from Supplements")
         case nil:

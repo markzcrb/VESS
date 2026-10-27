@@ -107,7 +107,7 @@ struct CustomDrinkView: View {
                 Text(hydration.isTargetReached ? "Water target reached." : "A little more water.")
                     .vessTextStyle(.editorialL)
                     .foregroundStyle(VESSColor.text)
-                Text("Hydration · \(VESSFormat.liters(fromMilliliters: hydration.consumedMilliliters)) of \(VESSFormat.liters(fromMilliliters: hydration.targetMilliliters)) L \(Text(isToday ? "today" : "that day"))")
+                Text("Hydration · \(VESSFormat.liters(fromMilliliters: hydration.consumedMilliliters)) of \(VESSFormat.liters(fromMilliliters: hydration.targetMilliliters))\u{00A0}L \(Text(isToday ? "today" : "that day"))")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.secondaryText)
             }
@@ -140,7 +140,7 @@ struct CustomDrinkView: View {
                     .disabled((enteredVolume ?? 0) >= Self.volumeRange.upperBound)
             }
             if isOutOfRange {
-                Text("Enter between 1 and \(VESSFormat.milliliters(Self.volumeRange.upperBound)) ml")
+                Text("Enter between 1 and \(VESSFormat.milliliters(Self.volumeRange.upperBound))\u{00A0}ml")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.warningText)
                     .accessibilityIdentifier("addDrink.error")
@@ -165,9 +165,9 @@ struct CustomDrinkView: View {
         VStack(alignment: .leading, spacing: VESSSpacing.md) {
             Group {
                 if isOutOfRange {
-                    Text("Up to \(VESSFormat.milliliters(Self.volumeRange.upperBound)) ml at a time.")
+                    Text("Up to \(VESSFormat.milliliters(Self.volumeRange.upperBound))\u{00A0}ml at a time.")
                 } else if let volume {
-                    Text("Counts as \(VESSFormat.milliliters(volume * contributionPercent / 100)) ml toward water.")
+                    Text("Counts as \(VESSFormat.milliliters(volume * contributionPercent / 100))\u{00A0}ml toward water.")
                 }
             }
             .vessTextStyle(.bodyM)
@@ -231,12 +231,12 @@ struct CustomDrinkView: View {
                         Text("Caffeine")
                             .vessTextStyle(.bodyM)
                             .foregroundStyle(VESSColor.text)
-                        Text("in \(VESSFormat.milliliters(volume ?? 0)) ml")
+                        Text("in \(VESSFormat.milliliters(volume ?? 0))\u{00A0}ml")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                     }
                     Spacer()
-                    Text("\(VESSFormat.grams(caffeineMilligrams)) mg")
+                    Text("\(VESSFormat.grams(caffeineMilligrams))\u{00A0}mg")
                         .vessTextStyle(.numberRow)
                         .foregroundStyle(VESSColor.text)
                         .contentTransition(.numericText())
@@ -253,7 +253,7 @@ struct CustomDrinkView: View {
             if editing != nil {
                 Text("Save")
             } else if let volume {
-                Text("Add \(VESSFormat.milliliters(volume)) ml")
+                Text("Add \(VESSFormat.milliliters(volume))\u{00A0}ml")
             } else {
                 Text("Add")
             }
@@ -338,7 +338,7 @@ struct CustomDrinkView: View {
         let log = drink.log(userID: profile.id, volumeMilliliters: volume, at: time)
         do {
             try store.add(log)
-            undo.show(Text("Added \(VESSFormat.milliliters(volume)) ml of \(drink.name)")) { store in
+            undo.show(Text("Added \(VESSFormat.milliliters(volume))\u{00A0}ml of \(drink.name)")) { store in
                 try store.deleteHydrationLog(id: log.id)
             }
             if saveAsDefault && contributionPercent != currentDefault {

@@ -54,7 +54,7 @@ struct ProfileView: View {
                     .vessTextStyle(.titleL)
                     .foregroundStyle(VESSColor.text)
                     .accessibilityAddTraits(.isHeader)
-                Text("\(Text(profile.effectiveGoal.shortTitle)) · \(Text(profile.dietTitle)) · \(VESSFormat.calories(profile.nutritionTargets.calories)) kcal")
+                Text("\(Text(profile.effectiveGoal.shortTitle)) · \(Text(profile.dietTitle)) · \(VESSFormat.calories(profile.nutritionTargets.calories))\u{00A0}kcal")
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -69,9 +69,9 @@ struct ProfileView: View {
         return VStack(alignment: .leading, spacing: VESSSpacing.xs) {
             VESSSectionHeader(title: "Daily goals")
             VESSRowGroup {
-                link(.goals, icon: "flame", title: "Energy", value: Text("\(VESSFormat.calories(targets.calories)) kcal"))
-                link(.goals, icon: "fish", title: "Protein", value: Text("\(VESSFormat.grams(targets.proteinGrams)) g"))
-                link(.goals, icon: "drop", title: "Water", value: Text("\(VESSFormat.liters(fromMilliliters: profile.waterTargetMilliliters)) L"))
+                link(.goals, icon: "flame", title: "Energy", value: Text("\(VESSFormat.calories(targets.calories))\u{00A0}kcal"))
+                link(.goals, icon: "fish", title: "Protein", value: Text("\(VESSFormat.grams(targets.proteinGrams))\u{00A0}g"))
+                link(.goals, icon: "drop", title: "Water", value: Text("\(VESSFormat.liters(fromMilliliters: profile.waterTargetMilliliters))\u{00A0}L"))
                 link(.goals, icon: "figure.walk", title: "Steps", value: Text(VESSFormat.steps(Double(profile.dailyStepsTarget))))
             }
             .vessHairlineBottom()
@@ -255,7 +255,7 @@ struct ProfileWeightCard: View {
         let change = last.kilograms - first.kilograms
         let weeks = max(1, Int((last.measuredAt.timeIntervalSince(first.measuredAt) / (7 * 86_400)).rounded()))
         let value = change.formatted(.number.precision(.fractionLength(1)).sign(strategy: .always(includingZero: false)))
-        return Text("\(value) kg in ^[\(weeks) week](inflect: true)")
+        return Text("\(value)\u{00A0}kg in ^[\(weeks) week](inflect: true)")
     }
 }
 

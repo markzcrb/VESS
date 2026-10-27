@@ -228,16 +228,16 @@ struct TodayBreakdown: View {
                 }
                 .buttonStyle(.plain)
                 NavigationLink(destination: MacrosDetailView()) {
-                    VESSMetricRow(systemImage: "fish", label: "Protein", value: value("\(VESSFormat.grams(summary.consumed.proteinGrams)) g"), trend: mark(trends.protein))
+                    VESSMetricRow(systemImage: "fish", label: "Protein", value: value("\(VESSFormat.grams(summary.consumed.proteinGrams))\u{00A0}g"), trend: mark(trends.protein))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                VESSMetricRow(systemImage: "leaf", label: "Fibre", value: summary.consumed.fiberGrams.map { value("\(VESSFormat.grams($0)) g") } ?? "—", trend: mark(trends.fibre))
+                VESSMetricRow(systemImage: "leaf", label: "Fibre", value: summary.consumed.fiberGrams.map { value("\(VESSFormat.grams($0))\u{00A0}g") } ?? "—", trend: mark(trends.fibre))
                 VESSMetricRow(
                     systemImage: "drop",
                     label: "Hydration",
                     value: summary.hydration.consumedMilliliters > 0
-                        ? "\(VESSFormat.liters(fromMilliliters: summary.hydration.consumedMilliliters)) L"
+                        ? "\(VESSFormat.liters(fromMilliliters: summary.hydration.consumedMilliliters))\u{00A0}L"
                         : "—",
                     trend: mark(trends.hydration)
                 )
@@ -329,7 +329,7 @@ struct TodayIntake: View {
         let balance = remaining >= 0
             ? String(localized: "\(VESSFormat.calories(remaining)) left")
             : String(localized: "\(VESSFormat.calories(-remaining)) above")
-        return Text("of \(VESSFormat.calories(summary.targets.calories)) kcal · \(balance)")
+        return Text("of \(VESSFormat.calories(summary.targets.calories))\u{00A0}kcal · \(balance)")
             .vessTextStyle(.bodyS)
             .foregroundStyle(VESSColor.secondaryText)
     }
@@ -471,7 +471,7 @@ struct TodayHydration: View {
             VESSMacroBar(
                 name: "Water",
                 value: VESSFormat.liters(fromMilliliters: hydration.consumedMilliliters),
-                target: "/ \(VESSFormat.liters(fromMilliliters: hydration.targetMilliliters)) L",
+                target: "/ \(VESSFormat.liters(fromMilliliters: hydration.targetMilliliters))\u{00A0}L",
                 adding: hydration.fractionComplete,
                 metric: .water
             )
@@ -493,7 +493,7 @@ struct TodayHydration: View {
                 if !dynamicTypeSize.isAccessibilitySize {
                     Spacer(minLength: 0)
                 }
-                Button("+250 ml", action: onAddWater)
+                Button("+250\u{00A0}ml", action: onAddWater)
                     .buttonStyle(.vessQuick)
                     .fixedSize()
                     .accessibilityLabel("Add 250 milliliters of water")

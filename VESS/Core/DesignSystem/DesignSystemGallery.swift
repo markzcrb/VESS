@@ -36,7 +36,7 @@ private struct DesignSystemGallery: View {
                     }
                     if shows(1) {
                         statusRows
-                        VESSInsightCard(text: Text("Protein is at 108 of 140 g, and 70% of it came after noon. A protein-led dinner closes the gap."))
+                        VESSInsightCard(text: Text("Protein is at 108 of 140\u{00A0}g, and 70% of it came after noon. A protein-led dinner closes the gap."))
                         macroBars
                         impactRows
                     }
@@ -93,9 +93,9 @@ private struct DesignSystemGallery: View {
         VStack(spacing: VESSSpacing.sm + 2) {
             VESSRowGroup {
                 VESSMetricRow(systemImage: "flame", label: "Energy", value: "1,840", trend: .up)
-                VESSMetricRow(systemImage: "fish", label: "Protein", value: "108 g", trend: .down)
-                VESSMetricRow(systemImage: "leaf", label: "Fibre", value: "21 g", trend: .flat)
-                VESSMetricRow(systemImage: "drop", label: "Hydration", value: "1.6 L", trend: .up)
+                VESSMetricRow(systemImage: "fish", label: "Protein", value: "108\u{00A0}g", trend: .down)
+                VESSMetricRow(systemImage: "leaf", label: "Fibre", value: "21\u{00A0}g", trend: .flat)
+                VESSMetricRow(systemImage: "drop", label: "Hydration", value: "1.6\u{00A0}L", trend: .up)
             }
             VESSLegendChip()
         }
@@ -111,15 +111,15 @@ private struct DesignSystemGallery: View {
 
     private var macroBars: some View {
         VStack(spacing: 22) {
-            VESSMacroBar(name: "Protein", value: "+31 g", target: "→ 139 / 140 g", logged: 108.0 / 140, adding: 31.0 / 140, metric: .protein)
-            VESSMacroBar(name: "Carbs", value: "+12 g", target: "→ 208 / 260 g", logged: 196.0 / 260, adding: 12.0 / 260, metric: .carbs)
-            VESSMacroBar(name: "Water", value: "1.6", target: "/ 2.2 L", adding: 0.73, metric: .water)
+            VESSMacroBar(name: "Protein", value: "+31\u{00A0}g", target: "→\u{00A0}139 / 140\u{00A0}g", logged: 108.0 / 140, adding: 31.0 / 140, metric: .protein)
+            VESSMacroBar(name: "Carbs", value: "+12\u{00A0}g", target: "→\u{00A0}208 / 260\u{00A0}g", logged: 196.0 / 260, adding: 12.0 / 260, metric: .carbs)
+            VESSMacroBar(name: "Water", value: "1.6", target: "/ 2.2\u{00A0}L", adding: 0.73, metric: .water)
         }
     }
 
     private var impactRows: some View {
         VStack(spacing: VESSSpacing.xs) {
-            VESSImpactRow(label: "Drank 2 L or more", impactPercent: 24)
+            VESSImpactRow(label: "Drank 2\u{00A0}L or more", impactPercent: 24)
             VESSImpactRow(label: "Ate fish", impactPercent: 2, isNew: true)
             VESSImpactRow(label: "Late dinner", impactPercent: -11)
         }
@@ -132,7 +132,7 @@ private struct DesignSystemGallery: View {
                 VESSMealRow(time: time(7, 45), title: Text(verbatim: "Breakfast"), detail: Text(verbatim: "Greek yogurt, oats, blueberries"), calories: "520")
                 VESSMealRow(time: time(16, 10), title: Text(verbatim: "Snack"), detail: Text(verbatim: "Skyr, pumpkin seeds, apple"), calories: "210")
                 VESSMealRow(time: time(19, 30), title: Text(verbatim: "Dinner · planned"), detail: Text(verbatim: "Miso-glazed cod, bok choy, rice"), calories: "620", isPlanned: true)
-                VESSListRow(systemImage: "calendar", title: Text(verbatim: "Plan ready · 2,350 kcal"), subtitle: Text(verbatim: "Overnight oats · Tuna niçoise · Prawn curry"))
+                VESSListRow(systemImage: "calendar", title: Text(verbatim: "Plan ready · 2,350\u{00A0}kcal"), subtitle: Text(verbatim: "Overnight oats · Tuna niçoise · Prawn curry"))
             }
         }
     }
@@ -183,12 +183,12 @@ private struct DesignSystemGallery: View {
 
     private var buttons: some View {
         VStack(spacing: VESSSpacing.sm) {
-            Button("Add to dinner · 312 kcal") {}
+            Button("Add to dinner · 312\u{00A0}kcal") {}
                 .buttonStyle(.vessPrimary)
             Button("Log a workout") {}
                 .buttonStyle(.vessSecondary)
             HStack {
-                Button("+250 ml") {}
+                Button("+250\u{00A0}ml") {}
                     .buttonStyle(.vessQuick)
                 Spacer()
                 Button("Add to dinner") {}
@@ -215,7 +215,7 @@ private struct DesignSystemGallery: View {
 
     private static let scale: [(style: VESSTextStyle, sample: String)] = [
         (.displayHero, "78"), (.displayL, "312"), (.displayM, "1,840"), (.titleL, "Good evening, Mark"),
-        (.numberRow, "108 g"), (.numberS, "620 kcal"), (.bodyM, "Protein is on track for today"),
+        (.numberRow, "108\u{00A0}g"), (.numberS, "620\u{00A0}kcal"), (.bodyM, "Protein is on track for today"),
         (.bodyMStrong, "Miso-glazed cod with greens"), (.bodyS, "Saved meal · 3 items"), (.caption, "Last synced 17:12"),
         (.labelCaps, "Heart of the breakdown"), (.labelCapsS, "Refreshed daily"), (.labelCapsLink, "Break down my day"),
         (.editorialL, "A steady day."), (.editorialM, "Holding steady inside your range."),
@@ -247,9 +247,9 @@ private struct DesignSystemGallery: View {
             VESSRowGroup {
                 VESSHabitRow(title: Text(verbatim: "Protein at breakfast"), subtitle: Text(verbatim: "Daily · from your log"), isDone: true,
                              dots: [.done, .done, .notDone, .done, .future, .future, .future], hue: VESSColor.protein)
-                VESSHabitRow(title: Text(verbatim: "Walk after lunch"), subtitle: Text(verbatim: "Weekdays · 15 min"), isDone: true,
+                VESSHabitRow(title: Text(verbatim: "Walk after lunch"), subtitle: Text(verbatim: "Weekdays · 15\u{00A0}min"), isDone: true,
                              dots: [.notDone, .done, .done, .done, .future, .future, .future], hue: VESSColor.activity, onToggle: {})
-                VESSHabitRow(title: Text(verbatim: "Water 2.2 L"), subtitle: Text(verbatim: "1.6 of 2.2 L · from your log"), isDone: false,
+                VESSHabitRow(title: Text(verbatim: "Water 2.2\u{00A0}L"), subtitle: Text(verbatim: "1.6 of 2.2\u{00A0}L · from your log"), isDone: false,
                              dots: [.done, .notDone, .done, .open, .future, .future, .future], hue: VESSColor.water)
                 VESSHabitRow(title: Text(verbatim: "Screens off by 23:00"), subtitle: Text(verbatim: "Daily · evening"), isDone: false,
                              dots: [.done, .done, .notDone, .open, .future, .future, .future], onToggle: {})

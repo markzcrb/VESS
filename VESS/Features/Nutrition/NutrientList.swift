@@ -25,13 +25,13 @@ struct NutrientList: View {
                 row(.carbohydrates, nutrition.carbohydrateGrams, tint: VESSColor.carbs)
                 row(.fat, nutrition.fatGrams, tint: VESSColor.fat)
                 if let fiber = nutrition.fiberGrams {
-                    optionalRow("Fibre", value: "\(VESSFormat.quantity(fiber)) g")
+                    optionalRow("Fibre", value: "\(VESSFormat.quantity(fiber))\u{00A0}g")
                 }
                 if let sugar = nutrition.sugarGrams {
-                    optionalRow("Sugars", value: "\(VESSFormat.quantity(sugar)) g")
+                    optionalRow("Sugars", value: "\(VESSFormat.quantity(sugar))\u{00A0}g")
                 }
                 if let sodium = nutrition.sodiumMilligrams {
-                    optionalRow("Sodium", value: "\(VESSFormat.milliliters(sodium)) mg")
+                    optionalRow("Sodium", value: "\(VESSFormat.milliliters(sodium))\u{00A0}mg")
                 }
             }
         }
@@ -40,7 +40,7 @@ struct NutrientList: View {
     private func row(_ nutrient: CoreNutrient, _ grams: Double, tint: Color) -> some View {
         VESSRow(title: Text(nutrient.title)) {
             if nutrition.isReported(nutrient) {
-                Text("\(VESSFormat.quantity(grams)) g")
+                Text("\(VESSFormat.quantity(grams))\u{00A0}g")
                     .font(.body.monospacedDigit())
                     .foregroundStyle(VESSColor.text)
             } else {

@@ -20,7 +20,7 @@ struct FuelInfoSheet: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     VESSRowGroup {
-                        part("Energy", weight: 40, detail: "Full marks at 100–105 % of your target, a little less above", value: fuel?.components.energy)
+                        part("Energy", weight: 40, detail: "Full marks at 100–105\u{00A0}% of your target, a little less above", value: fuel?.components.energy)
                         part("Protein", weight: 30, detail: "Up to your protein target", value: fuel?.components.protein)
                         part("Hydration", weight: 20, detail: "Up to your water target", value: fuel?.components.hydration)
                         part("Meal regularity", weight: 10, detail: "Each meal near its usual time adds to this part", value: fuel?.components.regularity)
@@ -48,7 +48,7 @@ struct FuelInfoSheet: View {
     }
 
     private func part(_ title: LocalizedStringResource, weight: Int, detail: LocalizedStringResource, value: Double?) -> some View {
-        VESSRow(title: Text("\(Text(title)) · \(weight) %"), subtitle: Text(detail), subtitleLineLimit: 2) {
+        VESSRow(title: Text("\(Text(title)) · \(weight)\u{00A0}%"), subtitle: Text(detail), subtitleLineLimit: 2) {
             Text(value.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "\u{2014}")
                 .vessTextStyle(.numberS)
                 .foregroundStyle(VESSColor.text)

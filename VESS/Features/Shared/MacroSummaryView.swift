@@ -34,7 +34,7 @@ private struct MacroColumn: View {
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Text(VESSFormat.grams(value))
                     .foregroundStyle(VESSColor.text)
-                Text(verbatim: " / \(VESSFormat.grams(target)) g")
+                Text(verbatim: " / \(VESSFormat.grams(target))\u{00A0}g")
                     .foregroundStyle(VESSColor.secondaryText)
             }
             .font(.callout.monospacedDigit())

@@ -124,7 +124,7 @@ struct VESSHabitRow: View {
                      dots: [.done, .done, .notDone, .done, .future, .future, .future], hue: VESSColor.protein)
         VESSHabitRow(title: Text(verbatim: "Vitamin D"), subtitle: Text(verbatim: "Daily · 08:00"), isDone: true,
                      dots: [.done, .done, .done, .done, .future, .future, .future], onToggle: {})
-        VESSHabitRow(title: Text(verbatim: "Water 2.2 L"), subtitle: Text(verbatim: "1.6 of 2.2 L · from your log"), isDone: false,
+        VESSHabitRow(title: Text(verbatim: "Water 2.2\u{00A0}L"), subtitle: Text(verbatim: "1.6 of 2.2\u{00A0}L · from your log"), isDone: false,
                      dots: [.done, .notDone, .done, .open, .future, .future, .future], hue: VESSColor.water)
     }
     .padding()

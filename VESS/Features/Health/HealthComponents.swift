@@ -28,21 +28,18 @@ extension View {
 enum HealthFormat {
     /// "7 h 12", "1 h 05", "22 min".
     static func duration(minutes: Double) -> String {
-        let total = Int(minutes.rounded())
-        guard total >= 60 else { return String(localized: "\(total) min") }
-        let minutesPart = (total % 60).formatted(.number.precision(.integerLength(2)))
-        return String(localized: "\(total / 60) h \(minutesPart)")
+        VESSFormat.duration(minutes: minutes)
     }
 
     /// "8 h", "7.5 h".
     static func hours(minutes: Int) -> String {
         let hours = Double(minutes) / 60
-        return String(localized: "\(hours.formatted(.number.precision(.fractionLength(0...1)))) h")
+        return String(localized: "\(hours.formatted(.number.precision(.fractionLength(0...1))))\u{00A0}h")
     }
 
     /// "58" (bpm, ms): whole numbers.
     static func whole(_ value: Double) -> String {
-        value.formatted(.number.precision(.fractionLength(0)))
+        VESSFormat.number(value, fractionLength: 0...0)
     }
 
     /// "56–61".

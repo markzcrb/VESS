@@ -40,11 +40,11 @@ struct GoalsView: View {
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                     VESSSectionHeader(title: "Daily targets")
                     VESSRowGroup {
-                        row(.calories, "Calories", "\(VESSFormat.calories(targets.calories)) kcal")
-                        row(.protein, "Protein", "\(VESSFormat.grams(targets.proteinGrams)) g")
-                        row(.carbs, "Carbs", "\(VESSFormat.grams(targets.carbohydrateGrams)) g")
-                        row(.fat, "Fat", "\(VESSFormat.grams(targets.fatGrams)) g")
-                        row(.water, "Water", "\(VESSFormat.liters(fromMilliliters: profile.waterTargetMilliliters)) L")
+                        row(.calories, "Calories", "\(VESSFormat.calories(targets.calories))\u{00A0}kcal")
+                        row(.protein, "Protein", "\(VESSFormat.grams(targets.proteinGrams))\u{00A0}g")
+                        row(.carbs, "Carbs", "\(VESSFormat.grams(targets.carbohydrateGrams))\u{00A0}g")
+                        row(.fat, "Fat", "\(VESSFormat.grams(targets.fatGrams))\u{00A0}g")
+                        row(.water, "Water", "\(VESSFormat.liters(fromMilliliters: profile.waterTargetMilliliters))\u{00A0}L")
                         row(.steps, "Steps", VESSFormat.steps(Double(profile.dailyStepsTarget)))
                     }
                     .vessHairlineBottom()
@@ -52,7 +52,7 @@ struct GoalsView: View {
 
                 if let suggested, suggested != targets {
                     VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                        Text("From your body and direction, VESS would suggest \(VESSFormat.calories(suggested.calories)) kcal, \(VESSFormat.grams(suggested.proteinGrams)) g protein, \(VESSFormat.grams(suggested.carbohydrateGrams)) g carbs and \(VESSFormat.grams(suggested.fatGrams)) g fat.")
+                        Text("From your body and direction, VESS would suggest \(VESSFormat.calories(suggested.calories))\u{00A0}kcal, \(VESSFormat.grams(suggested.proteinGrams))\u{00A0}g protein, \(VESSFormat.grams(suggested.carbohydrateGrams))\u{00A0}g carbs and \(VESSFormat.grams(suggested.fatGrams))\u{00A0}g fat.")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
@@ -194,19 +194,19 @@ struct BodyView: View {
                             VESSListRow(
                                 title: Text("Weight"),
                                 subtitle: Text("From Apple Health · \(Self.day(healthWeight.measuredAt, now: now, calendar: calendar))"),
-                                value: Text("\(VESSFormat.quantity(healthWeight.kilograms)) kg"),
+                                value: Text("\(VESSFormat.quantity(healthWeight.kilograms))\u{00A0}kg"),
                                 showsChevron: false
                             )
                         } else {
-                            edit(.weight, "Weight", "\(VESSFormat.quantity(profile.weightKilograms)) kg")
+                            edit(.weight, "Weight", "\(VESSFormat.quantity(profile.weightKilograms))\u{00A0}kg")
                         }
-                        edit(.height, "Height", "\(VESSFormat.quantity(profile.heightCentimeters)) cm")
+                        edit(.height, "Height", "\(VESSFormat.quantity(profile.heightCentimeters))\u{00A0}cm")
                         // Read only, and only when Health has a value.
                         if let waist = snapshot?.waist {
                             VESSListRow(
                                 title: Text("Waist"),
                                 subtitle: Text("From Apple Health · \(Self.day(waist.measuredAt, now: now, calendar: calendar))"),
-                                value: Text("\(VESSFormat.quantity(waist.value)) cm"),
+                                value: Text("\(VESSFormat.quantity(waist.value))\u{00A0}cm"),
                                 showsChevron: false
                             )
                         }
@@ -214,7 +214,7 @@ struct BodyView: View {
                             VESSListRow(
                                 title: Text("Body fat"),
                                 subtitle: Text("From Apple Health · \(Self.day(fat.measuredAt, now: now, calendar: calendar))"),
-                                value: Text("\(VESSFormat.quantity(fat.value)) %"),
+                                value: Text("\(VESSFormat.quantity(fat.value))\u{00A0}%"),
                                 showsChevron: false
                             )
                         }

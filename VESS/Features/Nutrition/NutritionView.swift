@@ -119,7 +119,7 @@ struct NutritionView: View {
         let usually = Text("Usually around \(time, format: .dateTime.hour().minute())")
         let remaining = summary.caloriesRemaining
         guard summary.targets.calories > 0, remaining > 0 else { return usually }
-        return Text("\(usually) · \(VESSFormat.calories(remaining)) kcal left")
+        return Text("\(usually) · \(VESSFormat.calories(remaining))\u{00A0}kcal left")
     }
 
     private func weekDays(containing day: Date) -> [Date] {

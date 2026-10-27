@@ -69,12 +69,12 @@ struct CaffeineView: View {
                 value: VESSFormat.grams(total),
                 unit: "mg",
                 label: "Caffeine",
-                sublabel: Text("of \(VESSFormat.grams(limit)) mg \(isToday ? Text("today") : Text("that day"))"),
+                sublabel: Text("of \(VESSFormat.grams(limit))\u{00A0}mg \(isToday ? Text("today") : Text("that day"))"),
                 progress: min(CaffeineModel.limitShare(of: total), 1),
                 metric: .carbs
             )
             if total > limit {
-                Text("\(VESSFormat.grams(total - limit)) mg above the \(VESSFormat.grams(limit)) mg daily limit.")
+                Text("\(VESSFormat.grams(total - limit))\u{00A0}mg above the \(VESSFormat.grams(limit))\u{00A0}mg daily limit.")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.secondaryText)
                     .multilineTextAlignment(.center)
@@ -93,11 +93,11 @@ struct CaffeineView: View {
             CaffeineCurve(points: points, start: chartStart, end: end, evening: evening, now: now)
                 .accessibilityRepresentation {
                     Text("Estimated caffeine in your system through the day")
-                        .accessibilityValue(Text(now.map { "Now about \(VESSFormat.grams(CaffeineModel.remaining(logs, at: $0))) mg; " } ?? "")
-                            + Text("about \(VESSFormat.grams(atEvening)) mg at 22:00"))
+                        .accessibilityValue(Text(now.map { "Now about \(VESSFormat.grams(CaffeineModel.remaining(logs, at: $0)))\u{00A0}mg; " } ?? "")
+                            + Text("about \(VESSFormat.grams(atEvening))\u{00A0}mg at 22:00"))
                 }
             VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-                Text("≈ \(VESSFormat.grams(atEvening)) mg in your system at \(evening, format: .dateTime.hour().minute())")
+                Text("≈\u{00A0}\(VESSFormat.grams(atEvening))\u{00A0}mg in your system at \(evening, format: .dateTime.hour().minute())")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.text)
                 Text("An estimate: caffeine halves about every \(VESSFormat.quantity(CaffeineModel.halfLifeHours)) hours, and this differs from person to person.")
@@ -163,7 +163,7 @@ struct CaffeineView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(Text(preset.title)), \(VESSFormat.milliliters(volume)) ml, \(VESSFormat.grams(milligrams)) mg caffeine"))
+        .accessibilityLabel(Text("\(Text(preset.title)), \(VESSFormat.milliliters(volume))\u{00A0}ml, \(VESSFormat.grams(milligrams))\u{00A0}mg caffeine"))
         .accessibilityHint("Logs it")
         .accessibilityIdentifier("caffeine.log.\(preset.rawValue)")
     }
@@ -180,7 +180,7 @@ struct CaffeineView: View {
         let log = drink.log(userID: profile.id, volumeMilliliters: volume, at: DrinkTime.defaultTime(on: day, calendar: calendar))
         do {
             try store.add(log)
-            undo.show(Text("Added \(VESSFormat.milliliters(volume)) ml of \(drink.name)")) { store in
+            undo.show(Text("Added \(VESSFormat.milliliters(volume))\u{00A0}ml of \(drink.name)")) { store in
                 try store.deleteHydrationLog(id: log.id)
             }
         } catch {
@@ -233,7 +233,7 @@ private struct CaffeineCurve: View {
                 AxisGridLine().foregroundStyle(VESSColor.chartGuide)
                 AxisValueLabel {
                     if let mg = value.as(Double.self) {
-                        Text("\(VESSFormat.grams(mg)) mg")
+                        Text("\(VESSFormat.grams(mg))\u{00A0}mg")
                             .vessTextStyle(.caption)
                             .foregroundStyle(VESSColor.tertiaryText)
                     }

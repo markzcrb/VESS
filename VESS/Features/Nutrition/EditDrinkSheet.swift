@@ -61,7 +61,7 @@ struct EditDrinkSheet: View {
                         }
                         .accessibilityElement(children: .contain)
                         .accessibilityLabel("Amount")
-                        .accessibilityValue(Text("\(VESSFormat.milliliters(volume)) ml"))
+                        .accessibilityValue(Text("\(VESSFormat.milliliters(volume))\u{00A0}ml"))
                         .vessHaptic(.selection, trigger: volume)
                     }
 
