@@ -48,3 +48,16 @@ The Figma icons (`Icon/*`) are stand-ins drawn to look like SF Symbols. In the a
 | pill | `pills` | Supplements tile in the Add sheet |
 
 Add sheet tiles (`AddType.symbol`): Photo `camera`, Quick add `bolt`, Food `fork.knife`, Drink `waterbottle`*, Supplements `pills`, Workout `dumbbell`, Habits `checkmark`, Weight `scalemass`, Cycle `CycleCopy.symbol`.
+| bottle | `waterbottle` | Milk tile (no milk-carton symbol exists) |
+| sparkling | `humidity`* | Sparkling tile |
+| espresso | `cup.and.heat.waves` | Espresso tile |
+| — | `cup.and.saucer` | Coffee tile (as the coffee log rows) |
+| tea | `mug` | Tea tile (as the tea log rows) |
+| milk | `waterbottle` | Milk tile |
+| juice / smoothie | `takeoutbag.and.cup.and.straw` | Juice, smoothie, soft drinks (no blender symbol exists) |
+| wine | `wineglass` | Every alcohol type |
+| more | `ellipsis` | More… tile |
+| menu | `menucard` | Menu mode in Photo |
+| scan | `viewfinder` | Camera framing |
+| chart | `chart.bar` | Today row in Add › Drink; Coach chart cards |
+| lock | `lock` | VESS+ feature rows |

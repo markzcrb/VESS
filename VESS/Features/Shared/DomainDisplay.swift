@@ -247,8 +247,15 @@ extension DrinkPreset {
         }
     }
 
-    /// Outline SF Symbols only.
-    var symbol: String { type.symbol }
+    /// Outline SF Symbols only (ICONS.md).
+    var symbol: String {
+        switch self {
+        case .sparklingWater: "humidity"
+        case .espresso: "cup.and.heat.waves"
+        case .milk: "waterbottle"
+        default: type.symbol
+        }
+    }
 }
 
 extension DrinkServing.Name {
@@ -275,6 +282,16 @@ extension DrinkServing.Name {
         case .largeBottle: "Large bottle"
         case .pint: "Pint"
         case .longDrink: "Long drink"
+        }
+    }
+}
+
+extension CaffeineStrength {
+    var title: LocalizedStringResource {
+        switch self {
+        case .regular: "Regular"
+        case .half: "Half"
+        case .decaf: "Decaf"
         }
     }
 }

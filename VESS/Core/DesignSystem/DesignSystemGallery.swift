@@ -53,6 +53,7 @@ private struct DesignSystemGallery: View {
                     if shows(4) {
                         calendarDays
                         habitRows
+                        pickTiles
                     }
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
@@ -254,6 +255,19 @@ private struct DesignSystemGallery: View {
                              dots: [.done, .done, .notDone, .open, .future, .future, .future], onToggle: {})
             }
             .vessHairlineBottom()
+        }
+    }
+
+    /// PickTile: four across, one selected (Add › Drink, Add › Workout).
+    private var pickTiles: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            VESSSectionHeader(title: "Pick tile")
+            LazyVGrid(columns: VESSPickTile.columns(for: .large), spacing: VESSSpacing.xs) {
+                VESSPickTile(title: Text(verbatim: "Water"), systemImage: "drop", isSelected: true) {}
+                VESSPickTile(title: Text(verbatim: "Sparkling"), systemImage: "humidity", isSelected: false) {}
+                VESSPickTile(title: Text(verbatim: "Espresso"), systemImage: "cup.and.heat.waves", isSelected: false) {}
+                VESSPickTile(title: Text(verbatim: "More"), systemImage: "ellipsis", isSelected: false) {}
+            }
         }
     }
 

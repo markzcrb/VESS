@@ -379,3 +379,17 @@ nonisolated struct SavedDrink: Identifiable, Codable, Hashable, Sendable {
         return drink
     }
 }
+
+/// Regular, half-caf or decaf coffee and tea (D02). Decaf keeps the share
+/// the catalog's decaf has against filter coffee (1 of 40 mg per 100 ml).
+nonisolated enum CaffeineStrength: String, CaseIterable, Sendable {
+    case regular, half, decaf
+
+    var factor: Double {
+        switch self {
+        case .regular: 1
+        case .half: 0.5
+        case .decaf: DrinkPreset.decaf.caffeineMilligramsPer100Milliliters / DrinkPreset.blackCoffee.caffeineMilligramsPer100Milliliters
+        }
+    }
+}

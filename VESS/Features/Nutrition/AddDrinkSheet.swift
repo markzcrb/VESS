@@ -1,15 +1,11 @@
 import SwiftUI
 
-/// 19, 20: log a drink. The drink (icon chips, Custom… for any other),
-/// the amount (sizes and a stepper, with what counts toward water and the
-/// caffeine), when, Add, and the day's drinks folded away below. The
-/// volume drunk and the share counted toward water are kept apart.
-///
-/// Nothing is wider than the sheet: every row is laid out in the sheet's
-/// width (the size cards share it equally; the old cards each insisted on
-/// their natural width, so five of them pushed the whole sheet past both
-/// edges on device), and only the chip and tab rows scroll, bleeding off
-/// the right edge.
+/// D01, D02: log a drink, laid out like Add › Workout. TYPE (seven tiles
+/// and More… for every other drink and the user's own), SIZE (the drink's
+/// sizes and Custom with a stepper), CAFFEINE (Regular / Half / Decaf, for
+/// coffee and tea), the estimate, when, Add, and a Today row that opens the
+/// day's drinks. The volume drunk and the share counted toward water are
+/// kept apart.
 struct AddDrinkSheet: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.vessHaptics) private var haptics
@@ -27,17 +23,15 @@ struct AddDrinkSheet: View {
     @State private var editingSaved: SavedDrink?
     /// The amount to add: one of the drink's sizes, or a custom amount.
     @State private var volume: Double = DrinkPreset.water.selectedServing.milliliters
-    /// % by volume, for alcohol (the Strength row).
-    @State private var strength: Double = 0
+    @State private var showCustomSize = false
+    @State private var strength: CaffeineStrength = .regular
     @State private var time = AppClock.now
-    @State private var showStrength = false
-    @State private var showCustom = false
-    @State private var showCaffeine = false
-    @State private var editing: HydrationLog?
+    @State private var showTimePicker = false
+    @State private var showMore = false
+    @State private var showNewDrink = false
+    @State private var showToday = false
     @State private var showError = false
     @State private var hasLoaded = false
-    /// The day's drinks, folded away until asked for.
-    @State private var showToday = false
     /// The drink used last, and the size used last for each drink.
     @AppStorage("drink.lastPreset") private var lastPreset = DrinkPreset.water.rawValue
     @AppStorage("drink.lastSizes") private var lastSizes = ""
@@ -74,38 +68,46 @@ struct AddDrinkSheet: View {
                         VESSIconButton(systemImage: "xmark", label: "Close") { dismiss() }
                     }
                 }
-                // 1. What, 2. how much, 3. when, 4. Add; the day's drinks last.
-                DrinkTypeChips(
-                    selection: saved == nil ? preset : nil,
-                    saved: store.profile?.savedDrinks ?? [],
-                    savedSelection: saved?.id,
-                    onSelect: select,
-                    onSelectSaved: select,
-                    onEditSaved: { editingSaved = $0 },
-                    onDeleteSaved: deleteSaved,
-                    onCustom: { showCustom = true }
-                )
-                amount
-                DrinkCompactTimeRow(time: $time, range: DrinkTime.range(on: day, calendar: calendar))
+                section("Type") { typeTiles }
+                section("Size") { sizes }
+                if DrinkFacts.offersStrength(saved == nil ? preset : nil) {
+                    section("Caffeine") {
+                        VESSSegmented(selection: $strength, options: CaffeineStrength.allCases.map { ($0, $0.title) })
+                            .accessibilityIdentifier("addDrink.strength")
+                    }
+                }
+                VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                    estimateLine(logs)
+                    DrinkTimeRow(time: $time, isExpanded: $showTimePicker, range: DrinkTime.range(on: day, calendar: calendar))
+                }
                 addButton
-                todaySection(logs)
+                todayRow(logs)
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.xl)
         }
         .vessFoodUndoToast()
-        .navigationDestination(isPresented: $showCaffeine) {
-            CaffeineView(day: day)
+        .navigationDestination(isPresented: $showMore) {
+            MoreDrinksView(
+                selection: saved == nil ? preset : nil,
+                saved: store.profile?.savedDrinks ?? [],
+                savedSelection: saved?.id,
+                onSelect: { select($0); showMore = false },
+                onSelectSaved: { select($0); showMore = false },
+                onEditSaved: { editingSaved = $0 },
+                onDeleteSaved: deleteSaved,
+                onNew: { showNewDrink = true }
+            )
         }
-        .navigationDestination(isPresented: $showCustom) {
+        .navigationDestination(isPresented: $showNewDrink) {
             CustomDrinkView(day: day, preset: preset, volume: volume, time: time, onClose: { dismiss() })
         }
         .navigationDestination(item: $editingSaved) { drink in
             CustomDrinkView(editing: drink, day: day, onClose: { dismiss() })
         }
-        .sheet(item: $editing) { log in
-            EditDrinkSheet(log: log, day: day)
+        .navigationDestination(isPresented: $showToday) {
+            DrinksDayView(day: day)
         }
         .vessErrorAlert(isPresented: $showError, retry: add)
         .onAppear {
@@ -113,117 +115,111 @@ struct AddDrinkSheet: View {
             hasLoaded = true
             time = DrinkTime.defaultTime(on: day, calendar: calendar)
             // The drink and size used last.
-            if let last = DrinkPreset(rawValue: lastPreset), DrinkFacts.sheetPresets.contains(last) {
-                preset = last
-            }
+            if let last = DrinkPreset(rawValue: lastPreset) { preset = last }
             volume = DrinkFacts.rememberedSize(for: preset, in: lastSizes)
-            strength = preset.defaultPercentByVolume ?? 0
         }
     }
 
     // MARK: Sections
 
-    /// Size chips for the drink, a stepper, and live what counts.
-    private var amount: some View {
-        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            VESSSectionHeader(title: "Amount")
-            VESSChipFlow(spacing: VESSSpacing.xs) {
-                ForEach(saved.map { [$0.volumeMilliliters] } ?? DrinkFacts.sizes(for: preset), id: \.self) { size in
-                    VESSChip(title: "\(VESSFormat.milliliters(size)) ml", isSelected: volume == size) { setVolume(size) }
-                        .accessibilityIdentifier("addDrink.size.\(Int(size))")
-                }
+    private func section<Content: View>(_ title: LocalizedStringResource, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            VESSSectionHeader(title: title)
+            content()
+        }
+    }
+
+    /// Seven drinks and More…; More shows the drink chosen from its list.
+    private var typeTiles: some View {
+        LazyVGrid(columns: VESSPickTile.columns(for: dynamicTypeSize), spacing: VESSSpacing.xs) {
+            ForEach(DrinkFacts.sheetPresets, id: \.self) { option in
+                VESSPickTile(title: Text(DrinkFacts.chipTitle(option)), systemImage: option.symbol,
+                             isSelected: saved == nil && preset == option) { select(option) }
+                    .accessibilityIdentifier("addDrink.type.\(option.rawValue)")
             }
-            HStack(spacing: VESSSpacing.md) {
+            moreTile
+        }
+    }
+
+    private var moreTile: some View {
+        let fromList = saved != nil || !DrinkFacts.sheetPresets.contains(preset)
+        let title: Text = if let saved { Text(verbatim: saved.name) } else if fromList { Text(DrinkFacts.chipTitle(preset)) } else { Text("More") }
+        return VESSPickTile(title: title, systemImage: fromList ? (saved?.basedOn ?? preset).symbol : "ellipsis",
+                            isSelected: fromList) { showMore = true }
+            .accessibilityHint("Shows every drink")
+            .accessibilityIdentifier("addDrink.more")
+    }
+
+    /// The drink's sizes, then Custom (its amount when it isn't a size) with a stepper.
+    private var sizes: some View {
+        let options = saved.map { [$0.volumeMilliliters] } ?? DrinkFacts.sizes(for: preset)
+        let isCustom = showCustomSize || !options.contains(volume)
+        return VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            VESSChipFlow(spacing: VESSSpacing.xs) {
+                ForEach(options, id: \.self) { size in
+                    VESSChip(title: "\(DrinkFacts.sizeTitle(size, for: saved == nil ? preset : nil))", isSelected: !isCustom && volume == size) {
+                        showCustomSize = false
+                        setVolume(size)
+                    }
+                    .accessibilityIdentifier("addDrink.size.\(Int(size))")
+                }
+                VESSChip(title: options.contains(volume) ? "Custom" : "\(VESSFormat.milliliters(volume)) ml",
+                         isSelected: isCustom) {
+                    withAnimation(reduceMotion ? nil : VESSMotion.selection) { showCustomSize = true }
+                }
+                .accessibilityLabel(isCustom ? Text("Custom, \(VESSFormat.milliliters(volume)) ml") : Text("Custom"))
+                .accessibilityIdentifier("addDrink.custom")
+            }
+            if isCustom {
                 let step = DrinkFacts.step(for: preset)
-                VESSIconButton(systemImage: "minus", label: "Less") { setVolume(max(step, volume - step)) }
-                    .disabled(volume <= step)
-                VStack(spacing: 2) {
+                HStack(spacing: VESSSpacing.md) {
+                    VESSIconButton(systemImage: "minus", label: "Smaller amount") { setVolume(max(step, volume - step)) }
+                        .disabled(volume <= step)
                     Text("\(VESSFormat.milliliters(volume)) ml")
                         .vessTextStyle(.numberRow)
                         .foregroundStyle(VESSColor.text)
                         .contentTransition(.numericText())
-                    Text(countsLine)
-                        .vessTextStyle(.caption)
-                        .foregroundStyle(VESSColor.secondaryText)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity)
+                    VESSIconButton(systemImage: "plus", label: "Larger amount") { setVolume(min(CustomDrinkView.volumeRange.upperBound, volume + step)) }
+                        .disabled(volume >= CustomDrinkView.volumeRange.upperBound)
                 }
-                .frame(maxWidth: .infinity)
-                .accessibilityElement(children: .combine)
-                VESSIconButton(systemImage: "plus", label: "More") { setVolume(min(CustomDrinkView.volumeRange.upperBound, volume + step)) }
-            }
-            .vessHaptic(.selection, trigger: volume)
-        }
-    }
-
-    /// "counts as 24 ml water · 63 mg caffeine", live.
-    private var countsLine: String {
-        let water = VESSFormat.milliliters(volume * contributionPercent / 100)
-        let counts = String(localized: "counts as \(water) ml water")
-        guard caffeine >= 1 else { return counts }
-        return counts + " · " + String(localized: "\(VESSFormat.grams(caffeine)) mg caffeine")
-    }
-
-    /// "Today · 7 drinks · 1,03 L of water · 120 mg caffeine": collapsed,
-    /// opening the timeline and the list (tap to edit, swipe to delete).
-    @ViewBuilder
-    private func todaySection(_ logs: [HydrationLog]) -> some View {
-        let water = logs.reduce(0) { $0 + $1.hydrationMilliliters }
-        let caffeineToday = CaffeineModel.total(logs, on: day, calendar: calendar)
-        VStack(alignment: .leading, spacing: VESSSpacing.md) {
-            Button {
-                withAnimation(reduceMotion ? nil : VESSMotion.selection) { showToday.toggle() }
-            } label: {
-                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                    Text(todayTitle(count: logs.count, water: water, caffeine: caffeineToday))
-                        .vessTextStyle(.bodyM)
-                        .foregroundStyle(VESSColor.text)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer(minLength: VESSSpacing.sm)
-                    Image(systemName: showToday ? "chevron.up" : "chevron.down")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(VESSColor.tertiaryText)
-                        .accessibilityHidden(true)
-                }
-                .frame(minHeight: VESSHitTarget.minimum)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .vessHairlineBottom()
-            .disabled(logs.isEmpty)
-            .accessibilityHint(showToday ? "Hides the day's drinks" : "Shows the day's drinks")
-            .accessibilityIdentifier("addDrink.today")
-
-            if showToday, !logs.isEmpty {
-                HydrationTimeline(logs: logs, now: isToday ? AppClock.now : nil, calendar: calendar)
-                VESSRowGroup {
-                    ForEach(logs.sorted { $0.loggedAt > $1.loggedAt }) { log in
-                        VESSSwipeToDelete(background: VESSColor.card, onTap: { editing = log }, onDelete: { delete(log) }) {
-                            DrinkLogRow(log: log)
-                        }
-                        .accessibilityHint("Edit, or delete")
-                        .transition(.opacity)
-                    }
-                }
-                .vessListChanges(logs.map(\.id))
-                .vessHairlineBottom()
-                if caffeineToday >= 1 {
-                    Button("Caffeine today") { showCaffeine = true }
-                        .buttonStyle(.vessQuiet)
-                }
+                .vessHaptic(.selection, trigger: volume)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Amount")
+                .accessibilityValue(Text("\(VESSFormat.milliliters(volume)) ml"))
             }
         }
     }
 
-    private func todayTitle(count: Int, water: Double, caffeine: Double) -> String {
-        let start = isToday ? String(localized: "Today") : String(localized: "That day")
-        guard count > 0 else { return start + " · " + String(localized: "no drinks yet") }
-        // AttributedString resolves the plural ("1 drink", "4 drinks").
-        let drinks = String(AttributedString(localized: "^[\(count) drink](inflect: true)").characters)
-        var parts = [start, drinks,
-                     String(localized: "\(VESSFormat.liters(fromMilliliters: water)) L of water")]
-        if caffeine >= 1 { parts.append(String(localized: "\(VESSFormat.grams(caffeine)) mg caffeine")) }
-        return parts.joined(separator: " · ")
+    /// "330 ml · toward water · 1,9 of 2,5 L today", or for caffeine
+    /// "≈ 64 mg · caffeine · counts as 24 ml water · 128 of 400 mg today".
+    /// The day's totals include this drink.
+    private func estimateLine(_ logs: [HydrationLog]) -> some View {
+        let estimate = DrinkEstimate(
+            volume: volume, contributionPercent: contributionPercent, caffeine: caffeine,
+            alcoholGrams: currentDrink.alcoholGramsPer100Milliliters * volume / 100,
+            waterToday: logs.reduce(0) { $0 + $1.hydrationMilliliters },
+            waterTarget: store.profile?.waterTargetMilliliters ?? 0,
+            caffeineToday: CaffeineModel.total(logs, on: day, calendar: calendar)
+        )
+        // The caption wraps beside the number (D02); under it at accessibility sizes.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xxs))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: VESSSpacing.sm))
+        return layout {
+            Text(verbatim: estimate.value)
+                .vessTextStyle(.displayM)
+                .foregroundStyle(VESSColor.text)
+                .contentTransition(.numericText())
+                .fixedSize()
+            Text(verbatim: estimate.context)
+                .vessTextStyle(.bodyS)
+                .foregroundStyle(VESSColor.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("addDrink.estimate")
     }
 
     /// "Add espresso · 30 ml".
@@ -235,15 +231,24 @@ struct AddDrinkSheet: View {
         .accessibilityIdentifier("addDrink.submit")
     }
 
+    /// "Today · 4 drinks · 1,6 L of water · 64 mg caffeine ›": opens the
+    /// timeline and the list.
+    private func todayRow(_ logs: [HydrationLog]) -> some View {
+        Button { showToday = true } label: {
+            VESSListRow(systemImage: "chart.bar",
+                        title: isToday ? Text("Today") : Text("That day"),
+                        subtitle: Text(verbatim: DrinkFacts.daySummary(logs, on: day, calendar: calendar)))
+        }
+        .buttonStyle(.plain)
+        .vessHairlineBottom()
+        .disabled(logs.isEmpty)
+        .accessibilityIdentifier("addDrink.today")
+    }
+
     // MARK: Values
 
     private var isToday: Bool {
         calendar.isDate(day, inSameDayAs: AppClock.now)
-    }
-
-    private func summary(_ logs: [HydrationLog]) -> HydrationProgress? {
-        guard let profile = store.profile else { return nil }
-        return HydrationProgress(logs: logs, targetMilliliters: profile.waterTargetMilliliters, day: day, calendar: calendar)
     }
 
     private var contributionPercent: Double {
@@ -253,11 +258,15 @@ struct AddDrinkSheet: View {
     private var currentDrink: Drink {
         // A saved drink: its own caffeine per 100 ml, whatever the amount.
         if let saved { return saved.drink() }
-        return preset.drink(
+        var drink = preset.drink(
             name: String(localized: preset.title),
             hydrationContributionPercent: contributionPercent,
-            percentByVolume: preset.defaultPercentByVolume == nil ? nil : strength
+            percentByVolume: preset.defaultPercentByVolume
         )
+        if DrinkFacts.offersStrength(preset) {
+            drink.caffeineMilligramsPer100Milliliters *= strength.factor
+        }
+        return drink
     }
 
     /// Caffeine in the chosen amount, mg.
@@ -271,7 +280,8 @@ struct AddDrinkSheet: View {
         saved = drink
         preset = drink.basedOn
         volume = drink.volumeMilliliters
-        strength = 0
+        showCustomSize = false
+        strength = .regular
     }
 
     private func deleteSaved(_ drink: SavedDrink) {
@@ -285,8 +295,8 @@ struct AddDrinkSheet: View {
         saved = nil
         preset = option
         volume = DrinkFacts.rememberedSize(for: option, in: lastSizes)
-        strength = option.defaultPercentByVolume ?? 0
-        showStrength = false
+        showCustomSize = false
+        strength = .regular
     }
 
     private func setVolume(_ value: Double) {
@@ -310,6 +320,181 @@ struct AddDrinkSheet: View {
             showError = true
         }
     }
+}
+
+/// What the estimate line says (D01, D02). Pure, for tests.
+struct DrinkEstimate {
+    let volume: Double
+    let contributionPercent: Double
+    let caffeine: Double
+    let alcoholGrams: Double
+    /// Before this drink.
+    let waterToday: Double
+    let waterTarget: Double
+    /// Before this drink.
+    let caffeineToday: Double
+
+    private var counted: Double { volume * contributionPercent / 100 }
+
+    /// "330 ml", or "≈ 64 mg" for a caffeinated drink.
+    var value: String {
+        caffeine >= 1 ? "≈ \(VESSFormat.grams(caffeine)) mg" : "\(VESSFormat.milliliters(volume)) ml"
+    }
+
+    var context: String {
+        let water = String(localized: "\(VESSFormat.liters(fromMilliliters: waterToday + counted)) of \(VESSFormat.liters(fromMilliliters: waterTarget)) L today")
+        if caffeine >= 1 {
+            return [String(localized: "caffeine"),
+                    String(localized: "counts as \(VESSFormat.milliliters(counted)) ml water"),
+                    String(localized: "\(VESSFormat.grams(caffeineToday + caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams)) mg today")]
+                .joined(separator: " · ")
+        }
+        if alcoholGrams > 0 {
+            let drinks = VESSFormat.quantity(StandardDrink.count(alcoholGrams: alcoholGrams))
+            let count = drinks == VESSFormat.quantity(1) ? String(localized: "1 drink") : String(localized: "\(drinks) drinks")
+            return count + " · " + String(localized: "doesn't count toward water")
+        }
+        let share = contributionPercent >= 100
+            ? String(localized: "toward water")
+            : String(localized: "counts as \(VESSFormat.milliliters(counted)) ml water")
+        return waterTarget > 0 ? share + " · " + water : share
+    }
+}
+
+/// More… (D01): every other drink, the user's own, and New drink.
+private struct MoreDrinksView: View {
+    let selection: DrinkPreset?
+    let saved: [SavedDrink]
+    let savedSelection: UUID?
+    let onSelect: (DrinkPreset) -> Void
+    let onSelectSaved: (SavedDrink) -> Void
+    let onEditSaved: (SavedDrink) -> Void
+    let onDeleteSaved: (SavedDrink) -> Void
+    let onNew: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: VESSSpacing.section) {
+                if !saved.isEmpty {
+                    group("Your drinks") {
+                        ForEach(saved) { drink in
+                            Button { onSelectSaved(drink) } label: {
+                                row(symbol: drink.basedOn.symbol, title: Text(verbatim: drink.name),
+                                    subtitle: Text("\(VESSFormat.milliliters(drink.volumeMilliliters)) ml"),
+                                    isSelected: drink.id == savedSelection)
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu {
+                                Button("Edit", systemImage: "pencil") { onEditSaved(drink) }
+                                Button("Delete", systemImage: "trash", role: .destructive) { onDeleteSaved(drink) }
+                            }
+                            .accessibilityAction(named: "Edit") { onEditSaved(drink) }
+                            .accessibilityAction(named: "Delete") { onDeleteSaved(drink) }
+                            .accessibilityIdentifier("addDrink.saved")
+                        }
+                    }
+                }
+                ForEach(DrinkFacts.moreSections, id: \.title.key) { section in
+                    group(section.title) {
+                        ForEach(section.presets, id: \.self) { option in
+                            Button { onSelect(option) } label: {
+                                row(symbol: option.symbol, title: Text(option.title), subtitle: nil, isSelected: option == selection)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("addDrink.drink.\(option.rawValue)")
+                        }
+                    }
+                }
+                VESSRowGroup {
+                    Button(action: onNew) {
+                        VESSListRow(systemImage: "plus", title: Text("New drink"), subtitle: Text("Your own amount, caffeine and kcal"))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("addDrink.new")
+                }
+                .vessHairlineBottom()
+            }
+            .padding(.horizontal, VESSSpacing.screenInset)
+            .vessContentTop(VESSSpacing.md)
+            .padding(.bottom, VESSSpacing.huge)
+        }
+        .background(VESSColor.card)
+        .vessDetailTitle("Drinks")
+    }
+
+    private func group<Content: View>(_ title: LocalizedStringResource, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+            VESSSectionHeader(title: title)
+            VESSRowGroup { content() }
+                .vessHairlineBottom()
+        }
+    }
+
+    private func row(symbol: String, title: Text, subtitle: Text?, isSelected: Bool) -> some View {
+        VESSListRow(systemImage: symbol, title: title, subtitle: subtitle, showsChevron: false) {
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(VESSColor.text)
+                    .accessibilityHidden(true)
+            }
+        }
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+}
+
+/// Today's drinks (from the Today row): the timeline, the list (tap to
+/// edit, swipe to delete) and Caffeine today.
+private struct DrinksDayView: View {
+    let day: Date
+
+    @Environment(LocalStore.self) private var store
+    @Environment(FoodLogUndo.self) private var undo
+    @State private var editing: HydrationLog?
+    @State private var showCaffeine = false
+    @State private var showError = false
+
+    private let calendar = Calendar.current
+
+    var body: some View {
+        let logs = store.hydrationLogs(on: day, calendar: calendar)
+        let isToday = calendar.isDate(day, inSameDayAs: AppClock.now)
+        ScrollView {
+            VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                Text(verbatim: DrinkFacts.daySummary(logs, on: day, calendar: calendar))
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !logs.isEmpty {
+                    HydrationTimeline(logs: logs, now: isToday ? AppClock.now : nil, calendar: calendar)
+                    VESSRowGroup {
+                        ForEach(logs.sorted { $0.loggedAt > $1.loggedAt }) { log in
+                            VESSSwipeToDelete(background: VESSColor.card, onTap: { editing = log }, onDelete: { delete(log) }) {
+                                DrinkLogRow(log: log)
+                            }
+                            .accessibilityHint("Edit, or delete")
+                            .transition(.opacity)
+                        }
+                    }
+                    .vessListChanges(logs.map(\.id))
+                    .vessHairlineBottom()
+                }
+                if CaffeineModel.total(logs, on: day, calendar: calendar) >= 1 {
+                    Button("Caffeine today") { showCaffeine = true }
+                        .buttonStyle(.vessQuiet)
+                }
+            }
+            .padding(.horizontal, VESSSpacing.screenInset)
+            .vessContentTop(VESSSpacing.md)
+            .padding(.bottom, VESSSpacing.huge)
+        }
+        .background(VESSColor.card)
+        .vessDetailTitle(isToday ? "Today's drinks" : "That day's drinks")
+        .vessFoodUndoToast()
+        .navigationDestination(isPresented: $showCaffeine) { CaffeineView(day: day) }
+        .sheet(item: $editing) { log in EditDrinkSheet(log: log, day: day) }
+        .vessErrorAlert(isPresented: $showError)
+    }
 
     private func delete(_ log: HydrationLog) {
         do {
@@ -320,95 +505,6 @@ struct AddDrinkSheet: View {
         } catch {
             showError = true
         }
-    }
-}
-
-/// The drink row: Water, Sparkling, Espresso, Coffee, Tea, Milk, Juice,
-/// Smoothie as icon chips, then Custom… for any other drink (alcohol
-/// included). Scrolls off the right edge.
-struct DrinkTypeChips: View {
-    /// `nil` while a saved drink is chosen.
-    let selection: DrinkPreset?
-    var saved: [SavedDrink] = []
-    var savedSelection: UUID?
-    let onSelect: (DrinkPreset) -> Void
-    var onSelectSaved: (SavedDrink) -> Void = { _ in }
-    var onEditSaved: (SavedDrink) -> Void = { _ in }
-    var onDeleteSaved: (SavedDrink) -> Void = { _ in }
-    let onCustom: () -> Void
-
-    var body: some View {
-        ScrollViewReader { proxy in
-            VESSBleedingRow {
-                HStack(spacing: VESSSpacing.xs) {
-                    ForEach(DrinkFacts.sheetPresets, id: \.self) { option in
-                        let isSelected = option == selection
-                        Button { onSelect(option) } label: {
-                            Label {
-                                Text(DrinkFacts.chipTitle(option))
-                            } icon: {
-                                Image(systemName: option.symbol)
-                                    .foregroundStyle(isSelected ? VESSColor.water : VESSColor.secondaryText)
-                            }
-                            .vessTextStyle(.bodyS)
-                            .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
-                            .padding(.horizontal, VESSSpacing.sm + 2)
-                            .frame(minHeight: VESSHitTarget.minimum)
-                            .background(isSelected ? VESSColor.tintWater : VESSColor.fill, in: Capsule())
-                            .overlay(Capsule().strokeBorder(isSelected ? VESSColor.strokeWater : VESSColor.divider))
-                            .fixedSize()
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-                        .accessibilityIdentifier("addDrink.type.\(option.rawValue)")
-                        .id(option)
-                    }
-                    // The user's own drinks; long-press to edit or delete.
-                    ForEach(saved) { drink in
-                        chip(Text(verbatim: drink.name), symbol: drink.basedOn.symbol, isSelected: drink.id == savedSelection) { onSelectSaved(drink) }
-                            .contextMenu {
-                                Button("Edit", systemImage: "pencil") { onEditSaved(drink) }
-                                Button("Delete", systemImage: "trash", role: .destructive) { onDeleteSaved(drink) }
-                            }
-                            .accessibilityIdentifier("addDrink.saved")
-                    }
-                    Button(action: onCustom) {
-                        Label("Custom…", systemImage: "slider.horizontal.3")
-                            .vessTextStyle(.bodyS)
-                            .foregroundStyle(VESSColor.secondaryText)
-                            .padding(.horizontal, VESSSpacing.sm + 2)
-                            .frame(minHeight: VESSHitTarget.minimum)
-                            .background(VESSColor.fill, in: Capsule())
-                            .overlay(Capsule().strokeBorder(VESSColor.divider))
-                            .fixedSize()
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("addDrink.custom")
-                }
-            }
-            .vessHaptic(.selection, trigger: selection)
-            .onAppear { if let selection { proxy.scrollTo(selection) } }
-        }
-    }
-
-    private func chip(_ title: Text, symbol: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label {
-                title
-            } icon: {
-                Image(systemName: symbol)
-                    .foregroundStyle(isSelected ? VESSColor.water : VESSColor.secondaryText)
-            }
-            .vessTextStyle(.bodyS)
-            .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
-            .padding(.horizontal, VESSSpacing.sm + 2)
-            .frame(minHeight: VESSHitTarget.minimum)
-            .background(isSelected ? VESSColor.tintWater : VESSColor.fill, in: Capsule())
-            .overlay(Capsule().strokeBorder(isSelected ? VESSColor.strokeWater : VESSColor.divider))
-            .fixedSize()
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
 
@@ -490,52 +586,41 @@ private struct DrinkTabs: View {
     }
 }
 
-/// "Time · Now · 20:22" with a compact time picker (19).
-private struct DrinkCompactTimeRow: View {
-    @Binding var time: Date
-    let range: ClosedRange<Date>
-
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    var body: some View {
-        // At accessibility sizes the picker goes under the label, so
-        // "Time" and "Now" never break mid-word.
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xs))
-            : AnyLayout(HStackLayout(spacing: VESSSpacing.xs))
-        layout {
-            Text("Time")
-                .vessTextStyle(.bodyM)
-                .foregroundStyle(VESSColor.text)
-                .fixedSize()
-            if !dynamicTypeSize.isAccessibilitySize {
-                Spacer(minLength: VESSSpacing.sm)
-            }
-            HStack(spacing: VESSSpacing.xs) {
-                if abs(time.timeIntervalSince(AppClock.now)) < 60 {
-                    Text("Now")
-                        .vessTextStyle(.bodyM)
-                        .foregroundStyle(VESSColor.secondaryText)
-                        .fixedSize()
-                }
-                DatePicker("Time", selection: $time, in: range, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    .tint(VESSColor.text)
-            }
-        }
-        .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? VESSSpacing.sm : 0)
-        .frame(minHeight: VESSSize.rowHeight)
-        .vessHairlineBottom()
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("addDrink.time")
-    }
-}
-
 /// What VESS says about a drink: its share toward water and its typical values.
 enum DrinkFacts {
-    /// The drinks offered as chips, in order; the rest are under Custom….
-    static let sheetPresets: [DrinkPreset] = [.water, .sparklingWater, .espresso, .blackCoffee, .tea, .milk, .juice, .smoothie]
+    /// The drinks offered as tiles, in order; the rest are under More….
+    static let sheetPresets: [DrinkPreset] = [.water, .sparklingWater, .blackCoffee, .espresso, .tea, .milk, .juice]
+
+    /// More…: every other drink, by kind.
+    static var moreSections: [(title: LocalizedStringResource, presets: [DrinkPreset])] {
+        let rest = { (category: DrinkCategory) in category.presets.filter { !sheetPresets.contains($0) } }
+        return [("Coffee and tea", rest(.coffee) + rest(.tea)), ("Other", rest(.other)), ("Alcohol", rest(.alcohol))]
+    }
+
+    /// Regular / Half / Decaf for coffee and tea with caffeine (not decaf itself).
+    static func offersStrength(_ preset: DrinkPreset?) -> Bool {
+        guard let preset, preset != .decaf else { return false }
+        return (preset.type == .coffee || preset.type == .tea) && preset.caffeineMilligramsPer100Milliliters > 0
+    }
+
+    /// "250 ml"; espresso names its shots: "Single · 30 ml".
+    static func sizeTitle(_ size: Double, for preset: DrinkPreset?) -> String {
+        let amount = "\(VESSFormat.milliliters(size)) ml"
+        guard preset == .espresso, let serving = DrinkPreset.espresso.servings.first(where: { $0.milliliters == size }) else { return amount }
+        return String(localized: serving.name.title) + " · " + amount
+    }
+
+    /// "4 drinks · 1,6 L of water · 64 mg caffeine", or "No drinks yet".
+    static func daySummary(_ logs: [HydrationLog], on day: Date, calendar: Calendar) -> String {
+        guard !logs.isEmpty else { return String(localized: "No drinks yet") }
+        // AttributedString resolves the plural ("1 drink", "4 drinks").
+        let drinks = String(AttributedString(localized: "^[\(logs.count) drink](inflect: true)").characters)
+        let water = logs.reduce(0) { $0 + $1.hydrationMilliliters }
+        var parts = [drinks, String(localized: "\(VESSFormat.liters(fromMilliliters: water)) L of water")]
+        let caffeine = CaffeineModel.total(logs, on: day, calendar: calendar)
+        if caffeine >= 1 { parts.append(String(localized: "\(VESSFormat.grams(caffeine)) mg caffeine")) }
+        return parts.joined(separator: " · ")
+    }
 
     static func chipTitle(_ preset: DrinkPreset) -> LocalizedStringResource {
         switch preset {
@@ -546,11 +631,11 @@ enum DrinkFacts {
         }
     }
 
-    /// The size chips: Espresso 30/60, Coffee 150/250/350, Water
+    /// The size chips: Espresso single/double/lungo, Coffee 150/250/350, Water
     /// 250/330/500/750; otherwise the drink's three sizes.
     static func sizes(for preset: DrinkPreset) -> [Double] {
         switch preset {
-        case .espresso: [30, 60]
+        case .espresso: DrinkPreset.espresso.servings.map(\.milliliters)
         case .blackCoffee: [150, 250, 350]
         case .water, .sparklingWater: [250, 330, 500, 750]
         default: preset.servings.map(\.milliliters)

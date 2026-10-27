@@ -107,15 +107,12 @@ struct AddWorkoutView: View {
         }
     }
 
-    /// Four across; three from the xxLarge text size; two at accessibility sizes.
     private var typeCards: some View {
-        let count = dynamicTypeSize.isAccessibilitySize ? 2 : (dynamicTypeSize > .xLarge ? 3 : 4)
-        let columns = Array(repeating: GridItem(.flexible(), spacing: VESSSpacing.xs), count: count)
-        return LazyVGrid(columns: columns, spacing: VESSSpacing.xs) {
+        LazyVGrid(columns: VESSPickTile.columns(for: dynamicTypeSize), spacing: VESSSpacing.xs) {
             ForEach(WorkoutType.enterable, id: \.self) { option in
-                WorkoutTypeCard(
-                    title: option == .other ? "Other" : option.title,
-                    symbol: option.symbol,
+                VESSPickTile(
+                    title: Text(option == .other ? "Other" : option.title),
+                    systemImage: option.symbol,
                     isSelected: type == option
                 ) { type = option }
                 .accessibilityIdentifier("addWorkout.type.\(option.rawValue)")
@@ -211,49 +208,6 @@ struct AddWorkoutView: View {
         } catch {
             showError = true
         }
-    }
-}
-
-/// A workout type: outline symbol over its name. The selected card is
-/// raised and outlined in greyscale (a choice, not data).
-private struct WorkoutTypeCard: View {
-    let title: LocalizedStringResource
-    let symbol: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    /// One height for every symbol, so names line up across cards.
-    @ScaledMetric(relativeTo: .title3) private var iconHeight: CGFloat = 26
-
-    private var shape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: VESSRadius.thumbnail, style: .continuous)
-    }
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: VESSSpacing.xs) {
-                Image(systemName: symbol)
-                    .font(.title3)
-                    .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
-                    .frame(height: iconHeight)
-                    .accessibilityHidden(true)
-                Text(title)
-                    .vessTextStyle(.bodyS)
-                    .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-            }
-            .padding(.vertical, VESSSpacing.md)
-            .padding(.horizontal, VESSSpacing.xs)
-            .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
-            .background(isSelected ? VESSColor.borderStrong : VESSColor.fill, in: shape)
-            .overlay(shape.strokeBorder(isSelected ? VESSColor.secondaryText : VESSColor.divider, lineWidth: 1))
-            .contentShape(shape)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(title))
-        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .vessHaptic(.selection, trigger: isSelected)
     }
 }
 

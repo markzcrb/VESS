@@ -73,7 +73,9 @@ struct AddSheet: View {
                     .transition(swapTransition)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
+            // Clips the paging sideways only: content still scrolls under
+            // the home indicator instead of stopping above it.
+            .mask(Rectangle().ignoresSafeArea(edges: .bottom))
             // One canvas for every type: their own backgrounds stand down.
             .background(VESSColor.background)
             .environment(\.vessInAddSheet, true)
