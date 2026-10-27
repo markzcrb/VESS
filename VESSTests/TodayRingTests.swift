@@ -8,12 +8,12 @@ struct TodayRingTests {
     func defaultForExistingUsers() throws {
         let profile = MockData(now: .now, calendar: TestClock.utc).profile
         #expect(profile.todayRings == nil)
-        #expect(profile.todayRingList == [.fuel, .energy, .protein, .water, .steps])
+        #expect(profile.todayRingList(on: .now, calendar: TestClock.utc) == [.fuel, .energy, .protein, .water, .steps])
         // A stored profile without the key decodes and still gets the default.
         var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(profile)) as? [String: Any] ?? [:]
         json.removeValue(forKey: "todayRings")
         let decoded = try JSONDecoder().decode(UserProfile.self, from: JSONSerialization.data(withJSONObject: json))
-        #expect(decoded.todayRingList == TodayRingRules.defaultRings)
+        #expect(decoded.todayRingList(on: .now, calendar: TestClock.utc) == TodayRingRules.defaultRings)
     }
 
     @Test("The stored order is kept; unknown and repeated rings are dropped; at most 12; empty is the default")
@@ -29,6 +29,37 @@ struct TodayRingTests {
         #expect(!TodayRingRules.available(cycleTrackingOn: false).contains(.cycleDay))
         #expect(TodayRingRules.available(cycleTrackingOn: true).contains(.cycleDay))
         #expect(TodayRingRules.rings(stored: ["cycleDay", "water"], cycleTrackingOn: false) == [.water])
+    }
+
+    @Test("BMI is offered and shown only where H04 shows it; it reads 1 decimal with the 18.5–25 band; Weight moves toward the goal")
+    func bodyRings() throws {
+        let now = try TestClock.date(2026, 10, 6, 18, 40)
+        let data = MockData(now: now, calendar: TestClock.utc)
+        var profile = data.profile
+        profile.todayRings = ["bmi", "weight"]
+        #expect(profile.todayRingList(on: now, calendar: TestClock.utc) == [.bmi, .weight])
+        var teen = profile
+        teen.dateOfBirth = TestClock.utc.date(byAdding: .year, value: -17, to: now)
+        #expect(teen.todayRingList(on: now, calendar: TestClock.utc) == [.weight], "Hidden under 18")
+        var pregnant = profile
+        pregnant.sex = .female
+        pregnant.isPregnant = true
+        #expect(pregnant.todayRingList(on: now, calendar: TestClock.utc) == [.weight], "Hidden during pregnancy")
+        #expect(!TodayRingRules.available(cycleTrackingOn: false, showsBMI: false).contains(.bmi))
+
+        profile.goalWeightKilograms = 76
+        let summary = DaySummary(entries: [], hydrationLogs: [], targets: profile.nutritionTargets,
+                                 waterTargetMilliliters: profile.waterTargetMilliliters, day: now, now: now, calendar: TestClock.utc)
+        let readings = TodayRingReading.readings([.bmi, .weight], input: .init(
+            profile: profile, summary: summary, fuel: nil, snapshot: data.health, caffeineMilligrams: 0,
+            habitsDone: 0, habitsListed: 0, cycleDay: nil, cycleLength: nil, now: now, calendar: TestClock.utc
+        ))
+        let bmi = 78.4 / (1.8 * 1.8)
+        #expect(readings[0].value == bmi.formatted(.number.precision(.fractionLength(1))))
+        #expect(abs(readings[0].progress - (bmi - 15) / 20) < 0.001)
+        #expect(readings[0].band == (3.5 / 20)...(10.0 / 20))
+        // 79.0 twelve weeks ago, 78.4 now, goal 76: 0.6 of 3.0.
+        #expect(readings[1].value == VESSFormat.quantity(78.4) && abs(readings[1].progress - 0.2) < 0.001)
     }
 
     @Test("At least 1 ring and at most 12")

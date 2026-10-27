@@ -451,6 +451,9 @@
     "%@ kilocalories" : {
 
     },
+    "%@ kilograms" : {
+
+    },
     "%@ km" : {
 
     },
@@ -2037,10 +2040,16 @@
     "Bloating" : {
 
     },
+    "BMI" : {
+
+    },
     "BMI · %@ kg" : {
 
     },
     "BMI · 12 weeks" : {
+
+    },
+    "BMI %@" : {
 
     },
     "BMI is your weight in kilograms divided by your height in metres, squared. The ranges are the WHO's adult ranges." : {
@@ -2102,9 +2111,6 @@
       }
     },
     "Caffeine" : {
-
-    },
-    "Caffeine (vs the limit)" : {
 
     },
     "Calculated" : {
@@ -2458,6 +2464,9 @@
     "Day %lld" : {
 
     },
+    "day of your cycle" : {
+
+    },
     "Day shows what you've logged today. Week and Month show daily averages over the days with at least one meal logged." : {
 
     },
@@ -2603,6 +2612,9 @@
     "Done shopping · store ^[%lld item](inflect: true)" : {
 
     },
+    "done today" : {
+
+    },
     "Done, from your log" : {
 
     },
@@ -2714,9 +2726,6 @@
     "Energy" : {
 
     },
-    "Energy (kcal)" : {
-
-    },
     "Energy drink" : {
 
     },
@@ -2780,6 +2789,9 @@
 
     },
     "Espresso" : {
+
+    },
+    "estimate" : {
 
     },
     "Estimate" : {
@@ -3162,9 +3174,6 @@
     "Habits" : {
 
     },
-    "Habits (done today)" : {
-
-    },
     "Habits today" : {
 
     },
@@ -3395,6 +3404,9 @@
     "In your system" : {
 
     },
+    "in your usual range" : {
+
+    },
     "In your usual range" : {
 
     },
@@ -3491,6 +3503,9 @@
     "kcal per portion" : {
 
     },
+    "kcal vs your target" : {
+
+    },
     "Keep data on this iPhone" : {
 
     },
@@ -3579,6 +3594,9 @@
 
     },
     "Last night is your main sleep that ended between 03:00 and 14:00 today. Naps don't count." : {
+
+    },
+    "last night vs target" : {
 
     },
     "Last sync" : {
@@ -4346,6 +4364,9 @@
         }
       }
     },
+    "on the 15–35 scale" : {
+
+    },
     "On this habit's days, only if it isn't done. Never between 22:00 and 07:00." : {
 
     },
@@ -4622,6 +4643,9 @@
 
     },
     "Products you've looked up before also work offline." : {
+
+    },
+    "progress to your goal" : {
 
     },
     "protein" : {
@@ -5077,9 +5101,6 @@
     "Sleep" : {
 
     },
-    "Sleep (last night vs target)" : {
-
-    },
     "Sleep analysis" : {
 
     },
@@ -5274,9 +5295,6 @@
 
     },
     "Stress" : {
-
-    },
-    "Stress (estimate)" : {
 
     },
     "Stronger" : {
@@ -5618,6 +5636,9 @@
     "Today's caffeine" : {
 
     },
+    "today's summary" : {
+
+    },
     "tomorrow" : {
 
     },
@@ -5915,6 +5936,24 @@
 
     },
     "Vitamins" : {
+
+    },
+    "vs 30 g a day" : {
+
+    },
+    "vs your 7-day average" : {
+
+    },
+    "vs your 30-day average" : {
+
+    },
+    "vs your goal" : {
+
+    },
+    "vs your limit" : {
+
+    },
+    "vs your target" : {
 
     },
     "Waist" : {

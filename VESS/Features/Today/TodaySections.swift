@@ -82,7 +82,7 @@ struct TodayMetricStrip: View {
                     ForEach(readings) { reading in
                         Button { onOpen(reading.ring) } label: {
                             VESSMetricStripItem(value: reading.value, label: reading.ring.shortTitle, progress: reading.progress,
-                                                metric: reading.ring.metric, spokenValue: reading.spoken)
+                                                metric: reading.ring.metric, spokenValue: reading.spoken, band: reading.band)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)

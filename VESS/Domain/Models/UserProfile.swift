@@ -55,8 +55,10 @@ nonisolated struct UserProfile: Identifiable, Codable, Hashable, Sendable {
     /// counts as maintaining. The stored goal comes back when Pregnant is off.
     var effectiveGoal: WellnessGoal { pregnant && goal == .loseWeight ? .maintainWeight : goal }
     var dailySleepTargetMinutes: Int { sleepTargetMinutes ?? Self.defaultSleepTargetMinutes }
-    /// The rings to show, in the user's order.
-    var todayRingList: [TodayRing] { TodayRingRules.rings(stored: todayRings, cycleTrackingOn: isCycleTrackingOn) }
+    /// The rings to show, in the user's order (BMI only where H04 shows it).
+    func todayRingList(on now: Date, calendar: Calendar) -> [TodayRing] {
+        TodayRingRules.rings(stored: todayRings, cycleTrackingOn: isCycleTrackingOn, showsBMI: BodyRules.showsBMI(profile: self, now: now, calendar: calendar))
+    }
 
     static let defaultStepsTarget = 8_000
 

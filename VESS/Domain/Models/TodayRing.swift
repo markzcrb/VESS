@@ -4,7 +4,7 @@ import Foundation
 nonisolated enum TodayRing: String, CaseIterable, Codable, Sendable {
     case fuel, energy, protein, carbs, fat, fiber, water, caffeine
     case steps, activeEnergy
-    case sleep, restingHeartRate, hrv, cycleDay
+    case sleep, restingHeartRate, hrv, cycleDay, bmi, weight
     case stress, habits
 
     /// The groups of the Edit rings sheet's Add list.
@@ -16,7 +16,7 @@ nonisolated enum TodayRing: String, CaseIterable, Codable, Sendable {
         switch self {
         case .fuel, .energy, .protein, .carbs, .fat, .fiber, .water, .caffeine: .nutrition
         case .steps, .activeEnergy: .activity
-        case .sleep, .restingHeartRate, .hrv, .cycleDay: .body
+        case .sleep, .restingHeartRate, .hrv, .cycleDay, .bmi, .weight: .body
         case .stress, .habits: .mind
         }
     }
@@ -39,20 +39,29 @@ nonisolated enum TodayRingRules {
     /// guideline (DGE), used for the Fiber ring only.
     static let fiberTargetGrams = 30.0
 
-    /// Rings that can be chosen; Cycle day only while cycle tracking is on.
-    static func available(cycleTrackingOn: Bool) -> [TodayRing] {
-        TodayRing.allCases.filter { $0 != .cycleDay || cycleTrackingOn }
+    /// Rings that can be chosen: Cycle day only while cycle tracking is on,
+    /// BMI only where H04 shows it (adults, not during pregnancy).
+    static func available(cycleTrackingOn: Bool, showsBMI: Bool = true) -> [TodayRing] {
+        TodayRing.allCases.filter { isAvailable($0, cycleTrackingOn: cycleTrackingOn, showsBMI: showsBMI) }
+    }
+
+    private static func isAvailable(_ ring: TodayRing, cycleTrackingOn: Bool, showsBMI: Bool) -> Bool {
+        switch ring {
+        case .cycleDay: cycleTrackingOn
+        case .bmi: showsBMI
+        default: true
+        }
     }
 
     /// The stored choice made safe to show: unknown or repeated rings and
     /// Cycle day (while tracking is off) dropped, at most 12, and the
     /// default when nothing is left. `nil` (every profile from before) is
     /// the default.
-    static func rings(stored: [String]?, cycleTrackingOn: Bool) -> [TodayRing] {
+    static func rings(stored: [String]?, cycleTrackingOn: Bool, showsBMI: Bool = true) -> [TodayRing] {
         guard let stored else { return defaultRings }
         var seen: Set<TodayRing> = []
         let rings = stored.compactMap(TodayRing.init(rawValue:)).filter { ring in
-            guard ring != .cycleDay || cycleTrackingOn else { return false }
+            guard isAvailable(ring, cycleTrackingOn: cycleTrackingOn, showsBMI: showsBMI) else { return false }
             return seen.insert(ring).inserted
         }
         return rings.isEmpty ? defaultRings : Array(rings.prefix(maximum))

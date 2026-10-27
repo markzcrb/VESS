@@ -155,6 +155,8 @@ struct VESSMetricStripItem: View {
     /// What VoiceOver reads instead of the bare number, such as
     /// "77 percent of target".
     var spokenValue: Text?
+    /// A range marked on the track, 0…1 (BMI's 18.5–25 band).
+    var band: ClosedRange<Double>? = nil
 
     @ScaledMetric(relativeTo: .body) private var scaledDiameter = VESSSize.stripRing
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -175,11 +177,17 @@ struct VESSMetricStripItem: View {
 
         layout {
             ZStack {
-                VESSRingShape(
-                    progress: shown,
-                    tint: metric.tint,
-                    lineWidth: VESSRing.lineWidth(diameter: diameter, innerRadiusRatio: 0.88)
-                )
+                let lineWidth = VESSRing.lineWidth(diameter: diameter, innerRadiusRatio: 0.88)
+                VESSRingShape(progress: shown, tint: metric.tint, lineWidth: lineWidth)
+                if let band {
+                    // Under the value: a faint segment of the track.
+                    Circle()
+                        .inset(by: lineWidth / 2)
+                        .trim(from: band.lowerBound, to: band.upperBound)
+                        .stroke(VESSColor.statusOptimal.opacity(0.45), style: StrokeStyle(lineWidth: lineWidth / 3, lineCap: .butt))
+                        .rotationEffect(.degrees(-90))
+                        .accessibilityHidden(true)
+                }
                 Text(verbatim: value)
                     .vessTextStyle(.numberS)
                     .foregroundStyle(VESSColor.text)

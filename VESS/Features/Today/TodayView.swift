@@ -191,7 +191,7 @@ struct TodayView: View {
     // MARK: Rings
 
     private func ringReadings(profile: UserProfile, summary: DaySummary, fuel: FuelScore?, drinks: [HydrationLog], now: Date) -> [TodayRingReading] {
-        let rings = profile.todayRingList
+        let rings = profile.todayRingList(on: now, calendar: calendar)
         var habitsDone = 0
         var habitsListed = 0
         if rings.contains(.habits) {
@@ -239,6 +239,7 @@ struct TodayView: View {
         case .stress: StressView()
         case .habits: HabitsView()
         case .cycleDay: CycleView()
+        case .bmi, .weight: BodyView()
         }
     }
 

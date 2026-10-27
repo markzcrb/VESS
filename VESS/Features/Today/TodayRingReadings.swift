@@ -20,6 +20,8 @@ extension TodayRing {
         case .stress: "Stress"
         case .habits: "Habits"
         case .cycleDay: "Cycle"
+        case .bmi: "BMI"
+        case .weight: "Weight"
         }
     }
 
@@ -27,28 +29,51 @@ extension TodayRing {
     var title: LocalizedStringResource {
         switch self {
         case .fuel: "Fuel"
-        case .energy: "Energy (kcal)"
+        case .energy: "Energy"
         case .protein: "Protein"
         case .carbs: "Carbs"
         case .fat: "Fat"
         case .fiber: "Fibre"
         case .water: "Water"
-        case .caffeine: "Caffeine (vs the limit)"
+        case .caffeine: "Caffeine"
         case .steps: "Steps"
         case .activeEnergy: "Active energy"
-        case .sleep: "Sleep (last night vs target)"
+        case .sleep: "Sleep"
         case .restingHeartRate: "Resting heart rate"
         case .hrv: "Heart rate variability"
-        case .stress: "Stress (estimate)"
-        case .habits: "Habits (done today)"
+        case .stress: "Stress"
+        case .habits: "Habits"
         case .cycleDay: "Cycle day"
+        case .bmi: "BMI"
+        case .weight: "Weight"
+        }
+    }
+
+    /// The secondary line in the Edit rings sheet: what the ring measures.
+    var subtitle: LocalizedStringResource? {
+        switch self {
+        case .fuel: "today's summary"
+        case .energy: "kcal vs your target"
+        case .protein, .carbs, .fat, .water: "vs your target"
+        case .fiber: "vs 30 g a day"
+        case .caffeine: "vs your limit"
+        case .steps: "vs your goal"
+        case .activeEnergy: "vs your 7-day average"
+        case .sleep: "last night vs target"
+        case .restingHeartRate: "in your usual range"
+        case .hrv: "vs your 30-day average"
+        case .stress: "estimate"
+        case .habits: "done today"
+        case .cycleDay: "day of your cycle"
+        case .bmi: "on the 15–35 scale"
+        case .weight: "progress to your goal"
         }
     }
 
     /// Its metric hue; rings without one (Fuel, Fiber, Habits) are neutral.
     var metric: VESSMetricKind {
         switch self {
-        case .fuel, .fiber, .habits: .fuel
+        case .fuel, .fiber, .habits, .bmi, .weight: .fuel
         case .energy: .energy
         case .protein: .protein
         case .carbs, .caffeine: .carbs
@@ -79,6 +104,8 @@ extension TodayRing {
         case .stress: "waveform"
         case .habits: "checkmark.circle"
         case .cycleDay: CycleCopy.symbol
+        case .bmi: "figure"
+        case .weight: "scalemass"
         }
     }
 }
@@ -102,6 +129,8 @@ struct TodayRingReading: Identifiable {
     let value: String
     let progress: Double
     let spoken: Text
+    /// A range marked on the ring's track, 0…1 (BMI's 18.5–25).
+    var band: ClosedRange<Double>? = nil
     var id: TodayRing { ring }
 
     /// "77 %", "180 mg", "58 bpm" for the rows at accessibility sizes,
@@ -114,11 +143,14 @@ struct TodayRingReading: Identifiable {
         case .activeEnergy: return String(localized: "\(value) kcal")
         case .restingHeartRate: return String(localized: "\(value) bpm")
         case .hrv: return String(localized: "\(value) ms")
+        case .weight: return String(localized: "\(value) kg")
         default: return value
         }
     }
 
     static let empty = "—"
+    /// The BMI ring's scale, as on H04.
+    static let bmiScale = 15.0...35.0
 
     struct Input {
         let profile: UserProfile
@@ -212,6 +244,28 @@ struct TodayRingReading: Identifiable {
             return TodayRingReading(ring: ring, value: "\(input.habitsDone)/\(input.habitsListed)",
                                     progress: Double(input.habitsDone) / Double(input.habitsListed),
                                     spoken: Text("\(input.habitsDone) of \(input.habitsListed) done"))
+        case .bmi:
+            // As on H04: adults only, never during pregnancy (the ring isn't
+            // offered then); "—" without height or weight.
+            guard BodyRules.showsBMI(profile: input.profile, now: input.now, calendar: input.calendar),
+                  let bmi = BodyRules.bmi(profile: input.profile, health: input.snapshot?.latestWeight) else { return none(ring) }
+            let scale = TodayRingReading.bmiScale
+            func fraction(_ value: Double) -> Double { min(max((value - scale.lowerBound) / (scale.upperBound - scale.lowerBound), 0), 1) }
+            let value = bmi.formatted(.number.precision(.fractionLength(1)))
+            return TodayRingReading(ring: ring, value: value, progress: fraction(bmi), spoken: Text("BMI \(value)"),
+                                    band: fraction(18.5)...fraction(25))
+        case .weight:
+            let weight = BodyRules.weight(profile: input.profile, health: input.snapshot?.latestWeight)
+            guard weight > 0 else { return none(ring) }
+            let value = VESSFormat.quantity(weight)
+            // Toward the goal from the earliest weight in the last 12 weeks;
+            // no arc without a goal, or during pregnancy.
+            var progress = 0.0
+            if let goal = input.profile.goalWeightKilograms, !input.profile.pregnant,
+               let start = input.snapshot?.weights.first?.kilograms ?? Optional(input.profile.weightKilograms), start != goal {
+                progress = min(max((start - weight) / (start - goal), 0), 1)
+            }
+            return TodayRingReading(ring: ring, value: value, progress: progress, spoken: Text("\(value) kilograms"))
         case .cycleDay:
             guard let day = input.cycleDay else { return none(ring) }
             return TodayRingReading(ring: ring, value: "\(day)", progress: min(Double(day) / (input.cycleLength ?? 28), 1),

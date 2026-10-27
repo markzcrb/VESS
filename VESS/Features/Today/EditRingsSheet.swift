@@ -10,25 +10,36 @@ struct EditRingsSheet: View {
 
     var body: some View {
         let profile = store.profile
-        let rings = profile?.todayRingList ?? TodayRingRules.defaultRings
-        let available = TodayRingRules.available(cycleTrackingOn: profile?.isCycleTrackingOn ?? false)
+        let now = AppClock.now
+        let rings = profile?.todayRingList(on: now, calendar: .current) ?? TodayRingRules.defaultRings
+        let available = TodayRingRules.available(
+            cycleTrackingOn: profile?.isCycleTrackingOn ?? false,
+            showsBMI: profile.map { BodyRules.showsBMI(profile: $0, now: now, calendar: .current) } ?? false
+        )
 
         NavigationStack {
             List {
                 Section {
+                    // Drag handles only (no system delete control); each row has
+                    // a quiet Remove.
                     ForEach(rings, id: \.self) { ring in
-                        row(ring)
-                            .deleteDisabled(!TodayRingRules.canRemove(rings))
+                        HStack(spacing: VESSSpacing.sm) {
+                            row(ring)
+                            if TodayRingRules.canRemove(rings) {
+                                Button("Remove") { save(TodayRingRules.removing(ring, from: rings)) }
+                                    .buttonStyle(.borderless)
+                                    .vessTextStyle(.bodyS)
+                                    .foregroundStyle(VESSColor.secondaryText)
+                                    .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                                    .accessibilityLabel(Text("Remove \(Text(ring.title))"))
+                            }
+                        }
+                        .listRowBackground(Color.clear)
                     }
                     .onMove { from, to in
                         var moved = rings
                         moved.move(fromOffsets: from, toOffset: to)
                         save(moved)
-                    }
-                    .onDelete { offsets in
-                        var kept = rings
-                        for index in offsets.sorted(by: >) where TodayRingRules.canRemove(kept) { kept.remove(at: index) }
-                        save(kept)
                     }
                 } header: {
                     header(Text("Your rings"))
@@ -84,10 +95,17 @@ struct EditRingsSheet: View {
                 .foregroundStyle(ring.metric.tint)
                 .frame(width: VESSSize.rowIcon)
                 .accessibilityHidden(true)
-            Text(ring.title)
-                .vessTextStyle(.bodyM)
-                .foregroundStyle(VESSColor.text)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(ring.title)
+                    .vessTextStyle(.bodyM)
+                    .foregroundStyle(VESSColor.text)
+                if let subtitle = ring.subtitle {
+                    Text(subtitle)
+                        .vessTextStyle(.bodyS)
+                        .foregroundStyle(VESSColor.secondaryText)
+                }
+            }
+            .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
         .frame(minHeight: VESSHitTarget.minimum)
