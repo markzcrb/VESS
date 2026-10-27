@@ -3659,6 +3659,9 @@
     "Log caffeine" : {
 
     },
+    "Log manually" : {
+
+    },
     "Log periods and see an estimate. Stays on this iPhone unless you share it with Coach." : {
 
     },
@@ -4094,6 +4097,9 @@
 
     },
     "No estimate yet." : {
+
+    },
+    "No estimates left today · %@" : {
 
     },
     "No food found. Try another photo or search instead." : {

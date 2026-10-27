@@ -17,9 +17,6 @@ struct AddPhotoContent: View {
     @Environment(FoodLogUndo.self) private var undo
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    /// The camera page's visible height, so the viewfinder leaves room for
-    /// the shutter on a small screen (SE).
-    @State private var visibleHeight: CGFloat = 0
 
     @AppStorage("photo.remaining") private var remaining = -1
     @AppStorage("photo.remainingDay") private var remainingDay = ""
@@ -107,14 +104,24 @@ struct AddPhotoContent: View {
     /// The shutter row's height, so the viewfinder leaves room for it.
     private static let controlsHeight: CGFloat = 84
 
+    /// 3:4 at the full content width, or smaller (still 3:4) when the space
+    /// above the shutter row is shorter, as on SE.
+    static func viewfinderSize(in available: CGSize) -> CGSize {
+        let width = max(available.width - 2 * VESSSpacing.screenInset, 0)
+        let room = available.height - controlsHeight - VESSSpacing.md * 3
+        let height = max(min(width * 4 / 3, room), 160)
+        return CGSize(width: min(width, height * 3 / 4), height: height)
+    }
+
     private var cameraView: some View {
+        // The area between the sheet's header and the pinned footer.
+        GeometryReader { proxy in
+        let size = Self.viewfinderSize(in: proxy.size)
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.md) {
+                // Full width at 3:4, as tall as fits above the shutter row.
                 viewfinder
-                    // Full width at 3:4, as tall as fits above the shutter row.
-                    .aspectRatio(3.0 / 4.0, contentMode: .fit)
-                    .frame(maxWidth: .infinity,
-                           maxHeight: visibleHeight > 0 ? max(visibleHeight - Self.controlsHeight - VESSSpacing.md * 3, 200) : nil)
+                    .frame(width: size.width, height: size.height)
                     .frame(maxWidth: .infinity)
 
                 controls
@@ -134,8 +141,7 @@ struct AddPhotoContent: View {
             .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.md)
         }
-        // The visible height between the bars, for the viewfinder's size.
-        .onGeometryChange(for: CGFloat.self) { $0.size.height - $0.safeAreaInsets.top - $0.safeAreaInsets.bottom } action: { visibleHeight = $0 }
+        }
         // Pinned above the safe area, so it's never cut off at the bottom.
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !dynamicTypeSize.isAccessibilitySize { footer }
@@ -238,6 +244,8 @@ struct AddPhotoContent: View {
             .disabled(!camera.hasFlash || isOutOfEstimates)
             .accessibilityLabel(camera.isFlashOn ? "Flash on" : "Flash off")
         }
+        // The symbols stop growing so they stay inside their circles.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .frame(height: Self.controlsHeight)
     }
 
@@ -511,9 +519,6 @@ private struct EstimatedItemRow: View {
     let onDelete: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    /// The camera page's visible height, so the viewfinder leaves room for
-    /// the shutter on a small screen (SE).
-    @State private var visibleHeight: CGFloat = 0
     @State private var kcalText = ""
 
     /// Items added by hand: kcal typed, not an estimate.
