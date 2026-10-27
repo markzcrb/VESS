@@ -196,16 +196,6 @@
     "%@ · you set the dose" : {
 
     },
-    "%@ / %@ mg" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ / %2$@ mg"
-          }
-        }
-      }
-    },
     "%@ %@" : {
       "localizations" : {
         "en" : {
@@ -275,9 +265,6 @@
     "%@ above" : {
 
     },
-    "%@ ABV" : {
-
-    },
     "%@ beats per minute" : {
 
     },
@@ -313,16 +300,6 @@
     },
     "%@ cm" : {
 
-    },
-    "%@ counts at %@ toward water. An estimate." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ counts at %2$@ toward water. An estimate."
-          }
-        }
-      }
     },
     "%@ counts at %@. An estimate you can change." : {
       "localizations" : {
@@ -460,6 +437,9 @@
     "%@ L" : {
 
     },
+    "%@ L of water" : {
+
+    },
     "%@ left" : {
 
     },
@@ -475,6 +455,9 @@
           }
         }
       }
+    },
+    "%@ mg caffeine" : {
+
     },
     "%@ milliseconds" : {
 
@@ -741,16 +724,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@"
-          }
-        }
-      }
-    },
-    "%@, %@ ml" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@ ml"
           }
         }
       }
@@ -1235,6 +1208,9 @@
     "^[%lld day](inflect: true)" : {
 
     },
+    "^[%lld drink](inflect: true)" : {
+
+    },
     "^[%lld drink](inflect: true), last at %@" : {
       "localizations" : {
         "en" : {
@@ -1340,16 +1316,6 @@
     },
     "≈ %@" : {
 
-    },
-    "≈ %@ mg in this %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "≈ %1$@ mg in this %2$@"
-          }
-        }
-      }
     },
     "≈ %@ mg in your system at %@" : {
       "localizations" : {
@@ -1477,16 +1443,6 @@
     },
     "about %@ kcal" : {
 
-    },
-    "About %@ kcal and %@ g alcohol (%@), typical values. Counted in your energy, not in Fuel. Alcohol doesn't count toward water." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "About %1$@ kcal and %2$@ g alcohol (%3$@), typical values. Counted in your energy, not in Fuel. Alcohol doesn't count toward water."
-          }
-        }
-      }
     },
     "About %@ less than your usual %@." : {
       "localizations" : {
@@ -1919,9 +1875,6 @@
     "An estimate: caffeine halves about every %@ hours, and this differs from person to person." : {
 
     },
-    "Any" : {
-
-    },
     "Any day is a good day to pick it up." : {
 
     },
@@ -2113,6 +2066,9 @@
     "Caffeine" : {
 
     },
+    "Caffeine today" : {
+
+    },
     "Calculated" : {
 
     },
@@ -2186,9 +2142,6 @@
 
     },
     "Change, or delete" : {
-
-    },
-    "Changes the strength" : {
 
     },
     "Check access" : {
@@ -2362,6 +2315,9 @@
     "Counts as %@ ml toward water." : {
 
     },
+    "counts as %@ ml water" : {
+
+    },
     "Cramps" : {
 
     },
@@ -2392,10 +2348,10 @@
     "Custom amount" : {
 
     },
-    "Custom amount, %@ ml" : {
+    "Custom, %lld min" : {
 
     },
-    "Custom, %lld min" : {
+    "Custom…" : {
 
     },
     "Cycle" : {
@@ -3252,7 +3208,7 @@
     "Hides the calendar" : {
 
     },
-    "Hides the strength" : {
+    "Hides the day's drinks" : {
 
     },
     "Hides the time picker" : {
@@ -4084,13 +4040,10 @@
     "No drinks logged yet." : {
 
     },
-    "No drinks that day." : {
+    "no drinks yet" : {
 
     },
     "No drinks yet" : {
-
-    },
-    "No drinks yet today." : {
 
     },
     "No estimate yet" : {
@@ -4334,9 +4287,6 @@
           }
         }
       }
-    },
-    "of %@ L" : {
-
     },
     "of %@ mg %@" : {
       "localizations" : {
@@ -5065,6 +5015,9 @@
     "Shows a calendar" : {
 
     },
+    "Shows the day's drinks" : {
+
+    },
     "Shows the meals to plan" : {
 
     },
@@ -5301,9 +5254,6 @@
 
     },
     "Stress" : {
-
-    },
-    "Stronger" : {
 
     },
     "Sufficient" : {
@@ -6000,9 +5950,6 @@
 
     },
     "We sent a 6-digit code to %@." : {
-
-    },
-    "Weaker" : {
 
     },
     "Week" : {
