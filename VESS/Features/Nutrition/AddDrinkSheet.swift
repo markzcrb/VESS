@@ -191,9 +191,8 @@ struct AddDrinkSheet: View {
         }
     }
 
-    /// "330 ml · toward water · 1,9 of 2,5 L today", or for caffeine
-    /// "≈ 64 mg · caffeine · counts as 24 ml water · 128 of 400 mg today".
-    /// The day's totals include this drink.
+    /// "330 ml · toward water · → 1,9 of 2,5 L with this", or for caffeine
+    /// "≈ 64 mg · caffeine · counts as 24 ml water · → 128 of 400 mg with this".
     private func estimateLine(_ logs: [HydrationLog]) -> some View {
         let estimate = DrinkEstimate(
             volume: volume, contributionPercent: contributionPercent, caffeine: caffeine,
@@ -342,11 +341,11 @@ struct DrinkEstimate {
     }
 
     var context: String {
-        let water = String(localized: "\(VESSFormat.liters(fromMilliliters: waterToday + counted)) of \(VESSFormat.liters(fromMilliliters: waterTarget)) L today")
+        let water = String(localized: "→\u{00A0}\(VESSFormat.liters(fromMilliliters: waterToday + counted)) of \(VESSFormat.liters(fromMilliliters: waterTarget)) L with this")
         if caffeine >= 1 {
             return [String(localized: "caffeine"),
                     String(localized: "counts as \(VESSFormat.milliliters(counted)) ml water"),
-                    String(localized: "\(VESSFormat.grams(caffeineToday + caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams)) mg today")]
+                    String(localized: "→\u{00A0}\(VESSFormat.grams(caffeineToday + caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams)) mg with this")]
                 .joined(separator: " · ")
         }
         if alcoholGrams > 0 {

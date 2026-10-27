@@ -1344,6 +1344,26 @@
     "^[%lld time](inflect: true) a week" : {
 
     },
+    "→ %@ of %@ L with this" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "→ %1$@ of %2$@ L with this"
+          }
+        }
+      }
+    },
+    "→ %@ of %@ mg with this" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "→ %1$@ of %2$@ mg with this"
+          }
+        }
+      }
+    },
     "+ Pick more" : {
 
     },
@@ -2108,6 +2128,9 @@
         }
       }
     },
+    "caffeine" : {
+
+    },
     "Caffeine" : {
 
     },
@@ -2285,6 +2308,9 @@
     "Coffee" : {
 
     },
+    "Coffee and tea" : {
+
+    },
     "Cola" : {
 
     },
@@ -2396,10 +2422,10 @@
     "Custom amount" : {
 
     },
-    "Custom, %lld min" : {
+    "Custom, %@ ml" : {
 
     },
-    "Custom…" : {
+    "Custom, %lld min" : {
 
     },
     "Cycle" : {
@@ -2595,6 +2621,9 @@
 
     },
     "Distance" : {
+
+    },
+    "doesn't count toward water" : {
 
     },
     "Don't fit you" : {
@@ -3268,9 +3297,6 @@
     "Hides the calendar" : {
 
     },
-    "Hides the day's drinks" : {
-
-    },
     "Hides the time picker" : {
 
     },
@@ -3589,6 +3615,9 @@
 
     },
     "Large mug" : {
+
+    },
+    "Larger amount" : {
 
     },
     "Last 4 weeks" : {
@@ -4055,6 +4084,9 @@
     "New" : {
 
     },
+    "New drink" : {
+
+    },
     "New habit" : {
 
     },
@@ -4110,9 +4142,6 @@
 
     },
     "No drinks logged yet." : {
-
-    },
-    "no drinks yet" : {
 
     },
     "No drinks yet" : {
@@ -5093,7 +5122,7 @@
     "Shows after the standard drinks, with this size, water share and caffeine." : {
 
     },
-    "Shows the day's drinks" : {
+    "Shows every drink" : {
 
     },
     "Shows the meals to plan" : {
@@ -5127,6 +5156,9 @@
 
     },
     "Single" : {
+
+    },
+    "Size" : {
 
     },
     "Skipped · you don't eat it" : {
@@ -5172,6 +5204,9 @@
 
     },
     "Small things, most days." : {
+
+    },
+    "Smaller amount" : {
 
     },
     "Smoothie" : {
@@ -5481,6 +5516,9 @@
     "That day's caffeine" : {
 
     },
+    "That day's drinks" : {
+
+    },
     "That didn't go through. Try again in a moment." : {
 
     },
@@ -5679,6 +5717,9 @@
     "Today's caffeine" : {
 
     },
+    "Today's drinks" : {
+
+    },
     "today's summary" : {
 
     },
@@ -5701,6 +5742,9 @@
 
     },
     "Total" : {
+
+    },
+    "toward water" : {
 
     },
     "Tree nuts" : {
@@ -6251,6 +6295,9 @@
     "Your day, item by item." : {
 
     },
+    "Your drinks" : {
+
+    },
     "Your entered workouts are saved while Health data refreshes." : {
 
     },
@@ -6276,6 +6323,9 @@
 
     },
     "Your own" : {
+
+    },
+    "Your own amount, caffeine and kcal" : {
 
     },
     "Your own food, saved on this iPhone." : {

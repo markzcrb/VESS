@@ -37,7 +37,9 @@ struct AddWorkoutView: View {
         }
 
         ScrollView {
-            VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+            // Tighter than the drink sheet, so Effort sits clear of the
+            // fade above the pinned button at rest (iPhone 17/18 Pro).
+            VStack(alignment: .leading, spacing: VESSSpacing.lg) {
                 // The editorial line belongs to the standalone screen.
                 if !embedded {
                     Text("Move in your own way.")
@@ -101,7 +103,7 @@ struct AddWorkoutView: View {
     }
 
     private func section<Content: View>(_ title: LocalizedStringResource, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             VESSSectionHeader(title: title)
             content()
         }
