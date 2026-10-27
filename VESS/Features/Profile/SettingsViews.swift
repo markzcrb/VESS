@@ -401,43 +401,4 @@ struct HelpArticleView: View {
 
 // MARK: - E08 VESS+ (DEBUG only)
 
-#if DEBUG
-/// A static design for review. Nothing is sold: StoreKit isn't built, and
-/// Release builds have no row for this screen.
-struct VESSPlusView: View {
-    var body: some View {
-        ProfilePage(title: "VESS+") {
-            ProfileIntro(title: "More room for your journal.", text: "Annual plan · renews 14 March 2027")
-            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                Text(39.99, format: .currency(code: "EUR"))
-                    .vessTextStyle(.displayL)
-                    .foregroundStyle(VESSColor.text)
-                Text("/ year")
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
-            }
-            .accessibilityElement(children: .combine)
-            VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                VESSSectionHeader(title: "Included")
-                VESSRowGroup {
-                    ForEach(["Meal photo estimates", "Weekly plan suggestions", "Grocery list and pantry", "Insights history"], id: \.self) { feature in
-                        VESSRow(title: Text(verbatim: feature)) { EmptyView() } trailing: {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(VESSColor.secondaryText)
-                                .accessibilityHidden(true)
-                        }
-                    }
-                }
-                .vessHairlineBottom()
-            }
-            Button("Manage subscription") {}
-                .buttonStyle(.vessPrimary)
-                .disabled(true)
-            Button("Restore purchases") {}
-                .buttonStyle(.vessSecondary)
-                .disabled(true)
-            ActivityFootnote(text: Text(verbatim: "Demo screen for review (DEBUG only). Nothing is sold in this build."))
-        }
-    }
-}
-#endif
+

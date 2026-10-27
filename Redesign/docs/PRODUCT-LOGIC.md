@@ -16,7 +16,7 @@ The screens show these features, but their logic is not specified. **Do not inve
 | 10 | Grocery list | Generation | From planned meals minus pantry stock; grouped by aisle or by meal; "Done shopping" moves checked items to Pantry |
 | 11 | Pantry expiry | Defaults | **Already in code:** `InventoryItem` + `ExpirationStatus` (3-day threshold). Reuse them |
 | 12 | Notifications | Rules | Meal reminder only if nothing is logged by the usual time; quiet hours 22:00–07:00 |
-| 13 | VESS+ | StoreKit 2 product | €39.99/year; features listed on E08 |
+| 13 | VESS+ | StoreKit 2 products | Monthly 7,99 €/month; Annual 49,99 €/year with a 7-day free trial (annual only); limits below |
 | 14 | Privacy | On-device processing | Photos processed on device first where possible; export and delete all data available |
 
 ## Decided with Mark
@@ -48,7 +48,21 @@ Approved 2026-10-20. Implemented in `StatusLevel` (`Domain/Rules/IntakeAnalysis.
 - **Notifications (#12):** on-device and opt-in. One reminder per main meal, 30 minutes after its usual time (`usualTime`, three days of history), only if nothing is logged for it that day, never between 22:00 and 07:00. Planned 7 days ahead and re-planned on launch, on return to the app and whenever today's log changes. Permission is asked when the first reminder is turned on. Supplement reminders (E04) repeat daily at the time the user sets. `MealReminders`, `ReminderService`; tested in `MealRemindersTests`. Water nudges, expiring food, weekly plan and insight notifications are not built.
 - **Apple Health (E05):** read-only status. The four types as plain rows, last sync, and how to change access in the Health app. No write section, no heart rate. Permission text approved: "VESS reads your steps, workouts, active energy and weight to show them in Activity and Today. It never writes to Apple Health, and this data stays on your iPhone."
 - **Privacy (#14, E07):** a plain statement of what is stored where, "Export my data" (one JSON document, ISO 8601 dates, via the share sheet; `LocalStore.exportData`) and Delete all data. No photo or analytics switches until those features exist.
-- **VESS+ (#13, E08):** DEBUG-only static screen; no row on You in Release until StoreKit 2 is approved.
+- **VESS+ (#13, E08):** DEBUG-only screen built on StoreKit 2; no row on You in Release until the products exist. Prices shown are `Product.displayPrice`; the euro values are DEBUG fallbacks.
+
+### VESS+ plans and limits (proposal, not live)
+
+Plans: Monthly 7,99 €/month; Annual 49,99 €/year ("4,17 €/month · save 48 %"), 7-day free trial on the annual plan only. Proposed product IDs: `com.vess.plus.monthly`, `com.vess.plus.annual`.
+
+| Feature | Free | VESS+ |
+|---|---|---|
+| AI Coach questions | 3 a day | 15 a day |
+| Meal photo estimates | 1 a day | 10 a day |
+| AI Chef recipes | 1 a day | 5 a day |
+| Insights history | 30 days | All |
+| Health patterns | — | ✓ |
+
+Logging, recipes, pantry, grocery and Apple Health stay free. The server limits (`ai_daily_limit`) are **not** changed yet: today they are Coach 20, photos 10, AI Chef 10 for everyone. They switch to the table above when subscriptions ship (Mark changes the server).
 - **Targets (E01):** VESS never changes targets on its own. Goals shows the `NutritionTargetCalculator` suggestion for the current body and direction, applied only after confirmation.
 - **Weight (11):** the latest Apple Health weight, or the profile's, and the change over 12 weeks. No "steady" verdict and no target range: those rules aren't defined.
 - **Contrast:** the optimal green as text (tags, kickers) uses `statusOptimalText`, Light #1B7349 (4.6:1 on its tint), Dark unchanged.
