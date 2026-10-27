@@ -202,7 +202,9 @@ struct AddDrinkSheet: View {
     private func todayTitle(count: Int, water: Double, caffeine: Double) -> String {
         let start = isToday ? String(localized: "Today") : String(localized: "That day")
         guard count > 0 else { return start + " · " + String(localized: "no drinks yet") }
-        var parts = [start, String(localized: "^[\(count) drink](inflect: true)"),
+        // AttributedString resolves the plural ("1 drink", "4 drinks").
+        let drinks = String(AttributedString(localized: "^[\(count) drink](inflect: true)").characters)
+        var parts = [start, drinks,
                      String(localized: "\(VESSFormat.liters(fromMilliliters: water)) L of water")]
         if caffeine >= 1 { parts.append(String(localized: "\(VESSFormat.grams(caffeine)) mg caffeine")) }
         return parts.joined(separator: " · ")
@@ -498,6 +500,8 @@ enum DrinkFacts {
         }
         let sizes = sizes(for: preset)
         let usual = preset.selectedServing.milliliters
+        // Espresso starts at a single shot.
+        if preset == .espresso { return sizes.first ?? usual }
         return sizes.contains(usual) ? usual : sizes.first ?? usual
     }
 

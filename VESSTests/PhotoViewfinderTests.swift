@@ -5,11 +5,11 @@ import Testing
 @Suite("Photo viewfinder")
 @MainActor
 struct PhotoViewfinderTests {
-    @Test("Full content width at 3:4 when there's room; smaller but still 3:4 above the shutter on a short screen")
+    @Test("Always the full content width; 3:4 when there's room, else as tall as fits above the shutter")
     func size() {
         let tall = AddPhotoContent.viewfinderSize(in: CGSize(width: 402, height: 700))
         #expect(tall.width == 362 && abs(tall.height - 362 * 4 / 3) < 0.01)
         let short = AddPhotoContent.viewfinderSize(in: CGSize(width: 375, height: 520))
-        #expect(short.height == 520 - 84 - 48 && abs(short.width - short.height * 3 / 4) < 0.01)
+        #expect(short.width == 335 && short.height == 520 - 84 - 48)
     }
 }

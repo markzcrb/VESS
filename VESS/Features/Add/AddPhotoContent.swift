@@ -104,13 +104,12 @@ struct AddPhotoContent: View {
     /// The shutter row's height, so the viewfinder leaves room for it.
     private static let controlsHeight: CGFloat = 84
 
-    /// 3:4 at the full content width, or smaller (still 3:4) when the space
-    /// above the shutter row is shorter, as on SE.
+    /// Always the full content width; 3:4 when there's room, otherwise as
+    /// tall as fits above the shutter row (a little wider than 3:4).
     static func viewfinderSize(in available: CGSize) -> CGSize {
         let width = max(available.width - 2 * VESSSpacing.screenInset, 0)
         let room = available.height - controlsHeight - VESSSpacing.md * 3
-        let height = max(min(width * 4 / 3, room), 160)
-        return CGSize(width: min(width, height * 3 / 4), height: height)
+        return CGSize(width: width, height: max(min(width * 4 / 3, room), 160))
     }
 
     private var cameraView: some View {
@@ -195,6 +194,10 @@ struct AddPhotoContent: View {
                 Text("Fit the whole plate in the frame.")
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.text)
+                    // One line, so it never covers the frame's content.
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .dynamicTypeSize(...DynamicTypeSize.xxLarge)
                     .padding(.horizontal, VESSSpacing.sm)
                     .padding(.vertical, VESSSpacing.xxs + 2)
                     .background(VESSColor.background.opacity(0.7), in: Capsule())
