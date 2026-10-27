@@ -617,6 +617,26 @@
         }
       }
     },
+    "%@ of %lld g · from your log" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$lld g · from your log"
+          }
+        }
+      }
+    },
+    "%@ of %lld min · from Apple Health" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$lld min · from Apple Health"
+          }
+        }
+      }
+    },
     "%@ of your %@ kcal target" : {
       "localizations" : {
         "en" : {
@@ -956,6 +976,16 @@
         }
       }
     },
+    "%lld of %lld · from Supplements" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld · from Supplements"
+          }
+        }
+      }
+    },
     "%lld of %lld at home" : {
       "localizations" : {
         "en" : {
@@ -1208,6 +1238,9 @@
     "%lld to use in the next few days." : {
 
     },
+    "%lld× a day" : {
+
+    },
     "^[%lld day](inflect: true)" : {
 
     },
@@ -1351,7 +1384,13 @@
     "1 recipe is hidden because it doesn't fit your preferences." : {
 
     },
+    "3 portions of veg" : {
+
+    },
     "8 to 14 digits" : {
+
+    },
+    "10 mindful minutes" : {
 
     },
     "22:00" : {
@@ -1533,6 +1572,9 @@
     "Add · %@" : {
 
     },
+    "Add «%@»" : {
+
+    },
     "Add %@" : {
 
     },
@@ -1615,9 +1657,6 @@
 
     },
     "Add drink" : {
-
-    },
-    "Add habit" : {
 
     },
     "Add ingredient" : {
@@ -1748,6 +1787,9 @@
 
     },
     "Adults only. BMI isn't shown for under-18s or during pregnancy, and VESS never sets goals from BMI alone." : {
+
+    },
+    "After %lld:00 · from your drinks" : {
 
     },
     "afternoon" : {
@@ -2855,6 +2897,9 @@
     "Fibre" : {
 
     },
+    "Fibre 25 g" : {
+
+    },
     "Filled days are logged, dashed days are estimated, and the outlined day is today" : {
 
     },
@@ -2997,6 +3042,9 @@
     "From Open Food Facts · check against the label" : {
 
     },
+    "From Supplements" : {
+
+    },
     "From the drinks you log" : {
 
     },
@@ -3014,6 +3062,9 @@
       }
     },
     "From your breakfast log" : {
+
+    },
+    "From your food log" : {
 
     },
     "From your pantry" : {
@@ -3125,6 +3176,9 @@
 
     },
     "Grocery list" : {
+
+    },
+    "Guessed from the name; change it if it's wrong. It sets the colour of the dots." : {
 
     },
     "Habit" : {
@@ -3319,6 +3373,9 @@
 
     },
     "I already have it" : {
+
+    },
+    "Icon" : {
 
     },
     "Improve consistency" : {
@@ -4031,6 +4088,9 @@
     "No analytics and no ads. An account only if you use Coach, photo estimates or AI Chef." : {
 
     },
+    "No caffeine after 14:00" : {
+
+    },
     "No daily target set." : {
 
     },
@@ -4347,6 +4407,9 @@
     "On your grocery list" : {
 
     },
+    "Once" : {
+
+    },
     "One ingredient, such as coriander or blue cheese." : {
 
     },
@@ -4414,9 +4477,6 @@
 
     },
     "or with a code by email" : {
-
-    },
-    "Or your own" : {
 
     },
     "Other" : {
@@ -5075,6 +5135,9 @@
     "Sleep" : {
 
     },
+    "Sleep 7 h" : {
+
+    },
     "Sleep analysis" : {
 
     },
@@ -5356,6 +5419,9 @@
     "Take photo" : {
 
     },
+    "Take supplements" : {
+
+    },
     "Taken %@" : {
 
     },
@@ -5452,9 +5518,6 @@
     "The camera isn't available here. Pick a photo instead." : {
 
     },
-    "The category sets the colour of its dots." : {
-
-    },
     "The context behind your targets." : {
 
     },
@@ -5525,10 +5588,16 @@
     "Through the day" : {
 
     },
+    "Tick each one" : {
+
+    },
     "Time" : {
 
     },
     "Time of day" : {
+
+    },
+    "Times a day" : {
 
     },
     "Times a week" : {
@@ -5629,9 +5698,6 @@
 
     },
     "Total" : {
-
-    },
-    "Tracks itself from your log" : {
 
     },
     "Tree nuts" : {
@@ -6204,6 +6270,9 @@
 
     },
     "Your movement is still here." : {
+
+    },
+    "Your own" : {
 
     },
     "Your own food, saved on this iPhone." : {

@@ -13,14 +13,16 @@ extension View {
     /// While the keyboard is up the action is hidden: the floating keyboard
     /// bar (with "Done") would otherwise sit on top of it. Closing the
     /// keyboard brings it back.
-    func vessBottomAction<Action: View>(background: Color = VESSColor.card, @ViewBuilder _ action: () -> Action) -> some View {
-        modifier(VESSBottomActionModifier(action: action(), background: background))
+    func vessBottomAction<Action: View>(background: Color = VESSColor.card, fade: CGFloat = VESSSpacing.md, @ViewBuilder _ action: () -> Action) -> some View {
+        modifier(VESSBottomActionModifier(action: action(), background: background, fade: fade))
     }
 }
 
 private struct VESSBottomActionModifier<Action: View>: ViewModifier {
     let action: Action
     let background: Color
+    /// The scrim's height above the action.
+    let fade: CGFloat
     @Environment(\.vessInAddSheet) private var inAddSheet
     @State private var isKeyboardVisible = false
 
@@ -31,7 +33,7 @@ private struct VESSBottomActionModifier<Action: View>: ViewModifier {
                 if !isKeyboardVisible {
                     VStack(spacing: 0) {
                         LinearGradient(colors: [surface.opacity(0), surface], startPoint: .top, endPoint: .bottom)
-                            .frame(height: VESSSpacing.md)
+                            .frame(height: fade)
                             .allowsHitTesting(false)
                             .accessibilityHidden(true)
                         action

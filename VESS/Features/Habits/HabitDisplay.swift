@@ -22,7 +22,9 @@ extension Habit {
         case .waterTarget: return VESSColor.water
         case .proteinAtBreakfast: return VESSColor.protein
         case .steps: return VESSColor.activity
-        case nil: break
+        case .sleep, .mindfulMinutes: return VESSColor.sleep
+        case .noCaffeineAfter, .fiber: return VESSColor.carbs
+        case .supplementsTaken, nil: break
         }
         switch category {
         case .nutrition: return VESSColor.calories
@@ -75,10 +77,30 @@ enum HabitLogLoader {
             day = calendar.date(byAdding: .day, value: 1, to: day) ?? last
         }
         for drink in store.hydrationLogs(from: first, to: last) {
-            data[calendar.startOfDay(for: drink.loggedAt)]?.hydrationMilliliters += drink.hydrationMilliliters
+            let key = calendar.startOfDay(for: drink.loggedAt)
+            data[key]?.hydrationMilliliters += drink.hydrationMilliliters
+            if drink.caffeineMilligrams >= 1 {
+                let hour = calendar.component(.hour, from: drink.loggedAt)
+                let latest = data[key]?.latestCaffeineHour ?? -1
+                data[key]?.latestCaffeineHour = max(latest, hour)
+            }
         }
-        for entry in store.foodEntries(from: first, to: last) where entry.mealType == .breakfast {
-            data[calendar.startOfDay(for: entry.loggedAt)]?.breakfastProteinGrams += entry.nutrition.proteinGrams
+        for entry in store.foodEntries(from: first, to: last) {
+            let key = calendar.startOfDay(for: entry.loggedAt)
+            if entry.mealType == .breakfast { data[key]?.breakfastProteinGrams += entry.nutrition.proteinGrams }
+            data[key]?.fiberGrams += entry.nutrition.fiberGrams ?? 0
+        }
+        // Supplements due and taken each day.
+        for key in data.keys {
+            let summary = SupplementRules.today(store.supplements, logs: store.supplementLogs(on: key, calendar: calendar), on: key, calendar: calendar)
+            let due = summary.items.filter { SupplementRules.isScheduled($0.supplement, on: key, calendar: calendar) }
+            data[key]?.supplementsDue = due.count
+            data[key]?.supplementsTaken = due.filter { $0.takenAt != nil }.count
+        }
+        // Today's hour, for "no caffeine after 14:00".
+        let now = AppClock.now
+        if data[calendar.startOfDay(for: now)] != nil {
+            data[calendar.startOfDay(for: now)]?.currentHour = calendar.component(.hour, from: now)
         }
         if let health {
             for hour in health.hourlySteps {
@@ -88,7 +110,13 @@ enum HabitLogLoader {
             }
             // Today's total is the latest reading.
             let today = calendar.startOfDay(for: health.updatedAt)
-            if data[today] != nil { data[today]?.steps = health.steps }
+            if data[today] != nil {
+                data[today]?.steps = health.steps
+                data[today]?.mindfulMinutes = health.mindfulMinutesToday
+            }
+            for night in SleepRules.nights(health.sleep, calendar: calendar) where data[night.day] != nil {
+                data[night.day]?.sleepMinutes = night.asleepMinutes
+            }
         }
         return HabitRules.Log(checks: store.habitChecks(from: first, to: last), data: data, calendar: calendar)
     }

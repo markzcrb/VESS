@@ -516,7 +516,15 @@ final class LocalStore {
         return fetchDecoded(descriptor, as: HabitCheck.self) { $0.payload }
     }
 
-    /// Ticks or unticks a habit for a day. One tick per habit and day.
+    /// One more tick for a "2× a day" habit.
+    func addHabitCheck(_ habitID: UUID, on day: Date, calendar: Calendar) throws {
+        let (start, _) = Self.bounds(of: day, calendar: calendar)
+        let check = HabitCheck(id: UUID(), habitID: habitID, day: start)
+        context.insert(StoredHabitCheck(id: check.id, habitID: habitID, day: start, payload: try encoder.encode(check)))
+        try save()
+    }
+
+    /// Ticks or unticks a habit for a day: one tick, or none.
     func setHabit(_ habitID: UUID, done: Bool, on day: Date, calendar: Calendar) throws {
         let (start, end) = Self.bounds(of: day, calendar: calendar)
         try context.delete(model: StoredHabitCheck.self, where: #Predicate { $0.habitID == habitID && $0.day >= start && $0.day < end })

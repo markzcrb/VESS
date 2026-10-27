@@ -15,6 +15,19 @@ import Foundation
 ///   habit's target. Without Health data steps are simply not done.
 /// - No streaks and nothing "missed": a past day without it is an empty dot.
 nonisolated enum HabitRules {
+    /// The category a name suggests, until the user picks one:
+    /// "Stretch for 10 minutes" is movement, "Vitamin D" supplements.
+    static func guessCategory(_ name: String) -> HabitCategory {
+        let text = name.lowercased()
+        let words: [(HabitCategory, [String])] = [
+            (.supplements, ["vitamin", "supplement", "pill", "creatine", "omega", "magnesium", "iron", "zinc", "probiotic"]),
+            (.sleep, ["sleep", "bed", "nap", "screen", "wind down", "phone"]),
+            (.movement, ["walk", "run", "stretch", "step", "yoga", "gym", "swim", "cycle", "bike", "workout", "push-up", "plank", "move"]),
+            (.nutrition, ["water", "drink", "protein", "veg", "fruit", "eat", "meal", "breakfast", "lunch", "dinner", "fish", "fibre", "fiber", "salad", "cook", "snack", "sugar", "caffeine", "coffee"]),
+        ]
+        return words.first { _, keys in keys.contains { text.contains($0) } }?.0 ?? .other
+    }
+
     static let breakfastProteinGrams: Double = 25
     static let daysAhead = 7
     static let idPrefix = "habit."
@@ -26,17 +39,29 @@ nonisolated enum HabitRules {
         var breakfastProteinGrams: Double = 0
         /// `nil` without Apple Health data.
         var steps: Int?
+        /// The night ending that day, minutes asleep (Apple Health).
+        var sleepMinutes: Double?
+        /// Mindful minutes that day (Apple Health; today only).
+        var mindfulMinutes: Double?
+        /// The latest hour with caffeine logged; `nil` for none.
+        var latestCaffeineHour: Int?
+        /// The current hour for today; `nil` for a day that's over.
+        var currentHour: Int?
+        var fiberGrams: Double = 0
+        var supplementsDue: Int = 0
+        var supplementsTaken: Int = 0
     }
 
     /// Hand ticks and auto-rule data, keyed by the start of each day.
     nonisolated struct Log: Sendable {
-        var checks: [UUID: Set<Date>]
+        /// Ticks per habit and day ("2× a day" habits have more than one).
+        var checks: [UUID: [Date: Int]]
         var data: [Date: DayData]
 
         init(checks: [HabitCheck] = [], data: [Date: DayData] = [:], calendar: Calendar) {
-            var byHabit: [UUID: Set<Date>] = [:]
+            var byHabit: [UUID: [Date: Int]] = [:]
             for check in checks {
-                byHabit[check.habitID, default: []].insert(calendar.startOfDay(for: check.day))
+                byHabit[check.habitID, default: [:]][calendar.startOfDay(for: check.day), default: 0] += 1
             }
             self.checks = byHabit
             self.data = Dictionary(data.map { (calendar.startOfDay(for: $0.key), $0.value) }, uniquingKeysWith: { _, new in new })
@@ -84,14 +109,31 @@ nonisolated enum HabitRules {
         case .steps(let target):
             guard let steps = data.steps else { return false }
             return steps >= target
+        case .sleep(let minutes):
+            return (data.sleepMinutes ?? 0) >= Double(minutes)
+        case .mindfulMinutes(let minutes):
+            return (data.mindfulMinutes ?? 0) >= Double(minutes)
+        case .noCaffeineAfter(let hour):
+            // Only once the cutoff has passed, and nothing with caffeine since.
+            let isPast = data.currentHour.map { $0 >= hour } ?? true
+            return isPast && (data.latestCaffeineHour ?? -1) < hour
+        case .fiber(let grams):
+            return data.fiberGrams >= Double(grams)
+        case .supplementsTaken:
+            return data.supplementsDue > 0 && data.supplementsTaken >= data.supplementsDue
         }
+    }
+
+    /// Ticks on that day.
+    static func checkCount(_ habit: Habit, on day: Date, log: Log, calendar: Calendar) -> Int {
+        log.checks[habit.id]?[calendar.startOfDay(for: day)] ?? 0
     }
 
     /// Done on that day: ticked, or its auto rule met.
     static func isDone(_ habit: Habit, on day: Date, log: Log, calendar: Calendar) -> Bool {
         let start = calendar.startOfDay(for: day)
         if let auto = habit.auto { return isAutoDone(auto, data: log.data[start]) }
-        return log.checks[habit.id]?.contains(start) ?? false
+        return checkCount(habit, on: start, log: log, calendar: calendar) >= max(habit.timesPerDay ?? 1, 1)
     }
 
     /// Days done in `day`'s week, up to and including `day`.

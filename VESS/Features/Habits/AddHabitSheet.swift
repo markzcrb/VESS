@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// 16: add a habit: suggestions that track themselves, or your own with
-/// how often, a category (its dot colour) and an optional reminder (off by
-/// default). Editing uses the same sheet.
+/// 16: add a habit, in two parts: Suggestions (one tap, each saying how
+/// it's tracked), then Your own (name, icon, how often, an optional count
+/// a day and reminder; the category is guessed from the name). Editing
+/// uses the same sheet.
 struct AddHabitSheet: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.vessHaptics) private var haptics
@@ -21,6 +22,10 @@ struct AddHabitSheet: View {
     @State private var days: Set<Int> = []
     @State private var times = 2
     @State private var category: HabitCategory = .other
+    /// Set once the user picks a category; until then it follows the name.
+    @State private var pickedCategory = false
+    @State private var symbol: String?
+    @State private var timesPerDay = 1
     @State private var reminderOn = false
     @State private var reminderTime = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: AppClock.now) ?? AppClock.now
     @State private var showReminder = false
@@ -36,6 +41,9 @@ struct AddHabitSheet: View {
         guard let habit = editing else { return }
         _name = State(initialValue: habit.name)
         _category = State(initialValue: habit.category)
+        _pickedCategory = State(initialValue: true)
+        _symbol = State(initialValue: habit.symbol)
+        _timesPerDay = State(initialValue: habit.timesPerDay ?? 1)
         switch habit.schedule {
         case .daily: _frequency = State(initialValue: .daily)
         case .weekdays: _frequency = State(initialValue: .weekdays)
@@ -63,11 +71,17 @@ struct AddHabitSheet: View {
                         suggestions
                     }
                     if editing?.auto == nil {
-                        nameField
-                        frequencySection
-                        categorySection
+                        VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                            nameField
+                            iconSection
+                            frequencySection
+                            countSection
+                            categorySection
+                            reminderSection
+                        }
+                    } else {
+                        reminderSection
                     }
-                    reminderSection
                     if editing != nil {
                         Button("Delete habit") { confirmDelete = true }
                             .buttonStyle(.vessQuiet)
@@ -83,11 +97,24 @@ struct AddHabitSheet: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .background(VESSColor.card)
-            .vessBottomAction {
-                Button(editing == nil ? "Add habit" : "Save", action: save)
-                    .buttonStyle(.vessPrimary)
-                    .disabled(draft == nil)
-                    .accessibilityIdentifier("habitSheet.save")
+            // Pinned above the safe area with a taller scrim, so it never
+            // sits on the chips.
+            .vessBottomAction(fade: VESSSpacing.xxl) {
+                Button(action: save) {
+                    if editing != nil {
+                        Text("Save")
+                    } else if trimmedName.isEmpty {
+                        Text("Add")
+                    } else {
+                        Text("Add «\(trimmedName)»")
+                    }
+                }
+                .buttonStyle(.vessPrimary)
+                .disabled(draft == nil)
+                .accessibilityIdentifier("habitSheet.save")
+            }
+            .onChange(of: name) { _, new in
+                if !pickedCategory { category = HabitRules.guessCategory(new) }
             }
             .toolbar(.hidden, for: .navigationBar)
             .vessKeyboardDoneButton()
@@ -123,40 +150,75 @@ struct AddHabitSheet: View {
         }
     }
 
-    /// Water, protein at breakfast and steps, from data VESS already has.
-    private var suggestions: some View {
+    private struct Suggestion: Identifiable {
+        let id: String
+        let name: String
+        let detail: LocalizedStringResource
+        let symbol: String
+        let category: HabitCategory
+        let rule: HabitAutoRule?
+        var timesPerDay: Int? = nil
+    }
+
+    /// Part 1: one tap each; the line under says how it's tracked.
+    private var suggestionItems: [Suggestion] {
         let target = store.profile?.waterTargetMilliliters ?? 2000
         let steps = store.profile?.dailyStepsTarget ?? UserProfile.defaultStepsTarget
-        let existing = Set(store.habits.compactMap(\.auto).map(AutoKind.init))
-        return VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-            VESSSectionHeader(title: "Tracks itself from your log")
+        return [
+            Suggestion(id: "water", name: String(localized: "Water \(VESSFormat.liters(fromMilliliters: target)) L"), detail: "From the drinks you log",
+                       symbol: "drop", category: .nutrition, rule: .waterTarget),
+            Suggestion(id: "protein", name: String(localized: "Protein at breakfast"), detail: "From your breakfast log",
+                       symbol: "fish", category: .nutrition, rule: .proteinAtBreakfast),
+            Suggestion(id: "steps", name: String(localized: "\(VESSFormat.steps(Double(steps))) steps"), detail: "From Apple Health",
+                       symbol: "figure.walk", category: .movement, rule: .steps(steps)),
+            Suggestion(id: "sleep", name: String(localized: "Sleep 7 h"), detail: "From Apple Health",
+                       symbol: "moon", category: .sleep, rule: .sleep(minutes: 7 * 60)),
+            Suggestion(id: "mindful", name: String(localized: "10 mindful minutes"), detail: "From Apple Health",
+                       symbol: "leaf", category: .other, rule: .mindfulMinutes(10)),
+            Suggestion(id: "caffeine", name: String(localized: "No caffeine after 14:00"), detail: "From the drinks you log",
+                       symbol: "cup.and.saucer", category: .nutrition, rule: .noCaffeineAfter(hour: 14)),
+            Suggestion(id: "fiber", name: String(localized: "Fibre 25 g"), detail: "From your food log",
+                       symbol: "carrot", category: .nutrition, rule: .fiber(grams: 25)),
+            Suggestion(id: "veg", name: String(localized: "3 portions of veg"), detail: "Tick each one",
+                       symbol: "leaf.circle", category: .nutrition, rule: nil, timesPerDay: 3),
+            Suggestion(id: "supplements", name: String(localized: "Take supplements"), detail: "From Supplements",
+                       symbol: "pills", category: .supplements, rule: .supplementsTaken),
+        ]
+    }
+
+    private var suggestions: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+            VESSSectionHeader(title: "Suggestions")
             VESSRowGroup {
-                suggestion(.waterTarget, name: String(localized: "Water \(VESSFormat.liters(fromMilliliters: target)) L"), detail: "From the drinks you log",
-                           symbol: "drop", category: .nutrition, isAdded: existing.contains(.water))
-                suggestion(.proteinAtBreakfast, name: String(localized: "Protein at breakfast"), detail: "From your breakfast log",
-                           symbol: "fish", category: .nutrition, isAdded: existing.contains(.protein))
-                suggestion(.steps(steps), name: String(localized: "\(VESSFormat.steps(Double(steps))) steps"), detail: "From Apple Health",
-                           symbol: "figure.walk", category: .movement, isAdded: existing.contains(.steps))
+                ForEach(suggestionItems) { item in
+                    suggestion(item, isAdded: isAdded(item))
+                }
             }
             .vessHairlineBottom()
         }
     }
 
-    private enum AutoKind: Hashable {
-        case water, protein, steps
-        init(_ rule: HabitAutoRule) {
-            switch rule {
-            case .waterTarget: self = .water
-            case .proteinAtBreakfast: self = .protein
-            case .steps: self = .steps
-            }
+    /// Added already: the same kind of rule, or the same name.
+    private func isAdded(_ item: Suggestion) -> Bool {
+        store.habits.contains { habit in
+            if let rule = item.rule, let auto = habit.auto { return Self.sameKind(rule, auto) }
+            return habit.name.localizedCaseInsensitiveCompare(item.name) == .orderedSame
         }
     }
 
-    private func suggestion(_ rule: HabitAutoRule, name: String, detail: LocalizedStringResource, symbol: String,
-                            category: HabitCategory, isAdded: Bool) -> some View {
-        VESSRow(title: Text(verbatim: name), subtitle: Text(detail)) {
-            VESSRowIcon(systemImage: symbol)
+    private static func sameKind(_ a: HabitAutoRule, _ b: HabitAutoRule) -> Bool {
+        switch (a, b) {
+        case (.waterTarget, .waterTarget), (.proteinAtBreakfast, .proteinAtBreakfast), (.steps, .steps), (.sleep, .sleep),
+             (.mindfulMinutes, .mindfulMinutes), (.noCaffeineAfter, .noCaffeineAfter), (.fiber, .fiber), (.supplementsTaken, .supplementsTaken):
+            true
+        default:
+            false
+        }
+    }
+
+    private func suggestion(_ item: Suggestion, isAdded: Bool) -> some View {
+        VESSRow(title: Text(verbatim: item.name), subtitle: Text(item.detail)) {
+            VESSRowIcon(systemImage: item.symbol)
         } trailing: {
             if isAdded {
                 Text("Added")
@@ -164,7 +226,7 @@ struct AddHabitSheet: View {
                     .foregroundStyle(VESSColor.secondaryText)
             } else {
                 Button {
-                    addSuggestion(rule, name: name, category: category)
+                    addSuggestion(item)
                 } label: {
                     Text("Add")
                         .vessTextStyle(.bodyM)
@@ -173,15 +235,61 @@ struct AddHabitSheet: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(Text("Add \(name)"))
+                .accessibilityLabel(Text("Add \(item.name)"))
             }
+        }
+    }
+
+    /// The icons offered for your own habit.
+    private static let symbols = ["checkmark.circle", "figure.walk", "drop", "leaf", "moon", "book", "pills", "heart"]
+
+    private var iconSection: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            VESSSectionHeader(title: "Icon")
+            VESSChipFlow(spacing: VESSSpacing.xs) {
+                ForEach(Self.symbols, id: \.self) { option in
+                    let isSelected = (symbol ?? Self.symbols[0]) == option
+                    Button { symbol = option } label: {
+                        Image(systemName: option)
+                            .font(.body)
+                            .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
+                            .frame(width: VESSHitTarget.minimum, height: VESSHitTarget.minimum)
+                            .background(isSelected ? VESSColor.fill : Color.clear, in: Circle())
+                            .overlay(Circle().strokeBorder(isSelected ? VESSColor.borderStrong : VESSColor.divider))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(verbatim: option))
+                    .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+                }
+            }
+        }
+    }
+
+    /// "Times a day": once by default; up to 10 ("2× a day").
+    private var countSection: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            VESSSectionHeader(title: "Times a day")
+            HStack(spacing: VESSSpacing.md) {
+                VESSIconButton(systemImage: "minus", label: "Fewer") { timesPerDay = max(1, timesPerDay - 1) }
+                    .disabled(timesPerDay <= 1)
+                Text(timesPerDay == 1 ? "Once" : "\(timesPerDay)× a day")
+                    .vessTextStyle(.numberRow)
+                    .foregroundStyle(VESSColor.text)
+                    .contentTransition(.numericText())
+                    .frame(maxWidth: .infinity)
+                VESSIconButton(systemImage: "plus", label: "More") { timesPerDay = min(10, timesPerDay + 1) }
+                    .disabled(timesPerDay >= 10)
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Times a day")
+            .accessibilityValue(Text("\(timesPerDay)"))
         }
     }
 
     private var nameField: some View {
         let shape = RoundedRectangle(cornerRadius: VESSRadius.control, style: .continuous)
         return VStack(alignment: .leading, spacing: VESSSpacing.md) {
-            VESSSectionHeader(title: editing == nil ? "Or your own" : "Name")
+            VESSSectionHeader(title: editing == nil ? "Your own" : "Name")
             TextField("Habit", text: $name, prompt: Text("e.g. Stretch for 10 minutes").foregroundStyle(VESSColor.tertiaryText))
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.text)
@@ -199,17 +307,30 @@ struct AddHabitSheet: View {
             VESSSectionHeader(title: "How often")
             VESSSegmented(selection: $frequency, options: [(.daily, "Daily"), (.weekdays, "Weekdays"), (.custom, "Custom")])
             if frequency == .custom {
-                HStack(spacing: VESSSpacing.xs) {
-                    VESSChip(title: "On chosen days", isSelected: customKind == .days) { customKind = .days }
-                    VESSChip(title: "Times a week", isSelected: customKind == .times) { customKind = .times }
+                // M T W T F S S; "times a week" stays for habits that use it.
+                if case .timesPerWeek = editing?.schedule {
+                    HStack(spacing: VESSSpacing.xs) {
+                        VESSChip(title: "On chosen days", isSelected: customKind == .days) { customKind = .days }
+                        VESSChip(title: "Times a week", isSelected: customKind == .times) { customKind = .times }
+                    }
                 }
                 if customKind == .days {
-                    VESSChipFlow {
+                    HStack(spacing: VESSSpacing.xxs) {
                         ForEach(orderedWeekdays, id: \.self) { weekday in
-                            VESSChip(title: LocalizedStringResource(stringLiteral: calendar.shortStandaloneWeekdaySymbols[weekday - 1]),
-                                     isSelected: days.contains(weekday)) {
-                                if days.contains(weekday) { days.remove(weekday) } else { days.insert(weekday) }
+                            let isOn = days.contains(weekday)
+                            Button {
+                                if isOn { days.remove(weekday) } else { days.insert(weekday) }
+                            } label: {
+                                Text(verbatim: calendar.veryShortStandaloneWeekdaySymbols[weekday - 1])
+                                    .vessTextStyle(.bodyMStrong)
+                                    .foregroundStyle(isOn ? VESSColor.onAccent : VESSColor.text)
+                                    .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum)
+                                    .background(isOn ? VESSColor.accentFill : VESSColor.fill, in: Circle())
+                                    .overlay(Circle().strokeBorder(VESSColor.divider))
                             }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(Text(verbatim: calendar.standaloneWeekdaySymbols[weekday - 1]))
+                            .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
                         }
                     }
                 } else {
@@ -237,11 +358,14 @@ struct AddHabitSheet: View {
             VESSSectionHeader(title: "Category")
             VESSChipFlow {
                 ForEach(HabitCategory.allCases, id: \.self) { option in
-                    VESSChip(title: option.title, isSelected: category == option) { category = option }
+                    VESSChip(title: option.title, isSelected: category == option) {
+                        category = option
+                        pickedCategory = true
+                    }
                         .accessibilityIdentifier("habitSheet.category.\(option.rawValue)")
                 }
             }
-            Text("The category sets the colour of its dots.")
+            Text("Guessed from the name; change it if it's wrong. It sets the colour of the dots.")
                 .vessTextStyle(.bodyS)
                 .foregroundStyle(VESSColor.secondaryText)
         }
@@ -288,8 +412,10 @@ struct AddHabitSheet: View {
     }
 
     /// The habit to save, or `nil` while something is missing.
+    private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
+
     private var draft: Habit? {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = trimmedName
         guard !trimmed.isEmpty else { return nil }
         let schedule: HabitSchedule
         switch frequency {
@@ -311,12 +437,15 @@ struct AddHabitSheet: View {
             category: category,
             reminder: reminderOn ? DateComponents(hour: time.hour, minute: time.minute) : nil,
             auto: editing?.auto,
-            createdAt: editing?.createdAt ?? AppClock.now
+            createdAt: editing?.createdAt ?? AppClock.now,
+            timesPerDay: timesPerDay > 1 ? timesPerDay : nil,
+            symbol: symbol
         )
     }
 
-    private func addSuggestion(_ rule: HabitAutoRule, name: String, category: HabitCategory) {
-        let habit = Habit(id: UUID(), name: name, schedule: .daily, category: category, reminder: nil, auto: rule, createdAt: AppClock.now)
+    private func addSuggestion(_ item: Suggestion) {
+        let habit = Habit(id: UUID(), name: item.name, schedule: .daily, category: item.category, reminder: nil, auto: item.rule,
+                          createdAt: AppClock.now, timesPerDay: item.timesPerDay, symbol: item.symbol)
         do {
             try store.save(habit)
             haptics.play(.success)

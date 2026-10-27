@@ -200,7 +200,7 @@ struct HabitTodayList: View {
             isDone: isDone,
             dots: HabitRules.marks(habit, today: now, log: log, calendar: calendar).map(\.dot),
             hue: habit.hue,
-            onToggle: habit.auto == nil ? { toggle(habit, done: !HabitRules.isDone(habit, on: now, log: log, calendar: calendar), now: now) } : nil,
+            onToggle: habit.auto == nil ? { tick(habit, log: log, now: now) } : nil,
             spokenWeek: {
                 guard case .timesPerWeek(let times) = habit.schedule else { return nil }
                 return Text("\(HabitRules.weekCount(habit, through: now, log: log, calendar: calendar)) of \(times) this week")
@@ -222,8 +222,22 @@ struct HabitTodayList: View {
         case .steps(let target):
             guard let steps = data?.steps else { return Text("From Apple Health, when connected") }
             return Text("\(VESSFormat.steps(Double(steps))) of \(VESSFormat.steps(Double(target))) · from Apple Health")
+        case .sleep(let minutes):
+            guard let asleep = data?.sleepMinutes else { return Text("From Apple Health, when connected") }
+            return Text("\(HealthFormat.duration(minutes: asleep)) of \(HealthFormat.duration(minutes: Double(minutes))) · from Apple Health")
+        case .mindfulMinutes(let minutes):
+            return Text("\(HealthFormat.whole(data?.mindfulMinutes ?? 0)) of \(minutes) min · from Apple Health")
+        case .noCaffeineAfter(let hour):
+            return Text("After \(hour):00 · from your drinks")
+        case .fiber(let grams):
+            return Text("\(VESSFormat.grams(data?.fiberGrams ?? 0)) of \(grams) g · from your log")
+        case .supplementsTaken:
+            return Text("\(data?.supplementsTaken ?? 0) of \(data?.supplementsDue ?? 0) · from Supplements")
         case nil:
             break
+        }
+        if let target = habit.timesPerDay, target > 1 {
+            return Text("\(HabitRules.checkCount(habit, on: now, log: log, calendar: calendar)) of \(target) today")
         }
         if case .timesPerWeek(let times) = habit.schedule {
             return Text("\(HabitRules.weekCount(habit, through: now, log: log, calendar: calendar)) of \(times) this week")
@@ -235,9 +249,19 @@ struct HabitTodayList: View {
         return Text("\(schedule) · \(date, format: .dateTime.hour().minute())")
     }
 
-    private func toggle(_ habit: Habit, done: Bool, now: Date) {
+    /// One tap is one tick; "2× a day" counts up to its target, and a tap
+    /// once it's reached clears the day.
+    private func tick(_ habit: Habit, log: HabitRules.Log, now: Date) {
+        let target = max(habit.timesPerDay ?? 1, 1)
+        let count = HabitRules.checkCount(habit, on: now, log: log, calendar: calendar)
         do {
-            try store.setHabit(habit.id, done: done, on: now, calendar: calendar)
+            if count >= target {
+                try store.setHabit(habit.id, done: false, on: now, calendar: calendar)
+            } else if count == 0 {
+                try store.setHabit(habit.id, done: true, on: now, calendar: calendar)
+            } else {
+                try store.addHabitCheck(habit.id, on: now, calendar: calendar)
+            }
             Task { await reminders.sync(store: store) }
         } catch {
             showError = true

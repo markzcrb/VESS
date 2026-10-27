@@ -13,6 +13,10 @@ nonisolated struct Habit: Identifiable, Codable, Hashable, Sendable {
     /// Set for habits that complete themselves; `nil` is ticked by hand.
     var auto: HabitAutoRule?
     let createdAt: Date
+    /// Ticks needed on a day ("2× a day"); `nil` is once.
+    var timesPerDay: Int? = nil
+    /// The SF Symbol chosen in the sheet; `nil` uses the category's.
+    var symbol: String? = nil
 }
 
 nonisolated enum HabitSchedule: Codable, Hashable, Sendable {
@@ -37,6 +41,16 @@ nonisolated enum HabitAutoRule: Codable, Hashable, Sendable {
     case proteinAtBreakfast
     /// Apple Health steps reach this many.
     case steps(Int)
+    /// Last night's sleep (Apple Health) reaches this many minutes.
+    case sleep(minutes: Int)
+    /// Mindful minutes today (Apple Health) reach this many.
+    case mindfulMinutes(Int)
+    /// No caffeine logged at or after this hour; done once the hour has passed.
+    case noCaffeineAfter(hour: Int)
+    /// Fibre logged reaches this many grams.
+    case fiber(grams: Int)
+    /// Every supplement due that day is taken (Supplements).
+    case supplementsTaken
 }
 
 /// A day a hand-ticked habit was done.
