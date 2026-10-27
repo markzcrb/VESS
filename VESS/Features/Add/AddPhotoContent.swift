@@ -17,8 +17,8 @@ struct AddPhotoContent: View {
     @Environment(FoodLogUndo.self) private var undo
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    /// The camera page's visible height, so the square viewfinder leaves
-    /// room for the shutter on a small screen (SE).
+    /// The camera page's visible height, so the viewfinder leaves room for
+    /// the shutter on a small screen (SE).
     @State private var visibleHeight: CGFloat = 0
 
     @AppStorage("photo.remaining") private var remaining = -1
@@ -100,87 +100,32 @@ struct AddPhotoContent: View {
         }
     }
 
+    /// No estimates left today: the camera isn't started (saves battery) and
+    /// the shutter and library are off.
+    private var isOutOfEstimates: Bool { remainingToday == 0 }
+
+    /// The shutter row's height, so the viewfinder leaves room for it.
+    private static let controlsHeight: CGFloat = 84
+
     private var cameraView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: VESSSpacing.lg) {
-                Text("Fit the whole plate in the frame.")
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.secondaryText)
+            VStack(alignment: .leading, spacing: VESSSpacing.md) {
+                viewfinder
+                    // Full width at 3:4, as tall as fits above the shutter row.
+                    .aspectRatio(3.0 / 4.0, contentMode: .fit)
+                    .frame(maxWidth: .infinity,
+                           maxHeight: visibleHeight > 0 ? max(visibleHeight - Self.controlsHeight - VESSSpacing.md * 3, 200) : nil)
+                    .frame(maxWidth: .infinity)
 
-                ZStack {
-                    RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
-                        .fill(VESSColor.fill)
-                    switch camera.state {
-                    case .running:
-                        CameraPreview(session: camera.box.session)
-                            .clipShape(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
-                    case .idle:
-                        ProgressView()
-                    case .unavailable, .denied:
-                        VStack(spacing: VESSSpacing.sm) {
-                            Image(systemName: "camera")
-                                .font(.title2)
-                                .foregroundStyle(VESSColor.secondaryText)
-                                .accessibilityHidden(true)
-                            Text(camera.state == .denied ? "Camera access is off for VESS. Pick a photo, or turn it on in Settings." : "The camera isn't available here. Pick a photo instead.")
-                                .vessTextStyle(.bodyS)
-                                .foregroundStyle(VESSColor.secondaryText)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(VESSSpacing.lg)
-                    }
-                }
-                // Square, and at most half the page, so the shutter stays on screen.
-                .aspectRatio(1, contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: visibleHeight > 0 ? visibleHeight * 0.5 : nil)
-                .accessibilityElement(children: .combine)
-
-                HStack {
-                    PhotosPicker(selection: $pickerItem, matching: .images, photoLibrary: .shared()) {
-                        Label("Photos", systemImage: "photo.on.rectangle")
-                            .labelStyle(.iconOnly)
-                            .font(.title3)
-                            .foregroundStyle(VESSColor.text)
-                            .frame(width: VESSSize.addButton, height: VESSSize.addButton)
-                            .background(VESSColor.fill, in: Circle())
-                    }
-                    .accessibilityLabel("Pick a photo")
-                    .accessibilityIdentifier("photo.pick")
-                    Spacer()
-                    Button(action: shoot) {
-                        Circle()
-                            .fill(VESSColor.accentFill)
-                            .frame(width: 72, height: 72)
-                            .overlay(Circle().strokeBorder(VESSColor.borderStrong, lineWidth: 4).padding(-6))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(camera.state != .running)
-                    .opacity(camera.state == .running ? 1 : 0.4)
-                    .accessibilityLabel("Take photo")
-                    .accessibilityIdentifier("photo.shutter")
-                    Spacer()
-                    Button { camera.isFlashOn.toggle() } label: {
-                        Image(systemName: camera.isFlashOn ? "bolt.fill" : "bolt.slash")
-                            .font(.title3)
-                            .foregroundStyle(VESSColor.text)
-                            .frame(width: VESSSize.addButton, height: VESSSize.addButton)
-                            .background(VESSColor.fill, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .opacity(camera.hasFlash ? 1 : 0)
-                    .disabled(!camera.hasFlash)
-                    .accessibilityLabel(camera.isFlashOn ? "Flash on" : "Flash off")
-                }
+                controls
 
                 #if DEBUG
-                if ProcessInfo.processInfo.arguments.contains("-aiMock") {
+                if ProcessInfo.processInfo.arguments.contains("-aiMock"), !isOutOfEstimates {
                     Button("Use a sample photo (debug)") { use(Self.samplePhoto()) }
                         .buttonStyle(.vessSecondary)
                         .accessibilityIdentifier("photo.sample")
                 }
                 #endif
-
 
                 // At accessibility sizes it ends the page, so the shutter comes first.
                 if dynamicTypeSize.isAccessibilitySize { footer.padding(.horizontal, -VESSSpacing.screenInset) }
@@ -189,12 +134,111 @@ struct AddPhotoContent: View {
             .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.md)
         }
+        // The visible height between the bars, for the viewfinder's size.
+        .onGeometryChange(for: CGFloat.self) { $0.size.height - $0.safeAreaInsets.top - $0.safeAreaInsets.bottom } action: { visibleHeight = $0 }
         // Pinned above the safe area, so it's never cut off at the bottom.
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !dynamicTypeSize.isAccessibilitySize { footer }
         }
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { visibleHeight = $0 }
-        .task { await camera.start() }
+        .task(id: isOutOfEstimates) {
+            if isOutOfEstimates { camera.stop() } else { await camera.start() }
+        }
+    }
+
+    private var viewfinder: some View {
+        let shape = RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
+        return ZStack {
+            shape.fill(VESSColor.fill)
+            if isOutOfEstimates {
+                VStack(spacing: VESSSpacing.md) {
+                    Text("No estimates left today · \(AIQuotaText.resetsShort(after: AppClock.now))")
+                        .vessTextStyle(.bodyM)
+                        .foregroundStyle(VESSColor.text)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Log manually", action: onSearchInstead)
+                        .buttonStyle(.vessSecondary)
+                        .accessibilityIdentifier("photo.logManually")
+                }
+                .padding(VESSSpacing.xl)
+            } else {
+                switch camera.state {
+                case .running:
+                    CameraPreview(session: camera.box.session)
+                        .clipShape(shape)
+                case .idle:
+                    ProgressView()
+                case .unavailable, .denied:
+                    VStack(spacing: VESSSpacing.sm) {
+                        Image(systemName: "camera")
+                            .font(.title2)
+                            .foregroundStyle(VESSColor.secondaryText)
+                            .accessibilityHidden(true)
+                        Text(camera.state == .denied ? "Camera access is off for VESS. Pick a photo, or turn it on in Settings." : "The camera isn't available here. Pick a photo instead.")
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(VESSSpacing.lg)
+                }
+            }
+        }
+        .overlay(alignment: .top) {
+            if !isOutOfEstimates {
+                Text("Fit the whole plate in the frame.")
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.text)
+                    .padding(.horizontal, VESSSpacing.sm)
+                    .padding(.vertical, VESSSpacing.xxs + 2)
+                    .background(VESSColor.background.opacity(0.7), in: Capsule())
+                    .padding(.top, VESSSpacing.sm)
+                    .padding(.horizontal, VESSSpacing.sm)
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var controls: some View {
+        HStack {
+            PhotosPicker(selection: $pickerItem, matching: .images, photoLibrary: .shared()) {
+                Label("Photos", systemImage: "photo.on.rectangle")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .foregroundStyle(VESSColor.text)
+                    .frame(width: VESSSize.addButton, height: VESSSize.addButton)
+                    .background(VESSColor.fill, in: Circle())
+            }
+            .disabled(isOutOfEstimates)
+            .opacity(isOutOfEstimates ? 0.4 : 1)
+            .accessibilityLabel("Pick a photo")
+            .accessibilityIdentifier("photo.pick")
+            Spacer()
+            Button(action: shoot) {
+                Circle()
+                    .fill(VESSColor.accentFill)
+                    .frame(width: 72, height: 72)
+                    .overlay(Circle().strokeBorder(VESSColor.borderStrong, lineWidth: 4).padding(-6))
+            }
+            .buttonStyle(.plain)
+            .disabled(camera.state != .running || isOutOfEstimates)
+            .opacity(camera.state == .running && !isOutOfEstimates ? 1 : 0.4)
+            .accessibilityLabel("Take photo")
+            .accessibilityIdentifier("photo.shutter")
+            Spacer()
+            Button { camera.isFlashOn.toggle() } label: {
+                Image(systemName: camera.isFlashOn ? "bolt.fill" : "bolt.slash")
+                    .font(.title3)
+                    .foregroundStyle(VESSColor.text)
+                    .frame(width: VESSSize.addButton, height: VESSSize.addButton)
+                    .background(VESSColor.fill, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .opacity(camera.hasFlash && !isOutOfEstimates ? 1 : 0)
+            .disabled(!camera.hasFlash || isOutOfEstimates)
+            .accessibilityLabel(camera.isFlashOn ? "Flash on" : "Flash off")
+        }
+        .frame(height: Self.controlsHeight)
     }
 
     /// Two short lines: what happens to the photo, then what's left today.
@@ -467,8 +511,8 @@ private struct EstimatedItemRow: View {
     let onDelete: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    /// The camera page's visible height, so the square viewfinder leaves
-    /// room for the shutter on a small screen (SE).
+    /// The camera page's visible height, so the viewfinder leaves room for
+    /// the shutter on a small screen (SE).
     @State private var visibleHeight: CGFloat = 0
     @State private var kcalText = ""
 
