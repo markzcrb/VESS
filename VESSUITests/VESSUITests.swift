@@ -252,7 +252,7 @@ final class VESSUITests: XCTestCase {
         input.tap()
         input.typeText("How is my protein today?")
         tapWhenReady(app.buttons["coach.send"])
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'close to your 140 g target'")).firstMatch.waitForExistence(timeout: 10),
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'of your 140 g'")).firstMatch.waitForExistence(timeout: 10),
                       "The canned answer appears")
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS '17 questions left today'")).firstMatch.exists)
     }
