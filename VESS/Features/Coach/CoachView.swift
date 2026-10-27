@@ -21,15 +21,13 @@ struct CoachView: View {
     @State private var showConsent = false
     @State private var showSettings = false
     @State private var showSignIn = false
+    /// A chart in an answer that was tapped: its metric's screen.
+    @State private var openChart: CoachChartRequest.Metric?
+    @Environment(\.vessOpenAdd) private var openAdd
     @FocusState private var isComposerFocused: Bool
 
     private let calendar = Calendar.current
 
-    private static let suggestions: [LocalizedStringResource] = [
-        "How has my protein been this week?",
-        "What could I have for dinner?",
-        "How's my water today?",
-    ]
 
     var body: some View {
         let messages = store.coachMessages
@@ -44,14 +42,17 @@ struct CoachView: View {
 
                     ForEach(messages) { message in
                         bubble(message)
+                            .id(message.id)
+                            .transition(.opacity)
                     }
 
                     if isSending {
-                        CoachLabel()
-                        Text("Thinking…")
-                            .vessTextStyle(.bodyM)
-                            .foregroundStyle(VESSColor.tertiaryText)
-                            .accessibilityIdentifier("coach.thinking")
+                        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                            CoachLabel()
+                            CoachTypingIndicator()
+                        }
+                        .transition(.opacity)
+                        .accessibilityIdentifier("coach.thinking")
                     }
 
                     if let failure {
@@ -68,7 +69,14 @@ struct CoachView: View {
             .scrollDismissesKeyboard(.interactively)
             .defaultScrollAnchor(.bottom)
             .onChange(of: messages.count) {
-                withAnimation(reduceMotion ? nil : VESSMotion.selection) { proxy.scrollTo("bottom", anchor: .bottom) }
+                // A new answer is read from its start; a question goes to the bottom.
+                withAnimation(reduceMotion ? nil : VESSMotion.selection) {
+                    if let last = messages.last, last.role == .assistant {
+                        proxy.scrollTo(last.id, anchor: .top)
+                    } else {
+                        proxy.scrollTo("bottom", anchor: .bottom)
+                    }
+                }
             }
             .onChange(of: isSending) {
                 withAnimation(reduceMotion ? nil : VESSMotion.selection) { proxy.scrollTo("bottom", anchor: .bottom) }
@@ -90,6 +98,9 @@ struct CoachView: View {
             }
         }
         .sheet(isPresented: $showSettings) { CoachSettingsSheet() }
+        .navigationDestination(item: $openChart) { metric in
+            chartDetail(metric)
+        }
         .sheet(isPresented: $showSignIn) { AISignInSheet() }
         .vessAIConsent(.coach, isPresented: $showConsent) {
             if let question = pendingQuestion { send(question) }
@@ -97,6 +108,19 @@ struct CoachView: View {
     }
 
     // MARK: Messages
+
+    @ViewBuilder
+    private func chartDetail(_ metric: CoachChartRequest.Metric) -> some View {
+        switch metric {
+        case .steps: StepsDetailView(day: AppClock.now)
+        case .energy: EnergyDetailView()
+        case .protein, .carbs, .fat, .fiber: MacrosDetailView()
+        case .water, .caffeine: CaffeineView(day: AppClock.now)
+        case .sleep: SleepView()
+        case .weight: BodyView()
+        case .restingHeartRate: HeartView()
+        }
+    }
 
     @ViewBuilder
     private func bubble(_ message: CoachMessage) -> some View {
@@ -115,11 +139,9 @@ struct CoachView: View {
         case .assistant:
             VStack(alignment: .leading, spacing: VESSSpacing.sm) {
                 CoachLabel()
-                Text(verbatim: message.text)
-                    .vessTextStyle(.bodyM)
-                    .foregroundStyle(VESSColor.text)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
+                CoachAnswer(text: message.text) { metric in
+                    if metric == .water { openAdd(.drink) } else { openChart = metric }
+                }
             }
             .accessibilityElement(children: .combine)
         }
@@ -150,16 +172,17 @@ struct CoachView: View {
 
     private func composer(isEmpty: Bool) -> some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            if isEmpty, account.isSignedIn {
+            // Three prompts from today, when empty and after each answer.
+            if account.isSignedIn, !isSending, isEmpty || store.coachMessages.last?.role == .assistant {
                 VESSBleedingRow {
                     HStack(spacing: VESSSpacing.xs) {
-                        ForEach(Self.suggestions.indices, id: \.self) { index in
-                            Button(String(localized: Self.suggestions[index])) { ask(String(localized: Self.suggestions[index])) }
+                        ForEach(CoachPrompts.today(store: store, health: health.state.snapshot, now: AppClock.now, calendar: calendar), id: \.self) { prompt in
+                            Button(prompt) { ask(prompt) }
                                 .buttonStyle(.vessQuick)
-                                .disabled(isSending)
                         }
                     }
                 }
+                .transition(.opacity)
             }
             if account.isSignedIn {
                 HStack(alignment: .bottom, spacing: VESSSpacing.sm) {
@@ -292,7 +315,10 @@ struct CoachView: View {
         Task {
             do {
                 let reply: CoachReply = try await account.callFunction("coach", json: body)
-                try store.add(CoachMessage(id: UUID(), role: .assistant, text: reply.reply, createdAt: AppClock.now))
+                // The answer fades in (at once with Reduce Motion).
+                try withAnimation(reduceMotion ? nil : .easeOut(duration: 0.35)) {
+                    try store.add(CoachMessage(id: UUID(), role: .assistant, text: reply.reply, createdAt: AppClock.now))
+                }
                 if let left = reply.remaining { setRemaining(left) }
             } catch {
                 let backend = BackendError.from(error)
@@ -314,6 +340,100 @@ struct CoachView: View {
         utc.timeZone = .gmt
         let parts = utc.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+}
+
+/// An answer in blocks: paragraphs with bold and italic, lists with a
+/// hanging bullet. Raw Markdown markers never show.
+struct CoachAnswer: View {
+    let text: String
+    var onOpenChart: (CoachChartRequest.Metric) -> Void = { _ in }
+
+    @Environment(LocalStore.self) private var store
+    @Environment(HealthDataStore.self) private var health
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+            ForEach(Array(CoachReplyFormat.blocks(text).enumerated()), id: \.offset) { _, block in
+                switch block {
+                case .paragraph(let paragraph):
+                    styled(Text(paragraph))
+                case .list(let items):
+                    VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                        ForEach(items.indices, id: \.self) { index in
+                            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+                                Text(verbatim: "•").foregroundStyle(VESSColor.secondaryText)
+                                styled(Text(items[index]))
+                            }
+                        }
+                    }
+                case .chart(let request):
+                    // Drawn from this iPhone's data, never from the answer's numbers.
+                    let series = CoachChartSeries.make(request, store: store, health: health.state.snapshot, now: AppClock.now, calendar: .current)
+                    CoachChartCard(series: series) { onOpenChart(request.metric) }
+                }
+            }
+        }
+        .textSelection(.enabled)
+    }
+
+    private func styled(_ text: Text) -> some View {
+        text
+            .vessTextStyle(.bodyM)
+            .foregroundStyle(VESSColor.text)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+/// Three dots while Coach is answering; still with Reduce Motion.
+struct CoachTypingIndicator: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        HStack(spacing: VESSSpacing.xxs + 2) {
+            ForEach(0..<3, id: \.self) { index in
+                Circle()
+                    .fill(VESSColor.tertiaryText)
+                    .frame(width: 7, height: 7)
+                    .phaseAnimator(reduceMotion ? [1.0] : [0.3, 1.0]) { dot, opacity in
+                        dot.opacity(opacity)
+                    } animation: { _ in .easeInOut(duration: 0.5).delay(Double(index) * 0.15) }
+            }
+        }
+        .frame(minHeight: VESSHitTarget.minimum / 2)
+        .accessibilityElement()
+        .accessibilityLabel("Coach is answering")
+    }
+}
+
+/// Three questions that fit today: dinner not logged yet, last night's
+/// sleep, protein or water behind; then general ones.
+enum CoachPrompts {
+    @MainActor
+    static func today(store: LocalStore, health: HealthSnapshot?, now: Date, calendar: Calendar) -> [String] {
+        var prompts: [String] = []
+        let hour = calendar.component(.hour, from: now)
+        let entries = store.foodEntries(on: now, calendar: calendar)
+        let targets = store.profile?.nutritionTargets
+        if hour >= 15, entries.entries(for: .dinner).isEmpty {
+            prompts.append(String(localized: "What can I cook tonight?"))
+        }
+        if let health, SleepRules.lastNight(SleepRules.nights(health.sleep, calendar: calendar), now: now, calendar: calendar) != nil {
+            prompts.append(String(localized: "How did I sleep?"))
+        }
+        if let targets, entries.map(\.nutrition).total.proteinGrams < targets.proteinGrams * Double(hour) / 24 {
+            prompts.append(String(localized: "How's my protein this week?"))
+        }
+        let water = store.hydrationLogs(on: now, calendar: calendar).reduce(0) { $0 + $1.hydrationMilliliters }
+        if hour >= 14, let goal = store.profile?.waterTargetMilliliters, water < goal / 2 {
+            prompts.append(String(localized: "How's my water today?"))
+        }
+        if health != nil { prompts.append(String(localized: "How many steps did I do this week?")) }
+        for fallback in [String(localized: "How's my protein this week?"), String(localized: "What can I cook tonight?"), String(localized: "How's my water today?")]
+        where !prompts.contains(fallback) {
+            prompts.append(fallback)
+        }
+        return Array(prompts.prefix(3))
     }
 }
 
