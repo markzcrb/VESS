@@ -205,6 +205,7 @@ struct AddDrinkSheet: View {
                         .transition(.opacity)
                     }
                 }
+                .vessListChanges(logs.map(\.id))
                 .vessHairlineBottom()
                 if caffeineToday >= 1 {
                     Button("Caffeine today") { showCaffeine = true }

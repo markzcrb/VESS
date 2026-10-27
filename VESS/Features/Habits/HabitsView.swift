@@ -186,6 +186,7 @@ struct HabitTodayList: View {
                         row(habit, now: now, log: log)
                     }
                 }
+                .vessListChanges(listed.map(\.id))
                 .vessHairlineBottom()
             }
         }

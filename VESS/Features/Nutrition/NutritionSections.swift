@@ -152,6 +152,7 @@ struct MealDiarySection: View {
                         row(for: entry)
                     }
                 }
+                .vessListChanges(entries.map(\.id))
                 .vessHairlineBottom()
             }
 
@@ -234,6 +235,7 @@ struct DrinksDiarySection: View {
                         row(for: group)
                     }
                 }
+                .vessListChanges(groups.map(\.id))
                 .vessHairlineBottom()
             }
 

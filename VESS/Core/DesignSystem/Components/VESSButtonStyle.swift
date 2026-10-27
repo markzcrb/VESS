@@ -35,7 +35,7 @@ struct VESSButtonStyle: ButtonStyle {
             .contentShape(Capsule())
             // Disabled is drawn (raised fill, tertiary text), not faded.
             .opacity(isEnabled && configuration.isPressed ? 0.7 : (isEnabled || isFullWidth ? 1 : 0.4))
-            .scaleEffect(configuration.isPressed && !reduceMotion && variant != .quiet ? 0.98 : 1)
+            .scaleEffect(configuration.isPressed && !reduceMotion && variant != .quiet ? 0.97 : 1)
             .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: configuration.isPressed)
     }
 

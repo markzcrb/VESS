@@ -146,6 +146,8 @@ struct TodayView: View {
             .padding(.bottom, VESSSpacing.huge)
         }
         .vessScreenBackground(.fuel)
+        // Pull down to read Apple Health again.
+        .refreshable { await health.refresh(stepsTarget: profile.dailyStepsTarget) }
         .vessScrollsToTopOnReselect()
         .vessTabBarFade()
         .toolbar(.hidden, for: .navigationBar)

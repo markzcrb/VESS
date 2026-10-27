@@ -466,3 +466,19 @@ struct VESSThumbnail: View {
             .accessibilityHidden(true)
     }
 }
+
+extension View {
+    /// Rows coming and going ease in and out (at once with Reduce Motion).
+    func vessListChanges<Value: Equatable>(_ value: Value) -> some View {
+        modifier(VESSListChanges(value: value))
+    }
+}
+
+private struct VESSListChanges<Value: Equatable>: ViewModifier {
+    let value: Value
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content.animation(reduceMotion ? nil : .smooth(duration: 0.3), value: value)
+    }
+}

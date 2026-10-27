@@ -62,6 +62,8 @@ enum VESSRing {
 enum VESSMotion {
     /// Rings sweep from 0, and hero numbers count up with them.
     static let ringSweep = Animation.easeOut(duration: 0.8)
+    /// A ring moving between two values after it's on screen.
+    static let ringChange = Animation.spring(response: 0.5, dampingFraction: 0.85)
     /// Metric and status rows fade and rise `rowRise`, 40 ms apart.
     static let rowStagger: Double = 0.04
     static let rowAppear = Animation.easeOut(duration: 0.35)

@@ -183,6 +183,7 @@ struct GroceryContent: View {
                     row(line, detail: detail, model: model, now: now)
                 }
             }
+            .vessListChanges(lines.map(\.id))
             .vessHairlineBottom()
         }
     }

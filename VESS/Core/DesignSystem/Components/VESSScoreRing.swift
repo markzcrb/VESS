@@ -64,8 +64,8 @@ struct VESSScoreRing: View {
                     .accessibilityHidden(true)
             }
         }
-        .onAppear { animate(to: progress) }
-        .onChange(of: progress) { _, new in animate(to: new) }
+        .onAppear { animate(to: progress, with: VESSMotion.ringSweep) }
+        .onChange(of: progress) { _, new in animate(to: new, with: VESSMotion.ringChange) }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(label))
         .accessibilityValue(accessibilityValue)
@@ -126,8 +126,8 @@ struct VESSScoreRing: View {
         .frame(width: diameter, height: diameter)
     }
 
-    private func animate(to value: Double) {
-        withAnimation(reduceMotion ? nil : VESSMotion.ringSweep) {
+    private func animate(to value: Double, with animation: Animation) {
+        withAnimation(reduceMotion ? nil : animation) {
             shown = value
             hasCounted = true
         }
@@ -191,6 +191,8 @@ struct VESSMetricStripItem: View {
                 Text(verbatim: value)
                     .vessTextStyle(.numberS)
                     .foregroundStyle(VESSColor.text)
+                    .contentTransition(.numericText())
+                    .animation(reduceMotion ? nil : VESSMotion.ringChange, value: value)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                     .padding(.horizontal, VESSSpacing.xxs)
@@ -209,8 +211,9 @@ struct VESSMetricStripItem: View {
                     .lineLimit(1)
             }
         }
+        // Sweeps in once; later changes spring between values.
         .onAppear { withAnimation(reduceMotion ? nil : VESSMotion.ringSweep) { shown = progress } }
-        .onChange(of: progress) { _, new in withAnimation(reduceMotion ? nil : VESSMotion.ringSweep) { shown = new } }
+        .onChange(of: progress) { _, new in withAnimation(reduceMotion ? nil : VESSMotion.ringChange) { shown = new } }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(label))
         .accessibilityValue(spokenValue ?? Text(verbatim: value))
