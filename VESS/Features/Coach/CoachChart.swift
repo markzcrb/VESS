@@ -55,7 +55,12 @@ struct CoachChartSeries {
             return .init(request: request, points: days.map { day in (day, nights.first { $0.day == day }?.asleepMinutes) },
                          target: profile.map { Double($0.dailySleepTargetMinutes) }, style: .bars)
         case .weight:
-            let weights = (health?.weights ?? []).filter { $0.measuredAt >= start }
+            // Apple Health's weights, plus the profile weight on the day it was
+            // last saved when Health has none that day.
+            var weights = (health?.weights ?? []).filter { $0.measuredAt >= start }
+            if let profile, profile.updatedAt >= start, !weights.contains(where: { calendar.isDate($0.measuredAt, inSameDayAs: profile.updatedAt) }) {
+                weights.append(BodyMassSample(kilograms: profile.weightKilograms, measuredAt: profile.updatedAt))
+            }
             return .init(request: request, points: days.map { day in (day, weights.last { calendar.isDate($0.measuredAt, inSameDayAs: day) }?.kilograms) },
                          target: profile?.goalWeightKilograms, style: .line)
         case .restingHeartRate:

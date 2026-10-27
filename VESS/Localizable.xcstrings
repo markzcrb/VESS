@@ -298,6 +298,16 @@
         }
       }
     },
+    "%@ chart, last %lld days" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ chart, last %2$lld days"
+          }
+        }
+      }
+    },
     "%@ cloves" : {
 
     },
@@ -2253,6 +2263,9 @@
     "Coach can make mistakes. Check anything important." : {
 
     },
+    "Coach is answering" : {
+
+    },
     "Coach settings" : {
 
     },
@@ -3270,6 +3283,9 @@
     "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100 %; two hours away or more scores 0 %." : {
 
     },
+    "How did I sleep?" : {
+
+    },
     "How do you like to eat?" : {
 
     },
@@ -3282,13 +3298,13 @@
     "How Fuel is calculated" : {
 
     },
-    "How has my protein been this week?" : {
-
-    },
     "How Heart is read" : {
 
     },
     "How macros are measured" : {
+
+    },
+    "How many steps did I do this week?" : {
 
     },
     "How often" : {
@@ -3304,6 +3320,9 @@
 
     },
     "How your body is doing." : {
+
+    },
+    "How's my protein this week?" : {
 
     },
     "How's my water today?" : {
@@ -3542,6 +3561,9 @@
 
     },
     "Last 7 nights" : {
+
+    },
+    "Last 30 days" : {
 
     },
     "Last at %@" : {
@@ -4029,6 +4051,9 @@
     "No data" : {
 
     },
+    "No data for these days yet." : {
+
+    },
     "No data today" : {
 
     },
@@ -4385,6 +4410,9 @@
 
     },
     "Opens Settings" : {
+
+    },
+    "Opens the details" : {
 
     },
     "Opens the month" : {
@@ -5474,9 +5502,6 @@
     "These use what's in your pantry first. Check use-by dates before cooking." : {
 
     },
-    "Thinking…" : {
-
-    },
     "This device can't scan barcodes. Type the number under the barcode instead." : {
 
     },
@@ -5962,10 +5987,10 @@
     "What brings you to VESS?" : {
 
     },
-    "What Coach sees" : {
+    "What can I cook tonight?" : {
 
     },
-    "What could I have for dinner?" : {
+    "What Coach sees" : {
 
     },
     "What is it?" : {
