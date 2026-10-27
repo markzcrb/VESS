@@ -22,6 +22,9 @@ struct AddDrinkSheet: View {
     /// Inside the Add sheet (21): its stack, X and title, so no own header close.
     var embedded = false
     @State private var preset: DrinkPreset = .water
+    /// One of the user's saved drinks, when that's what's chosen.
+    @State private var saved: SavedDrink?
+    @State private var editingSaved: SavedDrink?
     /// The amount to add: one of the drink's sizes, or a custom amount.
     @State private var volume: Double = DrinkPreset.water.selectedServing.milliliters
     /// % by volume, for alcohol (the Strength row).
@@ -72,7 +75,16 @@ struct AddDrinkSheet: View {
                     }
                 }
                 // 1. What, 2. how much, 3. when, 4. Add; the day's drinks last.
-                DrinkTypeChips(selection: preset, onSelect: select, onCustom: { showCustom = true })
+                DrinkTypeChips(
+                    selection: saved == nil ? preset : nil,
+                    saved: store.profile?.savedDrinks ?? [],
+                    savedSelection: saved?.id,
+                    onSelect: select,
+                    onSelectSaved: select,
+                    onEditSaved: { editingSaved = $0 },
+                    onDeleteSaved: deleteSaved,
+                    onCustom: { showCustom = true }
+                )
                 amount
                 DrinkCompactTimeRow(time: $time, range: DrinkTime.range(on: day, calendar: calendar))
                 addButton
@@ -88,6 +100,9 @@ struct AddDrinkSheet: View {
         }
         .navigationDestination(isPresented: $showCustom) {
             CustomDrinkView(day: day, preset: preset, volume: volume, time: time, onClose: { dismiss() })
+        }
+        .navigationDestination(item: $editingSaved) { drink in
+            CustomDrinkView(editing: drink, day: day, onClose: { dismiss() })
         }
         .sheet(item: $editing) { log in
             EditDrinkSheet(log: log, day: day)
@@ -113,7 +128,7 @@ struct AddDrinkSheet: View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
             VESSSectionHeader(title: "Amount")
             VESSChipFlow(spacing: VESSSpacing.xs) {
-                ForEach(DrinkFacts.sizes(for: preset), id: \.self) { size in
+                ForEach(saved.map { [$0.volumeMilliliters] } ?? DrinkFacts.sizes(for: preset), id: \.self) { size in
                     VESSChip(title: "\(VESSFormat.milliliters(size)) ml", isSelected: volume == size) { setVolume(size) }
                         .accessibilityIdentifier("addDrink.size.\(Int(size))")
                 }
@@ -213,7 +228,7 @@ struct AddDrinkSheet: View {
     /// "Add espresso · 30 ml".
     private var addButton: some View {
         Button(action: add) {
-            Text("Add \(String(localized: preset.title).localizedLowercase) · \(VESSFormat.milliliters(volume))\u{00A0}ml")
+            Text("Add \(saved?.name ?? String(localized: preset.title).localizedLowercase) · \(VESSFormat.milliliters(volume))\u{00A0}ml")
         }
         .buttonStyle(.vessPrimary)
         .accessibilityIdentifier("addDrink.submit")
@@ -231,11 +246,13 @@ struct AddDrinkSheet: View {
     }
 
     private var contributionPercent: Double {
-        DrinkFacts.contributionPercent(preset, profile: store.profile)
+        saved?.hydrationContributionPercent ?? DrinkFacts.contributionPercent(preset, profile: store.profile)
     }
 
     private var currentDrink: Drink {
-        preset.drink(
+        // A saved drink: its own caffeine per 100 ml, whatever the amount.
+        if let saved { return saved.drink() }
+        return preset.drink(
             name: String(localized: preset.title),
             hydrationContributionPercent: contributionPercent,
             percentByVolume: preset.defaultPercentByVolume == nil ? nil : strength
@@ -249,7 +266,22 @@ struct AddDrinkSheet: View {
 
     // MARK: Actions
 
+    private func select(_ drink: SavedDrink) {
+        saved = drink
+        preset = drink.basedOn
+        volume = drink.volumeMilliliters
+        strength = 0
+    }
+
+    private func deleteSaved(_ drink: SavedDrink) {
+        guard var profile = store.profile else { return }
+        profile.savedDrinks = (profile.savedDrinks ?? []).filter { $0.id != drink.id }
+        if saved?.id == drink.id { select(.water) }
+        do { try store.saveProfile(profile) } catch { showError = true }
+    }
+
     private func select(_ option: DrinkPreset) {
+        saved = nil
         preset = option
         volume = DrinkFacts.rememberedSize(for: option, in: lastSizes)
         strength = option.defaultPercentByVolume ?? 0
@@ -294,8 +326,14 @@ struct AddDrinkSheet: View {
 /// Smoothie as icon chips, then Custom… for any other drink (alcohol
 /// included). Scrolls off the right edge.
 struct DrinkTypeChips: View {
-    let selection: DrinkPreset
+    /// `nil` while a saved drink is chosen.
+    let selection: DrinkPreset?
+    var saved: [SavedDrink] = []
+    var savedSelection: UUID?
     let onSelect: (DrinkPreset) -> Void
+    var onSelectSaved: (SavedDrink) -> Void = { _ in }
+    var onEditSaved: (SavedDrink) -> Void = { _ in }
+    var onDeleteSaved: (SavedDrink) -> Void = { _ in }
     let onCustom: () -> Void
 
     var body: some View {
@@ -324,6 +362,15 @@ struct DrinkTypeChips: View {
                         .accessibilityIdentifier("addDrink.type.\(option.rawValue)")
                         .id(option)
                     }
+                    // The user's own drinks; long-press to edit or delete.
+                    ForEach(saved) { drink in
+                        chip(Text(verbatim: drink.name), symbol: drink.basedOn.symbol, isSelected: drink.id == savedSelection) { onSelectSaved(drink) }
+                            .contextMenu {
+                                Button("Edit", systemImage: "pencil") { onEditSaved(drink) }
+                                Button("Delete", systemImage: "trash", role: .destructive) { onDeleteSaved(drink) }
+                            }
+                            .accessibilityIdentifier("addDrink.saved")
+                    }
                     Button(action: onCustom) {
                         Label("Custom…", systemImage: "slider.horizontal.3")
                             .vessTextStyle(.bodyS)
@@ -339,8 +386,28 @@ struct DrinkTypeChips: View {
                 }
             }
             .vessHaptic(.selection, trigger: selection)
-            .onAppear { proxy.scrollTo(selection) }
+            .onAppear { if let selection { proxy.scrollTo(selection) } }
         }
+    }
+
+    private func chip(_ title: Text, symbol: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label {
+                title
+            } icon: {
+                Image(systemName: symbol)
+                    .foregroundStyle(isSelected ? VESSColor.water : VESSColor.secondaryText)
+            }
+            .vessTextStyle(.bodyS)
+            .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
+            .padding(.horizontal, VESSSpacing.sm + 2)
+            .frame(minHeight: VESSHitTarget.minimum)
+            .background(isSelected ? VESSColor.tintWater : VESSColor.fill, in: Capsule())
+            .overlay(Capsule().strokeBorder(isSelected ? VESSColor.strokeWater : VESSColor.divider))
+            .fixedSize()
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
 
@@ -473,6 +540,7 @@ enum DrinkFacts {
         switch preset {
         case .sparklingWater: "Sparkling"
         case .blackCoffee: "Coffee"
+        case .tea: "Tea"
         default: preset.title
         }
     }

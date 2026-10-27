@@ -359,3 +359,23 @@ nonisolated struct DrinkServing: Hashable, Sendable {
         case pint, longDrink
     }
 }
+
+/// A drink the user saved in Custom…: a name, the drink it's based on (its
+/// type, symbol and typical kcal), a size, the share toward water and the
+/// caffeine in that size.
+nonisolated struct SavedDrink: Identifiable, Codable, Hashable, Sendable {
+    let id: UUID
+    var name: String
+    var basedOn: DrinkPreset
+    var volumeMilliliters: Double
+    var hydrationContributionPercent: Double
+    var caffeineMilligrams: Double
+
+    /// The drink to log, with its caffeine spread per 100 ml.
+    func drink() -> Drink {
+        var drink = basedOn.drink(name: name, hydrationContributionPercent: hydrationContributionPercent)
+        drink.defaultVolumeMilliliters = volumeMilliliters
+        drink.caffeineMilligramsPer100Milliliters = volumeMilliliters > 0 ? caffeineMilligrams / volumeMilliliters * 100 : 0
+        return drink
+    }
+}

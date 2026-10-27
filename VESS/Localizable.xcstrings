@@ -459,6 +459,9 @@
     "%@ mg caffeine" : {
 
     },
+    "%@ milligrams" : {
+
+    },
     "%@ milliseconds" : {
 
     },
@@ -3324,6 +3327,9 @@
     "Improve energy" : {
 
     },
+    "in %@ ml" : {
+
+    },
     "in %lld days" : {
 
     },
@@ -3969,6 +3975,9 @@
 
     },
     "Name, dose and unit" : {
+
+    },
+    "Name, e.g. Oat flat white" : {
 
     },
     "Needed for" : {
@@ -4838,6 +4847,9 @@
     "Save %@" : {
 
     },
+    "Save as my drink" : {
+
+    },
     "Save changes" : {
 
     },
@@ -5013,6 +5025,9 @@
 
     },
     "Shows a calendar" : {
+
+    },
+    "Shows after the standard drinks, with this size, water share and caffeine." : {
 
     },
     "Shows the day's drinks" : {

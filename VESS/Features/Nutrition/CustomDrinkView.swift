@@ -21,6 +21,12 @@ struct CustomDrinkView: View {
     @State private var showTime = false
     @State private var showError = false
     @State private var hasLoadedDefaults = false
+    /// "Save as my drink": a name and the caffeine in this size.
+    @State private var savesDrink = false
+    @State private var name = ""
+    @State private var caffeineMilligrams: Double = 0
+    /// Editing a saved drink (long-press › Edit): saves it, logs nothing.
+    private let editing: SavedDrink?
 
     private let calendar = Calendar.current
     /// One drink at a time (G02).
@@ -30,9 +36,24 @@ struct CustomDrinkView: View {
     init(day: Date, preset: DrinkPreset, volume: Double, time: Date, onClose: @escaping () -> Void) {
         self.day = day
         self.onClose = onClose
+        self.editing = nil
         _preset = State(initialValue: preset)
         _volumeText = State(initialValue: VESSFormat.milliliters(volume))
         _time = State(initialValue: time)
+    }
+
+    /// Edit a saved drink.
+    init(editing saved: SavedDrink, day: Date, onClose: @escaping () -> Void) {
+        self.day = day
+        self.onClose = onClose
+        self.editing = saved
+        _preset = State(initialValue: saved.basedOn)
+        _volumeText = State(initialValue: VESSFormat.milliliters(saved.volumeMilliliters))
+        _time = State(initialValue: AppClock.now)
+        _savesDrink = State(initialValue: true)
+        _name = State(initialValue: saved.name)
+        _caffeineMilligrams = State(initialValue: saved.caffeineMilligrams)
+        _contributionPercent = State(initialValue: saved.hydrationContributionPercent)
     }
 
     var body: some View {
@@ -42,7 +63,10 @@ struct CustomDrinkView: View {
                 amount
                 drinkChoice
                 contribution
-                DrinkTimeRow(time: $time, isExpanded: $showTime, range: DrinkTime.range(on: day, calendar: calendar))
+                saveSection
+                if editing == nil {
+                    DrinkTimeRow(time: $time, isExpanded: $showTime, range: DrinkTime.range(on: day, calendar: calendar))
+                }
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .padding(.top, VESSSpacing.md)
@@ -57,7 +81,9 @@ struct CustomDrinkView: View {
         .onAppear {
             guard !hasLoadedDefaults else { return }
             hasLoadedDefaults = true
+            guard editing == nil else { return }
             contributionPercent = currentDefault
+            caffeineMilligrams = typicalCaffeine
         }
     }
 
@@ -70,7 +96,7 @@ struct CustomDrinkView: View {
             HStack(spacing: VESSSpacing.sm) {
                 VESSIconButton(systemImage: "chevron.left", label: "Back") { dismiss() }
                     .accessibilityIdentifier("customDrink.back")
-                Text("Custom amount")
+                Text(editing == nil ? "Custom amount" : "Edit drink")
                     .vessTextStyle(.titleL)
                     .foregroundStyle(VESSColor.text)
                     .accessibilityAddTraits(.isHeader)
@@ -185,16 +211,55 @@ struct CustomDrinkView: View {
         }
     }
 
+    /// "Save as my drink": name and caffeine; size and water share are the
+    /// amount and share above. It then shows after the standard chips.
+    private var saveSection: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            if editing == nil {
+                ProfileToggleRow(
+                    title: Text("Save as my drink"),
+                    subtitle: Text("Shows after the standard drinks, with this size, water share and caffeine."),
+                    isOn: $savesDrink
+                )
+                .accessibilityIdentifier("customDrink.save")
+            }
+            if savesDrink {
+                VESSTextField("Name, e.g. Oat flat white", text: $name)
+                    .accessibilityIdentifier("customDrink.name")
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Caffeine")
+                            .vessTextStyle(.bodyM)
+                            .foregroundStyle(VESSColor.text)
+                        Text("in \(VESSFormat.milliliters(volume ?? 0)) ml")
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.secondaryText)
+                    }
+                    Spacer()
+                    Text("\(VESSFormat.grams(caffeineMilligrams)) mg")
+                        .vessTextStyle(.numberRow)
+                        .foregroundStyle(VESSColor.text)
+                        .contentTransition(.numericText())
+                    Stepper("Caffeine", value: $caffeineMilligrams, in: 0...600, step: 5)
+                        .labelsHidden()
+                        .accessibilityValue(Text("\(VESSFormat.grams(caffeineMilligrams)) milligrams"))
+                }
+            }
+        }
+    }
+
     private var addButton: some View {
         Button(action: add) {
-            if let volume {
+            if editing != nil {
+                Text("Save")
+            } else if let volume {
                 Text("Add \(VESSFormat.milliliters(volume)) ml")
             } else {
                 Text("Add")
             }
         }
         .buttonStyle(.vessPrimary)
-        .disabled(volume == nil)
+        .disabled(volume == nil || (savesDrink && trimmedName.isEmpty))
         .padding(.horizontal, VESSSpacing.screenInset)
         .padding(.vertical, VESSSpacing.sm)
         .background(VESSColor.card)
@@ -236,6 +301,18 @@ struct CustomDrinkView: View {
         DrinkFacts.contributionPercent(preset, profile: store.profile)
     }
 
+    private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    /// The drink's typical caffeine in the amount, as the starting value.
+    private var typicalCaffeine: Double {
+        preset.drink(name: "").caffeineMilligramsPer100Milliliters * (volume ?? 0) / 100
+    }
+
+    private func savedDrink(volume: Double) -> SavedDrink {
+        SavedDrink(id: editing?.id ?? UUID(), name: trimmedName, basedOn: preset, volumeMilliliters: volume,
+                   hydrationContributionPercent: contributionPercent, caffeineMilligrams: caffeineMilligrams)
+    }
+
     // MARK: Actions
 
     private func stepVolume(by direction: Double) {
@@ -246,7 +323,18 @@ struct CustomDrinkView: View {
 
     private func add() {
         guard var profile = store.profile, let volume else { return }
-        let drink = preset.drink(name: String(localized: preset.title), hydrationContributionPercent: contributionPercent)
+        // Save (or update) "my drink" first.
+        if savesDrink, !trimmedName.isEmpty {
+            let saved = savedDrink(volume: volume)
+            var drinks = profile.savedDrinks ?? []
+            if let index = drinks.firstIndex(where: { $0.id == saved.id }) { drinks[index] = saved } else { drinks.append(saved) }
+            profile.savedDrinks = drinks
+            do { try store.saveProfile(profile) } catch { showError = true; return }
+            if editing != nil { dismiss(); return }
+        }
+        let drink = savesDrink && !trimmedName.isEmpty
+            ? savedDrink(volume: volume).drink()
+            : preset.drink(name: String(localized: preset.title), hydrationContributionPercent: contributionPercent)
         let log = drink.log(userID: profile.id, volumeMilliliters: volume, at: time)
         do {
             try store.add(log)

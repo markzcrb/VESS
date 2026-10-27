@@ -45,6 +45,9 @@ nonisolated struct UserProfile: Identifiable, Codable, Hashable, Sendable {
     /// never breaks decoding. `nil` (profiles from earlier builds) is the
     /// default strip. See `todayRingList`.
     var todayRings: [String]? = nil
+    /// "Save as my drink" in Custom…: the user's own drinks, after the
+    /// standard chips in the drink sheet. `nil` in earlier profiles.
+    var savedDrinks: [SavedDrink]? = nil
 
     static let defaultSleepTargetMinutes = 8 * 60
 
