@@ -43,7 +43,9 @@ enum CoachContextAssembler {
             supplementsTaken: taken,
             supplementsDue: due,
             cycle: cycle,
-            pregnant: profile.pregnant
+            pregnant: profile.pregnant,
+            preferences: profile.preferences,
+            allergens: profile.allergies
         )
         return CoachContextBuilder.build(input)
     }

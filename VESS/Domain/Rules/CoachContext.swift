@@ -74,8 +74,51 @@ nonisolated struct CoachContext: Codable, Equatable, Sendable {
     /// absent otherwise. The Coach must not suggest losing weight.
     var pregnant: Bool? = nil
 
+    /// P01: the diet ("pescatarian"), extra preferences, the EU-14 allergens
+    /// (raw values) and the ingredients not eaten. Every food suggestion
+    /// must follow these.
+    var diet: String = Diet.noRestrictions.rawValue
+    var prefer: [String] = []
+    var allergens: [String] = []
+    var avoid: [String] = []
+
+    /// The 7 days before today, oldest first, already added up, so the
+    /// Coach never has to: `nil` (JSON null) for a day without data. Steps
+    /// come from Apple Health (absent without it); energy (kcal, drinks
+    /// included), protein (g) and water (ml) from the log.
+    var stepsByDay: [DayValue]? = nil
+    var steps7dTotal: Int? = nil
+    var steps7dAvgKnownDays: Int? = nil
+    var energyByDay: [DayValue] = []
+    var energy7dTotal: Int? = nil
+    var energy7dAvgKnownDays: Int? = nil
+    var proteinByDay: [DayValue] = []
+    var protein7dTotal: Int? = nil
+    var protein7dAvgKnownDays: Int? = nil
+    var waterByDay: [DayValue] = []
+    var water7dTotal: Int? = nil
+    var water7dAvgKnownDays: Int? = nil
+
+    /// One day's total; `value` is encoded as null when there's no data.
+    struct DayValue: Codable, Equatable, Sendable {
+        var date: String
+        var value: Int?
+
+        enum CodingKeys: String, CodingKey { case date, value }
+
+        func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(date, forKey: .date)
+            try container.encode(value, forKey: .value)
+        }
+    }
+
     enum CodingKeys: String, CodingKey {
-        case date, time, name, targets, today, cycle, pregnant
+        case date, time, name, targets, today, cycle, pregnant, diet, prefer, allergens, avoid
+        case stepsByDay = "steps_by_day", steps7dTotal = "steps_7d_total", steps7dAvgKnownDays = "steps_7d_avg_known_days"
+        case energyByDay = "energy_by_day", energy7dTotal = "energy_7d_total", energy7dAvgKnownDays = "energy_7d_avg_known_days"
+        case proteinByDay = "protein_by_day", protein7dTotal = "protein_7d_total", protein7dAvgKnownDays = "protein_7d_avg_known_days"
+        case waterByDay = "water_by_day", water7dTotal = "water_7d_total", water7dAvgKnownDays = "water_7d_avg_known_days"
         case last7Days = "last_7_days"
         case mealsToday = "meals_today"
         case habitsToday = "habits_today"
@@ -106,6 +149,9 @@ nonisolated struct CoachContextInput: Sendable {
     var cycle: CycleShare?
     /// You › Body › Pregnant.
     var pregnant = false
+    /// P01 and the allergens.
+    var preferences = NutritionPreferences()
+    var allergens: Set<Allergen> = []
 
     struct CycleShare: Sendable {
         var cycleDay: Int?
@@ -198,7 +244,37 @@ nonisolated enum CoachContextBuilder {
             },
             pregnant: input.pregnant ? true : nil
         )
-        return fitted(context)
+        var result = context
+        result.diet = input.preferences.diet.rawValue
+        result.prefer = input.preferences.alsoPrefer.map(\.rawValue).sorted()
+        result.allergens = input.allergens.map(\.rawValue).sorted()
+        result.avoid = input.preferences.avoidIngredients
+
+        // The 7 days before today, oldest first.
+        let days = (1...7).reversed().compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }
+        func series(_ value: (Date) -> Double?) -> (days: [CoachContext.DayValue], total: Int?, average: Int?) {
+            let values = days.map { (day: $0, value: value($0)) }
+            let known = values.compactMap(\.value)
+            return (
+                values.map { .init(date: Self.day($0.day, calendar: calendar), value: $0.value.map(round)) },
+                known.isEmpty ? nil : round(known.reduce(0, +)),
+                average(known).map(round)
+            )
+        }
+        if let hourly = input.hourlySteps {
+            let steps = series { ActivityTrends.total(hourly, on: $0, calendar: calendar) }
+            (result.stepsByDay, result.steps7dTotal, result.steps7dAvgKnownDays) = (steps.days, steps.total, steps.average)
+        }
+        let energy = series { day in
+            guard let entries = byDay[day] else { return nil }
+            return entries.map(\.nutrition).total.calories + (drinksByDay[day] ?? []).reduce(0) { $0 + $1.energyCalories }
+        }
+        (result.energyByDay, result.energy7dTotal, result.energy7dAvgKnownDays) = (energy.days, energy.total, energy.average)
+        let protein = series { byDay[$0].map { $0.map(\.nutrition).total.proteinGrams } }
+        (result.proteinByDay, result.protein7dTotal, result.protein7dAvgKnownDays) = (protein.days, protein.total, protein.average)
+        let water = series { drinksByDay[$0].map { $0.reduce(0) { $0 + $1.hydrationMilliliters } } }
+        (result.waterByDay, result.water7dTotal, result.water7dAvgKnownDays) = (water.days, water.total, water.average)
+        return fitted(result)
     }
 
     /// Compact JSON with snake_case keys, sorted for a stable result.

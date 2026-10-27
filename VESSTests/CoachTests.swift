@@ -72,6 +72,47 @@ struct CoachTests {
         #expect(!json.contains("cycle"), "No cycle key at all when not shared")
     }
 
+    @Test("Diet, preferences, EU-14 allergens and the avoid list from P01 are in the summary")
+    func dietAndAllergens() throws {
+        var input = input(now: try TestClock.date(2026, 10, 6, 18, 40))
+        input.preferences = NutritionPreferences(diet: .pescatarian, alsoPrefer: [.highProtein], avoidIngredients: ["Coriander", "Mushrooms"])
+        input.allergens = [.nuts, .peanuts]
+        let json = try #require(JSONSerialization.jsonObject(with: CoachContextBuilder.json(CoachContextBuilder.build(input))) as? [String: Any])
+        #expect(json["diet"] as? String == "pescatarian")
+        #expect(json["prefer"] as? [String] == ["highProtein"])
+        #expect(json["allergens"] as? [String] == [Allergen.nuts.rawValue, Allergen.peanuts.rawValue].sorted())
+        #expect(json["avoid"] as? [String] == ["Coriander", "Mushrooms"])
+    }
+
+    @Test("Per-day totals for the 7 days before today, null for days without data; the total and average use known days only")
+    func dailySeries() throws {
+        let now = try TestClock.date(2026, 10, 6, 18, 40)
+        // Steps on 3 of the 7 days; meals and water on 2.
+        let steps = [-1, -2, -5].map { offset in
+            HourlyValue(start: calendar.date(byAdding: .day, value: offset, to: try! TestClock.date(2026, 10, 6, 9))!, value: Double(1000 * -offset))
+        }
+        let entries = [
+            entry("Oats", .breakfast, kcal: 400, protein: 20, at: try TestClock.date(2026, 10, 5, 8)),
+            entry("Cod", .dinner, kcal: 600, protein: 40, at: try TestClock.date(2026, 10, 3, 19)),
+        ]
+        let drinks = [water(500, at: try TestClock.date(2026, 10, 5, 10)), water(750, at: try TestClock.date(2026, 10, 3, 12))]
+        let json = try #require(JSONSerialization.jsonObject(with: CoachContextBuilder.json(CoachContextBuilder.build(
+            input(now: now, entries: entries, drinks: drinks, steps: steps)
+        ))) as? [String: Any])
+
+        let byDay = try #require(json["steps_by_day"] as? [[String: Any]])
+        #expect(byDay.count == 7 && byDay.first?["date"] as? String == "2026-09-29" && byDay.last?["date"] as? String == "2026-10-05")
+        #expect(byDay.last?["value"] as? Int == 1000 && byDay[0]["value"] is NSNull, "null for a day without data")
+        #expect(json["steps_7d_total"] as? Int == 8000 && json["steps_7d_avg_known_days"] as? Int == 2667)
+        #expect(json["energy_7d_total"] as? Int == 1000 && json["energy_7d_avg_known_days"] as? Int == 500)
+        #expect(json["protein_7d_total"] as? Int == 60 && json["water_7d_total"] as? Int == 1250 && json["water_7d_avg_known_days"] as? Int == 625)
+        #expect((json["energy_by_day"] as? [[String: Any]])?.filter { $0["value"] is NSNull }.count == 5)
+
+        // Without Apple Health there are no step keys at all.
+        let noHealth = String(decoding: CoachContextBuilder.json(CoachContextBuilder.build(input(now: now))), as: UTF8.self)
+        #expect(!noHealth.contains("steps_by_day") && !noHealth.contains("steps_7d_total"))
+    }
+
     @Test("\"pregnant\": true only when Pregnant is on in You › Body; no key otherwise")
     func pregnant() throws {
         let now = try TestClock.date(2026, 10, 6, 18, 40)
