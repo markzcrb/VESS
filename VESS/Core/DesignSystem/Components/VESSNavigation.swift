@@ -123,12 +123,20 @@ extension View {
                         Text(title)
                             .vessTextStyle(.labelCaps)
                             .foregroundStyle(VESSColor.text)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                         subtitle?
                             .vessTextStyle(.caption)
                             .foregroundStyle(VESSColor.secondaryText)
+                            .lineLimit(1)
                     }
+                    // Like system nav titles: it stops growing, so the bar's
+                    // buttons never squeeze it away; long-press shows it large.
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                    .fixedSize(horizontal: true, vertical: false)
                     .accessibilityElement(children: .combine)
                     .accessibilityAddTraits(.isHeader)
+                    .accessibilityShowsLargeContentViewer { Text(title) }
                 }
             }
     }

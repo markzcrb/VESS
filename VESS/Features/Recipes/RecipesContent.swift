@@ -40,7 +40,9 @@ struct DiscoverContent: View {
             let listed = RecipeDiscover.listed(items, meal: .all, preferences: preferences)
 
             VStack(alignment: .leading, spacing: VESSSpacing.lg) {
-                VESSSearchField(prompt: "Search \(listed.count { $0.fit.fits }) recipes", text: $query) { EmptyView() }
+                // A short prompt at accessibility sizes, so it never ends in "…".
+                VESSSearchField(prompt: dynamicTypeSize.isAccessibilitySize ? "Search" : "Search \(listed.count { $0.fit.fits }) recipes",
+                                text: $query) { EmptyView() }
                     .accessibilityIdentifier("discover.search")
 
                 if !query.trimmingCharacters(in: .whitespaces).isEmpty {

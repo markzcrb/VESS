@@ -15,6 +15,7 @@ struct CoachView: View {
     @AppStorage("coach.remainingDay") private var remainingDay = ""
     /// Moves the prompt chips on each time Coach opens.
     @AppStorage("coach.promptRotation") private var promptRotation = 0
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var draft = ""
     @State private var isSending = false
@@ -100,6 +101,9 @@ struct CoachView: View {
             }
         }
         .onAppear { promptRotation += 1 }
+        // Dragging the chat closes the keyboard; Done above it does too.
+        .scrollDismissesKeyboard(.interactively)
+        .vessKeyboardDoneButton()
         .sheet(isPresented: $showSettings) { CoachSettingsSheet() }
         .navigationDestination(item: $openChart) { metric in
             chartDetail(metric)
@@ -180,8 +184,10 @@ struct CoachView: View {
 
     private func composer(isEmpty: Bool) -> some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            // Three prompts from today, when empty and after each answer.
-            if account.isSignedIn, !isSending, isEmpty || store.coachMessages.last?.role == .assistant {
+            // Three prompts from today, when empty and after each answer;
+            // at accessibility sizes not while typing, so the chat stays visible.
+            if account.isSignedIn, !isSending, isEmpty || store.coachMessages.last?.role == .assistant,
+               !(dynamicTypeSize.isAccessibilitySize && isComposerFocused) {
                 VESSBleedingRow {
                     HStack(spacing: VESSSpacing.xs) {
                         ForEach(CoachPrompts.today(store: store, health: health.state.snapshot, now: AppClock.now, calendar: calendar,
@@ -220,6 +226,7 @@ struct CoachView: View {
                             .frame(width: 36, height: 36)
                             .background(VESSColor.accentFill, in: Circle())
                             .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .disabled(trimmed(draft).isEmpty || isSending)
@@ -236,7 +243,7 @@ struct CoachView: View {
                     .buttonStyle(.vessPrimary)
                     .accessibilityIdentifier("coach.signIn")
             }
-            footer
+            if !(dynamicTypeSize.isAccessibilitySize && isComposerFocused) { footer }
         }
         .padding(.horizontal, VESSSpacing.screenInset)
         .padding(.top, VESSSpacing.sm)

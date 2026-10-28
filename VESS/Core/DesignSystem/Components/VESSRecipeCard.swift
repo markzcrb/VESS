@@ -137,43 +137,39 @@ struct VESSTextTabs<Value: Hashable>: View {
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            tabs
-            // Too wide (large text): scrolls, with the selected tab in view.
-            ScrollViewReader { proxy in
-                ScrollView(.horizontal, showsIndicators: false) { tabs }
-                    .onAppear { proxy.scrollTo(selection, anchor: .center) }
-                    .onChange(of: selection) { _, new in proxy.scrollTo(new, anchor: .center) }
-            }
+            HStack(spacing: VESSSpacing.xl) { tabItems }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            // Too wide (large text): the tabs wrap onto more lines, all in
+            // view, never cut at an edge.
+            VESSChipFlow(spacing: VESSSpacing.lg) { tabItems }
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .overlay(alignment: .bottom) { VESSHairline() }
         .vessHaptic(.selection, trigger: selection)
     }
 
-    private var tabs: some View {
-        HStack(spacing: VESSSpacing.xl) {
-            ForEach(options, id: \.value) { option in
-                let isSelected = option.value == selection
-                Button { selection = option.value } label: {
-                    VStack(spacing: VESSSpacing.xs) {
-                        Text(option.title)
-                            .vessTextStyle(isSelected ? .bodyMStrong : .bodyM)
-                            .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
-                            .fixedSize()
-                        Rectangle()
-                            .fill(isSelected ? VESSColor.text : Color.clear)
-                            .frame(height: 2)
-                    }
-                    // The underline is as wide as the title.
-                    .fixedSize(horizontal: true, vertical: false)
-                    .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum, alignment: .bottom)
-                    .contentShape(Rectangle())
+    private var tabItems: some View {
+        ForEach(options, id: \.value) { option in
+            let isSelected = option.value == selection
+            Button { selection = option.value } label: {
+                VStack(spacing: VESSSpacing.xs) {
+                    Text(option.title)
+                        .vessTextStyle(isSelected ? .bodyMStrong : .bodyM)
+                        .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
+                        .fixedSize()
+                    Rectangle()
+                        .fill(isSelected ? VESSColor.text : Color.clear)
+                        .frame(height: 2)
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-                .accessibilityIdentifier("tabs.\(identifier(option.value))")
-                .id(option.value)
+                // The underline is as wide as the title.
+                .fixedSize(horizontal: true, vertical: false)
+                .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum, alignment: .bottom)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+            .accessibilityIdentifier("tabs.\(identifier(option.value))")
+            .id(option.value)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

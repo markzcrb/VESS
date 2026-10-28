@@ -217,7 +217,8 @@ struct PlanView: View {
                 showMonth.toggle()
             }
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+            // Wrapped (AX sizes), the chevron follows the last line.
+            HStack(alignment: wraps ? .lastTextBaseline : .firstTextBaseline, spacing: VESSSpacing.xs) {
                 Text(showMonth ? monthDate(today: today).formatted(.dateTime.month(.wide)) : rangeText(start: start, end: end))
                     .vessTextStyle(.editorialL)
                     .foregroundStyle(VESSColor.text)

@@ -607,12 +607,12 @@
         }
       }
     },
-    "%@ of %@ mg" : {
+    "%@ of %@ mg" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ of %2$@ mg"
+            "value" : "%1$@ of %2$@ mg"
           }
         }
       }

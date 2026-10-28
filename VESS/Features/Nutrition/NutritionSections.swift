@@ -241,6 +241,8 @@ struct DrinksDiarySection: View {
     let onAdd: () -> Void
     let onDelete: (HydrationLog) -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         let caffeine = logs.reduce(0) { $0 + $1.caffeineMilligrams }
 
@@ -262,10 +264,12 @@ struct DrinksDiarySection: View {
                 CaffeineView(day: day)
             } label: {
                 VESSListRow(
-                    systemImage: "cup.and.saucer",
+                    // No icon at accessibility sizes: the value needs the width.
+                    systemImage: dynamicTypeSize.isAccessibilitySize ? nil : "cup.and.saucer",
                     title: Text("Caffeine"),
                     subtitle: logs.last(where: { $0.caffeineMilligrams > 0 }).map { Text("Last at \($0.loggedAt, format: .dateTime.hour().minute())") },
-                    value: Text("\(VESSFormat.grams(caffeine)) of \(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams))\u{00A0}mg")
+                    // No-break spaces: "36 of 400 mg" never splits.
+                    value: Text("\(VESSFormat.grams(caffeine))\u{00A0}of\u{00A0}\(VESSFormat.grams(CaffeineModel.dailyLimitMilligrams))\u{00A0}mg")
                 )
             }
             .buttonStyle(.plain)

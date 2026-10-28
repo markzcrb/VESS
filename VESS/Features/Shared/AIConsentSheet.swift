@@ -10,6 +10,7 @@ struct AIConsentSheet: View {
     @Environment(AIConsentStore.self) private var consent
     @Environment(AccountStore.self) private var account
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         NavigationStack {
@@ -28,6 +29,10 @@ struct AIConsentSheet: View {
                         fact("What stays here", Text("Your log, profile and history stay on this iPhone."))
                     }
                     .vessHairlineBottom()
+
+                    // At accessibility sizes the buttons end the page, so
+                    // what is sent isn't squeezed above a tall pinned area.
+                    if dynamicTypeSize.isAccessibilitySize { actions }
                 }
                 .padding(.horizontal, VESSSpacing.screenInset)
                 .padding(.top, VESSSpacing.md)
@@ -38,42 +43,49 @@ struct AIConsentSheet: View {
             // The footer and buttons sit on the sheet's background below a
             // hairline; the rows scroll above them, never under.
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                VStack(spacing: VESSSpacing.xs) {
-                    Group {
-                        if account.isSignedIn {
-                            Text("You can turn this off any time in You › Privacy and data.")
-                        } else {
-                            Text("Needs an account. You can turn this off any time in You › Privacy and data.")
-                        }
-                    }
-                    .vessTextStyle(.bodyS)
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, VESSSpacing.xxs)
-                    Button("Allow") {
-                        consent.grant(feature)
-                        dismiss()
-                        onAllow()
-                    }
-                    .buttonStyle(.vessPrimary)
-                    .accessibilityIdentifier("consent.allow")
-                    Button("Not now") { dismiss() }
-                        .buttonStyle(.vessQuiet)
-                        .frame(minHeight: VESSHitTarget.minimum)
-                        .accessibilityIdentifier("consent.notNow")
+                if !dynamicTypeSize.isAccessibilitySize {
+                    actions
+                        .padding(.horizontal, VESSSpacing.screenInset)
+                        .padding(.top, VESSSpacing.md)
+                        .padding(.bottom, VESSSpacing.xs)
+                        .frame(maxWidth: .infinity)
+                        .background(VESSColor.card.ignoresSafeArea(edges: .bottom))
+                        .overlay(alignment: .top) { VESSHairline() }
                 }
-                .padding(.horizontal, VESSSpacing.screenInset)
-                .padding(.top, VESSSpacing.md)
-                .padding(.bottom, VESSSpacing.xs)
-                .frame(maxWidth: .infinity)
-                .background(VESSColor.card.ignoresSafeArea(edges: .bottom))
-                .overlay(alignment: .top) { VESSHairline() }
             }
             .vessDetailTitle(navigationTitle)
         }
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(VESSRadius.sheet)
+    }
+
+    /// The note, Allow and Not now.
+    private var actions: some View {
+        VStack(spacing: VESSSpacing.xs) {
+            Group {
+                if account.isSignedIn {
+                    Text("You can turn this off any time in You › Privacy and data.")
+                } else {
+                    Text("Needs an account. You can turn this off any time in You › Privacy and data.")
+                }
+            }
+            .vessTextStyle(.bodyS)
+            .foregroundStyle(VESSColor.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, VESSSpacing.xxs)
+            Button("Allow") {
+                consent.grant(feature)
+                dismiss()
+                onAllow()
+            }
+            .buttonStyle(.vessPrimary)
+            .accessibilityIdentifier("consent.allow")
+            Button("Not now") { dismiss() }
+                .buttonStyle(.vessQuiet)
+                .frame(minHeight: VESSHitTarget.minimum)
+                .accessibilityIdentifier("consent.notNow")
+        }
     }
 
     private var navigationTitle: LocalizedStringResource {

@@ -55,9 +55,9 @@ extension WeekPlan.Day {
     }
 }
 
-/// The week strip under the title (17): seven equal columns; a horizontal
-/// swipe changes week. At accessibility sizes it becomes a snapping
-/// horizontal scroller, since seven enlarged days no longer fit.
+/// The week strip under the title (17): seven equal columns at every text
+/// size (the days cap their own text, so Sunday never scrolls away); a
+/// horizontal swipe changes week.
 struct PlanWeekStrip: View {
     let days: [WeekPlan.Day]
     let selection: Date
@@ -65,23 +65,7 @@ struct PlanWeekStrip: View {
     let onSelect: (Date) -> Void
     let onSwipe: (Int) -> Void
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @ScaledMetric(relativeTo: .body) private var scrollingWidth: CGFloat = 56
-
     var body: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            ScrollView(.horizontal) {
-                HStack(spacing: 0) {
-                    ForEach(days, id: \.date) { day in
-                        cell(day).frame(width: min(scrollingWidth, 64))
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.viewAligned)
-            .scrollIndicators(.hidden)
-            .scrollClipDisabled()
-        } else {
             HStack(spacing: 0) {
                 ForEach(days, id: \.date) { day in
                     cell(day)
@@ -98,7 +82,6 @@ struct PlanWeekStrip: View {
             )
             .accessibilityAction(named: "Next week") { onSwipe(1) }
             .accessibilityAction(named: "Previous week") { onSwipe(-1) }
-        }
     }
 
     private func cell(_ day: WeekPlan.Day) -> some View {
