@@ -57,6 +57,14 @@ enum LaunchTiming {
         print("LaunchTiming first frame \(total) ms (init \(sinceInit) ms)")
     }
 
+    /// The splash has started to fade: the app takes taps from here.
+    static func interactive() {
+        guard isOn else { return }
+        let total = ms(processStart)
+        logger.notice("process → interactive \(total, privacy: .public) ms")
+        print("LaunchTiming interactive \(total) ms")
+    }
+
     /// Runs `work` and logs it when it takes over 50 ms (during the first
     /// 15 s), to name main-thread stalls.
     static func timed<T>(_ label: StaticString, _ work: () -> T) -> T {

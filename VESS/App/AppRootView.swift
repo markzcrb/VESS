@@ -22,8 +22,11 @@ struct AppRootView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The on-disk store is opening off the main thread.
     @State private var isOpening: Bool
-    /// B01, until the store is ready. DEBUG in-memory stores skip it.
+    /// B01 at a cold launch, until the store is ready and the wordmark has
+    /// held for `VESSMotion.splashHold`. DEBUG in-memory stores skip it; a
+    /// warm resume never shows it (this view stays alive).
     @State private var showsSplash: Bool
+    @State private var splashShownAt: Date?
     /// B03, once, between the last onboarding answer and Today.
     @State private var showsAllSet = false
     /// B03 as "Welcome back": restored from iCloud.
@@ -132,19 +135,21 @@ struct AppRootView: View {
             }
         }
         .onChange(of: isOpening, initial: true) { _, opening in
-            guard !opening, showsSplash else { return }
-            #if DEBUG
-            // Captures: B01 stays.
-            if ProcessInfo.processInfo.arguments.contains("-captureSplash") { return }
-            #endif
-            withAnimation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.splashFade) {
-                showsSplash = false
-            }
+            if !opening { hideSplashAfterHold() }
         }
         .vessHapticsHost(haptics)
         // Chrome is greyscale; links and CTAs set the link accent themselves.
         .tint(VESSColor.text)
-        .onAppear { LaunchTiming.firstFrame() }
+        .onAppear {
+            LaunchTiming.firstFrame()
+            guard showsSplash, splashShownAt == nil else { return }
+            splashShownAt = .now
+            // Never held past the maximum, even if the store is still opening.
+            Task {
+                try? await Task.sleep(for: .seconds(VESSMotion.splashMaximum))
+                hideSplash()
+            }
+        }
         .preferredColorScheme(appearance.colorScheme)
         // Apple Health is read when the app opens and each time it returns.
         .onChange(of: scenePhase, initial: true) { _, phase in
@@ -162,6 +167,31 @@ struct AppRootView: View {
     /// - `-seedProfileOnly`: a profile with history but nothing logged today (S1).
     /// - `-seedSampleData`: start with clearly labeled sample data, in memory,
     ///   never written to the real store.
+    /// The wordmark stays at least `splashHold` from the first frame, so the
+    /// splash never flickers; then it fades and the next screen comes in
+    /// under it (B02's wordmark is in the same place).
+    private func hideSplashAfterHold() {
+        guard showsSplash else { return }
+        let shown = splashShownAt ?? .now
+        let wait = max(0, VESSMotion.splashHold - Date.now.timeIntervalSince(shown))
+        Task {
+            try? await Task.sleep(for: .seconds(wait))
+            hideSplash()
+        }
+    }
+
+    private func hideSplash() {
+        guard showsSplash else { return }
+        #if DEBUG
+        // Captures: B01 stays.
+        if ProcessInfo.processInfo.arguments.contains("-captureSplash") { return }
+        #endif
+        LaunchTiming.interactive()
+        withAnimation(reduceMotion ? VESSMotion.splashFadeReduced : VESSMotion.splashFade) {
+            showsSplash = false
+        }
+    }
+
     private func closeAllSet() {
         showsAllSet = false
     }

@@ -77,8 +77,13 @@ enum VESSMotion {
     static let selection = Animation.snappy(duration: 0.25)
     /// The Undo toast after logging.
     static let toast = Animation.spring(response: 0.38, dampingFraction: 0.86)
-    /// B01 splash fading into the app (at most 0.6 s).
-    static let splashFade = Animation.easeOut(duration: 0.4)
+    /// B01: the wordmark holds at least `splashHold` from the first frame
+    /// (longer only while the store opens, never past `splashMaximum`),
+    /// then a calm crossfade; with Reduce Motion a shorter plain fade.
+    static let splashHold: TimeInterval = 0.9
+    static let splashMaximum: TimeInterval = 1.5
+    static let splashFade = Animation.easeInOut(duration: 0.5)
+    static let splashFadeReduced = Animation.linear(duration: 0.25)
     /// What replaces movement under Reduce Motion.
     static let reducedCrossfade = Animation.easeInOut(duration: 0.2)
     /// Add sheet (21): content pages by the full width when the selection
