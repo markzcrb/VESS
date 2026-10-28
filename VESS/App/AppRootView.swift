@@ -55,6 +55,10 @@ struct AppRootView: View {
                 // The bundled recipes and generic foods, read in the background
                 // once the UI is up.
                 .task { await catalog.load(foods: genericFoods) }
+                #if DEBUG
+                // The VESS+ trial reminder goes once the trial converts or is cancelled.
+                .task { await VESSPlusTrial.watch(reminders) }
+                #endif
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 // One success tap for every log, wherever it came from.
                 .vessHaptic(.success, trigger: foodUndo.loggedCount)

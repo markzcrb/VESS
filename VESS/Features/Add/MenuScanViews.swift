@@ -59,7 +59,8 @@ struct MenuResultsView: View {
         let left = MenuDayLeft(store: store, day: day)
         let rows = MenuRules.rows(result.dishes, preferences: store.profile?.preferences ?? NutritionPreferences(),
                                   allergies: store.profile?.allergies ?? [])
-        let listed = MenuRules.list(rows, filter: filter, caloriesLeft: left.calories, proteinLeft: left.protein)
+        let listed = MenuRules.list(rows, filter: filter, caloriesLeft: left.calories, proteinLeft: left.protein,
+                                    energyTarget: store.profile?.nutritionTargets.calories ?? 0)
         let notFitting = rows.filter { !$0.fit.fits }
         let best = MenuRules.bestProtein(rows, caloriesLeft: left.calories)
 

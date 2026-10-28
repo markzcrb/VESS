@@ -38,6 +38,10 @@ nonisolated enum TodayRingRules {
     /// No fibre target is set anywhere yet; 30 g a day is the usual adult
     /// guideline (DGE), used for the Fiber ring only.
     static let fiberTargetGrams = 30.0
+    /// Coach's today card and bars for workouts: minutes against a 30-minute day.
+    static let workoutMinutesGoal = 30.0
+    /// Sugar against a 50 g daily limit, shown like caffeine (never red).
+    static let sugarLimitGrams = 50.0
 
     /// Rings that can be chosen: Cycle day only while cycle tracking is on,
     /// BMI only where H04 shows it (adults, not during pregnancy).

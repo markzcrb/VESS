@@ -134,8 +134,8 @@ nonisolated struct MenuFit: Equatable, Sendable {
 /// - "Best for you": fitting dishes, low confidence last, then those within
 ///   the energy left before those above it, then closest to the protein left.
 nonisolated enum MenuRules {
-    /// Lighter: at most this much per regular portion.
-    static let lighterCalories: Double = 500
+    /// Lighter: at most this share of the daily energy target per regular portion.
+    static let lighterShare = 0.30
     /// Low protein: under this much per regular portion.
     static let lowProteinGrams: Double = 15
 
@@ -248,7 +248,7 @@ nonisolated enum MenuRules {
 
     /// Fitting dishes for a chip, in its order; `.all` is every dish in menu
     /// order (the ones that don't fit too, greyed).
-    static func list(_ rows: [Row], filter: Filter, caloriesLeft: Double, proteinLeft: Double) -> [Row] {
+    static func list(_ rows: [Row], filter: Filter, caloriesLeft: Double, proteinLeft: Double, energyTarget: Double) -> [Row] {
         let fitting = rows.filter(\.fit.fits)
         switch filter {
         case .best:
@@ -265,7 +265,7 @@ nonisolated enum MenuRules {
             return fitting.filter { RecipeNutritionCalculator.isHighProtein($0.dish.nutrition) }
                 .sorted { ($0.dish.nutrition.proteinGrams, -$0.id) > ($1.dish.nutrition.proteinGrams, -$1.id) }
         case .lighter:
-            return fitting.filter { $0.dish.nutrition.calories <= lighterCalories }
+            return fitting.filter { $0.dish.nutrition.calories <= energyTarget * lighterShare }
                 .sorted { ($0.dish.nutrition.calories, $0.id) < ($1.dish.nutrition.calories, $1.id) }
         case .all:
             return rows

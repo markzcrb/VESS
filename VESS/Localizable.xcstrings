@@ -377,9 +377,6 @@
         }
       }
     },
-    "%@ grams" : {
-
-    },
     "%@ h" : {
 
     },
@@ -546,6 +543,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ of %2$@ energy came before noon."
+          }
+        }
+      }
+    },
+    "%@ of %@ g" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ g"
           }
         }
       }
@@ -952,16 +959,6 @@
         }
       }
     },
-    "%lld min · %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld min · %2$lld"
-          }
-        }
-      }
-    },
     "%lld min · ^[%lld serving](inflect: true) · %@ kcal" : {
       "localizations" : {
         "en" : {
@@ -1058,6 +1055,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld meals planned · ^[%3$lld open slot](inflect: true)"
+          }
+        }
+      }
+    },
+    "%lld of %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld min"
           }
         }
       }
@@ -4420,9 +4427,6 @@
 
     },
     "None of the 14 allergens" : {
-
-    },
-    "None yet" : {
 
     },
     "not %@" : {

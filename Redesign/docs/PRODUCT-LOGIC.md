@@ -86,7 +86,7 @@ Photo › Menu sends one photo to `/functions/v1/menu` (one photo estimate). Eve
 | Ask (maybe) | The dish fits but is a kind that often has one of the user's allergens without it being listed: "Ask: often has walnuts". Keyword table in `MenuRules.hintWords` (beet salad → walnuts, pesto, satay, caesar, paella, risotto…). |
 | Best for you | Fitting dishes; low confidence last, then within the energy left before above it, then closest to the protein left. |
 | High-protein | The recipe high-protein rule: ≥ 20 g, or ≥ 15 g at ≥ 30 % of energy. |
-| Lighter | 500 kcal or less per regular portion. |
+| Lighter | At most 30 % of the daily energy target per regular portion (720 kcal at 2 400 kcal). |
 | Tags | Fits today (· Best protein for the most protein within the energy left), Above energy left, Low protein (< 15 g), Fits today · rough estimate (low confidence). |
 | Portion | Smaller ×0.75, Regular, Larger ×1.25. The portion picked in the dish sheet is kept for that dish in the list and the add bar. |
 | Meal | From the time of day (`MealType.likely`); touch and hold Add to pick another. |
@@ -96,5 +96,13 @@ Photo › Menu sends one photo to `/functions/v1/menu` (one photo estimate). Eve
 
 - Annual is preselected. Its 7-day free trial shows only while StoreKit says the user is eligible for the introductory offer; otherwise the button reads "Subscribe · 49,99 € a year" and the timeline is hidden. Monthly has no trial.
 - The −48 % badge and "4,17 € a month" are worked out from the prices as shown (`displayPrice`), so they always agree with the big numbers.
-- Day 5 reminder: when a purchase starts the trial, VESS asks for notification permission (if not asked yet) and schedules one local notification on day 5 at 10:00, "Your VESS+ trial ends in 2 days". Nothing is scheduled if permission is declined. StoreKit itself sends no reminder.
+- Day 5 reminder: promised and scheduled only when notifications are already allowed. Then a purchase that starts the trial schedules one local notification on day 5 at 10:00, "Your VESS+ trial ends in 2 days". VESS doesn't ask for permission here. Otherwise the timeline's Day 5 step reads "Cancel anytime in Settings before day 7" and nothing is scheduled. The reminder is removed once the trial converts or auto-renew is turned off (checked at launch and on every transaction update). StoreKit itself sends no reminder.
 - The pinned button bar appears only after scrolling, with the plans fully on screen and the in-page button not yet; never at accessibility text sizes.
+
+## Coach today cards without a Today ring
+
+| Metric | Card |
+|---|---|
+| Workouts | Minutes today against a 30-minute daily goal (`TodayRingRules.workoutMinutesGoal`); the 7-day bars show the same line. |
+| Sugar | Grams today against a 50 g daily limit (`TodayRingRules.sugarLimitGrams`), drawn like caffeine: the ring fills to the limit and stops, never red. |
+| Supplements | Taken of due today. |

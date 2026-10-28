@@ -67,22 +67,26 @@ struct MenuScanTests {
     @Test("Best for you: fits only, closest to the protein left, within the energy left first; low confidence last")
     func ranking() throws {
         let rows = try rows()
-        let best = MenuRules.list(rows, filter: .best, caloriesLeft: 1120, proteinLeft: 58).map(\.dish.name)
+        let best = MenuRules.list(rows, filter: .best, caloriesLeft: 1120, proteinLeft: 58, energyTarget: 2400).map(\.dish.name)
         #expect(best == ["Salmon fillet with asparagus and lemon", "Moules marinières", "Roasted beet salad", "Heirloom tomato bruschetta"])
         #expect(MenuRules.bestProtein(rows, caloriesLeft: 1120) == row("Salmon", in: rows)?.id)
         // Above the energy left goes after the dishes within it.
-        let tight = MenuRules.list(rows, filter: .best, caloriesLeft: 500, proteinLeft: 58).map(\.dish.name)
+        let tight = MenuRules.list(rows, filter: .best, caloriesLeft: 500, proteinLeft: 58, energyTarget: 2400).map(\.dish.name)
         #expect(tight.last == "Salmon fillet with asparagus and lemon")
     }
 
-    @Test("High-protein and Lighter chips; All is every dish in menu order")
+    @Test("High-protein and Lighter (at most 30 % of the energy target) chips; All is every dish in menu order")
     func chips() throws {
         let rows = try rows()
-        #expect(MenuRules.list(rows, filter: .highProtein, caloriesLeft: 1120, proteinLeft: 58).map(\.dish.name)
+        #expect(MenuRules.list(rows, filter: .highProtein, caloriesLeft: 1120, proteinLeft: 58, energyTarget: 2400).map(\.dish.name)
                 == ["Salmon fillet with asparagus and lemon", "Moules marinières"])
-        #expect(MenuRules.list(rows, filter: .lighter, caloriesLeft: 1120, proteinLeft: 58).map(\.dish.name)
+        // 30 % of 2 400 kcal: up to 720 kcal.
+        #expect(MenuRules.list(rows, filter: .lighter, caloriesLeft: 1120, proteinLeft: 58, energyTarget: 2400).map(\.dish.name)
+                == ["Heirloom tomato bruschetta", "Roasted beet salad", "Moules marinières", "Salmon fillet with asparagus and lemon"])
+        // 30 % of 1 600 kcal: up to 480 kcal.
+        #expect(MenuRules.list(rows, filter: .lighter, caloriesLeft: 1120, proteinLeft: 58, energyTarget: 1600).map(\.dish.name)
                 == ["Heirloom tomato bruschetta", "Roasted beet salad", "Moules marinières"])
-        #expect(MenuRules.list(rows, filter: .all, caloriesLeft: 1120, proteinLeft: 58).map(\.id) == Array(0..<10))
+        #expect(MenuRules.list(rows, filter: .all, caloriesLeft: 1120, proteinLeft: 58, energyTarget: 2400).map(\.id) == Array(0..<10))
     }
 
     @Test("Logged as photo estimates with the menu name; Larger is ×1.25")

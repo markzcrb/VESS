@@ -123,7 +123,10 @@ struct VESSPlusView: View {
             .sheet(isPresented: $showCompare) { VESSPlusComparison() }
             .manageSubscriptionsSheet(isPresented: $showManage)
         }
-        .task { await load() }
+        .task {
+            await reminders.refreshAuthorization()
+            await load()
+        }
     }
 
     // MARK: Sections
@@ -184,7 +187,9 @@ struct VESSPlusView: View {
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 0) {
             step(Text("Today"), Text("Full VESS+, nothing charged"), isFirst: true, isLast: false)
-            step(Text("Day 5"), Text("We remind you the trial is ending"), isFirst: false, isLast: false)
+            // The reminder is promised only when VESS may send one.
+            step(Text("Day 5"), reminders.canRemind ? Text("We remind you the trial is ending") : Text("Cancel anytime in Settings before day 7"),
+                 isFirst: false, isLast: false)
             step(Text("Day 7"), Text("\(price(.annual)) a year starts, unless you cancel"), isFirst: false, isLast: true)
         }
         .accessibilityElement(children: .combine)
@@ -385,6 +390,35 @@ struct VESSPlusView: View {
             defer { isWorking = false }
             try? await AppStore.sync()
             await refreshEntitlement()
+        }
+    }
+}
+
+/// Keeps the day-5 reminder only while the annual trial is running and set
+/// to renew: it's removed once the trial has converted (the latest
+/// transaction is no longer the introductory offer) or auto-renew is off.
+enum VESSPlusTrial {
+    static func reconcileReminder(_ reminders: ReminderService) async {
+        if await !isTrialRenewing() { reminders.cancelTrialReminder() }
+    }
+
+    static func isTrialRenewing() async -> Bool {
+        guard let product = try? await Product.products(for: [VESSPlusView.Plan.annual.productID]).first,
+              let statuses = try? await product.subscription?.status else { return false }
+        for status in statuses {
+            guard status.state == .subscribed,
+                  case .verified(let renewal) = status.renewalInfo,
+                  case .verified(let transaction) = status.transaction else { continue }
+            if transaction.offer?.type == .introductory && renewal.willAutoRenew { return true }
+        }
+        return false
+    }
+
+    /// At launch and whenever a transaction changes.
+    static func watch(_ reminders: ReminderService) async {
+        await reconcileReminder(reminders)
+        for await _ in Transaction.updates {
+            await reconcileReminder(reminders)
         }
     }
 }

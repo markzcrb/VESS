@@ -70,8 +70,8 @@ struct CoachChartSeries {
             return .init(request: request, points: days.map { day in
                 let minutes = all.filter { $0.completedAt.map { calendar.isDate($0, inSameDayAs: day) } == true }.compactMap(\.durationMinutes)
                 return (day, minutes.isEmpty ? nil : Double(minutes.reduce(0, +)))
-            }, target: nil, style: .bars)
-        case .sugar: return .init(request: request, points: food { $0.sugarGrams }, target: nil, style: .bars)
+            }, target: TodayRingRules.workoutMinutesGoal, style: .bars)
+        case .sugar: return .init(request: request, points: food { $0.sugarGrams }, target: TodayRingRules.sugarLimitGrams, style: .bars)
         case .hrv:
             let overnight = health.map { StressRules.overnightHRV($0.heartRateVariability, calendar: calendar) } ?? []
             return .init(request: request, points: days.map { day in (day, HeartRules.value(on: day, overnight, calendar: calendar)) }, target: nil, style: .line)
@@ -301,8 +301,9 @@ struct CoachChartCard: View {
 }
 
 /// `[[chart:METRIC:today]]`: the metric's ring now, as on Today, with its
-/// value. Metrics without a ring (workouts, sugar, supplements) show the
-/// value on an empty track: they have no target.
+/// value. Without a Today ring: workouts fill toward 30 minutes, sugar
+/// toward a 50 g limit (like caffeine, never red), supplements as taken
+/// of due.
 struct CoachTodayCard: View {
     let metric: CoachChartRequest.Metric
     let action: () -> Void
@@ -382,15 +383,19 @@ struct CoachTodayCard: View {
         }
         switch metric {
         case .sugar:
-            let sugar = store.foodEntries(on: now, calendar: calendar).map(\.nutrition).total.sugarGrams
-            let value = sugar.map { VESSFormat.grams($0) } ?? TodayRingReading.empty
-            return Reading(value: value, detail: sugar.map { "\(VESSFormat.grams($0))\u{00A0}g" } ?? value, progress: 0, kind: .carbs,
-                           spoken: sugar.map { Text("\(VESSFormat.grams($0)) grams") } ?? Text("No value yet"))
+            let limit = TodayRingRules.sugarLimitGrams
+            guard let sugar = store.foodEntries(on: now, calendar: calendar).map(\.nutrition).total.sugarGrams else {
+                return Reading(value: TodayRingReading.empty, detail: TodayRingReading.empty, progress: 0, kind: .carbs, spoken: Text("No value yet"))
+            }
+            let detail = String(localized: "\(VESSFormat.grams(sugar)) of \(VESSFormat.grams(limit))\u{00A0}g")
+            return Reading(value: VESSFormat.grams(sugar), detail: detail, progress: min(sugar / limit, 1), kind: .carbs,
+                           spoken: Text(verbatim: detail))
         case .workouts:
+            let goal = TodayRingRules.workoutMinutesGoal
             let all = (store.workouts + (snapshot?.workouts ?? [])).filter { $0.completedAt.map { calendar.isDate($0, inSameDayAs: now) } == true }
             let minutes = all.compactMap(\.durationMinutes).reduce(0, +)
-            let detail = all.isEmpty ? String(localized: "None yet") : String(localized: "\(minutes)\u{00A0}min · \(all.count)")
-            return Reading(value: all.isEmpty ? TodayRingReading.empty : "\(all.count)", detail: detail, progress: 0, kind: .activity,
+            let detail = String(localized: "\(minutes) of \(Int(goal))\u{00A0}min")
+            return Reading(value: "\(minutes)", detail: detail, progress: min(Double(minutes) / goal, 1), kind: .activity,
                            spoken: Text(verbatim: detail))
         default:
             // Supplements: taken of due.
