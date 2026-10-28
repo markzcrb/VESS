@@ -273,11 +273,11 @@ struct VESSPlusView: View {
 
     private var disclosure: LocalizedStringResource {
         if hasTrial {
-            return "Then \(price(.annual)) a year. Renews automatically until you cancel, at least 24 hours before the renewal date, in Settings › Apple Account › Subscriptions."
+            return "Free for 7 days, then \(price(.annual)) a year. Renews automatically unless you cancel at least 24 hours before the trial or the year ends. Cancel in Settings › Apple Account › Subscriptions."
         }
         return plan == .annual
-            ? "\(price(.annual)) a year. Renews automatically until you cancel, at least 24 hours before the renewal date, in Settings › Apple Account › Subscriptions."
-            : "\(price(.monthly)) a month. Renews automatically until you cancel, at least 24 hours before the renewal date, in Settings › Apple Account › Subscriptions."
+            ? "\(price(.annual)) a year. Renews automatically unless you cancel at least 24 hours before the year ends. Cancel in Settings › Apple Account › Subscriptions."
+            : "\(price(.monthly)) a month. Renews automatically unless you cancel at least 24 hours before the month ends. Cancel in Settings › Apple Account › Subscriptions."
     }
 
     /// "Compare Free and VESS+ · Terms of Use · Privacy", centred; stacked
@@ -292,7 +292,7 @@ struct VESSPlusView: View {
 
     @ViewBuilder
     private var linkItems: some View {
-        link("Compare Free and UMEVA+") { showCompare = true }
+        link("Compare Free and UMEVA+", isLink: false) { showCompare = true }
             .accessibilityIdentifier("plus.compare")
         if let url = Self.termsURL {
             link("Terms of Use") { openURL(url) }
@@ -301,11 +301,12 @@ struct VESSPlusView: View {
             if let url = LegalLinks.privacyPolicy { openURL(url) } else { showPrivacy = true }
         }
         if isSubscribed {
-            link("Manage subscription") { showManage = true }
+            link("Manage subscription", isLink: false) { showManage = true }
         }
     }
 
-    private func link(_ title: LocalizedStringResource, action: @escaping () -> Void) -> some View {
+    /// Terms of Use and Privacy Policy open web pages, so VoiceOver calls them links.
+    private func link(_ title: LocalizedStringResource, isLink: Bool = true, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .vessTextStyle(.caption)
@@ -315,6 +316,8 @@ struct VESSPlusView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityRemoveTraits(isLink ? .isButton : [])
+        .accessibilityAddTraits(isLink ? .isLink : [])
     }
 
     private func select(_ option: Plan) {

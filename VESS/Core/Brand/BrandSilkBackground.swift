@@ -13,7 +13,7 @@ struct BrandSilkBackground: View {
     var body: some View {
         base
             .overlay(alignment: .top) {
-                Image(image)
+                Image(decorative: image)
                     .resizable()
                     .scaledToFill()
                     .containerRelativeFrame([.horizontal, .vertical]) { length, axis in

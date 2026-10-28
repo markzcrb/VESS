@@ -15,7 +15,7 @@ struct LaunchSplash: View {
         // wordmark off the screen's centre.
         VESSColor.launchBackground
             .overlay {
-                Image(VESSBrandAssets.silk)
+                Image(decorative: VESSBrandAssets.silk)
                     .resizable()
                     .scaledToFill()
             }
