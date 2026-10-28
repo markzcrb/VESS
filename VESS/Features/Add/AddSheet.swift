@@ -32,6 +32,8 @@ struct AddSheet: View {
     @State private var path: [FoodRoute] = []
     /// +1 when the new type is to the right of the old one, -1 to the left.
     @State private var direction: CGFloat = 1
+    /// The last menu read in Photo › Menu; gone when the sheet closes.
+    @State private var menu: MenuScanResult?
 
     private static let lastTypeKey = "add.lastType"
     private static let lastTypeAtKey = "add.lastTypeAt"
@@ -161,7 +163,8 @@ struct AddSheet: View {
         case .cycle:
             CycleDayForm(date: day, showsClose: false, onDone: { dismiss() })
         case .photo:
-            AddPhotoContent(day: day, meal: $meal, onSearchInstead: { select(.food) }, onLogged: { dismiss() })
+            AddPhotoContent(day: day, meal: $meal, menu: $menu, onSearchInstead: { select(.food) },
+                            onBarcode: { path.append(.barcode) }, onLogged: { dismiss() })
         }
     }
 

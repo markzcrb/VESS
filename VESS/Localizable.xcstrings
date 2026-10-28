@@ -73,6 +73,16 @@
         }
       }
     },
+    "%@ · %@ · Estimated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · Estimated"
+          }
+        }
+      }
+    },
     "%@ · %@ kcal" : {
       "localizations" : {
         "en" : {
@@ -195,6 +205,16 @@
     },
     "%@ · you set the dose" : {
 
+    },
+    "%@ (often has %@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (often has %2$@)"
+          }
+        }
+      }
     },
     "%@ %@" : {
       "localizations" : {
@@ -339,6 +359,9 @@
       }
     },
     "%@ g fibre" : {
+
+    },
+    "%@ g left" : {
 
     },
     "%@ g protein" : {
@@ -1221,6 +1244,9 @@
     "^[%lld day](inflect: true)" : {
 
     },
+    "^[%lld dish](inflect: true)" : {
+
+    },
     "^[%lld drink](inflect: true)" : {
 
     },
@@ -1349,6 +1375,29 @@
     },
     "≈ %@" : {
 
+    },
+    "≈ %@ kcal" : {
+
+    },
+    "≈ %@ kcal · %@ g protein" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "≈ %1$@ kcal · %2$@ g protein"
+          }
+        }
+      }
+    },
+    "≈ %@ kcal · %@ g protein · %@ g carbs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "≈ %1$@ kcal · %2$@ g protein · %3$@ g carbs"
+          }
+        }
+      }
     },
     "≈ %@ mg in your system at %@" : {
       "localizations" : {
@@ -1540,6 +1589,9 @@
 
     },
     "Above 30 for your height." : {
+
+    },
+    "Above energy left" : {
 
     },
     "Above your 30-day average" : {
@@ -1837,10 +1889,16 @@
     "All · %@" : {
 
     },
+    "All %lld" : {
+
+    },
     "All at home" : {
 
     },
     "All cycles" : {
+
+    },
+    "All dishes" : {
 
     },
     "All done today" : {
@@ -1953,6 +2011,12 @@
     "Ask Coach" : {
 
     },
+    "Ask the staff about" : {
+
+    },
+    "Ask: often has %@" : {
+
+    },
     "Asleep" : {
 
     },
@@ -1987,6 +2051,9 @@
     "Back pain" : {
 
     },
+    "Back to %@" : {
+
+    },
     "Bakery" : {
 
     },
@@ -2018,6 +2085,9 @@
 
     },
     "Below your usual range" : {
+
+    },
+    "Best for you" : {
 
     },
     "Best match" : {
@@ -2213,6 +2283,9 @@
     "Checking…" : {
 
     },
+    "Choose %@" : {
+
+    },
     "Choose food" : {
 
     },
@@ -2223,6 +2296,9 @@
 
     },
     "Chosen days" : {
+
+    },
+    "Chosen, %@" : {
 
     },
     "Cider" : {
@@ -2603,6 +2679,12 @@
     "doesn't count toward water" : {
 
     },
+    "Doesn't fit you · %lld" : {
+
+    },
+    "Doesn't fit you: %@." : {
+
+    },
     "Don't fit you" : {
 
     },
@@ -2807,6 +2889,9 @@
     "Estimate" : {
 
     },
+    "estimate · %@ confidence" : {
+
+    },
     "Estimated" : {
 
     },
@@ -2816,7 +2901,23 @@
     "Estimated from a photo" : {
 
     },
+    "Estimated per portion from the menu. You have %@ kcal and %@ g protein left today." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Estimated per portion from the menu. You have %1$@ kcal and %2$@ g protein left today."
+          }
+        }
+      }
+    },
+    "Estimated per portion from the menu. You've reached today's energy target." : {
+
+    },
     "Estimates can be off. This is not medical advice and not contraception. Cycle data stays on this iPhone unless you share it with Coach." : {
+
+    },
+    "Estimates from dish names and typical restaurant portions, not the kitchen's recipe. Always ask the staff about allergens." : {
 
     },
     "Estimates from USDA FoodData Central and Open Food Facts. Diet tags and allergens are worked out from the ingredients." : {
@@ -2930,6 +3031,9 @@
     "fish-free" : {
 
     },
+    "Fit the whole menu page in the frame" : {
+
+    },
     "Fit the whole plate in the frame." : {
 
     },
@@ -2937,6 +3041,15 @@
 
     },
     "Fits" : {
+
+    },
+    "Fits today" : {
+
+    },
+    "Fits today · Best protein" : {
+
+    },
+    "Fits today · rough estimate" : {
 
     },
     "Fits you: " : {
@@ -3057,6 +3170,12 @@
     "From the drinks you log" : {
 
     },
+    "from the menu" : {
+
+    },
+    "From the menu" : {
+
+    },
     "From the product database · check against the label" : {
 
     },
@@ -3104,6 +3223,9 @@
 
     },
     "g" : {
+
+    },
+    "g protein" : {
 
     },
     "Gain weight" : {
@@ -3217,6 +3339,9 @@
     "Hard exercise 6–7 days a week" : {
 
     },
+    "has %@" : {
+
+    },
     "Has %@" : {
 
     },
@@ -3275,6 +3400,9 @@
 
     },
     "Hides the time picker" : {
+
+    },
+    "high" : {
 
     },
     "High" : {
@@ -3594,6 +3722,9 @@
     "Large mug" : {
 
     },
+    "Larger" : {
+
+    },
     "Larger amount" : {
 
     },
@@ -3664,6 +3795,9 @@
 
     },
     "Lighter" : {
+
+    },
+    "Likely in it" : {
 
     },
     "Log" : {
@@ -3750,6 +3884,9 @@
     "Losing weight" : {
 
     },
+    "low" : {
+
+    },
     "Low" : {
 
     },
@@ -3760,6 +3897,9 @@
 
     },
     "Low mood" : {
+
+    },
+    "Low protein" : {
 
     },
     "Lower than usual" : {
@@ -3862,13 +4002,22 @@
     "meat" : {
 
     },
+    "meat with dairy" : {
+
+    },
     "Meat with dairy" : {
 
     },
     "Mediterranean" : {
 
     },
+    "medium" : {
+
+    },
     "Medium" : {
+
+    },
+    "Menu" : {
 
     },
     "Method" : {
@@ -4118,6 +4267,12 @@
     "No date" : {
 
     },
+    "No dish here." : {
+
+    },
+    "No dishes found. Try another photo with the whole page in the frame." : {
+
+    },
     "No drinks logged yet." : {
 
     },
@@ -4208,6 +4363,9 @@
     "None of the 14 allergens" : {
 
     },
+    "not %@" : {
+
+    },
     "Not %@" : {
 
     },
@@ -4278,6 +4436,9 @@
 
     },
     "Nothing on Open Food Facts for %@. You can add it yourself." : {
+
+    },
+    "Nothing on this menu fits you. The dishes are below." : {
 
     },
     "Nothing on today's list" : {
@@ -4399,6 +4560,9 @@
       }
     },
     "on the 15–35 scale" : {
+
+    },
+    "On the menu: “%@”" : {
 
     },
     "On this habit's days, only if it isn't done. Never between 22:00 and 07:00." : {
@@ -4787,6 +4951,12 @@
     "Reading barcode" : {
 
     },
+    "Reading the menu…" : {
+
+    },
+    "Reads the dishes, estimates each one. The photo is then deleted." : {
+
+    },
     "Recent" : {
 
     },
@@ -5075,6 +5245,9 @@
     "Shorter than usual" : {
 
     },
+    "Show" : {
+
+    },
     "Show more generic foods" : {
 
     },
@@ -5100,6 +5273,9 @@
 
     },
     "Shows every drink" : {
+
+    },
+    "Shows the dish" : {
 
     },
     "Shows the meals to plan" : {
@@ -5181,6 +5357,9 @@
 
     },
     "Small things, most days." : {
+
+    },
+    "Smaller" : {
 
     },
     "Smaller amount" : {
@@ -5455,6 +5634,9 @@
     "Target" : {
 
     },
+    "target reached" : {
+
+    },
     "Target split is %@ / %@ / %@." : {
       "localizations" : {
         "en" : {
@@ -5549,6 +5731,12 @@
 
     },
     "The last seven days." : {
+
+    },
+    "the menu" : {
+
+    },
+    "The menu" : {
 
     },
     "The number under the barcode." : {
@@ -5719,6 +5907,9 @@
 
     },
     "Total" : {
+
+    },
+    "Touch and hold to pick another meal" : {
 
     },
     "toward water" : {
@@ -5906,6 +6097,16 @@
     },
     "Uses %@ before they expire" : {
 
+    },
+    "Uses 1 photo estimate · %lld left today · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Uses 1 photo estimate · %1$lld left today · %2$@"
+          }
+        }
+      }
     },
     "Uses the %@ before %@." : {
       "localizations" : {

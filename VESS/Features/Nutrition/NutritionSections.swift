@@ -195,6 +195,9 @@ struct MealDiarySection: View {
     /// "1 tbsp · 21 g", "200 g", "150 g · Estimated" or "Quick add".
     private func subtitle(for entry: FoodLogEntry) -> Text {
         if entry.source == .photoEstimate {
+            if let menu = entry.menuName {
+                return Text("\(Text(verbatim: entry.servingUnit.amountText(entry.quantity))) · \(menu) · Estimated")
+            }
             return Text("\(Text(verbatim: entry.servingUnit.amountText(entry.quantity))) · Estimated")
         }
         if entry.foodID == nil {

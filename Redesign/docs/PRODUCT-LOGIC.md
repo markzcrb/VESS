@@ -75,3 +75,19 @@ Logging, recipes, pantry, grocery and Apple Health stay free. The server limits 
 - Barcode lookup: Open Food Facts.
 - Expiration: `ExpirationStatus`.
 - Insights: an `Insight` model exists (ruleID, severity, category, dataSource). Map ImpactRow onto it.
+
+## Menu scan (M01–M03)
+
+Photo › Menu sends one photo to `/functions/v1/menu` (one photo estimate). Everything after that is decided on the device (`MenuRules`), and the result is kept only while the Add sheet is open.
+
+| Rule | Value |
+|---|---|
+| Doesn't fit | A confirmed allergen of the user's; the diet, halal or kosher read from `contains` (same rule as recipes, `RecipeFit`); a don't-eat item in the dish name or its ingredients. Listed under "Doesn't fit you · N", folded until Show. |
+| Ask (maybe) | The dish fits but is a kind that often has one of the user's allergens without it being listed: "Ask: often has walnuts". Keyword table in `MenuRules.hintWords` (beet salad → walnuts, pesto, satay, caesar, paella, risotto…). |
+| Best for you | Fitting dishes; low confidence last, then within the energy left before above it, then closest to the protein left. |
+| High-protein | The recipe high-protein rule: ≥ 20 g, or ≥ 15 g at ≥ 30 % of energy. |
+| Lighter | 500 kcal or less per regular portion. |
+| Tags | Fits today (· Best protein for the most protein within the energy left), Above energy left, Low protein (< 15 g), Fits today · rough estimate (low confidence). |
+| Portion | Smaller ×0.75, Regular, Larger ×1.25. The portion picked in the dish sheet is kept for that dish in the list and the add bar. |
+| Meal | From the time of day (`MealType.likely`); touch and hold Add to pick another. |
+| Logged | One entry per dish, source photo estimate, with the menu's name ("… · The evening menu · Estimated" in the diary). |

@@ -24,6 +24,9 @@ nonisolated struct FoodLogEntry: Identifiable, Codable, Hashable, Sendable {
     /// The recipe it was cooked from ("Cooked 3×"). `nil` in entries from
     /// earlier builds and for everything else.
     var recipeID: String? = nil
+    /// The menu a dish was read from ("The evening menu"), for entries from
+    /// a menu scan. `nil` for everything else.
+    var menuName: String? = nil
 }
 
 nonisolated extension FoodLogEntry {

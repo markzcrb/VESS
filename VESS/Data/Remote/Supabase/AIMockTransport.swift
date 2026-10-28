@@ -105,6 +105,34 @@ nonisolated struct AIMockTransport: HTTPTransport {
                 "estimated": true,
             ])
         }
+        if path.hasSuffix("/menu") {
+            if scenario == .empty {
+                return reply(200, ["title": "", "dishes": [Any](), "note": "No dishes found.", "remaining": 8])
+            }
+            func dish(_ name: String, _ section: String, _ text: String, _ grams: Double, _ kcal: Double, _ protein: Double, _ carbs: Double, _ fat: Double,
+                      _ ingredients: [String], _ allergens: [String], _ contains: [String], _ confidence: String = "medium") -> [String: Any] {
+                ["name": name, "section": section, "menu_text": text, "portion_g": grams, "kcal": kcal, "protein_g": protein, "carbs_g": carbs, "fat_g": fat,
+                 "ingredients": ingredients, "allergens": allergens, "contains": contains, "confidence": confidence]
+            }
+            // The ten dishes of M02's menu.
+            return reply(200, [
+                "title": "The evening menu",
+                "dishes": [
+                    dish("Roasted beet salad", "Appetizer", "Roasted Beet Salad (V) · 16", 250, 360, 10, 26, 24, ["Beetroot", "goat cheese", "rocket", "balsamic dressing"], ["milk"], ["dairy"]),
+                    dish("Heirloom tomato bruschetta", "Appetizer", "Heirloom Tomato Bruschetta (V) · 14", 180, 320, 9, 40, 14, ["Sourdough bread", "tomatoes", "basil", "olive oil", "garlic"], ["gluten"], []),
+                    dish("Beef carpaccio with arugula", "Appetizer", "Beef Carpaccio with Arugula · 22", 150, 290, 24, 3, 20, ["Beef tenderloin", "rocket", "parmesan", "olive oil", "lemon"], ["milk"], ["meat", "dairy"]),
+                    dish("Moules marinières", "Appetizer", "Moules Marinières · 19", 400, 480, 36, 24, 22, ["Mussels", "white wine", "shallots", "butter", "parsley", "bread"], ["molluscs", "milk", "gluten", "sulphites"], ["molluscs", "dairy", "alcohol"]),
+                    dish("Wild mushroom soup", "Appetizer", "Wild Mushroom Soup (V) · 15", 300, 260, 6, 18, 18, ["Mixed mushrooms", "cream", "onion", "stock"], ["milk", "celery"], ["dairy"]),
+                    dish("Pan-seared duck breast", "Main course", "Pan-Seared Duck Breast with Cherry Port · 38", 350, 720, 44, 30, 46, ["Duck breast", "cherries", "port", "potatoes"], ["sulphites"], ["poultry", "alcohol"]),
+                    dish("Grilled ribeye with herb butter", "Main course", "Grilled Ribeye Steak with Herb Butter (GF) · 46", 400, 880, 58, 20, 64, ["Ribeye steak", "herb butter", "fries"], ["milk"], ["meat", "dairy"]),
+                    dish("Wild mushroom risotto", "Main course", "Wild Mushroom Risotto with Truffle Oil (V, GF) · 32", 380, 640, 14, 78, 28, ["Arborio rice", "mixed mushrooms", "parmesan", "butter", "truffle oil"], ["milk"], ["dairy"]),
+                    dish("Salmon fillet with asparagus and lemon", "Main course", "Salmon Filet with Asparagus & Lemon · 36", 380, 560, 42, 14, 34, ["Salmon", "asparagus", "butter", "lemon", "potatoes"], ["fish", "milk"], ["fish", "dairy"]),
+                    dish("Rack of lamb with mint sauce", "Main course", "Rack of Lamb with Mint Sauce · 48", 400, 820, 52, 22, 56, ["Lamb", "mint sauce", "potatoes", "green beans"], [], ["meat"], "low"),
+                ],
+                "note": "Desserts weren't listed.",
+                "remaining": 9,
+            ])
+        }
         if path.hasSuffix("/food-photo") {
             if scenario == .empty {
                 return reply(200, ["items": [Any](), "note": "No food visible.", "remaining": 8, "estimated": true])

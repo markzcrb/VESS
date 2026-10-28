@@ -2,14 +2,22 @@ import PhotosUI
 import SwiftUI
 import UIKit
 
-/// Photo in the Add sheet (I02–I08): take or pick a photo, send it once for
-/// an estimate, then review every item before anything is logged. The photo
-/// is made smaller, stripped of metadata, and dropped once the answer is in.
+/// Photo in the Add sheet (I02–I08, M01): take or pick a photo, send it
+/// once for an estimate, then review every item before anything is logged.
+/// Menu mode reads a menu page instead (M02); Barcode opens the scanner.
+/// The photo is made smaller, stripped of metadata, and dropped once the
+/// answer is in.
 struct AddPhotoContent: View {
     let day: Date
     @Binding var meal: MealType
+    /// The last menu read, kept by the Add sheet until it closes.
+    @Binding var menu: MenuScanResult?
     let onSearchInstead: () -> Void
+    let onBarcode: () -> Void
     let onLogged: () -> Void
+
+    /// M01's segment. Barcode isn't a mode: it opens the scanner.
+    enum Mode: Hashable { case meal, menu, barcode }
 
     @Environment(AccountStore.self) private var account
     @Environment(AIConsentStore.self) private var consent
@@ -42,6 +50,8 @@ struct AddPhotoContent: View {
     @State private var showError = false
     /// Set by the first Save, so a quick second tap can't log twice.
     @State private var isSaved = false
+    @State private var mode: Mode = .meal
+    @State private var showMenu = false
 
     var body: some View {
         Group {
@@ -74,6 +84,11 @@ struct AddPhotoContent: View {
             }
         }
         .vessErrorAlert(isPresented: $showError)
+        .navigationDestination(isPresented: $showMenu) {
+            if let menu {
+                MenuResultsView(result: menu, day: day, onLogged: onLogged)
+            }
+        }
         .onDisappear { camera.stop() }
     }
 
@@ -103,6 +118,17 @@ struct AddPhotoContent: View {
 
     /// The shutter row's height, so the viewfinder leaves room for it.
     private static let controlsHeight: CGFloat = 84
+    /// The Meal / Menu / Barcode segment and the gap under it, and the
+    /// footer's lines under the shutter.
+    private static let segmentHeight: CGFloat = VESSHitTarget.minimum + VESSSpacing.md + footerHeight
+    private static let footerHeight: CGFloat = 64
+
+    /// Barcode opens the scanner and leaves the mode as it was.
+    private var modeBinding: Binding<Mode> {
+        Binding(get: { mode }, set: { new in
+            if new == .barcode { onBarcode() } else { mode = new }
+        })
+    }
 
     /// Always the full content width; 3:4 when there's room, otherwise as
     /// tall as fits above the shutter row (a little wider than 3:4).
@@ -115,15 +141,21 @@ struct AddPhotoContent: View {
     private var cameraView: some View {
         // The area between the sheet's header and the pinned footer.
         GeometryReader { proxy in
-        let size = Self.viewfinderSize(in: proxy.size)
+        let size = Self.viewfinderSize(in: CGSize(width: proxy.size.width, height: proxy.size.height - Self.segmentHeight))
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.md) {
+                VESSSegmented(selection: modeBinding, options: [(.meal, "Meal"), (.menu, "Menu"), (.barcode, "Barcode")])
+                    .accessibilityIdentifier("photo.mode")
+
                 // Full width at 3:4, as tall as fits above the shutter row.
                 viewfinder
                     .frame(width: size.width, height: size.height)
                     .frame(maxWidth: .infinity)
 
                 controls
+
+                // Under the shutter, in the page: never under the home indicator.
+                footer.padding(.horizontal, -VESSSpacing.screenInset)
 
                 #if DEBUG
                 if ProcessInfo.processInfo.arguments.contains("-aiMock"), !isOutOfEstimates {
@@ -132,18 +164,11 @@ struct AddPhotoContent: View {
                         .accessibilityIdentifier("photo.sample")
                 }
                 #endif
-
-                // At accessibility sizes it ends the page, so the shutter comes first.
-                if dynamicTypeSize.isAccessibilitySize { footer.padding(.horizontal, -VESSSpacing.screenInset) }
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .vessContentTop(VESSSpacing.md)
             .padding(.bottom, VESSSpacing.md)
         }
-        }
-        // Pinned above the safe area, so it's never cut off at the bottom.
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !dynamicTypeSize.isAccessibilitySize { footer }
         }
         .task(id: isOutOfEstimates) {
             if isOutOfEstimates { camera.stop() } else { await camera.start() }
@@ -191,7 +216,7 @@ struct AddPhotoContent: View {
         }
         .overlay(alignment: .top) {
             if !isOutOfEstimates {
-                Text("Fit the whole plate in the frame.")
+                Text(mode == .menu ? "Fit the whole menu page in the frame" : "Fit the whole plate in the frame.")
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.text)
                     // One line, so it never covers the frame's content.
@@ -253,12 +278,27 @@ struct AddPhotoContent: View {
     }
 
     /// Two short lines: what happens to the photo, then what's left today.
+    /// In Menu mode, a way back to the menu already read.
     private var footer: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-            Text("Used only for this estimate, then deleted.")
+            if mode == .menu, let menu {
+                Button {
+                    showMenu = true
+                } label: {
+                    Text("Back to \(menu.title?.isEmpty == false ? menu.title ?? "" : String(localized: "the menu"))")
+                        .vessTextStyle(.bodyS)
+                        .foregroundStyle(VESSColor.accent)
+                        .frame(minHeight: VESSHitTarget.minimum)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("photo.menuAgain")
+            }
+            Text(mode == .menu ? "Reads the dishes, estimates each one. The photo is then deleted." : "Used only for this estimate, then deleted.")
                 .foregroundStyle(VESSColor.secondaryText)
             if let left = remainingToday {
-                Text("\(left) left today · \(AIQuotaText.resetsShort(after: AppClock.now))")
+                Text(mode == .menu
+                     ? "Uses 1 photo estimate · \(left) left today · \(AIQuotaText.resetsShort(after: AppClock.now))"
+                     : "\(left) left today · \(AIQuotaText.resetsShort(after: AppClock.now))")
                     .foregroundStyle(VESSColor.tertiaryText)
             }
         }
@@ -291,7 +331,7 @@ struct AddPhotoContent: View {
                     frame.opacity(opacity)
                 } animation: { _ in .easeInOut(duration: 1.2) }
                 .accessibilityHidden(true)
-            Text("Looking at your photo…")
+            Text(mode == .menu ? "Reading the menu…" : "Looking at your photo…")
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.secondaryText)
                 .accessibilityIdentifier("photo.looking")
@@ -303,7 +343,7 @@ struct AddPhotoContent: View {
 
     private func emptyResult(_ note: String?) -> some View {
         VStack(alignment: .leading, spacing: VESSSpacing.lg) {
-            Text("No food found. Try another photo or search instead.")
+            Text(mode == .menu ? "No dishes found. Try another photo with the whole page in the frame." : "No food found. Try another photo or search instead.")
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.text)
                 .fixedSize(horizontal: false, vertical: true)
@@ -377,6 +417,23 @@ struct AddPhotoContent: View {
             lookingImage = UIImage(data: jpeg)
             defer { lookingImage = nil }
             do {
+                if mode == .menu {
+                    let response: MenuScanResponse = try await account.callFunction(
+                        "menu", body: MenuScanRequest(jpeg: jpeg, locale: CoachRequest.locale)
+                    )
+                    if let left = response.remaining { setRemaining(left) }
+                    let dishes = MenuRules.dishes(from: response)
+                    let note = response.note?.isEmpty == false ? response.note : nil
+                    if dishes.isEmpty {
+                        phase = .empty(note)
+                    } else {
+                        let title = response.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+                        menu = MenuScanResult(title: title?.isEmpty == false ? title : nil, dishes: dishes, note: note)
+                        phase = .camera
+                        showMenu = true
+                    }
+                    return
+                }
                 let response: PhotoEstimateResponse = try await account.callFunction(
                     "food-photo", body: FoodPhotoRequest(jpeg: jpeg, meal: meal, locale: CoachRequest.locale)
                 )
