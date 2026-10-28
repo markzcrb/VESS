@@ -37,6 +37,15 @@ enum VESSColor {
 
     /// Link accent: links, CTAs and selected text.
     static let accent = Color(.vessAccent)
+
+    // MARK: Brand (UMEVA brand screens only: launch, first launch, welcomes)
+
+    static let brandPearl = Color(.brandPearl)
+    static let brandStone = Color(.brandStone)
+    static let brandInk = Color(.brandInk)
+    static let brandInkSoft = Color(.brandInkSoft)
+    static let brandGraphite = Color(.brandGraphite)
+    static let brandPearlSoft = Color(.brandPearlSoft)
     /// Primary button and selected chip fill.
     static let accentFill = Color(.vessAccentFill)
     /// Content on `accentFill`.

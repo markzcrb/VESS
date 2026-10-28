@@ -33,7 +33,8 @@ struct WelcomeView: View {
             Spacer(minLength: VESSSpacing.huge)
 
             VStack(spacing: VESSSpacing.lg) {
-                VESSWordmark()
+                UMEVAWordmark(width: 150)
+                    .foregroundStyle(VESSColor.text)
                 Text("Your body. Better understood.")
                     .font(.title3)
                     .foregroundStyle(VESSColor.secondaryText)
