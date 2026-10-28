@@ -55,7 +55,10 @@ struct AddPhotoContent: View {
         case failed(BackendError)
     }
 
-    @State private var camera = PhotoCameraController()
+    @State private var camera = PhotoCameraController.shared
+    @Environment(\.scenePhase) private var scenePhase
+    /// The invisible copy `RootTabView` builds ahead never touches the camera.
+    @Environment(\.vessAddSheetPrewarm) private var isPrewarm
     @State private var phase: Phase = .camera
     /// Shown while it's being looked at, then dropped with the answer.
     @State private var lookingImage: UIImage?
@@ -118,16 +121,21 @@ struct AddPhotoContent: View {
             }
         }
         .onAppear {
+            guard !isPrewarm else { return }
+            CameraTiming.mark("sheet")
             camera.onBarcode = { code in detected(code) }
+            camera.isBarcodeMode = mode == .barcode
             updateDetection()
         }
         .onChange(of: storedMode) { _, _ in
-            if mode != .barcode { camera.setTorch(false) }
+            camera.setTorch(false)
+            camera.isFlashOn = false
+            camera.isBarcodeMode = mode == .barcode
             scan = .scanning
             updateDetection()
         }
         .task { await loadRemaining() }
-        .onDisappear { camera.stop() }
+        .onDisappear { camera.release() }
     }
 
     // MARK: States
@@ -227,12 +235,20 @@ struct AddPhotoContent: View {
             if !dynamicTypeSize.isAccessibilitySize { footer }
         }
         // One session for all three modes: switching never restarts it.
-        .task(id: isOutOfEstimates) {
-            if isOutOfEstimates { camera.stop() } else { await camera.start() }
+        .task(id: CameraUse(isOutOfEstimates: isOutOfEstimates, isActive: scenePhase == .active)) {
+            guard !isPrewarm else { return }
+            if isOutOfEstimates || scenePhase != .active { camera.release() } else { await camera.acquire() }
         }
+        .onDisappear { camera.release() }
     }
 
     private static let statusID = "photo.barcodeStatus"
+
+    /// What decides whether the camera runs.
+    private struct CameraUse: Equatable {
+        var isOutOfEstimates: Bool
+        var isActive: Bool
+    }
 
     private func isReading(_ scan: Scan) -> Bool {
         if case .reading = scan { true } else { false }
@@ -268,11 +284,25 @@ struct AddPhotoContent: View {
                 .padding(VESSSpacing.xl)
             } else {
                 switch camera.state {
-                case .running:
-                    CameraPreview(session: camera.box.session)
-                        .clipShape(shape)
-                case .idle:
-                    ProgressView()
+                case .running, .idle:
+                    // Black until the first frame, then the preview fades in.
+                    Color.black
+                    if !isPrewarm {
+                        CameraPreview(camera: camera)
+                            .opacity(camera.hasFrame ? 1 : 0)
+                            .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: camera.hasFrame)
+                            .clipShape(shape)
+                            .accessibilityHidden(true)
+                    }
+                case .interrupted:
+                    Color.black
+                    Text("The camera is in use by another app or a call. It comes back when that ends.")
+                        .vessTextStyle(.bodyS)
+                        .foregroundStyle(VESSColor.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VESSSpacing.lg)
+                        .environment(\.colorScheme, .dark)
                 case .unavailable, .denied:
                     VStack(spacing: VESSSpacing.sm) {
                         Image(systemName: "camera")
@@ -568,7 +598,7 @@ struct AddPhotoContent: View {
 
     private func send(_ photo: Data) {
         pendingPhoto = nil
-        camera.stop()
+        camera.release()
         phase = .looking
         let meal = meal
         Task {

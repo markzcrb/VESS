@@ -14,6 +14,8 @@ struct VESSOpenAddAction {
 
 extension EnvironmentValues {
     @Entry var vessOpenAdd: VESSOpenAddAction = .none
+    /// The invisible Add sheet `RootTabView` builds once ahead of time.
+    @Entry var vessAddSheetPrewarm = false
 }
 
 /// 21, 22: one "+" for everything. "ADD" with the X on the left, the type
@@ -42,17 +44,23 @@ struct AddSheet: View {
         self.day = request.day
         self.collection = request.collection
         _meal = State(initialValue: request.meal)
+        _selection = State(initialValue: Self.initialType(for: request))
+    }
+
+    @Environment(\.vessAddSheetPrewarm) private var isPrewarm
+
+    /// The type the sheet opens on. Cycle is checked against the profile in
+    /// `types`; a type that's hidden falls back to Food there.
+    static func initialType(for request: AddFoodRequest) -> AddType {
         let defaults = UserDefaults.standard
-        let lastAt = defaults.double(forKey: Self.lastTypeAtKey)
-        // Cycle is checked against the profile in `types`; a type that's
-        // hidden falls back to Food there.
-        _selection = State(initialValue: AddTypeRules.initial(
+        let lastAt = defaults.double(forKey: lastTypeAtKey)
+        return AddTypeRules.initial(
             requested: request.type,
-            lastUsed: defaults.string(forKey: Self.lastTypeKey).flatMap(AddType.init(rawValue:)),
+            lastUsed: defaults.string(forKey: lastTypeKey).flatMap(AddType.init(rawValue:)),
             lastUsedAt: lastAt > 0 ? Date(timeIntervalSince1970: lastAt) : nil,
             now: AppClock.now,
             visible: AddTypeRules.visible(photo: true, cycle: true)
-        ))
+        )
     }
 
     private var types: [AddType] {
@@ -97,7 +105,11 @@ struct AddSheet: View {
                     destination(for: route)
                         .toolbar { closeButton }
                 }
-                .onAppear { AddSheetTiming.appeared() }
+                .onAppear {
+                    AddSheetTiming.appeared()
+                    // The camera is built ahead, so Photo only has to start it.
+                    if !isPrewarm { PhotoCameraController.shared.prewarm() }
+                }
         }
         .presentationCornerRadius(VESSRadius.sheet)
         .presentationDragIndicator(.visible)
@@ -122,6 +134,10 @@ struct AddSheet: View {
     /// Sets the direction first, so the outgoing view leaves the right way.
     private func select(_ type: AddType) {
         guard type != current else { return }
+        if type == .photo {
+            CameraTiming.tapped()
+            PhotoCameraController.shared.prewarm()
+        }
         direction = (types.firstIndex(of: type) ?? 0) > (types.firstIndex(of: current) ?? 0) ? 1 : -1
         withAnimation(reduceMotion ? VESSMotion.addSwapReduced : VESSMotion.addSwap) {
             selection = type

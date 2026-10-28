@@ -103,6 +103,7 @@ struct RootTabView: View {
         .background {
             if isPrewarming {
                 AddSheet(request: AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now, type: .food))
+                    .environment(\.vessAddSheetPrewarm, true)
                     .frame(width: 1, height: 1)
                     .opacity(0.01)
                     .allowsHitTesting(false)
@@ -111,6 +112,20 @@ struct RootTabView: View {
                         try? await Task.sleep(for: .milliseconds(400))
                         isPrewarming = false
                     }
+            }
+        }
+        .task {
+            // `-cameraTiming`: open Add on Photo three times (one cold, two
+            // warm), so the console shows how long the camera takes.
+            guard CameraTiming.isPrinting else { return }
+            try? await Task.sleep(for: .seconds(3))
+            for _ in 0..<3 {
+                UserDefaults.standard.set(AddType.photo.rawValue, forKey: "add.lastType")
+                UserDefaults.standard.set(AppClock.now.timeIntervalSince1970, forKey: "add.lastTypeAt")
+                requestAdd(nil)
+                try? await Task.sleep(for: .seconds(4))
+                addRequest = nil
+                try? await Task.sleep(for: .seconds(3))
             }
         }
         .task {
@@ -168,6 +183,11 @@ struct RootTabView: View {
     /// opens it the moment that finishes, so a "+" is never lost.
     private func requestAdd(_ type: AddType?) {
         let request = AddFoodRequest(meal: .likely(at: AppClock.now, calendar: calendar), day: AppClock.now, type: type)
+        if AddSheet.initialType(for: request) == .photo {
+            CameraTiming.tapped()
+            // Built now, so the sheet's Photo only has to start it.
+            PhotoCameraController.shared.prewarm()
+        }
         if isAddDismissing || addRequest != nil {
             pendingAdd = request
         } else {

@@ -4,19 +4,53 @@ import SwiftUI
 import UIKit
 import Vision
 
-/// The camera for Photo (I02, M01): photos for estimates, and barcodes read
-/// from the same live session (metadata output), so switching between Meal,
-/// Menu and Barcode never restarts the camera. Its own capture session, run on
-/// one serial queue, following the scanner's rules: the session is only
-/// configured before it runs (flash is a per-photo setting, never a device
-/// reconfiguration), it's never stopped and started synchronously, and
-/// after an interruption or error it starts again a moment later if it
-/// isn't running. Logged as subsystem "VESS", category "PhotoCamera".
+/// How long a closed camera stays configured, so opening Photo again
+/// within it only costs `startRunning`. Pure.
+nonisolated struct CameraKeepAlive: Equatable, Sendable {
+    static let interval: TimeInterval = 30
+
+    private(set) var isInUse = false
+    private(set) var releasedAt: Date?
+    /// Bumped on every acquire and release, so an old teardown can't win.
+    private(set) var generation = 0
+
+    mutating func acquire() {
+        isInUse = true
+        releasedAt = nil
+        generation += 1
+    }
+
+    /// Returns the token a later teardown check needs.
+    mutating func release(at date: Date) -> Int {
+        isInUse = false
+        releasedAt = date
+        generation += 1
+        return generation
+    }
+
+    /// True only for the latest release, still unused, after `interval`.
+    func shouldTearDown(token: Int, now: Date) -> Bool {
+        guard !isInUse, token == generation, let releasedAt else { return false }
+        return now.timeIntervalSince(releasedAt) >= Self.interval
+    }
+}
+
+/// The one camera for Photo (I02, M01), shared by every Add sheet: photos
+/// for estimates, and barcodes from the same live session (metadata
+/// output), so switching Meal, Menu and Barcode never restarts it.
+/// Everything AVFoundation runs on the box's serial session queue, never on
+/// main. The session is built ahead (`prewarm`, when Add opens), started
+/// when Photo shows, stopped when it goes, and kept configured for 30 s so
+/// reopening is quick. Logged as category "PhotoCamera".
 @Observable
 final class PhotoCameraController {
-    enum State: Equatable { case idle, running, unavailable, denied }
+    static let shared = PhotoCameraController()
+
+    enum State: Equatable { case idle, running, unavailable, denied, interrupted }
 
     private(set) var state: State = .idle
+    /// The preview has shown a frame; it fades in then, over black.
+    private(set) var hasFrame = false
     private(set) var hasFlash = false
     var isFlashOn = false
     private(set) var hasTorch = false
@@ -28,8 +62,25 @@ final class PhotoCameraController {
     var detectsBarcodes = false {
         didSet { box.setDetecting(detectsBarcodes) }
     }
+    /// Barcode mode: the metadata output looks for codes only then.
+    var isBarcodeMode = false {
+        didSet { if oldValue != isBarcodeMode { box.setBarcodeMode(isBarcodeMode) } }
+    }
 
     @ObservationIgnored let box = CaptureBox()
+    /// One preview for the app's life, attached to the session once, so
+    /// opening Photo never attaches a layer while the session starts.
+    @ObservationIgnored private(set) lazy var previewView: CameraPreview.PreviewView = {
+        let view = CameraPreview.PreviewView()
+        view.previewLayer.videoGravity = .resizeAspectFill
+        view.observation = view.previewLayer.observe(\.isPreviewing, options: [.new]) { [weak self] layer, _ in
+            let isPreviewing = layer.isPreviewing
+            let owner = self
+            Task { @MainActor in owner?.previewing(isPreviewing) }
+        }
+        return view
+    }()
+    @ObservationIgnored private var keepAlive = CameraKeepAlive()
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
 
     private static let logger = Logger(subsystem: AppLog.subsystem, category: "PhotoCamera")
@@ -42,11 +93,16 @@ final class PhotoCameraController {
                 self.onBarcode?(code)
             }
         }
-        let names: [Notification.Name] = [AVCaptureSession.interruptionEndedNotification, AVCaptureSession.runtimeErrorNotification]
-        for name in names {
-            observers.append(NotificationCenter.default.addObserver(forName: name, object: box.session, queue: .main) { [box] note in
-                Self.logger.info("session: \(note.name.rawValue, privacy: .public); starting again if stopped")
-                box.startIfNeeded(after: 0.5)
+        let center = NotificationCenter.default
+        observers.append(center.addObserver(forName: AVCaptureSession.wasInterruptedNotification, object: box.session, queue: .main) { [weak self] note in
+            let reason = (note.userInfo?[AVCaptureSessionInterruptionReasonKey] as? NSNumber)?.intValue ?? -1
+            Self.logger.info("session interrupted, reason \(reason, privacy: .public)")
+            MainActor.assumeIsolated { self?.interrupted() }
+        })
+        for name in [AVCaptureSession.interruptionEndedNotification, AVCaptureSession.runtimeErrorNotification] {
+            observers.append(center.addObserver(forName: name, object: box.session, queue: .main) { [weak self] note in
+                Self.logger.info("session: \(note.name.rawValue, privacy: .public); starting again if in use")
+                MainActor.assumeIsolated { self?.resumeIfInUse() }
             })
         }
     }
@@ -55,7 +111,22 @@ final class PhotoCameraController {
         observers.forEach(NotificationCenter.default.removeObserver)
     }
 
-    func start() async {
+    /// Builds the session ahead (input, outputs, preset), without starting
+    /// it. Only with permission already given: otherwise Photo asks first.
+    func prewarm() {
+        guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else { return }
+        attachPreview()
+        box.prepare { _ in }
+    }
+
+    private func attachPreview() {
+        if previewView.previewLayer.session == nil { previewView.previewLayer.session = box.session }
+    }
+
+    /// Photo is on screen: asks for permission if it was never asked, then
+    /// starts the (prepared) session on the session queue.
+    func acquire() async {
+        keepAlive.acquire()
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .notDetermined:
             guard await AVCaptureDevice.requestAccess(for: .video) else { state = .denied; return }
@@ -65,18 +136,59 @@ final class PhotoCameraController {
         default:
             break
         }
-        let result = await box.configureAndStart()
+        guard keepAlive.isInUse else { return }
+        attachPreview()
+        let result = await box.start()
+        CameraTiming.mark("start")
         hasFlash = result.hasFlash
         hasTorch = result.hasTorch
         box.setDetecting(detectsBarcodes)
-        state = result.ok ? .running : .unavailable
-        Self.logger.info("start: \(String(describing: self.state), privacy: .public) flash=\(result.hasFlash, privacy: .public)")
+        // Closed while it was starting: stop again.
+        guard keepAlive.isInUse else { box.stop(); return }
+        state = result.ok ? .running : (result.interrupted ? .interrupted : .unavailable)
+        Self.logger.info("start: \(String(describing: self.state), privacy: .public)")
     }
 
-    func stop() {
+    /// Photo has gone (closed, another type, a photo taken, background):
+    /// the light goes off and the session stops on its queue. It stays
+    /// configured for `CameraKeepAlive.interval`, then is taken apart.
+    func release() {
+        guard keepAlive.isInUse else { return }
         setTorch(false)
+        isFlashOn = false
+        detectsBarcodes = false
         box.stop()
-        if state == .running { state = .idle }
+        state = .idle
+        hasFrame = false
+        let token = keepAlive.release(at: .now)
+        Task {
+            try? await Task.sleep(for: .seconds(CameraKeepAlive.interval))
+            guard keepAlive.shouldTearDown(token: token, now: .now) else { return }
+            box.tearDown()
+            Self.logger.info("session taken apart after \(Int(CameraKeepAlive.interval), privacy: .public) s unused")
+        }
+    }
+
+    /// The preview layer started or stopped showing frames.
+    func previewing(_ isPreviewing: Bool) {
+        if isPreviewing { CameraTiming.mark("frame") }
+        hasFrame = isPreviewing && keepAlive.isInUse
+    }
+
+    private func interrupted() {
+        guard keepAlive.isInUse else { return }
+        state = .interrupted
+        isTorchOn = false
+    }
+
+    private func resumeIfInUse() {
+        guard keepAlive.isInUse else { return }
+        Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard keepAlive.isInUse else { return }
+            let result = await box.start()
+            state = result.ok ? .running : (result.interrupted ? .interrupted : .unavailable)
+        }
     }
 
     /// The light for scanning barcodes (Barcode mode's bolt).
@@ -98,9 +210,12 @@ nonisolated final class CaptureBox: @unchecked Sendable {
     private let output = AVCapturePhotoOutput()
     private let metadata = AVCaptureMetadataOutput()
     private let metadataDelegate = MetadataDelegate()
-    private let queue = DispatchQueue(label: "VESS.photoCamera")
+    private let queue = DispatchQueue(label: "VESS.photoCamera", qos: .userInitiated)
     private var isConfigured = false
+    /// Found once, kept for the app's life.
     private var device: AVCaptureDevice?
+    private var input: AVCaptureDeviceInput?
+    private var isBarcodeMode = false
     private var delegates: [Int64: PhotoDelegate] = [:]
     /// Called on the camera's queue with each product barcode while detecting.
     var onCode: ((String) -> Void)? {
@@ -111,44 +226,55 @@ nonisolated final class CaptureBox: @unchecked Sendable {
     /// Product barcodes, as the scanner reads them.
     static let barcodeTypes: [AVMetadataObject.ObjectType] = [.ean13, .ean8, .upce, .code128]
 
-    func configureAndStart() async -> (ok: Bool, hasFlash: Bool, hasTorch: Bool) {
-        await withCheckedContinuation { continuation in
-            queue.async {
-                if !self.isConfigured {
-                    guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-                          let input = try? AVCaptureDeviceInput(device: device),
-                          self.session.canAddInput(input), self.session.canAddOutput(self.output)
-                    else {
-                        continuation.resume(returning: (false, false, false))
-                        return
-                    }
-                    self.session.beginConfiguration()
-                    self.session.sessionPreset = .photo
-                    self.session.addInput(input)
-                    self.session.addOutput(self.output)
-                    // Barcodes come from the same session; detection is
-                    // switched on and off by `setDetecting`, never by
-                    // reconfiguring a running session.
-                    if self.session.canAddOutput(self.metadata) {
-                        self.session.addOutput(self.metadata)
-                        self.metadata.setMetadataObjectsDelegate(self.metadataDelegate, queue: self.queue)
-                        self.metadata.metadataObjectTypes = Self.barcodeTypes.filter(self.metadata.availableMetadataObjectTypes.contains)
-                    }
-                    self.session.commitConfiguration()
-                    self.device = device
-                    self.isConfigured = true
-                }
-                if !self.session.isRunning { self.session.startRunning() }
-                let hasFlash = self.output.supportedFlashModes.contains(.on)
-                continuation.resume(returning: (self.session.isRunning, hasFlash, self.device?.hasTorch == true))
-            }
-        }
+    struct StartResult: Sendable {
+        var ok: Bool
+        var interrupted: Bool
+        var hasFlash: Bool
+        var hasTorch: Bool
     }
 
-    func startIfNeeded(after delay: TimeInterval) {
-        queue.asyncAfter(deadline: .now() + delay) {
-            guard self.isConfigured, !self.session.isRunning else { return }
-            self.session.startRunning()
+    /// Configures the session once: input, photo output, metadata output
+    /// (no types until Barcode mode), preset. Doesn't start it.
+    func prepare(_ done: @escaping @Sendable (Bool) -> Void) {
+        queue.async { done(self.configureIfNeeded()) }
+    }
+
+    /// On `queue`.
+    private func configureIfNeeded() -> Bool {
+        if isConfigured { return true }
+        if device == nil { device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) }
+        guard let device, let input = try? AVCaptureDeviceInput(device: device) else { return false }
+        session.beginConfiguration()
+        defer { session.commitConfiguration() }
+        session.sessionPreset = .photo
+        guard session.canAddInput(input), session.canAddOutput(output) else { return false }
+        session.addInput(input)
+        session.addOutput(output)
+        if session.canAddOutput(metadata) {
+            session.addOutput(metadata)
+            metadata.setMetadataObjectsDelegate(metadataDelegate, queue: queue)
+            applyBarcodeTypes()
+        }
+        self.input = input
+        isConfigured = true
+        return true
+    }
+
+    func start() async -> StartResult {
+        await withCheckedContinuation { continuation in
+            queue.async {
+                guard self.configureIfNeeded() else {
+                    continuation.resume(returning: StartResult(ok: false, interrupted: false, hasFlash: false, hasTorch: false))
+                    return
+                }
+                if !self.session.isRunning { self.session.startRunning() }
+                self.continuousFocus()
+                continuation.resume(returning: StartResult(
+                    ok: self.session.isRunning, interrupted: self.session.isInterrupted,
+                    hasFlash: self.output.supportedFlashModes.contains(.on),
+                    hasTorch: self.device?.hasTorch == true
+                ))
+            }
         }
     }
 
@@ -158,8 +284,44 @@ nonisolated final class CaptureBox: @unchecked Sendable {
         }
     }
 
+    /// After the keep-alive: inputs and outputs go; the device stays known.
+    func tearDown() {
+        queue.async {
+            guard self.isConfigured, !self.session.isRunning else { return }
+            self.session.beginConfiguration()
+            self.session.inputs.forEach(self.session.removeInput)
+            self.session.outputs.forEach(self.session.removeOutput)
+            self.session.commitConfiguration()
+            self.input = nil
+            self.isConfigured = false
+        }
+    }
+
     func setDetecting(_ on: Bool) {
         queue.async { self.metadataDelegate.isOn = on }
+    }
+
+    /// Codes are looked for only in Barcode mode; the photo output is never
+    /// touched when the mode changes.
+    func setBarcodeMode(_ on: Bool) {
+        queue.async {
+            self.isBarcodeMode = on
+            if self.isConfigured { self.applyBarcodeTypes() }
+        }
+    }
+
+    /// On `queue`.
+    private func applyBarcodeTypes() {
+        metadata.metadataObjectTypes = isBarcodeMode ? Self.barcodeTypes.filter(metadata.availableMetadataObjectTypes.contains) : []
+    }
+
+    /// On `queue`, after `startRunning`: continuous focus and exposure.
+    private func continuousFocus() {
+        guard let device, (try? device.lockForConfiguration()) != nil else { return }
+        if device.isFocusModeSupported(.continuousAutoFocus) { device.focusMode = .continuousAutoFocus }
+        if device.isExposureModeSupported(.continuousAutoExposure) { device.exposureMode = .continuousAutoExposure }
+        device.isSubjectAreaChangeMonitoringEnabled = true
+        device.unlockForConfiguration()
     }
 
     /// Torch on or off; skipped while the system holds it back (heat).
@@ -236,20 +398,31 @@ nonisolated private final class PhotoDelegate: NSObject, AVCapturePhotoCaptureDe
     }
 }
 
-/// The live preview.
+/// The live preview: hosts the camera's one preview view.
 struct CameraPreview: UIViewRepresentable {
-    let session: AVCaptureSession
+    let camera: PhotoCameraController
 
-    func makeUIView(context: Context) -> PreviewView {
-        let view = PreviewView()
-        view.previewLayer.session = session
-        view.previewLayer.videoGravity = .resizeAspectFill
-        return view
+    func makeUIView(context: Context) -> UIView {
+        let host = UIView()
+        host.backgroundColor = .black
+        let preview = camera.previewView
+        preview.frame = host.bounds
+        preview.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        host.addSubview(preview)
+        return host
     }
 
-    func updateUIView(_ view: PreviewView, context: Context) {}
+    func updateUIView(_ host: UIView, context: Context) {
+        // Another Add sheet may have taken the shared view; take it back.
+        let preview = camera.previewView
+        if preview.superview !== host {
+            preview.frame = host.bounds
+            host.addSubview(preview)
+        }
+    }
 
     final class PreviewView: UIView {
+        var observation: NSKeyValueObservation?
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
         var previewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
     }
