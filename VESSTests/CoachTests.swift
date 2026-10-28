@@ -124,7 +124,7 @@ struct CoachTests {
         #expect(json.contains("\"pregnant\":true"))
     }
 
-    @Test("snake_case JSON, under 6 KB even with a very long day")
+    @Test("snake_case JSON, under 16 000 characters even with a very long day")
     func sizeCap() throws {
         let now = try TestClock.date(2026, 10, 6, 23)
         let many = (0..<120).map { i in
@@ -136,7 +136,7 @@ struct CoachTests {
         }
         let context = CoachContextBuilder.build(input(now: now, entries: many, workouts: workouts))
         let json = CoachContextBuilder.json(context)
-        #expect(json.count <= CoachContextBuilder.maxBytes)
+        #expect(CoachContextBuilder.characters(context) <= CoachContextBuilder.maxCharacters)
         let text = String(decoding: json, as: UTF8.self)
         #expect(text.contains("\"last_7_days\"") && text.contains("\"protein_g\"") && text.contains("\"meals_today\""))
         #expect(context.today.kcal == 6000, "Totals are kept even when the list is cut")

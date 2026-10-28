@@ -72,14 +72,30 @@ nonisolated enum CoachReplyFormat {
 }
 
 /// "[[chart:steps:7d]]": a chart the app draws from the user's own data.
+/// RANGE is today (a ring card), 7d or 30d (bars, or a line for weight,
+/// BMI, resting heart rate, HRV and stress).
 nonisolated struct CoachChartRequest: Equatable, Sendable {
     nonisolated enum Metric: String, CaseIterable, Sendable {
-        case steps, energy, protein, carbs, fat, fiber, water, caffeine, sleep, weight
+        case steps
+        case activeEnergy = "active_energy"
+        case workouts, energy, protein, carbs, fat, fiber, sugar, water, caffeine, sleep, hrv
         case restingHeartRate = "resting_hr"
+        case stress, weight, bmi, habits, supplements
+
+        /// Drawn as a line over days.
+        var isLine: Bool {
+            switch self {
+            case .weight, .bmi, .restingHeartRate, .hrv, .stress: true
+            default: false
+            }
+        }
     }
 
     let metric: Metric
+    /// 1 for today, else 7 or 30.
     let days: Int
+
+    var isToday: Bool { days == 1 }
 
     init?(token: String) {
         let parts = token.trimmingCharacters(in: .whitespaces)
@@ -87,6 +103,7 @@ nonisolated struct CoachChartRequest: Equatable, Sendable {
             .split(separator: ":").map(String.init)
         guard parts.count == 3, parts[0] == "chart", let metric = Metric(rawValue: parts[1]) else { return nil }
         switch parts[2] {
+        case "today": days = 1
         case "7d": days = 7
         case "30d": days = 30
         default: return nil

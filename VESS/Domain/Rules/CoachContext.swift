@@ -2,7 +2,8 @@ import Foundation
 
 /// The summary Coach gets with a question: targets, today's totals, the
 /// last 7 days' averages, today's meals, habits, workouts and supplements,
-/// and cycle data only when tracking and sharing are both on. Plain values,
+/// every other metric (sleep, heart, stress, caffeine, body…), 30-day
+/// series, and cycle data only when tracking and sharing are both on. Plain values,
 /// whole numbers, no IDs. "What Coach sees" shows exactly this JSON.
 nonisolated struct CoachContext: Codable, Equatable, Sendable {
     struct Targets: Codable, Equatable, Sendable {
@@ -113,8 +114,31 @@ nonisolated struct CoachContext: Codable, Equatable, Sendable {
         }
     }
 
+    // Every other metric (CoachContextMetrics.swift).
+    var carbs: Series? = nil
+    var fat: Series? = nil
+    var fiber: Series? = nil
+    var sugar: Series? = nil
+    var caffeine: Caffeine? = nil
+    var drinksToday: [DrinkCount] = []
+    var workouts: WorkoutTotals? = nil
+    var activeEnergy: Series? = nil
+    var sleep: Sleep? = nil
+    var restingHr: Vital? = nil
+    var hrv: Vital? = nil
+    var stress: Stress? = nil
+    var body: Body? = nil
+    var habitsCompletion7dPct: Int? = nil
+    var plannedMealsToday: [Meal] = []
+    var pantryUseSoon: [String] = []
+    var last30Days: Month? = nil
+
     enum CodingKeys: String, CodingKey {
         case date, time, name, targets, today, cycle, pregnant, diet, prefer, allergens, avoid
+        case carbs, fat, fiber, sugar, caffeine, workouts, sleep, hrv, stress, body
+        case drinksToday = "drinks_today", activeEnergy = "active_energy", restingHr = "resting_hr"
+        case habitsCompletion7dPct = "habits_completion_7d_pct", plannedMealsToday = "planned_meals_today"
+        case pantryUseSoon = "pantry_use_soon", last30Days = "last_30_days"
         case stepsByDay = "steps_by_day", steps7dTotal = "steps_7d_total", steps7dAvgKnownDays = "steps_7d_avg_known_days"
         case energyByDay = "energy_by_day", energy7dTotal = "energy_7d_total", energy7dAvgKnownDays = "energy_7d_avg_known_days"
         case proteinByDay = "protein_by_day", protein7dTotal = "protein_7d_total", protein7dAvgKnownDays = "protein_7d_avg_known_days"
@@ -152,6 +176,20 @@ nonisolated struct CoachContextInput: Sendable {
     /// P01 and the allergens.
     var preferences = NutritionPreferences()
     var allergens: Set<Allergen> = []
+    /// Apple Health, for sleep, heart, stress, active energy and weight.
+    var health: HealthSnapshot? = nil
+    var sleepTargetMinutes = 480
+    /// The profile weight and when it was last saved.
+    var weightKilograms: Double? = nil
+    var weightSavedAt: Date? = nil
+    var goalWeightKilograms: Double? = nil
+    /// `nil` when BMI is hidden.
+    var bmi: Double? = nil
+    /// Share of listed habit-days done over the 7 days before today, 0...1.
+    var habitCompletion7d: Double? = nil
+    var plannedMealsToday: [PlannedMeal] = []
+    /// Pantry items to use soon (today to 3 days, or past their date).
+    var pantryUseSoon: [String] = []
 
     struct CycleShare: Sendable {
         var cycleDay: Int?
@@ -160,8 +198,8 @@ nonisolated struct CoachContextInput: Sendable {
 }
 
 nonisolated enum CoachContextBuilder {
-    /// The JSON stays under this, so the server never has to cut it.
-    static let maxBytes = 6 * 1024
+    /// The JSON stays under this many characters, the server's limit.
+    static let maxCharacters = 16_000
 
     static func build(_ input: CoachContextInput) -> CoachContext {
         let calendar = input.calendar
@@ -274,6 +312,7 @@ nonisolated enum CoachContextBuilder {
         (result.proteinByDay, result.protein7dTotal, result.protein7dAvgKnownDays) = (protein.days, protein.total, protein.average)
         let water = series { drinksByDay[$0].map { $0.reduce(0) { $0 + $1.hydrationMilliliters } } }
         (result.waterByDay, result.water7dTotal, result.water7dAvgKnownDays) = (water.days, water.total, water.average)
+        addMetrics(&result, input: input)
         return fitted(result)
     }
 
@@ -293,12 +332,20 @@ nonisolated enum CoachContextBuilder {
         return (try? encoder.encode(context)).flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
     }
 
-    /// Drops detail before totals when the summary is too long: workouts,
-    /// then meals, then long names.
+    static func characters(_ context: CoachContext) -> Int {
+        String(decoding: json(context), as: UTF8.self).count
+    }
+
+    /// Drops detail before totals when the summary is too long: the 30-day
+    /// series first, then workouts, meals and long names.
     static func fitted(_ context: CoachContext) -> CoachContext {
         var context = context
-        while json(context).count > maxBytes {
-            if context.workoutsLast7Days.count > 3 {
+        while characters(context) > maxCharacters {
+            if context.last30Days != nil {
+                context.last30Days = nil
+            } else if context.pantryUseSoon.count > 5 {
+                context.pantryUseSoon = Array(context.pantryUseSoon.prefix(5))
+            } else if context.workoutsLast7Days.count > 3 {
                 context.workoutsLast7Days.removeLast()
             } else if context.mealsToday.count > 5 {
                 context.mealsToday.removeFirst()
@@ -310,7 +357,7 @@ nonisolated enum CoachContextBuilder {
                 context.mealsToday.removeFirst()
             } else if context.habitsToday.done.count + context.habitsToday.open.count > 0 {
                 context.habitsToday = .init(done: Array(context.habitsToday.done.prefix(5)), open: Array(context.habitsToday.open.prefix(5)))
-                if json(context).count > maxBytes { context.habitsToday = .init(done: [], open: []) }
+                if characters(context) > maxCharacters { context.habitsToday = .init(done: [], open: []) }
             } else {
                 context.supplementsToday = .init(done: [], open: [])
                 break

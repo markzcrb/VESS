@@ -55,18 +55,71 @@ struct CoachChartSeries {
             return .init(request: request, points: days.map { day in (day, nights.first { $0.day == day }?.asleepMinutes) },
                          target: profile.map { Double($0.dailySleepTargetMinutes) }, style: .bars)
         case .weight:
-            // Apple Health's weights, plus the profile weight on the day it was
-            // last saved when Health has none that day.
-            var weights = (health?.weights ?? []).filter { $0.measuredAt >= start }
-            if let profile, profile.updatedAt >= start, !weights.contains(where: { calendar.isDate($0.measuredAt, inSameDayAs: profile.updatedAt) }) {
-                weights.append(BodyMassSample(kilograms: profile.weightKilograms, measuredAt: profile.updatedAt))
-            }
+            let weights = profile.map { Self.weights(profile: $0, health: health, from: start, calendar: calendar) } ?? []
             return .init(request: request, points: days.map { day in (day, weights.last { calendar.isDate($0.measuredAt, inSameDayAs: day) }?.kilograms) },
                          target: profile?.goalWeightKilograms, style: .line)
         case .restingHeartRate:
             return .init(request: request, points: days.map { day in (day, health.flatMap { HeartRules.value(on: day, $0.restingHeartRate, calendar: calendar) }) },
                          target: nil, style: .line)
+        case .activeEnergy:
+            let totals = health.map { ActivityTrends.dailyTotals($0.hourlyActiveEnergy, days: request.days, endingOn: today, calendar: calendar) }
+            return .init(request: request, points: days.map { day in (day, totals?.first { $0.day == day }?.value) }, target: nil, style: .bars)
+        case .workouts:
+            // Minutes per day, logged and from Apple Health.
+            let all = store.workouts + (health?.workouts ?? [])
+            return .init(request: request, points: days.map { day in
+                let minutes = all.filter { $0.completedAt.map { calendar.isDate($0, inSameDayAs: day) } == true }.compactMap(\.durationMinutes)
+                return (day, minutes.isEmpty ? nil : Double(minutes.reduce(0, +)))
+            }, target: nil, style: .bars)
+        case .sugar: return .init(request: request, points: food { $0.sugarGrams }, target: nil, style: .bars)
+        case .hrv:
+            let overnight = health.map { StressRules.overnightHRV($0.heartRateVariability, calendar: calendar) } ?? []
+            return .init(request: request, points: days.map { day in (day, HeartRules.value(on: day, overnight, calendar: calendar)) }, target: nil, style: .line)
+        case .stress:
+            // Each afternoon's level: calm 0, elevated 1, high 2.
+            let levels = health.map { StressRules.pastAfternoons(hrvSamples: $0.heartRateVariability, restingHeartRate: $0.restingHeartRate,
+                                                                 days: request.days, now: now, calendar: calendar) } ?? [:]
+            return .init(request: request, points: days.map { day in (day, levels[day].map(Self.stressValue)) }, target: nil, style: .line)
+        case .bmi:
+            guard let profile, BodyRules.showsBMI(profile: profile, now: now, calendar: calendar) else {
+                return .init(request: request, points: days.map { ($0, nil) }, target: nil, style: .line)
+            }
+            let trend = BodyRules.trend(weights(profile: profile, health: health, from: start, calendar: calendar), heightCentimeters: profile.heightCentimeters)
+            return .init(request: request, points: days.map { day in (day, trend.last { calendar.isDate($0.date, inSameDayAs: day) }?.value) },
+                         target: nil, style: .line)
+        case .habits:
+            // Share of the day's listed habits done, in %.
+            let log = HabitLogLoader.log(store: store, health: health, from: start, through: now, calendar: calendar)
+            return .init(request: request, points: days.map { day in
+                let status = HabitRules.status(store.habits, on: day, today: now, log: log, calendar: calendar)
+                return (day, status.listed > 0 ? Double(status.done) / Double(status.listed) * 100 : nil)
+            }, target: 100, style: .bars)
+        case .supplements:
+            // Taken per day; days with nothing due are empty.
+            return .init(request: request, points: days.map { day in
+                let summary = SupplementRules.today(store.supplements, logs: store.supplementLogs(on: day, calendar: calendar), on: day, calendar: calendar)
+                let due = summary.items.filter { SupplementRules.isScheduled($0.supplement, on: day, calendar: calendar) }
+                return (day, due.isEmpty ? nil : Double(due.filter { $0.takenAt != nil }.count))
+            }, target: nil, style: .bars)
         }
+    }
+
+    static func stressValue(_ level: StressRules.Level) -> Double {
+        switch level {
+        case .calm: 0
+        case .elevated: 1
+        case .high: 2
+        }
+    }
+
+    /// Apple Health's weights from `start`, plus the profile weight on the
+    /// day it was last saved when Health has none that day.
+    private static func weights(profile: UserProfile, health: HealthSnapshot?, from start: Date, calendar: Calendar) -> [BodyMassSample] {
+        var weights = (health?.weights ?? []).filter { $0.measuredAt >= start }
+        if profile.updatedAt >= start, !weights.contains(where: { calendar.isDate($0.measuredAt, inSameDayAs: profile.updatedAt) }) {
+            weights.append(BodyMassSample(kilograms: profile.weightKilograms, measuredAt: profile.updatedAt))
+        }
+        return weights
     }
 }
 
@@ -84,6 +137,37 @@ extension CoachChartRequest.Metric {
         case .sleep: "Sleep"
         case .weight: "Weight"
         case .restingHeartRate: "Resting heart rate"
+        case .activeEnergy: "Active energy"
+        case .workouts: "Workouts"
+        case .sugar: "Sugar"
+        case .hrv: "Heart rate variability"
+        case .stress: "Stress"
+        case .bmi: "BMI"
+        case .habits: "Habits"
+        case .supplements: "Supplements"
+        }
+    }
+
+    /// Today's ring for the metric, where Today has one.
+    var todayRing: TodayRing? {
+        switch self {
+        case .steps: .steps
+        case .activeEnergy: .activeEnergy
+        case .energy: .energy
+        case .protein: .protein
+        case .carbs: .carbs
+        case .fat: .fat
+        case .fiber: .fiber
+        case .water: .water
+        case .caffeine: .caffeine
+        case .sleep: .sleep
+        case .hrv: .hrv
+        case .restingHeartRate: .restingHeartRate
+        case .stress: .stress
+        case .weight: .weight
+        case .bmi: .bmi
+        case .habits: .habits
+        case .workouts, .sugar, .supplements: nil
         }
     }
 
@@ -94,10 +178,12 @@ extension CoachChartRequest.Metric {
         case .protein: VESSColor.protein
         case .carbs, .caffeine: VESSColor.carbs
         case .fat: VESSColor.fat
-        case .fiber, .weight: VESSColor.text
+        case .fiber, .weight, .bmi, .sugar, .supplements: VESSColor.text
         case .water: VESSColor.water
-        case .sleep: VESSColor.sleep
-        case .restingHeartRate: VESSColor.heart
+        case .sleep, .stress: VESSColor.sleep
+        case .restingHeartRate, .hrv: VESSColor.heart
+        case .activeEnergy, .workouts: VESSColor.activity
+        case .habits: VESSColor.calories
         }
     }
 }
@@ -210,6 +296,112 @@ struct CoachChartCard: View {
             }
             .vessTextStyle(.caption)
             .foregroundStyle(VESSColor.tertiaryText)
+        }
+    }
+}
+
+/// `[[chart:METRIC:today]]`: the metric's ring now, as on Today, with its
+/// value. Metrics without a ring (workouts, sugar, supplements) show the
+/// value on an empty track: they have no target.
+struct CoachTodayCard: View {
+    let metric: CoachChartRequest.Metric
+    let action: () -> Void
+
+    @Environment(LocalStore.self) private var store
+    @Environment(HealthDataStore.self) private var health
+
+    private let calendar = Calendar.current
+
+    var body: some View {
+        let reading = self.reading
+        Button(action: action) {
+            HStack(spacing: VESSSpacing.md) {
+                VESSMetricStripItem(value: reading.value, label: metric.title, progress: reading.progress,
+                                    metric: reading.kind, spokenValue: reading.spoken, band: reading.band)
+                    // Only the ring: the label and value are in the text beside it.
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                    Text(metric.title)
+                        .vessTextStyle(.labelCaps)
+                        .foregroundStyle(VESSColor.secondaryText)
+                    Text(verbatim: reading.detail)
+                        .vessTextStyle(.numberRow)
+                        .foregroundStyle(VESSColor.text)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Today")
+                        .vessTextStyle(.caption)
+                        .foregroundStyle(VESSColor.tertiaryText)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    .accessibilityHidden(true)
+            }
+            .padding(VESSSpacing.md)
+            .background(VESSColor.card, in: RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous).strokeBorder(VESSColor.divider))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(Text(metric.title)) today"))
+        .accessibilityValue(reading.spoken)
+        .accessibilityHint("Opens the details")
+    }
+
+    private struct Reading {
+        var value: String
+        var detail: String
+        var progress: Double
+        var kind: VESSMetricKind
+        var spoken: Text
+        var band: ClosedRange<Double>?
+    }
+
+    private var reading: Reading {
+        let now = AppClock.now
+        let snapshot = health.state.snapshot
+        guard let profile = store.profile else {
+            return Reading(value: TodayRingReading.empty, detail: TodayRingReading.empty, progress: 0, kind: .fuel, spoken: Text("No value yet"))
+        }
+        let drinks = store.hydrationLogs(on: now, calendar: calendar)
+        if let ring = metric.todayRing {
+            let summary = DaySummary(entries: store.foodEntries(on: now, calendar: calendar), hydrationLogs: drinks,
+                                     targets: profile.nutritionTargets, waterTargetMilliliters: profile.waterTargetMilliliters,
+                                     day: now, now: now, calendar: calendar)
+            let showsBMI = BodyRules.showsBMI(profile: profile, now: now, calendar: calendar)
+            if ring == .bmi, !showsBMI {
+                return Reading(value: TodayRingReading.empty, detail: TodayRingReading.empty, progress: 0, kind: ring.metric, spoken: Text("No value yet"))
+            }
+            let reading = TodayRingReading.current([ring], profile: profile, summary: summary, fuel: nil, store: store,
+                                                   snapshot: snapshot, drinks: drinks, now: now, calendar: calendar)[0]
+            return Reading(value: reading.value, detail: reading.valueWithUnit, progress: reading.progress, kind: ring.metric,
+                           spoken: reading.spoken, band: reading.band)
+        }
+        switch metric {
+        case .sugar:
+            let sugar = store.foodEntries(on: now, calendar: calendar).map(\.nutrition).total.sugarGrams
+            let value = sugar.map { VESSFormat.grams($0) } ?? TodayRingReading.empty
+            return Reading(value: value, detail: sugar.map { "\(VESSFormat.grams($0))\u{00A0}g" } ?? value, progress: 0, kind: .carbs,
+                           spoken: sugar.map { Text("\(VESSFormat.grams($0)) grams") } ?? Text("No value yet"))
+        case .workouts:
+            let all = (store.workouts + (snapshot?.workouts ?? [])).filter { $0.completedAt.map { calendar.isDate($0, inSameDayAs: now) } == true }
+            let minutes = all.compactMap(\.durationMinutes).reduce(0, +)
+            let detail = all.isEmpty ? String(localized: "None yet") : String(localized: "\(minutes)\u{00A0}min · \(all.count)")
+            return Reading(value: all.isEmpty ? TodayRingReading.empty : "\(all.count)", detail: detail, progress: 0, kind: .activity,
+                           spoken: Text(verbatim: detail))
+        default:
+            // Supplements: taken of due.
+            let summary = SupplementRules.today(store.supplements, logs: store.supplementLogs(on: now, calendar: calendar), on: now, calendar: calendar)
+            let due = summary.items.filter { SupplementRules.isScheduled($0.supplement, on: now, calendar: calendar) }
+            let taken = due.filter { $0.takenAt != nil }.count
+            guard !due.isEmpty else {
+                return Reading(value: TodayRingReading.empty, detail: String(localized: "Nothing due today"), progress: 0, kind: .fuel, spoken: Text("Nothing due today"))
+            }
+            return Reading(value: "\(taken)", detail: String(localized: "\(taken) of \(due.count) taken"), progress: Double(taken) / Double(due.count),
+                           kind: .fuel, spoken: Text("\(taken) of \(due.count) taken"))
         }
     }
 }

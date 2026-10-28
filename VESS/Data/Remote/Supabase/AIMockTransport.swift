@@ -70,7 +70,7 @@ nonisolated struct AIMockTransport: HTTPTransport {
         }
         if path.hasSuffix("/coach") {
             return reply(200, [
-                "reply": "Protein is a little under your target so far, with dinner still to come. The miso cod you planned would bring it to about **132 g** of your 140 g.\n\n- Add skyr or edamame as a snack\n- *Water* is a little behind your usual pace\n\n[[chart:protein:7d]]\n(Sample answer.)",
+                "reply": "Protein is a little under your target so far, with dinner still to come. The miso cod you planned would bring it to about **132 g** of your 140 g.\n\n- Add skyr or edamame as a snack\n- *Water* is a little behind your usual pace\n\n[[chart:protein:7d]]\n\nLast night was close to your usual.\n\n[[chart:sleep:today]]\n[[chart:resting_hr:7d]]\n(Sample answer.)",
                 "remaining": 17,
             ])
         }

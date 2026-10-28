@@ -194,30 +194,8 @@ struct TodayView: View {
     // MARK: Rings
 
     private func ringReadings(profile: UserProfile, summary: DaySummary, fuel: FuelScore?, drinks: [HydrationLog], now: Date) -> [TodayRingReading] {
-        let rings = profile.todayRingList(on: now, calendar: calendar)
-        var habitsDone = 0
-        var habitsListed = 0
-        if rings.contains(.habits) {
-            let log = HabitLogLoader.log(store: store, health: health.state.snapshot,
-                                         from: HabitRules.week(containing: now, calendar: calendar).first ?? now, through: now, calendar: calendar)
-            let status = HabitRules.status(store.habits, on: now, today: now, log: log, calendar: calendar)
-            habitsDone = status.done
-            habitsListed = status.listed
-        }
-        var cycleDay: Int?
-        var cycleLength: Double?
-        if rings.contains(.cycleDay) {
-            let cycle = CyclePrediction.summary(store.cycleDays, today: now, calendar: calendar)
-            cycleDay = cycle.cycleDay
-            let lengths = cycle.completedCycles.compactMap(\.lengthDays)
-            cycleLength = lengths.isEmpty ? nil : Double(lengths.reduce(0, +)) / Double(lengths.count)
-        }
-        return TodayRingReading.readings(rings, input: .init(
-            profile: profile, summary: summary, fuel: fuel, snapshot: health.state.snapshot,
-            caffeineMilligrams: CaffeineModel.total(drinks, on: now, calendar: calendar),
-            habitsDone: habitsDone, habitsListed: habitsListed, cycleDay: cycleDay, cycleLength: cycleLength,
-            now: now, calendar: calendar
-        ))
+        TodayRingReading.current(profile.todayRingList(on: now, calendar: calendar), profile: profile, summary: summary, fuel: fuel,
+                                 store: store, snapshot: health.state.snapshot, drinks: drinks, now: now, calendar: calendar)
     }
 
     /// Fuel explains itself in a sheet and Water opens the drink sheet;

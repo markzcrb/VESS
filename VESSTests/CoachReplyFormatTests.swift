@@ -40,3 +40,39 @@ struct CoachReplyFormatTests {
         #expect(CoachChartRequest(token: "[[chart:resting_hr:30d]]") == CoachChartRequest(metric: .restingHeartRate, days: 30))
     }
 }
+
+@Suite("Coach: every chart token and rotating prompts")
+struct CoachTokenTests {
+    @Test("All 19 metrics and today / 7d / 30d parse; anything else is dropped")
+    func tokens() {
+        let metrics = ["steps", "active_energy", "workouts", "energy", "protein", "carbs", "fat", "fiber", "sugar", "water", "caffeine",
+                       "sleep", "hrv", "resting_hr", "stress", "weight", "bmi", "habits", "supplements"]
+        #expect(CoachChartRequest.Metric.allCases.count == metrics.count)
+        for metric in metrics {
+            for range in ["today", "7d", "30d"] {
+                #expect(CoachChartRequest(token: "[[chart:\(metric):\(range)]]") != nil, "\(metric):\(range)")
+            }
+        }
+        #expect(CoachChartRequest(token: "[[chart:sleep:today]]")?.isToday == true)
+        #expect(CoachChartRequest(token: "[[chart:mood:7d]]") == nil)
+        #expect(CoachChartRequest(token: "[[chart:steps:1y]]") == nil)
+    }
+
+    @Test("Lines for weight, BMI, resting heart rate, HRV and stress; bars for the rest")
+    func styles() {
+        let lines = CoachChartRequest.Metric.allCases.filter(\.isLine)
+        #expect(Set(lines) == [.weight, .bmi, .restingHeartRate, .hrv, .stress])
+    }
+
+    @Test("Prompts: the dinner question first, then metrics with data, moving on with the rotation")
+    func rotation() {
+        let candidates = [CoachPrompts.Candidate(metric: .sleep, question: "Sleep?"),
+                          .init(metric: .steps, question: "Steps?"),
+                          .init(metric: .water, question: "Water?"),
+                          .init(metric: .stress, question: "Stress?")]
+        #expect(CoachPrompts.pick(first: ["Cook?"], candidates: candidates, rotation: 0) == ["Cook?", "Sleep?", "Steps?"])
+        #expect(CoachPrompts.pick(first: [], candidates: candidates, rotation: 1) == ["Steps?", "Water?", "Stress?"])
+        #expect(CoachPrompts.pick(first: [], candidates: candidates, rotation: 3) == ["Stress?", "Sleep?", "Steps?"], "Wraps around")
+        #expect(CoachPrompts.pick(first: [], candidates: [], rotation: 5).count == 3, "General questions fill in")
+    }
+}

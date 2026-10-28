@@ -13,6 +13,8 @@ struct CoachView: View {
     @AppStorage(CoachSettings.shareCycleKey) private var shareCycle = false
     @AppStorage("coach.remaining") private var remaining = -1
     @AppStorage("coach.remainingDay") private var remainingDay = ""
+    /// Moves the prompt chips on each time Coach opens.
+    @AppStorage("coach.promptRotation") private var promptRotation = 0
 
     @State private var draft = ""
     @State private var isSending = false
@@ -97,6 +99,7 @@ struct CoachView: View {
                 .accessibilityIdentifier("coach.settings")
             }
         }
+        .onAppear { promptRotation += 1 }
         .sheet(isPresented: $showSettings) { CoachSettingsSheet() }
         .navigationDestination(item: $openChart) { metric in
             chartDetail(metric)
@@ -117,8 +120,13 @@ struct CoachView: View {
         case .protein, .carbs, .fat, .fiber: MacrosDetailView()
         case .water, .caffeine: CaffeineView(day: AppClock.now)
         case .sleep: SleepView()
-        case .weight: BodyView()
-        case .restingHeartRate: HeartView()
+        case .weight, .bmi: BodyView()
+        case .restingHeartRate, .hrv: HeartView()
+        case .activeEnergy, .workouts: ActivityView()
+        case .sugar: MacrosDetailView()
+        case .stress: StressView()
+        case .habits: HabitsView()
+        case .supplements: SupplementsView()
         }
     }
 
@@ -176,7 +184,8 @@ struct CoachView: View {
             if account.isSignedIn, !isSending, isEmpty || store.coachMessages.last?.role == .assistant {
                 VESSBleedingRow {
                     HStack(spacing: VESSSpacing.xs) {
-                        ForEach(CoachPrompts.today(store: store, health: health.state.snapshot, now: AppClock.now, calendar: calendar), id: \.self) { prompt in
+                        ForEach(CoachPrompts.today(store: store, health: health.state.snapshot, now: AppClock.now, calendar: calendar,
+                                                   rotation: promptRotation + store.coachMessages.count / 2), id: \.self) { prompt in
                             Button(prompt) { ask(prompt) }
                                 .buttonStyle(.vessQuick)
                         }
@@ -369,8 +378,12 @@ struct CoachAnswer: View {
                     }
                 case .chart(let request):
                     // Drawn from this iPhone's data, never from the answer's numbers.
-                    let series = CoachChartSeries.make(request, store: store, health: health.state.snapshot, now: AppClock.now, calendar: .current)
-                    CoachChartCard(series: series) { onOpenChart(request.metric) }
+                    if request.isToday {
+                        CoachTodayCard(metric: request.metric) { onOpenChart(request.metric) }
+                    } else {
+                        let series = CoachChartSeries.make(request, store: store, health: health.state.snapshot, now: AppClock.now, calendar: .current)
+                        CoachChartCard(series: series) { onOpenChart(request.metric) }
+                    }
                 }
             }
         }
@@ -406,34 +419,85 @@ struct CoachTypingIndicator: View {
     }
 }
 
-/// Three questions that fit today: dinner not logged yet, last night's
-/// sleep, protein or water behind; then general ones.
+/// Three questions for today: "What can I cook tonight?" first while
+/// dinner isn't logged after 15:00, then questions about the metrics that
+/// have data today, rotating each time Coach opens and after each answer.
 enum CoachPrompts {
+    /// A metric with data today and its question.
+    nonisolated struct Candidate: Equatable, Sendable {
+        let metric: CoachChartRequest.Metric
+        let question: String
+    }
+
     @MainActor
-    static func today(store: LocalStore, health: HealthSnapshot?, now: Date, calendar: Calendar) -> [String] {
-        var prompts: [String] = []
+    static func today(store: LocalStore, health: HealthSnapshot?, now: Date, calendar: Calendar, rotation: Int) -> [String] {
         let hour = calendar.component(.hour, from: now)
         let entries = store.foodEntries(on: now, calendar: calendar)
-        let targets = store.profile?.nutritionTargets
-        if hour >= 15, entries.entries(for: .dinner).isEmpty {
-            prompts.append(String(localized: "What can I cook tonight?"))
+        let drinks = store.hydrationLogs(on: now, calendar: calendar)
+        let food = entries.map(\.nutrition).total
+        var has: Set<CoachChartRequest.Metric> = []
+        if !entries.isEmpty { has.formUnion([.energy, .protein, .carbs]) }
+        if food.fiberGrams != nil { has.insert(.fiber) }
+        if !drinks.isEmpty { has.insert(.water) }
+        if CaffeineModel.total(drinks, on: now, calendar: calendar) >= 1 { has.insert(.caffeine) }
+        if !store.habits.isEmpty { has.insert(.habits) }
+        if !store.supplements.isEmpty { has.insert(.supplements) }
+        if let health {
+            if health.steps > 0 { has.insert(.steps) }
+            if (health.activeEnergyKilocalories ?? 0) > 0 { has.insert(.activeEnergy) }
+            let nights = SleepRules.nights(health.sleep, calendar: calendar)
+            if SleepRules.lastNight(nights, now: now, calendar: calendar) != nil { has.insert(.sleep) }
+            if HeartRules.value(on: now, health.restingHeartRate, calendar: calendar) != nil { has.insert(.restingHeartRate) }
+            if HeartRules.value(on: now, StressRules.overnightHRV(health.heartRateVariability, calendar: calendar), calendar: calendar) != nil {
+                has.formUnion([.hrv, .stress])
+            }
+            if health.latestWeight.map({ calendar.isDate($0.measuredAt, inSameDayAs: now) }) == true { has.insert(.weight) }
         }
-        if let health, SleepRules.lastNight(SleepRules.nights(health.sleep, calendar: calendar), now: now, calendar: calendar) != nil {
-            prompts.append(String(localized: "How did I sleep?"))
+        if (store.workouts + (health?.workouts ?? [])).contains(where: { $0.completedAt.map { calendar.isDate($0, inSameDayAs: now) } == true }) {
+            has.insert(.workouts)
         }
-        if let targets, entries.map(\.nutrition).total.proteinGrams < targets.proteinGrams * Double(hour) / 24 {
-            prompts.append(String(localized: "How's my protein this week?"))
+        let first = hour >= 15 && entries.entries(for: .dinner).isEmpty ? [String(localized: "What can I cook tonight?")] : []
+        return pick(first: first, candidates: candidates.filter { has.contains($0.metric) }, rotation: rotation)
+    }
+
+    /// `first`, then candidates from `rotation` on (wrapping), three in all;
+    /// general questions fill in when there are fewer.
+    nonisolated static func pick(first: [String], candidates: [Candidate], rotation: Int, count: Int = 3) -> [String] {
+        var prompts = first
+        if !candidates.isEmpty {
+            let start = ((rotation % candidates.count) + candidates.count) % candidates.count
+            for offset in 0..<candidates.count where prompts.count < count {
+                let question = candidates[(start + offset) % candidates.count].question
+                if !prompts.contains(question) { prompts.append(question) }
+            }
         }
-        let water = store.hydrationLogs(on: now, calendar: calendar).reduce(0) { $0 + $1.hydrationMilliliters }
-        if hour >= 14, let goal = store.profile?.waterTargetMilliliters, water < goal / 2 {
-            prompts.append(String(localized: "How's my water today?"))
-        }
-        if health != nil { prompts.append(String(localized: "How many steps did I do this week?")) }
         for fallback in [String(localized: "How's my protein this week?"), String(localized: "What can I cook tonight?"), String(localized: "How's my water today?")]
-        where !prompts.contains(fallback) {
+        where prompts.count < count && !prompts.contains(fallback) {
             prompts.append(fallback)
         }
-        return Array(prompts.prefix(3))
+        return Array(prompts.prefix(count))
+    }
+
+    /// One question per metric, in the order they rotate.
+    nonisolated static var candidates: [Candidate] {
+        [
+            .init(metric: .sleep, question: String(localized: "How did I sleep?")),
+            .init(metric: .protein, question: String(localized: "How's my protein this week?")),
+            .init(metric: .steps, question: String(localized: "How many steps did I do this week?")),
+            .init(metric: .water, question: String(localized: "How's my water today?")),
+            .init(metric: .caffeine, question: String(localized: "How much caffeine have I had today?")),
+            .init(metric: .restingHeartRate, question: String(localized: "How's my resting heart rate?")),
+            .init(metric: .energy, question: String(localized: "How's my energy this week?")),
+            .init(metric: .stress, question: String(localized: "How was my stress today?")),
+            .init(metric: .habits, question: String(localized: "How are my habits going?")),
+            .init(metric: .fiber, question: String(localized: "Am I getting enough fibre?")),
+            .init(metric: .activeEnergy, question: String(localized: "How active was I this week?")),
+            .init(metric: .hrv, question: String(localized: "What does my HRV say?")),
+            .init(metric: .carbs, question: String(localized: "How are my carbs today?")),
+            .init(metric: .workouts, question: String(localized: "How were my workouts this week?")),
+            .init(metric: .weight, question: String(localized: "How's my weight trending?")),
+            .init(metric: .supplements, question: String(localized: "Did I take my supplements?")),
+        ]
     }
 }
 

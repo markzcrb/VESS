@@ -377,6 +377,9 @@
         }
       }
     },
+    "%@ grams" : {
+
+    },
     "%@ h" : {
 
     },
@@ -731,6 +734,9 @@
     "%@ to go" : {
 
     },
+    "%@ today" : {
+
+    },
     "%@ Your quietest day is usually %@." : {
       "localizations" : {
         "en" : {
@@ -946,6 +952,16 @@
         }
       }
     },
+    "%lld min · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld min · %2$lld"
+          }
+        }
+      }
+    },
     "%lld min · ^[%lld serving](inflect: true) · %@ kcal" : {
       "localizations" : {
         "en" : {
@@ -1052,6 +1068,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld selected · You can change these later."
+          }
+        }
+      }
+    },
+    "%lld of %lld taken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld taken"
           }
         }
       }
@@ -1928,6 +1954,9 @@
     "Always check labels yourself. Recipe allergen tags come from the ingredients and can miss cross-contamination." : {
 
     },
+    "Am I getting enough fibre?" : {
+
+    },
     "Americano" : {
 
     },
@@ -2644,6 +2673,9 @@
 
     },
     "Diary" : {
+
+    },
+    "Did I take my supplements?" : {
 
     },
     "Diet" : {
@@ -3436,6 +3468,15 @@
     "How active is a typical week?" : {
 
     },
+    "How active was I this week?" : {
+
+    },
+    "How are my carbs today?" : {
+
+    },
+    "How are my habits going?" : {
+
+    },
     "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100 %; two hours away or more scores 0 %." : {
 
     },
@@ -3463,6 +3504,9 @@
     "How many steps did I do this week?" : {
 
     },
+    "How much caffeine have I had today?" : {
+
+    },
     "How often" : {
 
     },
@@ -3475,13 +3519,28 @@
     "How this is measured" : {
 
     },
+    "How was my stress today?" : {
+
+    },
+    "How were my workouts this week?" : {
+
+    },
     "How your body is doing." : {
+
+    },
+    "How's my energy this week?" : {
 
     },
     "How's my protein this week?" : {
 
     },
+    "How's my resting heart rate?" : {
+
+    },
     "How's my water today?" : {
+
+    },
+    "How's my weight trending?" : {
 
     },
     "HRV" : {
@@ -4363,6 +4422,9 @@
     "None of the 14 allergens" : {
 
     },
+    "None yet" : {
+
+    },
     "not %@" : {
 
     },
@@ -4397,6 +4459,9 @@
 
     },
     "Note" : {
+
+    },
+    "Nothing due today" : {
 
     },
     "Nothing else" : {
@@ -5531,6 +5596,9 @@
     "Sufficient" : {
 
     },
+    "Sugar" : {
+
+    },
     "Sugars" : {
 
     },
@@ -6289,6 +6357,9 @@
 
     },
     "What Coach sees" : {
+
+    },
+    "What does my HRV say?" : {
 
     },
     "What is it?" : {
