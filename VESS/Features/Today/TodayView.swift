@@ -76,11 +76,20 @@ struct TodayView: View {
                                 onCoach: { showCoach = true }
                             )
                             if !entries.isEmpty {
+                                let rings = ringReadings(profile: profile, summary: summary, fuel: fuel, drinks: drinks, now: now)
+                                let showsStale = health.isStale && rings.contains { $0.ring.isHealth }
                                 TodayMetricStrip(
-                                    readings: ringReadings(profile: profile, summary: summary, fuel: fuel, drinks: drinks, now: now),
+                                    readings: rings,
+                                    dimsHealth: showsStale,
                                     onOpen: { open($0, now: now) },
                                     onEdit: { showEditRings = true }
                                 )
+                                if showsStale {
+                                    TodayHealthStaleLine(updatedAt: health.updatedAt) {
+                                        Task { await health.refresh(stepsTarget: profile.dailyStepsTarget) }
+                                    }
+                                    .padding(.top, -VESSSpacing.md)
+                                }
                             }
                         }
 

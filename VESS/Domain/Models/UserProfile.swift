@@ -41,6 +41,8 @@ nonisolated struct UserProfile: Identifiable, Codable, Hashable, Sendable {
     var isPregnant: Bool? = nil
     /// The sleep target on H01; `nil` is 8 h.
     var sleepTargetMinutes: Int? = nil
+    /// No reminders in these hours; `nil` is 22:00–07:00.
+    var quietHours: QuietHours? = nil
     /// Today's rings, in order, as raw values so a ring a later build drops
     /// never breaks decoding. `nil` (profiles from earlier builds) is the
     /// default strip. See `todayRingList`.

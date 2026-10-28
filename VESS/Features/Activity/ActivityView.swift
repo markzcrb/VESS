@@ -39,10 +39,7 @@ struct ActivityView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showInfo = true } label: {
-                    Image(systemName: "info.circle")
-                }
-                .accessibilityLabel("About Activity")
+                VESSToolbarInfoButton(label: "About Activity") { showInfo = true }
             }
         }
         .sheet(isPresented: $showInfo) { ActivityInfoSheet() }

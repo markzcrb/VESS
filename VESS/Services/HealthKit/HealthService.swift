@@ -391,6 +391,16 @@ nonisolated struct DemoHealthService: HealthService {
     let snapshot: HealthSnapshot
     /// Every read fails, for the sync error state (D07).
     var fails = false
+    /// Only the first read fails (`-healthStale`): Retry then succeeds.
+    var failsFirst: FirstFailure?
+
+    actor FirstFailure {
+        private var failed = false
+        func take() -> Bool {
+            defer { failed = true }
+            return !failed
+        }
+    }
 
     var isAvailable: Bool { true }
 
@@ -398,6 +408,7 @@ nonisolated struct DemoHealthService: HealthService {
 
     func snapshot(now: Date, calendar: Calendar, stepsTarget: Int) async throws -> HealthSnapshot? {
         if fails { throw URLError(.cannotConnectToHost) }
+        if let failsFirst, await failsFirst.take() { throw URLError(.cannotConnectToHost) }
         var result = snapshot
         result.stepsTarget = stepsTarget
         return result

@@ -276,3 +276,18 @@ private struct VESSScrollToTopOnReselect: ViewModifier {
             }
     }
 }
+
+/// The (i) button in a nav bar: a 44 pt target around the symbol.
+struct VESSToolbarInfoButton: View {
+    let label: LocalizedStringResource
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "info.circle")
+                .frame(width: VESSHitTarget.minimum, height: VESSHitTarget.minimum)
+                .contentShape(Rectangle())
+        }
+        .accessibilityLabel(Text(label))
+    }
+}

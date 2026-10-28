@@ -47,7 +47,7 @@ final class VESSUITests: XCTestCase {
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Moderate")).firstMatch)
         continueButton.tap()
 
-        tapWhenReady(app.buttons["Everything"])
+        tapWhenReady(app.buttons["No restrictions"])
         continueButton.tap()
 
         // Restrictions and focus areas are optional.

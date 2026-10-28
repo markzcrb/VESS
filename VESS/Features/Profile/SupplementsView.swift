@@ -59,7 +59,7 @@ struct SupplementsView: View {
                         .vessTextStyle(.bodyS)
                         .foregroundStyle(VESSColor.secondaryText)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: VESSHitTarget.minimum, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -72,6 +72,8 @@ struct SupplementsView: View {
             )) { EmptyView() }
             .toggleStyle(.vess)
             .fixedSize()
+            .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+            .contentShape(Rectangle())
             .accessibilityLabel(Text("Reminder for \(supplement.name)"))
         }
         .padding(.vertical, VESSSpacing.sm)

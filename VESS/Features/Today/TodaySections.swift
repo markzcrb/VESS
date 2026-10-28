@@ -36,6 +36,8 @@ struct TodayHeader: View {
 /// for Edit rings / Open details. A vertical list of rows at AX sizes.
 struct TodayMetricStrip: View {
     let readings: [TodayRingReading]
+    /// Apple Health is out of date: its rings are drawn at half opacity.
+    var dimsHealth = false
     let onOpen: (TodayRing) -> Void
     let onEdit: () -> Void
 
@@ -60,6 +62,7 @@ struct TodayMetricStrip: View {
                 ForEach(readings) { reading in
                     Button { onOpen(reading.ring) } label: {
                         VESSMetricRow(systemImage: reading.ring.symbol, label: reading.ring.shortTitle, value: reading.valueWithUnit)
+                            .opacity(dimsHealth && reading.ring.isHealth ? 0.5 : 1)
                             .contentShape(Rectangle())
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel(Text(reading.ring.shortTitle))
@@ -83,6 +86,7 @@ struct TodayMetricStrip: View {
                         Button { onOpen(reading.ring) } label: {
                             VESSMetricStripItem(value: reading.value, label: reading.ring.shortTitle, progress: reading.progress,
                                                 metric: reading.ring.metric, spokenValue: reading.spoken, band: reading.band)
+                                .opacity(dimsHealth && reading.ring.isHealth ? 0.5 : 1)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -603,5 +607,39 @@ struct TodaySyncingLabel: View {
             .padding(.horizontal, VESSSpacing.screenInset)
             .padding(.vertical, VESSSpacing.sm)
             .background(VESSColor.background)
+    }
+}
+
+/// Under the strip while Apple Health is out of date: "Apple Health ·
+/// updated 3 h ago · Retry". Calm, never red.
+struct TodayHealthStaleLine: View {
+    let updatedAt: Date?
+    let onRetry: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+            Text(text)
+                .vessTextStyle(.bodyS)
+                .foregroundStyle(VESSColor.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(action: onRetry) {
+                Text("Retry")
+                    .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.vessQuiet)
+            .accessibilityIdentifier("today.healthRetry")
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("today.healthStale")
+    }
+
+    private var text: String {
+        guard let updatedAt else { return String(localized: "Apple Health · not updated") }
+        switch HealthFreshness.age(since: updatedAt, now: AppClock.now) {
+        case .minutes(let minutes): return String(localized: "Apple Health · updated \(minutes)\u{00A0}min ago")
+        case .hours(let hours): return String(localized: "Apple Health · updated \(hours)\u{00A0}h ago")
+        case .days(let days): return String(AttributedString(localized: "Apple Health · updated ^[\(days) day](inflect: true) ago").characters)
+        }
     }
 }

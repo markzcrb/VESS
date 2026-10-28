@@ -51,11 +51,8 @@ struct CycleView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showInfo = true } label: {
-                    Image(systemName: "info.circle")
-                }
-                .accessibilityLabel("About these estimates")
-                .accessibilityIdentifier("cycle.info")
+                VESSToolbarInfoButton(label: "About these estimates") { showInfo = true }
+                    .accessibilityIdentifier("cycle.info")
             }
         }
         // A calendar day picked to edit.

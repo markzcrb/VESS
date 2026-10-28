@@ -73,14 +73,15 @@ struct AppleHealthView: View {
 
 // MARK: - E06 Notifications
 
-/// Meal reminders (PRODUCT-LOGIC.md #12) and a link to supplement reminders.
-/// Quiet hours are fixed at 22:00–07:00.
+/// Meal reminders (PRODUCT-LOGIC.md #12), a link to supplement reminders,
+/// and quiet hours (22:00–07:00 until changed), which every reminder keeps.
 struct NotificationsView: View {
     @Environment(LocalStore.self) private var store
     @Environment(ReminderService.self) private var reminders
     @Environment(\.openURL) private var openURL
 
     @State private var showDenied = false
+    @State private var showError = false
 
     var body: some View {
         let supplementsOn = store.supplements.filter(\.reminderEnabled).count
@@ -111,14 +112,56 @@ struct NotificationsView: View {
             VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                 VESSSectionHeader(title: "Quiet hours")
                 VESSRowGroup {
-                    VESSListRow(title: Text("From"), value: Self.time(MealReminders.quietStartHour), showsChevron: false)
-                    VESSListRow(title: Text("To"), value: Self.time(MealReminders.quietEndHour), showsChevron: false)
+                    quietRow(Text("From"), minutes: \.start)
+                        .accessibilityIdentifier("notifications.quietFrom")
+                    quietRow(Text("To"), minutes: \.end)
+                        .accessibilityIdentifier("notifications.quietTo")
                 }
                 .vessHairlineBottom()
-                ActivityFootnote(text: Text("No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server."))
+                ActivityFootnote(text: Text("No reminders in these hours: meals, habits and supplements. Reminders are scheduled on this iPhone; nothing is sent to a server."))
             }
         }
         .task { await reminders.refreshAuthorization() }
+        .vessErrorAlert(isPresented: $showError)
+    }
+
+    /// "From · 22:00" with a compact time picker; saves and plans again.
+    private func quietRow(_ title: Text, minutes: WritableKeyPath<QuietHours, Int>) -> some View {
+        HStack(spacing: VESSSpacing.sm) {
+            title
+                .vessTextStyle(.bodyM)
+                .foregroundStyle(VESSColor.text)
+            Spacer(minLength: VESSSpacing.sm)
+            DatePicker(selection: quietBinding(minutes), displayedComponents: .hourAndMinute) { title }
+                .datePickerStyle(.compact)
+                .labelsHidden()
+                .tint(VESSColor.text)
+        }
+        .frame(minHeight: VESSSize.rowHeight)
+    }
+
+    private func quietBinding(_ minutes: WritableKeyPath<QuietHours, Int>) -> Binding<Date> {
+        let calendar = Calendar.current
+        let day = calendar.startOfDay(for: AppClock.now)
+        return Binding(
+            get: {
+                let quiet = store.profile?.quietHours ?? .standard
+                return calendar.date(byAdding: .minute, value: quiet[keyPath: minutes], to: day) ?? day
+            },
+            set: { date in
+                guard var profile = store.profile else { return }
+                var quiet = profile.quietHours ?? .standard
+                let parts = calendar.dateComponents([.hour, .minute], from: date)
+                quiet[keyPath: minutes] = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+                profile.quietHours = quiet
+                do {
+                    try store.saveProfile(profile)
+                    Task { await reminders.sync(store: store) }
+                } catch {
+                    showError = true
+                }
+            }
+        )
     }
 
     private func setMealReminders(_ on: Bool) {
@@ -138,10 +181,6 @@ struct NotificationsView: View {
         }
     }
 
-    private static func time(_ hour: Int) -> Text {
-        let date = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1, hour: hour)) ?? .now
-        return Text(date, format: .dateTime.hour().minute())
-    }
 }
 
 // MARK: - E07 Privacy

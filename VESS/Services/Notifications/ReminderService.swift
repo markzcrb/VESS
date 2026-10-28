@@ -62,12 +62,15 @@ final class ReminderService {
     /// P02's promise: on day 5 of the VESS+ trial, at 10:00, a reminder that
     /// it ends in two days. Only when reminders are already allowed (the
     /// paywall promises it only then); never asks.
-    func scheduleTrialReminder(trialStartedAt start: Date, calendar: Calendar = .current) async {
+    func scheduleTrialReminder(trialStartedAt start: Date, quiet: QuietHours = .standard, calendar: Calendar = .current) async {
         guard let center else { return }
         await refreshAuthorization()
         guard canRemind else { return }
         let day5 = calendar.date(byAdding: .day, value: 5, to: calendar.startOfDay(for: start)) ?? start
-        guard let date = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: day5), date > AppClock.now else { return }
+        // 10:00, or when quiet hours end if they cover it.
+        guard let ten = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: day5) else { return }
+        let date = quiet.firstAllowed(atOrAfter: ten, calendar: calendar)
+        guard date > AppClock.now else { return }
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Your VESS+ trial ends in 2 days")
         content.body = String(localized: "Nothing to do if you'd like to keep it. To cancel: Settings › Apple Account › Subscriptions.")
@@ -98,6 +101,7 @@ final class ReminderService {
         guard [.authorized, .provisional, .ephemeral].contains(authorization) else { return }
 
         var requests: [UNNotificationRequest] = []
+        let quiet = store.profile?.quietHours ?? .standard
         if mealRemindersOn {
             let today = calendar.startOfDay(for: now)
             let historyStart = calendar.date(byAdding: .day, value: -MealRegularity.historyDays, to: today) ?? today
@@ -106,7 +110,8 @@ final class ReminderService {
                 history: store.foodEntries(from: historyStart, to: today),
                 logged: store.foodEntries(from: today, to: planEnd),
                 now: now,
-                calendar: calendar
+                calendar: calendar,
+                quiet: quiet
             )
             requests += plan.map { reminder in
                 let content = UNMutableNotificationContent()
@@ -118,6 +123,9 @@ final class ReminderService {
         }
         for supplement in store.supplements where supplement.reminderEnabled {
             guard let time = supplement.reminderTime else { continue }
+            // A daily time in quiet hours isn't scheduled.
+            let at = calendar.date(bySettingHour: time.hour ?? 0, minute: time.minute ?? 0, second: 0, of: now) ?? now
+            guard !quiet.contains(at, calendar: calendar) else { continue }
             let content = UNMutableNotificationContent()
             content.title = supplement.name
             content.body = String(localized: "A reminder you set for \(supplement.name).")
@@ -138,7 +146,7 @@ final class ReminderService {
                 from: HabitRules.week(containing: now, calendar: calendar).first ?? now, through: now, calendar: calendar
             )
             let names = Dictionary(habits.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
-            requests += HabitRules.reminders(habits, log: log, now: now, calendar: calendar).map { reminder in
+            requests += HabitRules.reminders(habits, log: log, now: now, calendar: calendar, quiet: quiet).map { reminder in
                 let content = UNMutableNotificationContent()
                 content.title = names[reminder.habitID] ?? ""
                 content.body = String(localized: "A reminder you set. No pressure.")

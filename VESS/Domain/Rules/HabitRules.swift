@@ -230,15 +230,16 @@ nonisolated enum HabitRules {
 
     /// At the habit's time on its days, for the next `days` days; not once
     /// it's complete today, not after an N-times-a-week count is reached,
-    /// and never in quiet hours (`MealReminders`).
-    static func reminders(_ habits: [Habit], log: Log, now: Date, calendar: Calendar, days: Int = daysAhead) -> [Reminder] {
+    /// and never in quiet hours (`QuietHours`).
+    static func reminders(_ habits: [Habit], log: Log, now: Date, calendar: Calendar, days: Int = daysAhead,
+                          quiet: QuietHours = .standard) -> [Reminder] {
         let today = calendar.startOfDay(for: now)
         return habits.flatMap { habit -> [Reminder] in
             guard let time = habit.reminder else { return [] }
             return (0..<days).compactMap { offset -> Reminder? in
                 guard let day = calendar.date(byAdding: .day, value: offset, to: today),
                       let date = calendar.date(bySettingHour: time.hour ?? 0, minute: time.minute ?? 0, second: 0, of: day),
-                      date > now, !MealReminders.isQuiet(date, calendar: calendar),
+                      date > now, !quiet.contains(date, calendar: calendar),
                       isScheduled(habit, on: day, calendar: calendar),
                       !isComplete(habit, on: day, log: log, calendar: calendar)
                 else { return nil }

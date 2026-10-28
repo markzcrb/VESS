@@ -24,7 +24,7 @@ struct EnergyDetailView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("How this is measured", systemImage: "info.circle") { showInfo = true }
+                VESSToolbarInfoButton(label: "How this is measured") { showInfo = true }
             }
         }
         .sheet(isPresented: $showInfo) { EnergyInfoSheet() }

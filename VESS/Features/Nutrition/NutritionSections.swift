@@ -37,6 +37,22 @@ private struct DiaryHeader: View {
     }
 }
 
+/// What a diary header says on the right: "540 kcal · 07:45" for a meal,
+/// "1,6 L · 4 drinks" for drinks; `nil` (shown as "—") only when empty.
+enum DiaryHeaderDetail {
+    static func meal(_ entries: [FoodLogEntry]) -> String? {
+        guard let first = entries.map(\.loggedAt).min() else { return nil }
+        return "\(VESSFormat.calories(entries.totalNutrition.calories))\u{00A0}kcal · \(first.formatted(.dateTime.hour().minute()))"
+    }
+
+    static func drinks(_ logs: [HydrationLog]) -> String? {
+        guard !logs.isEmpty else { return nil }
+        let water = VESSFormat.liters(fromMilliliters: logs.reduce(0) { $0 + $1.hydrationMilliliters })
+        let count = String(AttributedString(localized: "^[\(logs.count) drink](inflect: true)").characters)
+        return "\(water)\u{00A0}L · \(count)"
+    }
+}
+
 // MARK: - Day totals
 
 /// The day's total, what's left, and the three macro bars.
@@ -188,8 +204,7 @@ struct MealDiarySection: View {
     }
 
     private var detail: Text? {
-        guard let first = entries.first else { return nil }
-        return Text("\(VESSFormat.calories(entries.totalNutrition.calories))\u{00A0}kcal · \(first.loggedAt, format: .dateTime.hour().minute())")
+        DiaryHeaderDetail.meal(entries).map { Text(verbatim: $0) }
     }
 
     /// "1 tbsp · 21 g", "200 g", "150 g · Estimated" or "Quick add".
@@ -230,7 +245,7 @@ struct DrinksDiarySection: View {
         let caffeine = logs.reduce(0) { $0 + $1.caffeineMilligrams }
 
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            DiaryHeader(title: "Drinks")
+            DiaryHeader(title: "Drinks", detail: DiaryHeaderDetail.drinks(logs).map { Text(verbatim: $0) })
 
             if !logs.isEmpty {
                 VESSRowGroup {

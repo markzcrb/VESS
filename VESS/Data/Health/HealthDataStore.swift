@@ -12,6 +12,8 @@ final class HealthDataStore {
     /// Apple Health screen). Kinds that failed alone are in the snapshot's
     /// `readIssues`.
     private(set) var lastError: String?
+    /// When a read last succeeded; `nil` before the first one this launch.
+    private(set) var lastSuccessAt: Date?
 
     private let service: (any HealthService)?
     /// Whether the user has been through the permission sheet. Health never
@@ -35,8 +37,9 @@ final class HealthDataStore {
 
     private static let accessKey = "health.didRequestAccess"
 
-    init(state: HealthSyncState = .notConnected, service: (any HealthService)? = nil, didRequestAccess: Bool? = nil) {
+    init(state: HealthSyncState = .notConnected, service: (any HealthService)? = nil, didRequestAccess: Bool? = nil, lastSuccessAt: Date? = nil) {
         self.state = state
+        self.lastSuccessAt = lastSuccessAt
         self.service = service
         self.remembersAccess = didRequestAccess == nil
         self.didRequestAccess = didRequestAccess ?? UserDefaults.standard.bool(forKey: Self.accessKey)
@@ -61,6 +64,12 @@ final class HealthDataStore {
         await refresh(stepsTarget: stepsTarget)
     }
 
+    /// Stale values on screen (`HealthFreshness`).
+    var isStale: Bool { HealthFreshness.isStale(state, lastSuccess: lastSuccessAt, now: AppClock.now) }
+
+    /// When Health was last updated, for "updated 3 h ago".
+    var updatedAt: Date? { lastSuccessAt ?? state.snapshot?.updatedAt }
+
     /// Reads again if the user has connected. The last values stay on
     /// screen while it reads, and after a failure (D07).
     func refresh(stepsTarget: Int) async {
@@ -82,9 +91,11 @@ final class HealthDataStore {
             if let snapshot = try await service.snapshot(now: AppClock.now, calendar: .current, stepsTarget: stepsTarget) {
                 // Kinds that failed alone are listed in the snapshot; the rest show.
                 state = .available(snapshot)
+                lastSuccessAt = AppClock.now
                 lastError = snapshot.readIssues.isEmpty ? nil : HealthReadFailure(issues: snapshot.readIssues).description
             } else {
                 state = .nothingShared
+                lastSuccessAt = AppClock.now
                 lastError = nil
             }
         } catch {

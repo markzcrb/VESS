@@ -36,6 +36,17 @@ struct AddHabitSheet: View {
 
     private let calendar = Calendar.current
 
+    private var quiet: QuietHours { store.profile?.quietHours ?? .standard }
+
+    /// "22:00–07:00".
+    private var quietText: String {
+        let day = calendar.startOfDay(for: AppClock.now)
+        func time(_ minutes: Int) -> String {
+            (calendar.date(byAdding: .minute, value: minutes, to: day) ?? day).formatted(.dateTime.hour().minute())
+        }
+        return "\(time(quiet.start))\u{2013}\(time(quiet.end))"
+    }
+
     init(editing: Habit?) {
         self.editing = editing
         guard let habit = editing else { return }
@@ -394,7 +405,7 @@ struct AddHabitSheet: View {
             if showReminder {
                 ProfileToggleRow(
                     title: Text("Remind me"),
-                    subtitle: Text("On this habit's days, only if it isn't done. Never between 22:00 and 07:00."),
+                    subtitle: Text("On this habit's days, only if it isn't done. Never in quiet hours (\(quietText))."),
                     isOn: $reminderOn
                 )
                 if reminderOn {
@@ -402,7 +413,7 @@ struct AddHabitSheet: View {
                         .datePickerStyle(.wheel)
                         .labelsHidden()
                         .frame(maxWidth: .infinity)
-                    if MealReminders.isQuiet(reminderTime, calendar: calendar) {
+                    if quiet.contains(reminderTime, calendar: calendar) {
                         ActivityFootnote(text: Text("This time is in quiet hours, so no reminder will be sent."))
                     }
                 }

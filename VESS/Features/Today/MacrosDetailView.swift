@@ -33,7 +33,7 @@ struct MacrosDetailView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("How this is measured", systemImage: "info.circle") { showInfo = true }
+                VESSToolbarInfoButton(label: "How this is measured") { showInfo = true }
             }
         }
         .sheet(isPresented: $showInfo) { MacrosInfoSheet() }
@@ -45,12 +45,13 @@ struct MacrosDetailView: View {
         // The whole of today, as on Today and Nutrition.
         let end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now
         let entries = store.foodEntries(from: start, to: end)
-        let totals = IntakeAnalysis.dailyTotals(entries, endingOn: now, days: range.days, calendar: calendar)
+        let drinks = store.hydrationLogs(from: start, to: end)
+        let totals = Self.dailyTotals(entries, drinks: drinks, endingOn: now, days: range.days, calendar: calendar)
         let protein = IntakeAnalysis.average(totals, \.proteinGrams) ?? 0
         let carbs = IntakeAnalysis.average(totals, \.carbohydrateGrams) ?? 0
         let fat = IntakeAnalysis.average(totals, \.fatGrams) ?? 0
         let calories = IntakeAnalysis.average(totals, \.calories) ?? 0
-        let week = IntakeAnalysis.dailyTotals(entries, endingOn: now, days: 7, calendar: calendar)
+        let week = Self.dailyTotals(entries, drinks: drinks, endingOn: now, days: 7, calendar: calendar)
         let todayEntries = entries.filter { calendar.isDate($0.loggedAt, inSameDayAs: now) }
 
         return ScrollView {
@@ -108,6 +109,12 @@ struct MacrosDetailView: View {
                     .foregroundStyle(VESSColor.text)
             }
         }
+    }
+
+    /// Day totals with every drink's kcal, as Today and Energy count them
+    /// (`DaySummary`), so the three screens show the same energy.
+    static func dailyTotals(_ entries: [FoodLogEntry], drinks: [HydrationLog], endingOn day: Date, days: Int, calendar: Calendar) -> [IntakeAnalysis.DayTotal] {
+        IntakeAnalysis.dailyTotals(entries, extra: drinks.drinkEnergy, endingOn: day, days: days, calendar: calendar)
     }
 
     private func fraction(_ value: Double, _ target: Double) -> Double {

@@ -34,7 +34,10 @@ struct FuelInfoSheet: View {
                         note("Fuel shows \u{2014} until you log something to eat.")
                     }
                 }
-                .padding(VESSSpacing.screenInset)
+                // 20 pt from the sheet's edges, the text using the full width.
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, VESSSpacing.screenInset)
+                .padding(.vertical, VESSSpacing.screenInset)
             }
             .background(VESSColor.card)
             .toolbar {

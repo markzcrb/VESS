@@ -74,7 +74,8 @@ struct OnboardingDraftTests {
         draft.heightText = "178"
         draft.weightText = "68,5"
         draft.activityLevel = .moderate
-        draft.dietaryPreference = .highProtein
+        draft.diet = .noRestrictions
+        draft.alsoPrefer = [.highProtein]
         return draft
     }
 
@@ -91,12 +92,13 @@ struct OnboardingDraftTests {
         #expect(!draft.isComplete(.basics))
     }
 
-    @Test("A custom diet needs a description")
-    func customDiet() {
+    @Test("The diet step needs one of P01's diets; also-prefer chips are optional")
+    func dietStep() {
         let draft = completeDraft()
-        draft.dietaryPreference = .custom
+        draft.diet = nil
         #expect(!draft.isComplete(.diet))
-        draft.customDiet = "Pescatarian"
+        draft.diet = .vegetarian
+        draft.alsoPrefer = []
         #expect(draft.isComplete(.diet))
     }
 

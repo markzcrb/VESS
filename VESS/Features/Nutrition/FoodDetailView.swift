@@ -168,6 +168,9 @@ struct FoodDetailView: View {
                         .vessTextStyle(.displayM)
                         .foregroundStyle(VESSColor.text)
                         .fixedSize()
+                        // At least 44 pt to tap, however short the number.
+                        .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                        .contentShape(Rectangle())
                         .focused($isAmountFocused)
                         .accessibilityLabel(Text("Amount in \(Text(unitLabel))"))
                         .accessibilityIdentifier("foodDetail.amount")
@@ -264,6 +267,8 @@ struct FoodDetailView: View {
             try? store.setFavorite(!isFavorite, for: food)
         } label: {
             Image(systemName: isFavorite ? "heart.fill" : "heart")
+                .frame(width: VESSHitTarget.minimum, height: VESSHitTarget.minimum)
+                .contentShape(Rectangle())
         }
         .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
         .accessibilityIdentifier("foodDetail.favorite")

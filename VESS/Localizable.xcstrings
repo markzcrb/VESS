@@ -2026,6 +2026,18 @@
     "Apple Health" : {
 
     },
+    "Apple Health · not updated" : {
+
+    },
+    "Apple Health · updated %lld h ago" : {
+
+    },
+    "Apple Health · updated %lld min ago" : {
+
+    },
+    "Apple Health · updated ^[%lld day](inflect: true) ago" : {
+
+    },
     "Apple Health hasn't shared steps or workouts with VESS. You can allow access in the Health app, under your profile › Apps › VESS. Until then, only workouts you enter appear." : {
 
     },
@@ -2667,9 +2679,6 @@
     "Deleted %@" : {
 
     },
-    "Describe it" : {
-
-    },
     "Dessert" : {
 
     },
@@ -3152,9 +3161,6 @@
 
     },
     "For example, overnight oats" : {
-
-    },
-    "For example, pescatarian" : {
 
     },
     "For information only, not a medical device. If you feel unwell or notice unusual readings, talk to a doctor." : {
@@ -4363,9 +4369,6 @@
     "No matches here, and Open Food Facts can't be reached right now." : {
 
     },
-    "No meal reminders in these hours. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
-
-    },
     "No nutrition data · Choose food" : {
 
     },
@@ -4388,6 +4391,9 @@
 
     },
     "No recipes match “%@”. Try an ingredient, such as salmon or oats." : {
+
+    },
+    "No reminders in these hours: meals, habits and supplements. Reminders are scheduled on this iPhone; nothing is sent to a server." : {
 
     },
     "No resting heart rate recorded today" : {
@@ -4637,7 +4643,7 @@
     "On the menu: “%@”" : {
 
     },
-    "On this habit's days, only if it isn't done. Never between 22:00 and 07:00." : {
+    "On this habit's days, only if it isn't done. Never in quiet hours (%@)." : {
 
     },
     "On this iPhone" : {

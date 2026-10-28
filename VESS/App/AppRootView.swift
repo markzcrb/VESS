@@ -176,8 +176,8 @@ struct AppRootView: View {
     /// Apple Health through the read-only HealthKit reader; disconnected
     /// until the user connects. Debug builds use the demo snapshot with
     /// `-seedSampleData`, and accept `-healthSyncing` (S2, D06),
-    /// `-healthNotConnected` (S4), `-healthNothingShared` and `-healthError`
-    /// (D07, last known values).
+    /// `-healthNotConnected` (S4), `-healthNothingShared`, `-healthError`
+    /// (D07, last known values) and `-healthStale` (last read 3 h ago).
     private static func makeHealth() -> HealthDataStore {
         #if DEBUG
         let arguments = ProcessInfo.processInfo.arguments
@@ -192,6 +192,13 @@ struct AppRootView: View {
             }
             if arguments.contains("-healthNotConnected") {
                 return HealthDataStore(state: .notConnected, service: service, didRequestAccess: false)
+            }
+            // Last read 3 hours ago, and the read at launch fails: Today dims
+            // its Health rings, with Retry (which then succeeds).
+            if arguments.contains("-healthStale") {
+                let failsOnce = DemoHealthService(snapshot: demo, failsFirst: .init())
+                return HealthDataStore(state: .available(demo), service: failsOnce, didRequestAccess: true,
+                                       lastSuccessAt: AppClock.now.addingTimeInterval(-3 * 3600))
             }
             if arguments.contains("-healthError") {
                 return HealthDataStore(state: .failed(lastKnown: demo), service: DemoHealthService(snapshot: demo, fails: true), didRequestAccess: true)

@@ -123,19 +123,27 @@ struct ActivityStep: View {
 struct DietStep: View {
     @Bindable var draft: OnboardingDraft
 
+    /// P01's options: one diet, and any of the "also prefer" chips.
     var body: some View {
         QuestionScaffold(title: "How do you like to eat?") {
-            VStack(alignment: .leading, spacing: VESSSpacing.lg) {
+            VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                 VESSRowGroup {
-                    ForEach(DietaryPreference.allCases, id: \.self) { diet in
-                        VESSOptionRow(title: diet.title, isSelected: draft.dietaryPreference == diet) {
-                            draft.dietaryPreference = diet
+                    ForEach(Diet.allCases, id: \.self) { diet in
+                        VESSOptionRow(title: diet.title, isSelected: draft.diet == diet) {
+                            draft.diet = diet
                         }
                     }
                 }
                 .vessHairlineBottom()
-                if draft.dietaryPreference == .custom {
-                    VESSTextField("Describe it", text: $draft.customDiet, prompt: Text("For example, pescatarian"))
+                VStack(alignment: .leading, spacing: VESSSpacing.md) {
+                    VESSSectionHeader(title: "Also prefer · any")
+                    VESSChipFlow {
+                        ForEach(FoodPreference.allCases, id: \.self) { preference in
+                            VESSChip(title: preference.title, isSelected: draft.alsoPrefer.contains(preference)) {
+                                draft.alsoPrefer.formSymmetricDifference([preference])
+                            }
+                        }
+                    }
                 }
             }
         }

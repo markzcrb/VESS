@@ -31,8 +31,9 @@ final class OnboardingDraft {
     var heightText = ""
     var weightText = ""
     var activityLevel: ActivityLevel?
-    var dietaryPreference: DietaryPreference?
-    var customDiet = ""
+    /// The P01 diet (one) and "also prefer" chips.
+    var diet: Diet?
+    var alsoPrefer: Set<FoodPreference> = []
     var allergies: Set<Allergen> = []
     var otherRestriction = ""
     var focusAreas: Set<FocusArea> = []
@@ -68,8 +69,7 @@ final class OnboardingDraft {
         case .activity:
             return activityLevel != nil
         case .diet:
-            guard let dietaryPreference else { return false }
-            return dietaryPreference != .custom || !customDiet.trimmingCharacters(in: .whitespaces).isEmpty
+            return diet != nil
         }
     }
 
@@ -77,7 +77,8 @@ final class OnboardingDraft {
     /// required answer is missing.
     func makeProfile(prefersAppleHealth: Bool, now: Date, calendar: Calendar) -> UserProfile? {
         guard let goal, let age, let sex, let heightCentimeters, let weightKilograms,
-              let activityLevel, let dietaryPreference else { return nil }
+              let activityLevel, let diet else { return nil }
+        let chosen = NutritionPreferences(diet: diet, alsoPrefer: alsoPrefer)
 
         let input = NutritionTargetCalculator.Input(
             sex: sex,
@@ -86,12 +87,10 @@ final class OnboardingDraft {
             weightKilograms: weightKilograms,
             activityLevel: activityLevel,
             goal: goal,
-            dietaryPreference: dietaryPreference
+            dietaryPreference: chosen.targetDiet
         )
         let restriction = otherRestriction.trimmingCharacters(in: .whitespacesAndNewlines)
-        let diet = customDiet.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        return UserProfile(
+        var profile = UserProfile(
             id: UUID(),
             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
             // Onboarding asks for age, not a birthday; store an approximate
@@ -103,8 +102,8 @@ final class OnboardingDraft {
             goalWeightKilograms: nil,
             goal: goal,
             activityLevel: activityLevel,
-            dietaryPreference: dietaryPreference,
-            customDietDescription: dietaryPreference == .custom && !diet.isEmpty ? diet : nil,
+            dietaryPreference: chosen.targetDiet,
+            customDietDescription: nil,
             allergies: allergies,
             otherRestrictions: restriction.isEmpty ? [] : [restriction],
             focusAreas: focusAreas,
@@ -114,5 +113,12 @@ final class OnboardingDraft {
             updatedAt: now,
             prefersAppleHealth: prefersAppleHealth
         )
+        // The P01 fields, with "Other" turned into the avoid list the same
+        // way an earlier profile is migrated.
+        var preferences = UserProfile.migrated(profile).nutritionPreferences ?? NutritionPreferences()
+        preferences.diet = diet
+        preferences.alsoPrefer = alsoPrefer
+        profile.nutritionPreferences = preferences
+        return profile
     }
 }

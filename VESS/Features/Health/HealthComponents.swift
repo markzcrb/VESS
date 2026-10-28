@@ -118,10 +118,7 @@ struct HealthInfoButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            Image(systemName: "info.circle")
-        }
-        .accessibilityLabel(Text(label))
+        VESSToolbarInfoButton(label: label, action: action)
     }
 }
 

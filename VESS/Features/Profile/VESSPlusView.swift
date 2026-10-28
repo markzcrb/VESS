@@ -39,6 +39,7 @@ struct VESSPlusView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(ReminderService.self) private var reminders
+    @Environment(LocalStore.self) private var store
     @State private var plan: Plan = .annual
     @State private var products: [String: Product] = [:]
     /// Whether the annual trial can still be offered (StoreKit says).
@@ -374,7 +375,8 @@ struct VESSPlusView: View {
                 if case .success(let verification) = try await product.purchase(), case .verified(let transaction) = verification {
                     await transaction.finish()
                     if transaction.offer?.type == .introductory {
-                        await reminders.scheduleTrialReminder(trialStartedAt: transaction.purchaseDate)
+                        await reminders.scheduleTrialReminder(trialStartedAt: transaction.purchaseDate,
+                                                             quiet: store.profile?.quietHours ?? .standard)
                     }
                     await refreshEntitlement()
                 }
