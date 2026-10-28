@@ -25,6 +25,13 @@ Publishable key (safe to ship in the app): `sb_publishable_vK6Sn8Pi2AIZsY0IEEjg2
 Errors: `401 not_authenticated`, `429 daily_limit`, `400 bad_*`, `502 upstream` (quota refunded), `503 not_configured` (API key secret missing), `503 service_busy` (global daily cap reached), `503 model_unavailable` (the configured Claude model id returned 404; quota refunded; no silent fallback to another model).
 Headers: `Authorization: Bearer <access_token>`, `apikey: <publishable key>`.
 
+
+## Plans and UMEVA+ (migration 20261029000000, functions `entitlement` and `appstore-notifications`)
+- Limits per day: free Coach 3 / photo+menu 1 / Chef 1; UMEVA+ 15 / 10 / 5; testers (`ai_testers`) 50 / 30 / 30. Only verified rows in `subscriptions` grant UMEVA+.
+- `POST /functions/v1/entitlement` (JWT): `{ signed_transactions: [jws] }` → `{ plan, product_id, expires_at, limits, rejected }`. Verifies Apple's JWS with the App Store Server Library, bundle `APP_BUNDLE_ID` (default `app.umeva.ios`), products `PLUS_PRODUCT_IDS`, and `appAccountToken == user id`.
+- `POST /functions/v1/appstore-notifications` (no JWT, Apple calls it; only signed payloads are trusted): keeps renewals, expiry and refunds current. Set the URL in App Store Connect for Production and Sandbox.
+- Secrets: `APP_APPLE_ID` (the app's numeric Apple ID from App Store Connect; without it only Sandbox and TestFlight purchases verify), optional `APP_BUNDLE_ID`, `PLUS_PRODUCT_IDS`.
+
 ## Secrets (Dashboard › Edge Functions › Secrets)
 - `AI_PROVIDER`: `gemini` or `anthropic`
 - Gemini: `GEMINI_API_KEY`; optional `GEMINI_COACH_MODEL`, `GEMINI_PHOTO_MODEL`, `GEMINI_MENU_MODEL` (falls back to the photo model), `GEMINI_CHEF_MODEL` (default `gemini-3.8-flash`)

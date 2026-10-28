@@ -1,15 +1,15 @@
-#if DEBUG
 import StoreKit
 import SwiftUI
 
-/// P02 VESS+: what it adds, two plans side by side (Annual preselected with
-/// its 7-day trial and the trial timeline; Monthly without a trial), the
-/// required subscription text, and Free vs VESS+ in a sheet. Prices come
-/// from StoreKit (`displayPrice`); the euro values are DEBUG fallbacks.
-/// The button and its text are pinned at the bottom, with their height
-/// reserved, so nothing scrolls under them (not at accessibility sizes,
-/// where the bar would fill the screen).
-/// DEBUG only.
+/// P02 UMEVA+: what it adds, two plans side by side (Annual preselected
+/// with its 7-day trial and the trial timeline; Monthly without a trial),
+/// the required subscription text, and Free vs UMEVA+ in a sheet. Prices
+/// come from StoreKit (`displayPrice`); the euro values are DEBUG
+/// fallbacks only. Buying needs an account (the purchase is tied to it);
+/// signed out, the button signs in first and then continues. The plan and
+/// limits come from the server (`PlanStore`). The button and its text are
+/// pinned at the bottom, with their height reserved (not at accessibility
+/// sizes, where the bar would fill the screen).
 struct VESSPlusView: View {
     enum Plan: String, CaseIterable, Identifiable {
         case monthly, annual
@@ -25,7 +25,7 @@ struct VESSPlusView: View {
             }
         }
 
-        /// DEBUG fallbacks when StoreKit has no product.
+        /// DEBUG fallbacks when StoreKit has no product (Release shows "—").
         var fallbackPrice: Decimal {
             switch self {
             case .monthly: 7.99
@@ -40,6 +40,13 @@ struct VESSPlusView: View {
     @Environment(ReminderService.self) private var reminders
     @Environment(LocalStore.self) private var store
     @Environment(\.vessOpenCoach) private var openCoach
+    @Environment(AccountStore.self) private var account
+    @Environment(PlanStore.self) private var planStore
+    /// Signed out at Subscribe: sign in, then the purchase continues.
+    @State private var showSignIn = false
+    @State private var continuesAfterSignIn = false
+    /// After a verified purchase, until the server confirms (at most 5 s).
+    @State private var isActivating = false
     @State private var plan: Plan = .annual
     /// B04, after a verified purchase (never after Restore).
     @State private var welcome: PlusWelcome?
@@ -53,8 +60,8 @@ struct VESSPlusView: View {
     @State private var showPrivacy = false
     @State private var message: String?
 
-    /// Apple's standard licence agreement (Terms of Use).
-    private static let termsURL = LegalLinks.appleEULA
+    /// UMEVA's Terms of Use (which link Apple's standard EULA).
+    private static let termsURL = LegalLinks.terms
 
     private var hasTrial: Bool { plan == .annual && trialEligible }
     /// The button, its text and links are pinned under the page except at
@@ -111,6 +118,15 @@ struct VESSPlusView: View {
                 .sharedBackgroundVisibility(.hidden)
             }
             .navigationDestination(isPresented: $showPrivacy) { PrivacyView() }
+            .sheet(isPresented: $showSignIn, onDismiss: {
+                if continuesAfterSignIn, account.isSignedIn {
+                    continuesAfterSignIn = false
+                    subscribe()
+                }
+            }) {
+                AISignInSheet(title: "Sign in to buy UMEVA+.",
+                              text: "UMEVA+ is tied to your UMEVA account, so its limits follow you. Your log stays on this iPhone.")
+            }
             .sheet(isPresented: $showCompare) { VESSPlusComparison() }
             .manageSubscriptionsSheet(isPresented: $showManage)
         }
@@ -228,7 +244,9 @@ struct VESSPlusView: View {
     private var action: some View {
         VStack(spacing: VESSSpacing.sm) {
             Button(action: subscribe) {
-                if isSubscribed {
+                if isActivating {
+                    Text("Activating…")
+                } else if isSubscribed {
                     Text("You have UMEVA+")
                 } else if hasTrial {
                     Text("Start 7-day free trial")
@@ -249,7 +267,7 @@ struct VESSPlusView: View {
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            if let message {
+            if let message = message ?? statusMessage {
                 Text(message)
                     .vessTextStyle(.bodyS)
                     .foregroundStyle(VESSColor.secondaryText)
@@ -316,7 +334,13 @@ struct VESSPlusView: View {
     // MARK: Prices
 
     private func price(_ option: Plan) -> String {
-        VESSFormat.groupThousands(products[option.productID]?.displayPrice ?? option.fallbackPrice.formatted(.currency(code: "EUR")))
+        if let product = products[option.productID] { return VESSFormat.groupThousands(product.displayPrice) }
+        #if DEBUG
+        return VESSFormat.groupThousands(option.fallbackPrice.formatted(.currency(code: "EUR")))
+        #else
+        // Never a price that isn't the App Store's.
+        return "—"
+        #endif
     }
 
     /// The price as shown: parsed from `displayPrice`, which StoreKit
@@ -357,12 +381,30 @@ struct VESSPlusView: View {
     }
 
     private func refreshEntitlement() async {
-        isSubscribed = await PlusStore.isEntitled()
+        // A real subscription only: a tester account's higher limits aren't one.
+        let serverPlus = if case .plus = planStore.status { true } else { false }
+        isSubscribed = await PlusStore.isEntitled() || serverPlus
+    }
+
+    /// The calm line for a purchase the server doesn't count yet.
+    private var statusMessage: String? {
+        switch planStore.status {
+        case .activating: String(localized: "UMEVA+ is active. Updating your limits…")
+        case .otherAccount: String(localized: "This UMEVA+ purchase belongs to another UMEVA account. Sign in with that account, or contact support.")
+        case .free, .plus, .tester: nil
+        }
     }
 
     private func subscribe() {
+        // The purchase is tied to the account (appAccountToken), so the
+        // server can check whose it is: signed out, sign in first.
+        guard let userID = account.session.flatMap({ UUID(uuidString: $0.userID) }) else {
+            continuesAfterSignIn = true
+            showSignIn = true
+            return
+        }
         guard let product = products[plan.productID] else {
-            message = String(localized: "Plans aren't available in this build yet.")
+            message = String(localized: "Plans aren't available right now. Try again in a moment.")
             return
         }
         isWorking = true
@@ -370,7 +412,7 @@ struct VESSPlusView: View {
         Task {
             defer { isWorking = false }
             do {
-                switch try await PlusStore.purchase(product) {
+                switch try await PlusStore.purchase(product, accountToken: userID) {
                 case .pending:
                     message = String(localized: "Waiting for approval. UMEVA+ starts as soon as it's approved.")
                 case .cancelled:
@@ -382,10 +424,16 @@ struct VESSPlusView: View {
                         reminderAt = await reminders.scheduleTrialReminder(trialStartedAt: transaction.purchaseDate,
                                                                            quiet: store.profile?.quietHours ?? .standard)
                     }
+                    // "Activating…" until the server confirms, at most 5 s;
+                    // B04 then shows, with its limits loading if need be.
+                    isActivating = true
+                    await confirmWithServer(timeout: 5)
+                    isActivating = false
                     await refreshEntitlement()
                     if PlusWelcomeLedger().claim(transaction.originalID) {
                         welcome = PlusWelcome(id: transaction.originalID, isTrial: isTrial, endsAt: transaction.expirationDate,
-                                              willAutoRenew: await willAutoRenew(product), reminderAt: reminderAt)
+                                              willAutoRenew: await willAutoRenew(product), reminderAt: reminderAt,
+                                              limits: planStore.isPlus ? planStore.response?.limits : nil)
                     }
                 }
             } catch PlusStore.PurchaseError.unverified {
@@ -393,6 +441,18 @@ struct VESSPlusView: View {
             } catch {
                 message = String(localized: "The purchase didn't go through. Nothing was charged.")
             }
+        }
+    }
+
+    /// Sends the purchase to the server and waits for its answer, at most
+    /// `timeout` seconds (the plan store keeps retrying after that).
+    private func confirmWithServer(timeout: TimeInterval) async {
+        let store = planStore
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await store.sync() }
+            group.addTask { try? await Task.sleep(for: .seconds(timeout)) }
+            await group.next()
+            group.cancelAll()
         }
     }
 
@@ -415,8 +475,9 @@ struct VESSPlusView: View {
             defer { isWorking = false }
             do {
                 let restored = try await PlusStore.restore()
+                await planStore.sync()
                 message = restored
-                    ? String(localized: "UMEVA+ is active again.")
+                    ? (planStore.isPlus ? String(localized: "UMEVA+ is active again.") : statusMessage)
                     : String(localized: "No UMEVA+ subscription was found for this Apple Account.")
             } catch {
                 message = String(localized: "Restore didn't go through. Try again in a moment.")
@@ -524,4 +585,3 @@ private struct VESSPlusComparison: View {
         .presentationCornerRadius(VESSRadius.sheet)
     }
 }
-#endif

@@ -12,6 +12,8 @@ struct PlusWelcome: Identifiable, Equatable {
     let willAutoRenew: Bool
     /// When the trial reminder is scheduled; `nil` when it isn't.
     let reminderAt: Date?
+    /// The server's UMEVA+ limits; `nil` while they're still loading.
+    var limits: EntitlementResponse.Limits? = nil
 }
 
 /// B04 is shown once per subscription (`originalTransactionID`), never on
@@ -68,10 +70,17 @@ struct PlusWelcomeView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
                 VStack(alignment: .leading, spacing: VESSSpacing.md) {
-                    let plus = UMEVAPlusLimits.plus
-                    check(Text("\(plus.coachQuestions) Coach questions a day, with charts"))
-                    check(Text("\(plus.photoEstimates) photo and menu estimates a day"))
-                    check(Text("\(plus.chefRecipes) AI Chef recipes a day"))
+                    // The limits the server applies; until they're in, no numbers.
+                    if let limits = welcome.limits {
+                        check(Text("\(limits.coach) Coach questions a day, with charts"))
+                        check(Text("\(limits.photo) photo and menu estimates a day"))
+                        check(Text("\(limits.chef) AI Chef recipes a day"))
+                    } else {
+                        check(Text("More Coach questions, photo and menu estimates and AI Chef recipes every day"))
+                        Text("Updating your limits…")
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.secondaryText)
+                    }
                     check(Text("All insights and Health patterns"))
                 }
 
@@ -135,7 +144,7 @@ struct PlusWelcomeView: View {
 
 #Preview("B04 Trial") {
     PlusWelcomeView(welcome: PlusWelcome(id: 1, isTrial: true, endsAt: .now.addingTimeInterval(7 * 86_400), willAutoRenew: true,
-                                         reminderAt: .now.addingTimeInterval(5 * 86_400)),
+                                         reminderAt: .now.addingTimeInterval(5 * 86_400), limits: .init(coach: 15, photo: 10, chef: 5)),
                     onAskCoach: {}, onDone: {})
 }
 

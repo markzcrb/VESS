@@ -105,9 +105,10 @@ final class AccountStore {
     }
 
     /// Today's uses of an AI feature: the user's own `ai_usage` row (row-level
-    /// security lets them read it; the day is UTC) and `ai_daily_limit`.
-    /// Returns what's left.
-    func remainingToday(kind: String, now: Date = Date()) async throws -> Int {
+    /// security lets them read it; the day is UTC) against `limit`, the
+    /// plan's limit from the server (`PlanStore`); without one, the free
+    /// base limit (`ai_daily_limit`). Returns what's left.
+    func remainingToday(kind: String, limit: Int? = nil, now: Date = Date()) async throws -> Int {
         guard let config else { throw BackendError.notConfigured }
         let token = try await validAccessToken()
         func request(_ path: String, query: [URLQueryItem] = [], body: Data? = nil) -> URLRequest {
@@ -128,13 +129,12 @@ final class AccountStore {
                 URLQueryItem(name: "kind", value: "eq.\(kind)"),
                 URLQueryItem(name: "day", value: "eq.\(AIQuota.serverDay(now))"),
             ]))
-            let (limit, limitResponse) = try await transport.send(request("rest/v1/rpc/ai_daily_limit", body: Data(#"{"p_kind":"\#(kind)"}"#.utf8)))
-            guard (200..<300).contains(usageResponse.statusCode), (200..<300).contains(limitResponse.statusCode) else {
-                throw BackendError.server(max(usageResponse.statusCode, limitResponse.statusCode))
-            }
+            guard (200..<300).contains(usageResponse.statusCode) else { throw BackendError.server(usageResponse.statusCode) }
             let used = try JSONDecoder().decode([Row].self, from: usage).first?.count ?? 0
-            let daily = try JSONDecoder().decode(Int.self, from: limit)
-            return max(daily - used, 0)
+            if let limit { return max(limit - used, 0) }
+            let (daily, limitResponse) = try await transport.send(request("rest/v1/rpc/ai_daily_limit", body: Data(#"{"p_kind":"\#(kind)"}"#.utf8)))
+            guard (200..<300).contains(limitResponse.statusCode) else { throw BackendError.server(limitResponse.statusCode) }
+            return max(try JSONDecoder().decode(Int.self, from: daily) - used, 0)
         } catch let error as BackendError {
             throw error
         } catch {

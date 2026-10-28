@@ -6,6 +6,8 @@ import SwiftUI
 struct CoachView: View {
     @Environment(LocalStore.self) private var store
     @Environment(AccountStore.self) private var account
+    @Environment(PlanStore.self) private var planStore
+    @State private var showPlus = false
     @Environment(AIConsentStore.self) private var consent
     @Environment(HealthDataStore.self) private var health
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -161,7 +163,7 @@ struct CoachView: View {
 
     private func failureRow(_ error: BackendError) -> some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            Text(error == .dailyLimit ? "That's today's free Coach questions. Back tomorrow." : error.message)
+            Text(error == .dailyLimit ? AILimitText.reached(.coach, plan: planStore, now: AppClock.now) : String(localized: error.message))
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.warningText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -174,10 +176,17 @@ struct CoachView: View {
             case .notSignedIn:
                 Button("Sign in") { showSignIn = true }
                     .buttonStyle(.vessQuick)
-            case .dailyLimit, .notConfigured, .authRejected:
+            case .dailyLimit:
+                if AILimitText.offersPlus(planStore) {
+                    Button("Get UMEVA+") { showPlus = true }
+                        .buttonStyle(.vessQuick)
+                        .accessibilityIdentifier("coach.getPlus")
+                }
+            case .notConfigured, .authRejected:
                 EmptyView()
             }
         }
+        .fullScreenCover(isPresented: $showPlus) { VESSPlusView() }
     }
 
     // MARK: Composer

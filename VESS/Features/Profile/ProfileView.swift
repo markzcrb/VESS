@@ -12,6 +12,7 @@ struct ProfileView: View {
     @State private var confirmCycleOff = false
     @State private var confirmCycleDelete = false
     @State private var showPlus = false
+    @Environment(PlanStore.self) private var planStore
 
     private let calendar = Calendar.current
 
@@ -37,9 +38,7 @@ struct ProfileView: View {
                 .profileDestinations()
                 .healthDestinations()
                 .vessErrorAlert(isPresented: $showError)
-                #if DEBUG
                 .fullScreenCover(isPresented: $showPlus) { VESSPlusView() }
-                #endif
             }
         }
     }
@@ -160,16 +159,24 @@ struct ProfileView: View {
                 link(.account, title: "Account", value: account.isSignedIn ? Text("Signed in") : Text("Not signed in"))
                 link(.privacy, title: "Privacy and data")
                 link(.help, title: "Help")
-                #if DEBUG
                 // P02 is shown full screen, with its own close.
                 Button { showPlus = true } label: {
-                    VESSListRow(title: Text("UMEVA+ (demo)"))
+                    VESSListRow(title: Text("UMEVA+"), value: plusStatus)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("you.plus")
-                #endif
             }
             .vessHairlineBottom()
+        }
+    }
+
+    /// The UMEVA+ badge, from the server's answer.
+    private var plusStatus: Text {
+        switch planStore.status {
+        case .plus, .tester: Text("Active")
+        case .activating: Text("Updating…")
+        case .otherAccount: Text("Other account")
+        case .free: Text("Free")
         }
     }
 

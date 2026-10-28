@@ -423,6 +423,26 @@ final class VESSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["today.dayWord"].waitForExistence(timeout: 10))
     }
 
+    /// Buying UMEVA+ needs an account: signed out, the button signs in first.
+    @MainActor
+    func testSignedOutPurchaseAsksForSignInFirst() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-seedProfileOnly", "-aiMock", "-aiMockSignedOut", "-add.lastTypeAt", "0"]
+        app.launch()
+        tapWhenReady(app.tabBars.buttons["You"])
+        let plus = app.buttons["you.plus"]
+        scrollUntilHittable(plus, in: app)
+        plus.tap()
+        let subscribe = app.buttons["plus.subscribe"]
+        XCTAssertTrue(subscribe.waitForExistence(timeout: 10))
+        // A device whose Apple Account already has UMEVA+ (a StoreKit test
+        // purchase) shows "You have UMEVA+" with the button off.
+        try XCTSkipIf(subscribe.label.contains("You have UMEVA+"), "This Apple Account already has UMEVA+; nothing to buy")
+        tapWhenReady(subscribe)
+        XCTAssertTrue(app.staticTexts["Sign in to buy UMEVA+."].waitForExistence(timeout: 10), "Sign-in comes first")
+        XCTAssertTrue(app.textFields["account.email"].exists)
+    }
+
     /// Paywall: both plan cards are the same height, start at the same
     /// top, and end above the pinned bottom bar (never cut by it).
     @MainActor

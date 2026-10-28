@@ -1,10 +1,10 @@
 import Foundation
 
-/// Daily AI uses, free and with UMEVA+. The one place these numbers live:
-/// the paywall, its comparison sheet and the UMEVA+ welcome read them.
-/// They must match the server's `ai_daily_limit` per tier, which Mark sets.
-/// (The server has no paid tier yet; today it gives everyone its beta
-/// limits, so these are what the app promises, not what it enforces.)
+/// Daily AI uses, free and with UMEVA+, for display only: the paywall and
+/// its comparison sheet, and when the app is offline before the server
+/// has answered. What the app actually allows comes from the server
+/// (`PlanStore`, from the `entitlement` function), never from here. Keep
+/// these equal to the server's `ai_user_daily_limit`.
 nonisolated enum UMEVAPlusLimits {
     struct Tier: Equatable, Sendable {
         let coachQuestions: Int

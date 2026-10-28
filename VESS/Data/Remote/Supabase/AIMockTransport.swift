@@ -9,7 +9,7 @@ import Foundation
 /// `-aiMockSignedOut` starts signed out; any email code but 000000 works.
 nonisolated struct AIMockTransport: HTTPTransport {
     enum Scenario: String, Sendable {
-        case ok, limit, offline, upstream, notConfigured, busy, empty, lowConfidence, chefConflict
+        case ok, limit, offline, upstream, notConfigured, busy, empty, lowConfidence, chefConflict, plus
     }
 
     let scenario: Scenario
@@ -47,6 +47,14 @@ nonisolated struct AIMockTransport: HTTPTransport {
             return reply(204, [:])
         case path.hasSuffix("/functions/v1/delete-account"):
             return reply(200, ["deleted": true])
+        // The plan: free with the mock's own beta limits (so the canned
+        // counts stay as they are), or UMEVA+ with `-aiMockScenario plus`.
+        case path.hasSuffix("/functions/v1/entitlement"):
+            if scenario == .plus {
+                return reply(200, ["plan": "plus", "product_id": "app.umeva.ios.plus.annual", "expires_at": "2026-11-04T10:00:00.000Z",
+                                   "limits": ["coach": 15, "photo": 10, "chef": 5], "rejected": [[String: String]]()])
+            }
+            return reply(200, ["plan": "free", "limits": ["coach": 20, "photo": 10, "chef": 10], "rejected": [[String: String]]()])
         case path.contains("/functions/v1/"):
             // Coach answers after 1.5 s, so the typing dots can be seen.
             if path.hasSuffix("/coach") { try? await Task.sleep(for: .seconds(1.5)) }

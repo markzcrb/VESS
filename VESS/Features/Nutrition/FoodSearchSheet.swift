@@ -527,10 +527,16 @@ extension View {
             .environment(HealthDataStore(state: health ?? .available(MockData.preview.health)))
             .environment(FoodLogUndo())
             .environment(ReminderService(center: nil, defaults: UserDefaults(suiteName: "preview") ?? .standard))
-            .environment(AccountStore(config: nil, transport: URLSessionTransport(), store: MemorySessionStore()))
+            .environment(previewAccount)
+            .environment(PlanStore(account: previewAccount, defaults: UserDefaults(suiteName: "preview") ?? .standard, signedTransactions: { [] }))
+            .environment(ProfileMirror(storage: nil))
             .environment(AIConsentStore(defaults: UserDefaults(suiteName: "preview") ?? .standard))
             .environment(RecipeCatalog(recipes: MockData.catalogRecipes))
             .environment(GenericFoodDatabase(foods: Array(MockData.genericFoods.values)))
+    }
+
+    private var previewAccount: AccountStore {
+        AccountStore(config: nil, transport: URLSessionTransport(), store: MemorySessionStore())
     }
 }
 #endif

@@ -1,3 +1,4 @@
+import OSLog
 import PhotosUI
 import SwiftUI
 import UIKit
@@ -34,6 +35,8 @@ struct AddPhotoContent: View {
     }
 
     @Environment(AccountStore.self) private var account
+    @Environment(PlanStore.self) private var planStore
+    @State private var showPlus = false
     @Environment(AIConsentStore.self) private var consent
     @Environment(LocalStore.self) private var store
     @Environment(FoodLookupService.self) private var lookup
@@ -119,6 +122,7 @@ struct AddPhotoContent: View {
             ProductFoundSheet(food: food, day: day, meal: $meal, onLogged: onLogged)
         }
         .vessErrorAlert(isPresented: $showError)
+        .fullScreenCover(isPresented: $showPlus) { VESSPlusView() }
         .navigationDestination(isPresented: $showMenu) {
             if let menu {
                 MenuResultsView(result: menu, day: day, onLogged: onLogged)
@@ -136,7 +140,8 @@ struct AddPhotoContent: View {
             scan = .scanning
             updateDetection()
         }
-        .task { await loadRemaining() }
+        // Again when the plan's limits change (UMEVA+ started or ended).
+        .task(id: planStore.response?.limits) { await loadRemaining() }
         #if DEBUG
         // `-cameraLightTest`: torch in Barcode, then a flash photo and the
         // torch in Meal; the console says whether each really lit up.
@@ -608,7 +613,7 @@ struct AddPhotoContent: View {
 
     private func failed(_ error: BackendError) -> some View {
         VStack(alignment: .leading, spacing: VESSSpacing.lg) {
-            Text(error == .dailyLimit ? "That's today's free photo estimates. Back tomorrow." : error.message)
+            Text(error == .dailyLimit ? AILimitText.reached(.photo, plan: planStore, now: AppClock.now) : String(localized: error.message))
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.warningText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -616,7 +621,13 @@ struct AddPhotoContent: View {
             if error == .notSignedIn {
                 Button("Sign in") { showSignIn = true }
                     .buttonStyle(.vessPrimary)
-            } else if error != .dailyLimit, error != .notConfigured {
+            } else if error == .dailyLimit {
+                if AILimitText.offersPlus(planStore) {
+                    Button("Get UMEVA+") { showPlus = true }
+                        .buttonStyle(.vessPrimary)
+                        .accessibilityIdentifier("photo.getPlus")
+                }
+            } else if error != .notConfigured {
                 // The photo is already gone; a new one is taken for a retry.
                 Button("Take another photo") { phase = .camera }
                     .buttonStyle(.vessPrimary)
@@ -786,10 +797,20 @@ struct AddPhotoContent: View {
         }
     }
 
-    /// What's left today, from the server when this device doesn't know yet.
+    /// What's left today, from the server.
+    /// Every time Photo opens: a count kept from earlier (another plan,
+    /// another device) may no longer be true. The kept one shows meanwhile.
     private func loadRemaining() async {
-        guard account.isSignedIn, remainingToday == nil,
-              let left = try? await account.remainingToday(kind: "photo") else { return }
+        guard account.isSignedIn else { return }
+        let limit = await planStore.limit(.photo)
+
+        let left: Int
+        do {
+            left = try await account.remainingToday(kind: "photo", limit: limit)
+        } catch {
+            Logger(subsystem: AppLog.subsystem, category: "Photo").notice("remaining today failed: \(String(describing: BackendError.from(error)), privacy: .public)")
+            return
+        }
         setRemaining(left)
     }
 

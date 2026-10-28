@@ -34,6 +34,7 @@ struct AIChefContent: View {
     @AppStorage("chef.remaining") private var chefRemaining = -1
     @AppStorage("chef.remainingDay") private var chefRemainingDay = ""
     @Environment(AccountStore.self) private var account
+    @Environment(PlanStore.self) private var planStore
     @State private var swapped: Recipe?
 
     /// Matches shown: the best as a card, the rest as rows.
@@ -318,7 +319,9 @@ struct AIChefContent: View {
     }
 
     private func loadRemaining() async {
-        guard account.isSignedIn, let left = try? await account.remainingToday(kind: "chef") else { return }
+        guard account.isSignedIn else { return }
+        let limit = await planStore.limit(.chef)
+        guard let left = try? await account.remainingToday(kind: "chef", limit: limit) else { return }
         chefRemaining = left
         chefRemainingDay = AIQuota.serverDay(AppClock.now)
     }

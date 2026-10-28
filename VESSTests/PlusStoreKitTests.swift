@@ -26,6 +26,9 @@ struct PlusEntitlementRuleTests {
 @MainActor
 @Suite("UMEVA+ with StoreKit Test", .serialized)
 struct PlusStoreKitTests {
+    /// The signed-in UMEVA user the purchase is made for.
+    private let token = UUID()
+
     private func session() throws -> SKTestSession {
         // A copy of VESS.storekit in the test bundle (the simulator can't read
         // the project folder). Keep the two the same.
@@ -51,10 +54,11 @@ struct PlusStoreKitTests {
     func trial() async throws {
         let session = try session()
         defer { session.clearTransactions() }
-        guard case .purchased(let transaction) = try await PlusStore.purchase(try await product(.annual)) else {
+        guard case .purchased(let transaction) = try await PlusStore.purchase(try await product(.annual), accountToken: token) else {
             Issue.record("Not purchased"); return
         }
-        #expect(transaction.offer?.type == .introductory)
+        #expect(transaction.offer?.type == Transaction.OfferType.introductory)
+        #expect(transaction.appAccountToken == token, "Tied to the UMEVA account the server checks")
         #expect(await PlusStore.isEntitled())
     }
 
@@ -62,7 +66,7 @@ struct PlusStoreKitTests {
     func renewal() async throws {
         let session = try session()
         defer { session.clearTransactions() }
-        guard case .purchased(let first) = try await PlusStore.purchase(try await product(.monthly)) else {
+        guard case .purchased(let first) = try await PlusStore.purchase(try await product(.monthly), accountToken: token) else {
             Issue.record("Not purchased"); return
         }
         try session.forceRenewalOfSubscription(productIdentifier: VESSPlusView.Plan.monthly.productID)
@@ -75,7 +79,7 @@ struct PlusStoreKitTests {
     func refund() async throws {
         let session = try session()
         defer { session.clearTransactions() }
-        guard case .purchased(let transaction) = try await PlusStore.purchase(try await product(.monthly)) else {
+        guard case .purchased(let transaction) = try await PlusStore.purchase(try await product(.monthly), accountToken: token) else {
             Issue.record("Not purchased"); return
         }
         try session.refundTransaction(identifier: UInt(transaction.id))
@@ -86,7 +90,7 @@ struct PlusStoreKitTests {
     func expiry() async throws {
         let session = try session()
         defer { session.clearTransactions() }
-        _ = try await PlusStore.purchase(try await product(.monthly))
+        _ = try await PlusStore.purchase(try await product(.monthly), accountToken: token)
         try session.expireSubscription(productIdentifier: VESSPlusView.Plan.monthly.productID)
         #expect(await waitUntil { await !PlusStore.isEntitled() })
     }
@@ -96,7 +100,7 @@ struct PlusStoreKitTests {
         let session = try session()
         defer { session.clearTransactions() }
         session.askToBuyEnabled = true
-        guard case .pending = try await PlusStore.purchase(try await product(.monthly)) else {
+        guard case .pending = try await PlusStore.purchase(try await product(.monthly), accountToken: token) else {
             Issue.record("Not pending"); return
         }
         #expect(await !PlusStore.isEntitled())

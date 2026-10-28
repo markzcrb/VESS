@@ -15,6 +15,9 @@ struct CreateWithAISheet: View {
 
     @Environment(LocalStore.self) private var store
     @Environment(AccountStore.self) private var account
+    @Environment(PlanStore.self) private var planStore
+    @State private var showPlus = false
+    @State private var limitReached = false
     @Environment(AIConsentStore.self) private var consent
     @Environment(GenericFoodDatabase.self) private var foods
     @Environment(\.dismiss) private var dismiss
@@ -113,6 +116,11 @@ struct CreateWithAISheet: View {
                             .padding(VESSSpacing.md)
                             .background(VESSColor.fill, in: RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
                             .accessibilityIdentifier("create.failure")
+                        if limitReached, AILimitText.offersPlus(planStore) {
+                            Button("Get UMEVA+") { showPlus = true }
+                                .buttonStyle(.vessSecondary)
+                                .accessibilityIdentifier("create.getPlus")
+                        }
                     }
 
                     Text("Sends your pantry list, diet and avoid list and these choices to \(AIProcessor.displayName) through UMEVA's server. Nothing else from your log. You review the recipe before it's saved.")
@@ -146,6 +154,7 @@ struct CreateWithAISheet: View {
             }
             .vessAIConsent(.chef, isPresented: $asksConsent) { create() }
             .sheet(isPresented: $signsIn) { AISignInSheet() }
+            .fullScreenCover(isPresented: $showPlus) { VESSPlusView() }
             .background(VESSColor.card)
             .vessDetailTitle("Create with AI")
             .toolbar {
@@ -205,6 +214,7 @@ struct CreateWithAISheet: View {
             proteinGapGrams: proteinGap, locale: CoachRequest.locale, now: now, calendar: calendar
         )
         failure = nil
+        limitReached = false
         isCreating = true
         Task {
             defer { isCreating = false }
@@ -223,8 +233,10 @@ struct CreateWithAISheet: View {
                     failure = String(localized: "That draft used something you avoid. Try another.")
                 }
             } catch {
-                failure = Self.message(for: BackendError.from(error), now: now)
-                if BackendError.from(error) == .dailyLimit { setRemaining(0) }
+                let backend = BackendError.from(error)
+                failure = backend == .dailyLimit ? AILimitText.reached(.chef, plan: planStore, now: now) : Self.message(for: backend, now: now)
+                limitReached = backend == .dailyLimit
+                if backend == .dailyLimit { setRemaining(0) }
                 if BackendError.from(error) == .notSignedIn { signsIn = true }
             }
         }
@@ -256,6 +268,25 @@ private struct ChoosingIndex: Identifiable {
 
 /// "Resets at 02:00": when the AI limits count again (00:00 UTC), in the
 /// user's time.
+/// Today's AI uses are used up. Free: the free line and "Get UMEVA+";
+/// UMEVA+: "You've used today's 15. Resets at 1:00." The number is the
+/// server's limit for the account's plan.
+enum AILimitText {
+    static func reached(_ feature: AIFeature, plan: PlanStore, now: Date) -> String {
+        if plan.isPlus, let limit = plan.knownLimit(feature) {
+            return String(localized: "You've used today's \(limit). \(AIQuotaText.resets(after: now))")
+        }
+        return switch feature {
+        case .coach: String(localized: "That's today's free Coach questions. Back tomorrow.")
+        case .photo: String(localized: "That's today's free photo estimates. Back tomorrow.")
+        case .chef: String(localized: "No AI recipes left today. Back tomorrow. \(AIQuotaText.resets(after: now))")
+        }
+    }
+
+    /// "Get UMEVA+" under the message: free accounts only.
+    static func offersPlus(_ plan: PlanStore) -> Bool { !plan.isPlus }
+}
+
 enum AIQuotaText {
     static func resets(after now: Date) -> String {
         String(localized: "Resets at \(AIQuota.resetTime(after: now).formatted(date: .omitted, time: .shortened)).")

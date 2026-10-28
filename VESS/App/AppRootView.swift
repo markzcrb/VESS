@@ -10,7 +10,9 @@ struct AppRootView: View {
     @State private var foodUndo = FoodLogUndo()
     @State private var reminders = Self.makeReminders()
     @State private var haptics = VESSHaptics()
-    @State private var account = AccountStore.make()
+    @State private var account: AccountStore
+    /// UMEVA+ as the server sees it: plan and daily limits.
+    @State private var planStore: PlanStore
     @State private var consent = AIConsentStore.make()
     @State private var catalog = RecipeCatalog()
     /// USDA generic foods, read in the background with the recipes.
@@ -33,6 +35,9 @@ struct AppRootView: View {
     @State private var isWelcomeBack = false
 
     init() {
+        let account = AccountStore.make()
+        _account = State(initialValue: account)
+        _planStore = State(initialValue: PlanStore(account: account, defaults: Self.planDefaults()))
         // DEBUG flags build an in-memory store at once (captures, UI tests);
         // the real store opens in the background (see `openLiveStore`).
         let store = Self.makeDebugStore()
@@ -84,6 +89,7 @@ struct AppRootView: View {
                 .environment(catalog)
                 .environment(genericFoods)
                 .environment(mirror)
+                .environment(planStore)
                 // The iCloud copy follows the profile (when that's on).
                 .onChange(of: store.profile, initial: true) { _, profile in
                     if let profile { mirror.save(profile) }
@@ -91,11 +97,14 @@ struct AppRootView: View {
                 // The bundled recipes and generic foods, read in the background
                 // once the UI is up.
                 .task { await catalog.load(foods: genericFoods) }
-                #if DEBUG
-                // From launch: every verified transaction is finished, and the
-                // UMEVA+ trial reminder goes once the trial converts or is cancelled.
-                .task { await PlusStore.listen(reminders) }
-                #endif
+                // From launch: every verified transaction is finished and sent
+                // to the server; the trial reminder follows the subscription.
+                .task { await PlusStore.listen(reminders, plan: planStore) }
+                // Signed in: the plan and limits from the server, at launch and
+                // after each sign-in. Signed out: nothing is assumed.
+                .task(id: account.isSignedIn) {
+                    if account.isSignedIn { await planStore.sync() } else { planStore.reset() }
+                }
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: showsAllSet)
                 #if DEBUG
@@ -105,11 +114,13 @@ struct AppRootView: View {
                         .environment(store)
                         .environment(reminders)
                         .environment(account)
+                        .environment(planStore)
                 }
                 // Captures: B04 as after a trial purchase.
                 .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-capturePlusWelcome"))) {
                     PlusWelcomeView(welcome: PlusWelcome(id: 0, isTrial: true, endsAt: AppClock.now.addingTimeInterval(7 * 86_400),
-                                                         willAutoRenew: true, reminderAt: AppClock.now.addingTimeInterval(5 * 86_400)),
+                                                         willAutoRenew: true, reminderAt: AppClock.now.addingTimeInterval(5 * 86_400),
+                                                         limits: .init(coach: 15, photo: 10, chef: 5)),
                                     onAskCoach: {}, onDone: {})
                 }
                 #endif
@@ -316,6 +327,18 @@ struct AppRootView: View {
         }
         #endif
         return HealthDataStore(service: HealthKitService())
+    }
+
+    /// The plan's cache; UI tests and captures use a throwaway one.
+    private static func planDefaults() -> UserDefaults {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-uiTesting") || ProcessInfo.processInfo.arguments.contains("-aiMock") {
+            let suite = "VESS.debugPlan"
+            UserDefaults().removePersistentDomain(forName: suite)
+            return UserDefaults(suiteName: suite) ?? .standard
+        }
+        #endif
+        return .standard
     }
 
     /// UI tests never schedule notifications.
