@@ -27,6 +27,9 @@ nonisolated enum BackendError: Error, Equatable, Sendable {
     case dailyLimit
     /// 503: the server has no AI provider configured.
     case notConfigured
+    /// 503 `service_busy` (the global daily cap) or `model_unavailable`: the
+    /// AI is busy; the use wasn't counted.
+    case busy
     /// 502: the AI provider failed; the use was given back.
     case upstream
     /// 400 `bad_*`, with the server's code.
@@ -58,12 +61,13 @@ nonisolated struct BackendErrorBody: Decodable, Sendable {
 
 nonisolated extension BackendError {
     /// Maps a function's HTTP status and body to an error (README: 401, 429,
-    /// 400 bad_*, 502, 503).
+    /// 400 bad_*, 502, 503 not_configured / service_busy / model_unavailable).
     static func from(status: Int, data: Data) -> BackendError {
         let code = (try? JSONDecoder().decode(BackendErrorBody.self, from: data))?.code ?? ""
         switch status {
         case 401: return .notSignedIn
         case 429: return .dailyLimit
+        case 503 where code == "service_busy" || code == "model_unavailable": return .busy
         case 503: return .notConfigured
         case 502: return .upstream
         case 400: return .badRequest(code.isEmpty ? "bad_request" : code)

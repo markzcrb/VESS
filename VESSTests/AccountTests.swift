@@ -53,13 +53,18 @@ struct AccountTests {
         #expect(session.needsRefresh(now: now.addingTimeInterval(2)))
     }
 
-    @Test("Function errors map to the app's: 401, 429, 400 bad_*, 502, 503, others; URL errors to offline")
+    @Test("Function errors map to the app's: 401, 429, 400 bad_*, 502, 503 (not_configured, service_busy, model_unavailable), others; URL errors to offline")
     func errorMapping() {
         #expect(BackendError.from(status: 401, data: Data(#"{"error":"not_authenticated"}"#.utf8)) == .notSignedIn)
         #expect(BackendError.from(status: 429, data: Data(#"{"error":"daily_limit","remaining":0}"#.utf8)) == .dailyLimit)
         #expect(BackendError.from(status: 400, data: Data(#"{"error":"bad_image"}"#.utf8)) == .badRequest("bad_image"))
         #expect(BackendError.from(status: 502, data: Data(#"{"error":"upstream"}"#.utf8)) == .upstream)
         #expect(BackendError.from(status: 503, data: Data(#"{"error":"not_configured"}"#.utf8)) == .notConfigured)
+        #expect(BackendError.from(status: 503, data: Data(#"{"error":"service_busy"}"#.utf8)) == .busy)
+        #expect(BackendError.from(status: 503, data: Data(#"{"error":"model_unavailable"}"#.utf8)) == .busy)
+        #expect(BackendError.from(status: 503, data: Data()) == .notConfigured, "An unknown 503 stays not configured")
+        #expect(String(localized: BackendError.busy.message) == "AI is busy right now. Try again in a little while. This didn't use an estimate.")
+        #expect(CreateWithAISheet.message(for: .busy, now: .now) == String(localized: BackendError.busy.message), "AI Chef says the same")
         #expect(BackendError.from(status: 500, data: Data()) == .server(500))
         #expect(BackendError.from(URLError(.notConnectedToInternet)) == .offline)
         #expect(BackendError.from(URLError(.timedOut)) == .offline)

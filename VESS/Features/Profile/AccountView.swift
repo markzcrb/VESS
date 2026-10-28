@@ -278,6 +278,7 @@ extension BackendError {
         case .notSignedIn: "Please sign in again."
         case .dailyLimit: "That's today's free uses. Back tomorrow."
         case .notConfigured: "This isn't available yet. Try again later."
+        case .busy: "AI is busy right now. Try again in a little while. This didn't use an estimate."
         case .upstream: "That didn't go through. Try again in a moment."
         case .offline: "You're offline. Try again when you're connected."
         case .authRejected(let code) where code.contains("otp") || code.contains("expired") || code.contains("invalid"):

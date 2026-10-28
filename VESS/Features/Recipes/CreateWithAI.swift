@@ -241,6 +241,7 @@ struct CreateWithAISheet: View {
         case .dailyLimit: String(localized: "No AI recipes left today. Back tomorrow. \(AIQuotaText.resets(after: now))")
         case .upstream: String(localized: "AI Chef couldn't write a recipe just now. This one didn't count; try again.")
         case .notConfigured: String(localized: "AI Chef isn't available right now.")
+        case .busy: String(localized: BackendError.busy.message)
         case .offline: String(localized: "You're offline. AI Chef needs a connection; everything else works without one.")
         case .notSignedIn: String(localized: "Sign in to use AI Chef.")
         default: String(localized: "Something went wrong. Try again.")

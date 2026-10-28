@@ -9,7 +9,7 @@ import Foundation
 /// `-aiMockSignedOut` starts signed out; any email code but 000000 works.
 nonisolated struct AIMockTransport: HTTPTransport {
     enum Scenario: String, Sendable {
-        case ok, limit, offline, upstream, notConfigured, empty, lowConfidence, chefConflict
+        case ok, limit, offline, upstream, notConfigured, busy, empty, lowConfidence, chefConflict
     }
 
     let scenario: Scenario
@@ -66,6 +66,7 @@ nonisolated struct AIMockTransport: HTTPTransport {
         case .limit: return reply(429, ["error": "daily_limit", "remaining": 0])
         case .upstream: return reply(502, ["error": "upstream"])
         case .notConfigured: return reply(503, ["error": "not_configured"])
+        case .busy: return reply(503, ["error": "service_busy"])
         default: break
         }
         if path.hasSuffix("/coach") {

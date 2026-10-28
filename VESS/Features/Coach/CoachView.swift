@@ -167,7 +167,7 @@ struct CoachView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("coach.failure")
             switch error {
-            case .offline, .upstream, .server, .invalidResponse, .badRequest:
+            case .offline, .upstream, .busy, .server, .invalidResponse, .badRequest:
                 Button("Try again", action: retry)
                     .buttonStyle(.vessQuick)
                     .accessibilityIdentifier("coach.retry")
