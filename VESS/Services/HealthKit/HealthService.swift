@@ -19,10 +19,23 @@ nonisolated protocol HealthService: Sendable {
     /// in `readIssues` and the others are kept. Throws only when every read
     /// failed.
     func snapshot(now: Date, calendar: Calendar, stepsTarget: Int) async throws -> HealthSnapshot?
+    /// "Restore from Apple Health": asks for sex, date of birth, height and
+    /// weight (read only), then reads them.
+    func profileBasics() async throws -> HealthProfileBasics
+}
+
+/// What "Restore from Apple Health" can fill in: each is `nil` when Health
+/// has none or the user didn't share it.
+nonisolated struct HealthProfileBasics: Equatable, Sendable {
+    var sex: Sex?
+    var dateOfBirth: Date?
+    var heightCentimeters: Double?
+    var weightKilograms: Double?
 }
 
 extension HealthService {
     func needsAuthorization() async -> Bool { false }
+    func profileBasics() async throws -> HealthProfileBasics { HealthProfileBasics() }
 }
 
 /// Every read failed; `issues` says why, per kind.
@@ -307,6 +320,40 @@ nonisolated struct HealthKitService: HealthService {
         }
     }
 
+    func profileBasics() async throws -> HealthProfileBasics {
+        let types: Set<HKObjectType> = [
+            HKCharacteristicType(.biologicalSex), HKCharacteristicType(.dateOfBirth),
+            HKQuantityType(.height), HKQuantityType(.bodyMass),
+        ]
+        try await store.requestAuthorization(toShare: [], read: types)
+        var basics = HealthProfileBasics()
+        switch (try? store.biologicalSex())?.biologicalSex {
+        case .female: basics.sex = .female
+        case .male: basics.sex = .male
+        case .other: basics.sex = .notSpecified
+        default: break
+        }
+        if let components = try? store.dateOfBirthComponents() {
+            basics.dateOfBirth = Calendar.current.date(from: components)
+        }
+        basics.heightCentimeters = try? await latestValue(.height, unit: .meterUnit(with: .centi))
+        basics.weightKilograms = try? await latestWeight()?.kilograms
+        return basics
+    }
+
+    private func latestValue(_ identifier: HKQuantityTypeIdentifier, unit: HKUnit) async throws -> Double? {
+        let query = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: HKQuantityType(identifier))],
+            sortDescriptors: [SortDescriptor(\.endDate, order: .reverse)],
+            limit: 1
+        )
+        do {
+            return try await query.result(for: store).first?.quantity.doubleValue(for: unit)
+        } catch let error as HKError where error.code == .errorNoData {
+            return nil
+        }
+    }
+
     private func latestWeight() async throws -> BodyMassSample? {
         let query = HKSampleQueryDescriptor(
             predicates: [.quantitySample(type: HKQuantityType(.bodyMass))],
@@ -405,6 +452,12 @@ nonisolated struct DemoHealthService: HealthService {
     var isAvailable: Bool { true }
 
     func requestAuthorization() async throws {}
+
+    /// The demo profile's basics (Mark: 29, male, 178 cm, 68 kg).
+    func profileBasics() async throws -> HealthProfileBasics {
+        HealthProfileBasics(sex: .male, dateOfBirth: Calendar.current.date(byAdding: .year, value: -29, to: AppClock.now),
+                            heightCentimeters: 178, weightKilograms: 68)
+    }
 
     func snapshot(now: Date, calendar: Calendar, stepsTarget: Int) async throws -> HealthSnapshot? {
         if fails { throw URLError(.cannotConnectToHost) }

@@ -15,6 +15,8 @@ struct AppRootView: View {
     @State private var catalog = RecipeCatalog()
     /// USDA generic foods, read in the background with the recipes.
     @State private var genericFoods = GenericFoodDatabase()
+    /// The profile's answers in the user's iCloud, when that's on.
+    @State private var mirror = ProfileMirror.make()
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.default
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -24,6 +26,8 @@ struct AppRootView: View {
     @State private var showsSplash: Bool
     /// B03, once, between the last onboarding answer and Today.
     @State private var showsAllSet = false
+    /// B03 as "Welcome back": restored from iCloud.
+    @State private var isWelcomeBack = false
 
     init() {
         // DEBUG flags build an in-memory store at once (captures, UI tests);
@@ -45,10 +49,14 @@ struct AppRootView: View {
             if let store, let lookup {
                 Group {
                     if store.profile == nil {
-                        OnboardingFlow { showsAllSet = true }
+                        OnboardingFlow { restored in
+                            isWelcomeBack = restored
+                            showsAllSet = true
+                        }
                             .transition(.opacity)
                     } else if showsAllSet, let profile = store.profile {
                         AllSetView(profile: profile,
+                                   isWelcomeBack: isWelcomeBack,
                                    showsConnectHealth: health.canConnect && !health.hasConnected,
                                    onOpenToday: closeAllSet,
                                    onConnectHealth: {
@@ -72,6 +80,11 @@ struct AppRootView: View {
                 .environment(consent)
                 .environment(catalog)
                 .environment(genericFoods)
+                .environment(mirror)
+                // The iCloud copy follows the profile (when that's on).
+                .onChange(of: store.profile, initial: true) { _, profile in
+                    if let profile { mirror.save(profile) }
+                }
                 // The bundled recipes and generic foods, read in the background
                 // once the UI is up.
                 .task { await catalog.load(foods: genericFoods) }
@@ -265,6 +278,10 @@ struct AppRootView: View {
             return HealthDataStore(state: .available(demo), service: service, didRequestAccess: false)
         }
         if arguments.contains("-uiTesting") {
+            // `-healthBasicsDemo`: Apple Health has the demo basics to restore.
+            if arguments.contains("-healthBasicsDemo") {
+                return HealthDataStore(service: DemoHealthService(snapshot: MockData(now: AppClock.now, calendar: .current).health), didRequestAccess: false)
+            }
             return HealthDataStore()
         }
         #endif

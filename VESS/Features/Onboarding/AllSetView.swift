@@ -5,6 +5,8 @@ import SwiftUI
 /// connected or where there's no Health).
 struct AllSetView: View {
     let profile: UserProfile
+    /// Restored from the user's iCloud: "Welcome back" and the targets.
+    var isWelcomeBack = false
     let showsConnectHealth: Bool
     let onOpenToday: () -> Void
     let onConnectHealth: () -> Void
@@ -13,14 +15,16 @@ struct AllSetView: View {
         BrandScreenLayout {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-                    Text("All set")
+                    Text(isWelcomeBack ? "Welcome back" : "All set")
                         .vessTextStyle(.labelCaps)
                         .foregroundStyle(VESSColor.secondaryText)
                     Text(welcome)
                         .vessTextStyle(.editorialL)
                         .foregroundStyle(VESSColor.text)
                         .accessibilityAddTraits(.isHeader)
-                    Text("Your daily targets are ready. They're a starting point, not a rule.")
+                    Text(isWelcomeBack
+                         ? "Your answers and targets are back from your iCloud. Your log stays on the iPhone it was made on."
+                         : "Your daily targets are ready. They're a starting point, not a rule.")
                         .vessTextStyle(.bodyM)
                         .foregroundStyle(VESSColor.secondaryText)
                         .padding(.top, VESSSpacing.xxs)
@@ -64,9 +68,9 @@ struct AllSetView: View {
 
     private var welcome: LocalizedStringResource {
         if let name = AllSetTargets.firstName(profile.name) {
-            return "Welcome, \(name)."
+            return isWelcomeBack ? "Welcome back, \(name)." : "Welcome, \(name)."
         }
-        return "Welcome."
+        return isWelcomeBack ? "Welcome back." : "Welcome."
     }
 
     private func title(_ row: AllSetTargets.Kind) -> Text {

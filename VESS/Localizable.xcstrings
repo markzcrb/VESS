@@ -1280,6 +1280,9 @@
     "%lld to use in the next few days." : {
 
     },
+    "%lld years" : {
+
+    },
     "%lld× a day" : {
 
     },
@@ -1500,6 +1503,9 @@
 
     },
     "a day" : {
+
+    },
+    "A few things Apple Health doesn't know." : {
 
     },
     "A fresh list." : {
@@ -1961,6 +1967,9 @@
     "All set" : {
 
     },
+    "Allergies · any" : {
+
+    },
     "Allergies and intolerances · never shown" : {
 
     },
@@ -1971,6 +1980,9 @@
 
     },
     "Allowed" : {
+
+    },
+    "Almost there" : {
 
     },
     "Also prefer · any" : {
@@ -2057,6 +2069,9 @@
 
     },
     "Apple Health · updated ^[%lld day](inflect: true) ago" : {
+
+    },
+    "Apple Health can fill in your sex, birthday, height and weight, so only a few questions are left." : {
 
     },
     "Apple Health hasn't shared steps or workouts with UMEVA. You can allow access in the Health app, under your profile › Apps › UMEVA. Until then, only workouts you enter appear." : {
@@ -3267,6 +3282,9 @@
     "From Apple Health, when connected" : {
 
     },
+    "From Apple Health: %@" : {
+
+    },
     "From Apple Health. UMEVA never estimates steps." : {
 
     },
@@ -4020,6 +4038,9 @@
     "Looking at your photo…" : {
 
     },
+    "Looking for your profile" : {
+
+    },
     "Looking up %@…" : {
 
     },
@@ -4619,6 +4640,9 @@
     "Nothing to do if you'd like to keep it. To cancel: Settings › Apple Account › Subscriptions." : {
 
     },
+    "Nothing to restore on this iPhone." : {
+
+    },
     "Nothing to take today." : {
 
     },
@@ -5123,6 +5147,9 @@
     "Read-only, on your terms." : {
 
     },
+    "Reading Apple Health…" : {
+
+    },
     "Reading barcode" : {
 
     },
@@ -5235,6 +5262,9 @@
 
     },
     "Resting heart rate is in your usual range." : {
+
+    },
+    "Restore from Apple Health" : {
 
     },
     "Results" : {
@@ -5393,6 +5423,9 @@
     "Set in You › Body and stored on this iPhone. While it's on, Coach's summary says so, so Coach never suggests losing weight." : {
 
     },
+    "Set up again" : {
+
+    },
     "Settings" : {
 
     },
@@ -5483,7 +5516,7 @@
     "Signed in" : {
 
     },
-    "Signing in brings back Coach, photo estimates and AI Chef. UMEVA+ comes back with your Apple Account. Your log is never stored in your account, so a few questions set things up here." : {
+    "Signing in brings back Coach, photo estimates and AI Chef, and UMEVA+ comes back with your Apple Account. Your log is never stored in your account." : {
 
     },
     "Signing in didn't work. Try again." : {
@@ -6483,6 +6516,12 @@
     "Welcome" : {
 
     },
+    "Welcome back" : {
+
+    },
+    "Welcome back, %@." : {
+
+    },
     "Welcome back." : {
 
     },
@@ -6662,6 +6701,9 @@
     "You've logged enough days. Insights will appear here once UMEVA can compare them carefully." : {
 
     },
+    "Your answers and targets are back from your iCloud. Your log stays on the iPhone it was made on." : {
+
+    },
     "Your baseline is the middle value of 28 days of overnight HRV and resting heart rate. It needs 14 days before there's an estimate." : {
 
     },
@@ -6714,6 +6756,9 @@
 
     },
     "Your kitchen." : {
+
+    },
+    "Your log stays on the iPhone it was made on." : {
 
     },
     "Your log, profile and history stay on this iPhone." : {

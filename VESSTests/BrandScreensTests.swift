@@ -45,3 +45,42 @@ struct BrandScreensTests {
         #expect(plus.coachQuestions > free.coachQuestions && plus.photoEstimates > free.photoEstimates && plus.chefRecipes > free.chefRecipes)
     }
 }
+
+@MainActor
+@Suite("Profile in iCloud")
+struct MirroredProfileTests {
+    @Test("The mirror keeps the answers and targets, and nothing else; a restored profile has them")
+    func roundTrip() throws {
+        let calendar = Calendar(identifier: .gregorian)
+        var profile = MockData(now: .now, calendar: calendar).profile
+        profile.isPregnant = true
+        profile.cycleTrackingEnabled = true
+        let mirrored = MirroredProfile(profile, calendar: calendar)
+        let json = try #require(String(data: JSONEncoder().encode(mirrored), encoding: .utf8))
+        #expect(!json.contains("regnan") && !json.contains("cycle"), "No pregnancy or cycle in iCloud")
+        let restored = mirrored.makeProfile(now: .now, calendar: calendar)
+        #expect(restored.name == profile.name && restored.goal == profile.goal && restored.sex == profile.sex)
+        #expect(restored.nutritionTargets == profile.nutritionTargets && restored.waterTargetMilliliters == profile.waterTargetMilliliters)
+        #expect(restored.preferences.diet == profile.preferences.diet && restored.allergies == profile.allergies)
+        #expect(restored.preferences.avoidIngredients == profile.preferences.avoidIngredients)
+        #expect(restored.age(on: .now, calendar: calendar).map { abs($0 - (profile.age(on: .now, calendar: calendar) ?? 0)) <= 1 } == true)
+        #expect(restored.isPregnant == nil && restored.cycleTrackingEnabled == nil)
+    }
+
+    @Test("Off (no iCloud capability), the mirror keeps and finds nothing")
+    func disabled() async {
+        let mirror = ProfileMirror(storage: nil)
+        mirror.save(MockData(now: .now, calendar: .current).profile)
+        #expect(await mirror.load() == nil)
+        #expect(!mirror.isEnabled)
+    }
+
+    @Test("Delete all data clears the copy")
+    func clear() async {
+        let mirror = ProfileMirror(storage: ProfileMirror.MemoryStorage())
+        mirror.save(MockData(now: .now, calendar: .current).profile)
+        #expect(await mirror.load() != nil)
+        mirror.clear()
+        #expect(await mirror.load() == nil)
+    }
+}

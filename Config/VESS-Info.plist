@@ -8,6 +8,8 @@
 	<string>$(SUPABASE_PUBLISHABLE_KEY)</string>
 	<key>VESSAppleSignIn</key>
 	<string>$(VESS_APPLE_SIGN_IN)</string>
+	<key>VESSICloudProfile</key>
+	<string>$(VESS_ICLOUD_PROFILE)</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

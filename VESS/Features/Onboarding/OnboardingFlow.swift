@@ -1,13 +1,18 @@
 import SwiftUI
 
 /// Progressive onboarding: B02, then one question per screen. "I already
-/// use UMEVA" signs in first (the log itself is only ever on the iPhone, so
-/// the account brings back AI features; UMEVA+ comes from the App Store).
-/// Finishing saves the profile; `onFinish` runs first, so the app shows B03.
+/// use UMEVA" signs in first, then restores instead of asking again: the
+/// profile from the user's iCloud ("Welcome back"), or, with nothing to
+/// restore, the basics from Apple Health and one short screen for the rest.
+/// The log itself is only ever on the iPhone it was made on. Finishing
+/// saves the profile; `onFinish(restored)` runs first, so the app shows B03
+/// (or B03 as "Welcome back").
 struct OnboardingFlow: View {
-    var onFinish: () -> Void = {}
+    var onFinish: (_ restored: Bool) -> Void = { _ in }
     @Environment(LocalStore.self) private var store
     @Environment(AccountStore.self) private var account
+    @Environment(ProfileMirror.self) private var mirror
+    @Environment(HealthDataStore.self) private var health
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var draft = OnboardingDraft()
@@ -17,12 +22,24 @@ struct OnboardingFlow: View {
     @State private var pendingHealthPreference: Bool?
     @State private var showSignIn = false
 
+    /// After "I already use UMEVA" and sign-in.
+    private enum Restore: Equatable {
+        case checking
+        case nothing
+        case quickSetup(HealthProfileBasics)
+    }
+    @State private var restore: Restore?
+    @State private var isReadingHealth = false
+
     var body: some View {
         ZStack {
             // The brand screens' plain pearl / graphite, through every question.
             BrandBackground()
 
-            if step == .welcome {
+            if let restore {
+                restoreScreen(restore)
+                    .transition(.opacity)
+            } else if step == .welcome {
                 WelcomeView(onStart: { go(to: .goal) }, onSignIn: signIn)
                     .transition(.opacity)
             } else {
@@ -31,12 +48,12 @@ struct OnboardingFlow: View {
             }
         }
         .sheet(isPresented: $showSignIn) {
-            // Signed in: on to the questions the account can't answer.
-            if account.isSignedIn { go(to: .goal) }
+            if account.isSignedIn { afterSignIn() }
         } content: {
             AISignInSheet(title: "Welcome back.",
-                          text: "Signing in brings back Coach, photo estimates and AI Chef. UMEVA+ comes back with your Apple Account. Your log is never stored in your account, so a few questions set things up here.")
+                          text: "Signing in brings back Coach, photo estimates and AI Chef, and UMEVA+ comes back with your Apple Account. Your log is never stored in your account.")
         }
+        .animation(reduceMotion ? nil : .snappy(duration: 0.35), value: restore)
         .vessErrorAlert(isPresented: $showError) {
             if let pendingHealthPreference { finish(prefersAppleHealth: pendingHealthPreference) }
         }
@@ -181,10 +198,61 @@ struct OnboardingFlow: View {
 
     private func signIn() {
         if account.isSignedIn {
-            go(to: .goal)
+            afterSignIn()
         } else {
             showSignIn = true
         }
+    }
+
+    // MARK: Restore
+
+    @ViewBuilder
+    private func restoreScreen(_ stage: Restore) -> some View {
+        switch stage {
+        case .checking:
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityLabel(Text("Looking for your profile"))
+        case .nothing:
+            NothingToRestoreView(canUseHealth: health.canConnect, isReadingHealth: isReadingHealth,
+                                 onHealth: restoreFromHealth, onSetUpAgain: setUpAgain)
+        case .quickSetup(let basics):
+            QuickSetupView(draft: draft, basics: basics) { finish(prefersAppleHealth: true) }
+        }
+    }
+
+    /// Signed in: the profile from iCloud if there is one, then "Welcome
+    /// back"; otherwise the "Nothing to restore" screen. Never the questions.
+    private func afterSignIn() {
+        restore = .checking
+        Task {
+            if let mirrored = await mirror.load() {
+                do {
+                    onFinish(true)
+                    try store.saveProfile(mirrored.makeProfile(now: .now, calendar: .current))
+                } catch {
+                    restore = .nothing
+                    showError = true
+                }
+            } else {
+                restore = .nothing
+            }
+        }
+    }
+
+    private func restoreFromHealth() {
+        isReadingHealth = true
+        Task {
+            let basics = await health.readBasics() ?? HealthProfileBasics()
+            draft.prefill(with: basics, now: .now, calendar: .current)
+            isReadingHealth = false
+            restore = .quickSetup(basics)
+        }
+    }
+
+    private func setUpAgain() {
+        restore = nil
+        go(to: .goal)
     }
 
     private func finish(prefersAppleHealth: Bool) {
@@ -197,7 +265,7 @@ struct OnboardingFlow: View {
             return
         }
         do {
-            onFinish()
+            onFinish(false)
             try store.saveProfile(profile)
         } catch {
             showError = true
@@ -226,5 +294,7 @@ private extension OnboardingStep {
     OnboardingFlow()
         .environment(LocalStore.preview(.empty))
         .environment(AccountStore.make())
+        .environment(ProfileMirror(storage: nil))
+        .environment(HealthDataStore())
 }
 #endif

@@ -50,6 +50,19 @@ final class HealthDataStore {
     /// The user has been through the permission sheet (B03 hides Connect).
     var hasConnected: Bool { didRequestAccess }
 
+    /// "Restore from Apple Health" (returning user, nothing else to restore):
+    /// asks for and reads sex, date of birth, height and weight. `nil` when
+    /// there's no Health here or the request failed.
+    func readBasics() async -> HealthProfileBasics? {
+        guard let service else { return nil }
+        do {
+            return try await service.profileBasics()
+        } catch {
+            logger.error("Reading the profile basics failed: \(HealthReadLog.describe(error), privacy: .public)")
+            return nil
+        }
+    }
+
     /// "Connect Apple Health": the system sheet, then a first read.
     func connect(stepsTarget: Int) async {
         guard let service else { return }

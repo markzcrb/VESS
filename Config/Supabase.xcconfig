@@ -8,3 +8,10 @@ SUPABASE_PUBLISHABLE_KEY = sb_publishable_vK6Sn8Pi2AIZsY0IEEjg2g_jABKWR9N
 // with the com.apple.developer.applesignin entitlement in VESS.entitlements;
 // while NO, the Account screen offers only the email code.
 VESS_APPLE_SIGN_IN = NO
+
+// The profile's answers and targets in the user's iCloud (key-value
+// storage), so a new install can skip the questions after sign-in. Needs the
+// iCloud capability, which personal teams can't sign. Set YES together with
+// com.apple.developer.ubiquity-kvstore-identifier =
+// $(TeamIdentifierPrefix)$(CFBundleIdentifier) in VESS.entitlements.
+VESS_ICLOUD_PROFILE = NO

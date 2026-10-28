@@ -346,6 +346,83 @@ final class VESSUITests: XCTestCase {
         XCTAssertFalse(app.tabBars.firstMatch.exists)
     }
 
+    // MARK: Returning users ("I already use UMEVA")
+
+    /// Signs in with the mock server's email code from the open sheet.
+    @MainActor
+    private func signInWithEmailCode(_ app: XCUIApplication) {
+        type("mark@example.com", into: app.textFields["account.email"])
+        tapWhenReady(app.buttons["account.sendCode"])
+        type("123456", into: app.textFields["account.code"])
+        tapWhenReady(app.buttons["account.verify"])
+    }
+
+    /// Same iPhone, profile still there, signed out: signing in keeps Today;
+    /// onboarding never starts.
+    @MainActor
+    func testReturningUserOnSameIPhoneStaysOnToday() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-seedProfileOnly", "-aiMock", "-aiMockSignedOut", "-add.lastTypeAt", "0"]
+        app.launch()
+        tapWhenReady(app.tabBars.buttons["You"])
+        let account = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Account")).firstMatch
+        scrollUntilHittable(account, in: app)
+        account.tap()
+        signInWithEmailCode(app)
+        XCTAssertTrue(app.descendants(matching: .any)["account.identity"].waitForExistence(timeout: 10), "Signed in")
+        XCTAssertFalse(app.buttons["onboarding.getStarted"].exists)
+        XCTAssertFalse(app.buttons["onboarding.continue"].exists)
+        // Back from Account (a detail screen hides the tab bar): still the app.
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 10), "Still in the app, not onboarding")
+    }
+
+    /// New install with the profile in iCloud: sign in, "Welcome back" with
+    /// the restored targets, then Today. No questions.
+    @MainActor
+    func testReturningUserRestoresFromICloud() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-aiMock", "-aiMockSignedOut", "-mirroredProfileDemo", "-add.lastTypeAt", "0"]
+        app.launch()
+        tapWhenReady(app.buttons["onboarding.signIn"])
+        signInWithEmailCode(app)
+        XCTAssertTrue(app.staticTexts["Welcome back, Mark."].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Energy"].exists, "The restored targets")
+        XCTAssertFalse(app.buttons["onboarding.continue"].exists, "No onboarding question")
+        tapWhenReady(app.buttons["allSet.openToday"])
+        XCTAssertTrue(app.staticTexts["today.dayWord"].waitForExistence(timeout: 10))
+    }
+
+    /// New install, nothing in iCloud: "Nothing to restore", Apple Health
+    /// fills the basics, one short screen for the rest, then B03 and Today.
+    @MainActor
+    func testReturningUserWithNothingToRestoreUsesAppleHealth() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting", "-aiMock", "-aiMockSignedOut", "-healthBasicsDemo", "-add.lastTypeAt", "0"]
+        app.launch()
+        tapWhenReady(app.buttons["onboarding.signIn"])
+        signInWithEmailCode(app)
+        XCTAssertTrue(app.staticTexts["Nothing to restore on this iPhone."].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["restore.setUpAgain"].exists)
+        tapWhenReady(app.buttons["restore.health"])
+        let fromHealth = app.staticTexts["quickSetup.fromHealth"]
+        XCTAssertTrue(fromHealth.waitForExistence(timeout: 10))
+        XCTAssertTrue(fromHealth.label.contains("178"), "Height from Health: \(fromHealth.label)")
+        XCTAssertFalse(app.textFields["quickSetup.height"].exists, "Health's basics aren't asked again")
+        type("Mark", into: app.textFields["quickSetup.name"])
+        dismissKeyboard(in: app)
+        for chip in ["Build muscle", "Moderate", "No restrictions"] {
+            let button = app.buttons[chip]
+            scrollUntilHittable(button, in: app)
+            button.tap()
+        }
+        tapWhenReady(app.buttons["quickSetup.continue"])
+        XCTAssertTrue(app.staticTexts["Welcome, Mark."].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["onboarding.continue"].exists, "Never the seven steps")
+        tapWhenReady(app.buttons["allSet.openToday"])
+        XCTAssertTrue(app.staticTexts["today.dayWord"].waitForExistence(timeout: 10))
+    }
+
     /// Paywall: both plan cards are the same height, start at the same
     /// top, and end above the pinned bottom bar (never cut by it).
     @MainActor
@@ -458,9 +535,10 @@ final class VESSUITests: XCTestCase {
     @MainActor
     private func type(_ text: String, into field: XCUIElement) {
         XCTAssertTrue(field.waitForExistence(timeout: 10), "Missing field \(field)")
-        // With the software keyboard shown, a lower field can sit under it.
-        // Close the keyboard with its Done button, as a person would.
-        if !field.isHittable {
+        // Close the keyboard first, as a person would with Done: with it up,
+        // a lower field can sit under it, and on a device a tap on the next
+        // field doesn't always move the focus.
+        if (field.value(forKey: "hasKeyboardFocus") as? Bool) != true {
             dismissKeyboard(in: XCUIApplication())
         }
         waitFor(field, "isHittable == true")

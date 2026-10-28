@@ -191,6 +191,7 @@ struct PrivacyView: View {
     @Environment(\.vessHaptics) private var haptics
     @Environment(AIConsentStore.self) private var consent
     @Environment(ReminderService.self) private var reminders
+    @Environment(ProfileMirror.self) private var mirror
 
     @State private var confirmDelete = false
     @State private var asking: AIFeature?
@@ -280,7 +281,7 @@ struct PrivacyView: View {
 
     private func deleteAll() {
         do {
-            try LocalDataWipe.run(store: store, consent: consent, reminders: reminders)
+            try LocalDataWipe.run(store: store, consent: consent, reminders: reminders, mirror: mirror)
             haptics.play(.warning)
         } catch {
             showError = true

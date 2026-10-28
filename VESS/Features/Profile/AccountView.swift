@@ -10,6 +10,7 @@ struct AccountView: View {
     @Environment(LocalStore.self) private var store
     @Environment(AIConsentStore.self) private var consent
     @Environment(ReminderService.self) private var reminders
+    @Environment(ProfileMirror.self) private var mirror
     @Environment(\.vessHaptics) private var haptics
 
     @State private var confirmDelete = false
@@ -80,7 +81,7 @@ struct AccountView: View {
         Task {
             do {
                 try await account.deleteAccount()
-                if alsoLocalData { try LocalDataWipe.run(store: store, consent: consent, reminders: reminders) }
+                if alsoLocalData { try LocalDataWipe.run(store: store, consent: consent, reminders: reminders, mirror: mirror) }
                 haptics.play(.warning)
             } catch {
                 self.error = BackendError.from(error)
