@@ -412,8 +412,12 @@ struct MenuDishSheet: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, VESSSpacing.screenInset)
-            .padding(.top, VESSSpacing.xl)
+            .padding(.top, VESSSpacing.xs)
             .padding(.bottom, VESSSpacing.xl)
+        }
+        // Content scrolls under a solid strip behind the grabber, not the grabber.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            VESSColor.card.frame(height: VESSSpacing.lg)
         }
         .vessBottomAction {
             Button(action: onAdd) {

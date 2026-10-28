@@ -68,5 +68,7 @@ struct VESSDayStrip: View {
         .accessibilityLabel(Text(day, format: .dateTime.weekday(.wide).day().month(.wide)))
         .accessibilityValue(hasEntries(day) ? Text("Has entries") : Text(verbatim: ""))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        // Capped at XXXL: a long press at accessibility sizes shows it large.
+        .accessibilityShowsLargeContentViewer { Text(day, format: .dateTime.weekday(.abbreviated).day()) }
     }
 }

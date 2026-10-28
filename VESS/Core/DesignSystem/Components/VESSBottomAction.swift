@@ -10,9 +10,9 @@ extension View {
     /// fade above the action, and the scroll view's bottom inset includes
     /// that fade, so the last field ends clear of the button.
     ///
-    /// While the keyboard is up the action is hidden: the floating keyboard
-    /// bar (with "Done") would otherwise sit on top of it. Closing the
-    /// keyboard brings it back.
+    /// While the keyboard is up the action is invisible (its space stays):
+    /// the floating keyboard bar (with "Done") would otherwise sit on top of
+    /// it. Closing the keyboard brings it back without moving the content.
     func vessBottomAction<Action: View>(background: Color = VESSColor.card, fade: CGFloat = VESSSpacing.md, @ViewBuilder _ action: () -> Action) -> some View {
         modifier(VESSBottomActionModifier(action: action(), background: background, fade: fade))
     }
@@ -30,21 +30,25 @@ private struct VESSBottomActionModifier<Action: View>: ViewModifier {
         let surface = inAddSheet ? VESSColor.background : background
         content
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                if !isKeyboardVisible {
-                    VStack(spacing: 0) {
-                        LinearGradient(colors: [surface.opacity(0), surface], startPoint: .top, endPoint: .bottom)
-                            .frame(height: fade)
-                            .allowsHitTesting(false)
-                            .accessibilityHidden(true)
-                        action
-                            .padding(.horizontal, VESSSpacing.screenInset)
-                            .padding(.bottom, VESSSpacing.sm)
-                            .frame(maxWidth: .infinity)
-                            // Down to the screen edge, so scrolled content never
-                            // shows below the action (home indicator area).
-                            .background(surface.ignoresSafeArea(edges: .bottom))
-                    }
+                // Kept in the layout while the keyboard is up (just invisible),
+                // so the content's inset never changes: nothing ends up under
+                // the button when the keyboard closes.
+                VStack(spacing: 0) {
+                    LinearGradient(colors: [surface.opacity(0), surface], startPoint: .top, endPoint: .bottom)
+                        .frame(height: fade)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                    action
+                        .padding(.horizontal, VESSSpacing.screenInset)
+                        .padding(.bottom, VESSSpacing.sm)
+                        .frame(maxWidth: .infinity)
+                        // Down to the screen edge, so scrolled content never
+                        // shows below the action (home indicator area).
+                        .background(surface.ignoresSafeArea(edges: .bottom))
                 }
+                .opacity(isKeyboardVisible ? 0 : 1)
+                .allowsHitTesting(!isKeyboardVisible)
+                .accessibilityHidden(isKeyboardVisible)
             }
             #if canImport(UIKit)
             .task {

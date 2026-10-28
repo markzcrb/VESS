@@ -53,6 +53,7 @@ struct VESSPlanDay: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityShowsLargeContentViewer { Text(date, format: .dateTime.weekday(.abbreviated).day()) }
     }
 
     private var numberColor: Color {

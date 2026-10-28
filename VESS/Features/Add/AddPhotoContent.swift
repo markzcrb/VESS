@@ -217,6 +217,7 @@ struct AddPhotoContent: View {
         .overlay(alignment: .top) {
             if !isOutOfEstimates {
                 Text(mode == .menu ? "Fit the whole menu page in the frame" : "Fit the whole plate in the frame.")
+                    .accessibilityShowsLargeContentViewer()
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.text)
                     // One line, so it never covers the frame's content.
