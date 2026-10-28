@@ -9,10 +9,11 @@ nonisolated enum AIProcessor: Sendable {
     case gemini
     case anthropic
 
-    /// The provider the consent text names. Still Gemini.
-    static let active: AIProcessor = .gemini
-    /// Bump with `active`.
-    static let processorVersion = 1
+    /// The provider the consent text names: Anthropic (Claude Haiku 5.5 on
+    /// the server). No fallback to another provider.
+    static let active: AIProcessor = .anthropic
+    /// Bump with `active`. 2: Anthropic, so every feature asks again.
+    static let processorVersion = 2
 
     static var displayName: String { active.displayName }
     /// The company whose API terms apply.
@@ -40,7 +41,8 @@ nonisolated enum AIProcessor: Sendable {
         case .coach: 2
         case .photo, .chef: 1
         }
-        // Processor 1 keeps the first consents valid (stored as 1).
+        // Processor 1's consents were stored as 1 (photo, Chef) and 2 (Coach);
+        // a new processor moves every feature to a new range.
         return (processorVersion - 1) * 100 + scope
     }
 }

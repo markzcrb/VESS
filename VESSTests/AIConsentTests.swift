@@ -51,20 +51,22 @@ struct AIConsentTests {
 
     @Test("The processor is named in one place")
     func processorName() {
-        #expect(AIProcessor.active == .gemini, "Gemini stays active until the server switches")
-        #expect(AIProcessor.displayName == "Google Gemini" && AIProcessor.company == "Google")
+        #expect(AIProcessor.active == .anthropic, "Anthropic Claude, as the server")
+        #expect(AIProcessor.displayName == "Anthropic Claude" && AIProcessor.company == "Anthropic")
+        #expect(AIProcessor.gemini.displayName == "Google Gemini")
         #expect(AIProcessor.anthropic.displayName == "Anthropic Claude" && AIProcessor.anthropic.company == "Anthropic")
     }
 
-    @Test("Coach asks again because it sends more; photo and AI Chef consents stay valid")
-    func coachScopeBump() {
+    @Test("The switch to Anthropic asks again for every feature; a new consent is kept")
+    func processorSwitch() {
         let defaults = freshDefaults()
-        // Consents from the previous build were stored as 1.
-        AIFeature.allCases.forEach { defaults.set(1, forKey: AIConsentRules.key($0)) }
+        // Consents given for Gemini: photo and Chef as 1, Coach as 2.
+        defaults.set(2, forKey: AIConsentRules.key(.coach))
+        defaults.set(1, forKey: AIConsentRules.key(.photo))
+        defaults.set(1, forKey: AIConsentRules.key(.chef))
         let store = AIConsentStore(defaults: defaults)
-        #expect(!store.isGranted(.coach))
-        #expect(store.isGranted(.photo) && store.isGranted(.chef))
+        #expect(AIFeature.allCases.allSatisfy { !store.isGranted($0) }, "Asked again, with Anthropic named")
         store.grant(.coach)
-        #expect(store.isGranted(.coach))
+        #expect(store.isGranted(.coach) && !store.isGranted(.photo))
     }
 }
