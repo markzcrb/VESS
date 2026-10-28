@@ -356,7 +356,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = UMEVA;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "UMEVA uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "UMEVA reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. Only steps and workouts are included when you ask Coach.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "UMEVA reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. When you ask Coach, a summary of your steps, active energy, workouts, sleep, resting heart rate, heart rate variability, stress estimate and weight is sent with your question.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -402,7 +402,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = UMEVA;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "UMEVA uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "UMEVA reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. Only steps and workouts are included when you ask Coach.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "UMEVA reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. When you ask Coach, a summary of your steps, active energy, workouts, sleep, resting heart rate, heart rate variability, stress estimate and weight is sent with your question.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

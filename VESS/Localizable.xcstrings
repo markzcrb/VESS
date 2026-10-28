@@ -1547,6 +1547,9 @@
     "A nudge, when it helps." : {
 
     },
+    "A photo of a meal or a menu, made smaller and without location or other details from the camera." : {
+
+    },
     "A protein-led dinner closes the gap." : {
 
     },
@@ -2809,6 +2812,9 @@
     "Drinks" : {
 
     },
+    "drinks and caffeine" : {
+
+    },
     "Drinks through the day" : {
 
     },
@@ -2932,6 +2938,9 @@
 
     },
     "Energy vs. target" : {
+
+    },
+    "energy, protein, water, carbs, fat, fiber and sugar for the last 7 and 30 days" : {
 
     },
     "Enough days logged" : {
@@ -3416,6 +3425,9 @@
 
     },
     "Habits" : {
+
+    },
+    "habits and supplements" : {
 
     },
     "Habits today" : {
@@ -4831,6 +4843,9 @@
     "Pantry" : {
 
     },
+    "pantry items to use soon" : {
+
+    },
     "Pantry staples" : {
 
     },
@@ -4885,6 +4900,9 @@
     "Photo" : {
 
     },
+    "Photo and menu estimates use AI." : {
+
+    },
     "Photo estimate" : {
 
     },
@@ -4892,9 +4910,6 @@
 
     },
     "Photo estimates need an account. Only for Coach, photo estimates and AI Chef; your log stays on this iPhone. Barcodes work without one." : {
-
-    },
-    "Photo estimates use AI." : {
 
     },
     "Photos" : {
@@ -5504,6 +5519,9 @@
     "Sleep, heart, stress and body" : {
 
     },
+    "sleep, resting heart rate, heart rate variability and the stress estimate" : {
+
+    },
     "slice" : {
 
     },
@@ -5668,6 +5686,9 @@
 
     },
     "Steps, active energy and recorded workouts come from Apple Health. UMEVA only reads them; it never writes to Health." : {
+
+    },
+    "steps, active energy and workouts" : {
 
     },
     "Steps, last 7 days" : {
@@ -5887,6 +5908,9 @@
     "The context behind your targets." : {
 
     },
+    "the date and time" : {
+
+    },
     "the day's" : {
 
     },
@@ -5906,9 +5930,6 @@
 
     },
     "The number under the barcode." : {
-
-    },
-    "The photo, made smaller and without location or other details from the camera." : {
 
     },
     "The ring shows where today's resting heart rate sits within your usual range: the middle 80 % of your last 30 days. It isn't a score." : {
@@ -6052,6 +6073,9 @@
 
     },
     "today's summary" : {
+
+    },
+    "today's totals, meals and planned meals" : {
 
     },
     "tomorrow" : {
@@ -6444,6 +6468,9 @@
     "Weight, body fat and waist" : {
 
     },
+    "weight, goal weight and BMI" : {
+
+    },
     "Welcome" : {
 
     },
@@ -6508,6 +6535,9 @@
 
     },
     "Where these numbers come from" : {
+
+    },
+    "whether you're pregnant, only if you turned it on" : {
 
     },
     "Wine" : {
@@ -6644,6 +6674,12 @@
     "Your change wasn't saved. Please try again." : {
 
     },
+    "your cycle day and next-period estimate, only if you turn on sharing" : {
+
+    },
+    "your daily targets" : {
+
+    },
     "Your daily targets are ready. They're a starting point, not a rule." : {
 
     },
@@ -6653,10 +6689,16 @@
     "Your day, item by item." : {
 
     },
+    "your diet, preferences, allergies and the ingredients you avoid" : {
+
+    },
     "Your drinks" : {
 
     },
     "Your entered workouts are saved while Health data refreshes." : {
+
+    },
+    "your first name" : {
 
     },
     "Your food" : {
@@ -6704,7 +6746,7 @@
     "Your profile, meals, drinks, workouts, pantry, plans, supplements, habits, cycle days and the Coach conversation will be removed from this iPhone. Your account, if you have one, is deleted separately in Account. This can't be undone." : {
 
     },
-    "Your question, the conversation so far, and a summary of your recent logs: targets, today's totals, 7-day averages, today's meals, habits, workouts and supplements. Cycle data only if you turn on sharing." : {
+    "Your question, the conversation so far, and a summary made on this iPhone: %@. Nothing else from your log." : {
 
     },
     "Your recipe" : {

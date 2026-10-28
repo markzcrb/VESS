@@ -85,6 +85,18 @@ struct CoachMetricsTests {
         #expect(context.last30Days?.energy.count == 30)
     }
 
+    @Test("The consent text names exactly what Coach sends: an encoded full context has the disclosed top-level keys")
+    func disclosureMatchesContext() throws {
+        var context = CoachContextBuilder.build(try demo().0)
+        // The two parts that are only sent when turned on.
+        context.cycle = CoachContext.Cycle(cycleDay: 12, nextPeriodFrom: "2026-10-20", nextPeriodTo: "2026-10-23", note: "")
+        context.pregnant = true
+        let json = try #require(JSONSerialization.jsonObject(with: CoachContextBuilder.json(context)) as? [String: Any])
+        let sent = Set(json.keys)
+        #expect(sent.subtracting(CoachDisclosure.allKeys).isEmpty, "Sent but not disclosed: \(sent.subtracting(CoachDisclosure.allKeys).sorted())")
+        #expect(CoachDisclosure.allKeys.subtracting(sent).isEmpty, "Disclosed but not in a full context: \(CoachDisclosure.allKeys.subtracting(sent).sorted())")
+    }
+
     @Test("Over the limit, the 30-day series go first; today's totals stay")
     func dropOrder() throws {
         var (input, _) = try demo()

@@ -99,7 +99,7 @@ struct AIConsentSheet: View {
     private var title: LocalizedStringResource {
         switch feature {
         case .coach: "Coach answers with AI."
-        case .photo: "Photo estimates use AI."
+        case .photo: "Photo and menu estimates use AI."
         case .chef: "AI Chef writes recipes with AI."
         }
     }
@@ -107,9 +107,10 @@ struct AIConsentSheet: View {
     private var sent: Text {
         switch feature {
         case .coach:
-            Text("Your question, the conversation so far, and a summary of your recent logs: targets, today's totals, 7-day averages, today's meals, habits, workouts and supplements. Cycle data only if you turn on sharing.")
+            // Built from `CoachDisclosure`, which a test keeps equal to what is sent.
+            Text("Your question, the conversation so far, and a summary made on this iPhone: \(CoachDisclosure.summary()). Nothing else from your log.")
         case .photo:
-            Text("The photo, made smaller and without location or other details from the camera.")
+            Text("A photo of a meal or a menu, made smaller and without location or other details from the camera.")
         case .chef:
             Text("Your pantry list (names, and which to use soon), your choices for the recipe, your diet, the ingredients you don't eat, your allergies, and today's protein gap. Nothing else from your log. Nutrition is worked out on this iPhone, not by the AI.")
         }

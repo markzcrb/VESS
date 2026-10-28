@@ -42,6 +42,20 @@ struct AIConsentTests {
 
     @Test("The processor is named in one place")
     func processorName() {
-        #expect(!AIProcessor.displayName.isEmpty && !AIProcessor.company.isEmpty && AIProcessor.consentVersion >= 1)
+        #expect(AIProcessor.active == .gemini, "Gemini stays active until the server switches")
+        #expect(AIProcessor.displayName == "Google Gemini" && AIProcessor.company == "Google")
+        #expect(AIProcessor.anthropic.displayName == "Anthropic Claude" && AIProcessor.anthropic.company == "Anthropic")
+    }
+
+    @Test("Coach asks again because it sends more; photo and AI Chef consents stay valid")
+    func coachScopeBump() {
+        let defaults = freshDefaults()
+        // Consents from the previous build were stored as 1.
+        AIFeature.allCases.forEach { defaults.set(1, forKey: AIConsentRules.key($0)) }
+        let store = AIConsentStore(defaults: defaults)
+        #expect(!store.isGranted(.coach))
+        #expect(store.isGranted(.photo) && store.isGranted(.chef))
+        store.grant(.coach)
+        #expect(store.isGranted(.coach))
     }
 }

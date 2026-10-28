@@ -1,6 +1,6 @@
 import Foundation
 
-/// Remembers, per feature, which processor version the user allowed.
+/// Remembers, per feature, which consent version the user allowed.
 @Observable
 final class AIConsentStore {
     private let defaults: UserDefaults
@@ -13,11 +13,11 @@ final class AIConsentStore {
     }
 
     func isGranted(_ feature: AIFeature) -> Bool {
-        AIConsentRules.isGranted(storedVersion: versions[feature] ?? 0)
+        AIConsentRules.isGranted(storedVersion: versions[feature] ?? 0, current: AIProcessor.consentVersion(for: feature))
     }
 
     func grant(_ feature: AIFeature) {
-        set(AIProcessor.consentVersion, for: feature)
+        set(AIProcessor.consentVersion(for: feature), for: feature)
     }
 
     func revoke(_ feature: AIFeature) {
