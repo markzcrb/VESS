@@ -4,30 +4,48 @@ import UIKit
 
 /// Photo in the Add sheet (I02–I08, M01): take or pick a photo, send it
 /// once for an estimate, then review every item before anything is logged.
-/// Menu mode reads a menu page instead (M02); Barcode opens the scanner.
+/// Menu mode reads a menu page instead (M02). Barcode mode reads product
+/// barcodes in the same live camera (Open Food Facts, no AI, no quota).
 /// The photo is made smaller, stripped of metadata, and dropped once the
-/// answer is in.
+/// answer is in. The last mode is remembered.
 struct AddPhotoContent: View {
     let day: Date
     @Binding var meal: MealType
     /// The last menu read, kept by the Add sheet until it closes.
     @Binding var menu: MenuScanResult?
     let onSearchInstead: () -> Void
-    let onBarcode: () -> Void
+    /// Barcode: type the number instead.
+    let onTypeNumber: () -> Void
+    /// Barcode not found: add the product yourself, with its code.
+    let onAddManually: (String) -> Void
     let onLogged: () -> Void
 
-    /// M01's segment. Barcode isn't a mode: it opens the scanner.
-    enum Mode: Hashable { case meal, menu, barcode }
+    /// M01's segment.
+    enum Mode: String, Hashable { case meal, menu, barcode }
+
+    /// Barcode mode's progress.
+    private enum Scan: Equatable {
+        case scanning
+        case reading(String)
+        case notFound(String)
+        case failed(String, FoodProviderError)
+        /// A photo from the library had no barcode.
+        case noCodeInPhoto
+    }
 
     @Environment(AccountStore.self) private var account
     @Environment(AIConsentStore.self) private var consent
     @Environment(LocalStore.self) private var store
+    @Environment(FoodLookupService.self) private var lookup
     @Environment(FoodLogUndo.self) private var undo
+    @Environment(\.vessHaptics) private var haptics
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @AppStorage("photo.remaining") private var remaining = -1
     @AppStorage("photo.remainingDay") private var remainingDay = ""
+    /// The mode used last; Photo opens in it.
+    @AppStorage("photo.mode") private var storedMode = Mode.meal.rawValue
 
     private enum Phase: Equatable {
         case camera
@@ -50,12 +68,17 @@ struct AddPhotoContent: View {
     @State private var showError = false
     /// Set by the first Save, so a quick second tap can't log twice.
     @State private var isSaved = false
-    @State private var mode: Mode = .meal
     @State private var showMenu = false
+    @State private var scan: Scan = .scanning
+    @State private var found: Food?
+    /// The frame's one flash when a code is found.
+    @State private var flash = false
+
+    private var mode: Mode { Mode(rawValue: storedMode) ?? .meal }
 
     var body: some View {
         Group {
-            if !account.isSignedIn {
+            if !account.isSignedIn && mode != .barcode {
                 signedOut
             } else {
                 switch phase {
@@ -79,9 +102,14 @@ struct AddPhotoContent: View {
         .onChange(of: pickerItem) { _, item in
             guard let item else { return }
             Task {
-                if let data = try? await item.loadTransferable(type: Data.self) { use(data) }
+                if let data = try? await item.loadTransferable(type: Data.self) {
+                    if mode == .barcode { await readBarcode(inPhoto: data) } else { use(data) }
+                }
                 pickerItem = nil
             }
+        }
+        .sheet(item: $found, onDismiss: resumeScanning) { food in
+            ProductFoundSheet(food: food, day: day, meal: $meal, onLogged: onLogged)
         }
         .vessErrorAlert(isPresented: $showError)
         .navigationDestination(isPresented: $showMenu) {
@@ -89,6 +117,16 @@ struct AddPhotoContent: View {
                 MenuResultsView(result: menu, day: day, onLogged: onLogged)
             }
         }
+        .onAppear {
+            camera.onBarcode = { code in detected(code) }
+            updateDetection()
+        }
+        .onChange(of: storedMode) { _, _ in
+            if mode != .barcode { camera.setTorch(false) }
+            scan = .scanning
+            updateDetection()
+        }
+        .task { await loadRemaining() }
         .onDisappear { camera.stop() }
     }
 
@@ -97,7 +135,8 @@ struct AddPhotoContent: View {
     private var signedOut: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.lg) {
-                Text("Photo estimates need an account. Only for Coach, photo estimates and AI Chef; your log stays on this iPhone.")
+                modePicker
+                Text("Photo estimates need an account. Only for Coach, photo estimates and AI Chef; your log stays on this iPhone. Barcodes work without one.")
                     .vessTextStyle(.bodyM)
                     .foregroundStyle(VESSColor.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -112,22 +151,19 @@ struct AddPhotoContent: View {
         }
     }
 
-    /// No estimates left today: the camera isn't started (saves battery) and
-    /// the shutter and library are off.
-    private var isOutOfEstimates: Bool { remainingToday == 0 }
+    /// No estimates left today: in Meal and Menu the camera isn't started
+    /// (saves battery) and the shutter and library are off. Barcode needs none.
+    private var isOutOfEstimates: Bool { remainingToday == 0 && mode != .barcode }
 
     /// The shutter row's height, so the viewfinder leaves room for it.
     private static let controlsHeight: CGFloat = 84
-    /// The Meal / Menu / Barcode segment and the gap under it, and the
-    /// footer's lines under the shutter.
-    private static let segmentHeight: CGFloat = VESSHitTarget.minimum + VESSSpacing.md + footerHeight
-    private static let footerHeight: CGFloat = 64
+    /// The Meal / Menu / Barcode segment and the gap under it.
+    private static let segmentHeight: CGFloat = VESSHitTarget.minimum + VESSSpacing.md
 
-    /// Barcode opens the scanner and leaves the mode as it was.
-    private var modeBinding: Binding<Mode> {
-        Binding(get: { mode }, set: { new in
-            if new == .barcode { onBarcode() } else { mode = new }
-        })
+    private var modePicker: some View {
+        VESSSegmented(selection: Binding(get: { mode }, set: { storedMode = $0.rawValue }),
+                      options: [(.meal, "Meal"), (.menu, "Menu"), (.barcode, "Barcode")])
+            .accessibilityIdentifier("photo.mode")
     }
 
     /// Always the full content width; 3:4 when there's room, otherwise as
@@ -139,39 +175,78 @@ struct AddPhotoContent: View {
     }
 
     private var cameraView: some View {
-        // The area between the sheet's header and the pinned footer.
-        GeometryReader { proxy in
-        let size = Self.viewfinderSize(in: CGSize(width: proxy.size.width, height: proxy.size.height - Self.segmentHeight))
-        ScrollView {
-            VStack(alignment: .leading, spacing: VESSSpacing.md) {
-                VESSSegmented(selection: modeBinding, options: [(.meal, "Meal"), (.menu, "Menu"), (.barcode, "Barcode")])
-                    .accessibilityIdentifier("photo.mode")
+        // The footer has its own space at the bottom, above the safe area;
+        // the viewfinder takes what's left above the shutter row.
+        VStack(spacing: 0) {
+            GeometryReader { proxy in
+                let size = Self.viewfinderSize(in: CGSize(width: proxy.size.width, height: proxy.size.height - Self.segmentHeight))
+                ScrollViewReader { scroller in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: VESSSpacing.md) {
+                        modePicker
 
-                // Full width at 3:4, as tall as fits above the shutter row.
-                viewfinder
-                    .frame(width: size.width, height: size.height)
-                    .frame(maxWidth: .infinity)
+                        // Full width at 3:4, as tall as fits above the shutter row.
+                        viewfinder
+                            .frame(width: size.width, height: size.height)
+                            .frame(maxWidth: .infinity)
 
-                controls
+                        controls
 
-                // Under the shutter, in the page: never under the home indicator.
-                footer.padding(.horizontal, -VESSSpacing.screenInset)
+                        if mode == .barcode { barcodeStatus.id(Self.statusID) }
 
-                #if DEBUG
-                if ProcessInfo.processInfo.arguments.contains("-aiMock"), !isOutOfEstimates {
-                    Button("Use a sample photo (debug)") { use(Self.samplePhoto()) }
-                        .buttonStyle(.vessSecondary)
-                        .accessibilityIdentifier("photo.sample")
+                        // At accessibility sizes the footer ends the page
+                        // instead of taking half the screen.
+                        if dynamicTypeSize.isAccessibilitySize { footer.padding(.horizontal, -VESSSpacing.screenInset) }
+
+                        #if DEBUG
+                        if ProcessInfo.processInfo.arguments.contains("-aiMock"), mode != .barcode, !isOutOfEstimates {
+                            Button("Use a sample photo (debug)") { use(Self.samplePhoto()) }
+                                .buttonStyle(.vessSecondary)
+                                .accessibilityIdentifier("photo.sample")
+                        }
+                        if ProcessInfo.processInfo.arguments.contains("-demoBarcode"), mode == .barcode, scan == .scanning {
+                            Button("Use a sample barcode (debug)") { detected(MockData.barcodeDemo.barcode ?? "") }
+                                .buttonStyle(.vessSecondary)
+                                .accessibilityIdentifier("photo.sampleBarcode")
+                        }
+                        #endif
+                    }
+                    .padding(.horizontal, VESSSpacing.screenInset)
+                    .vessContentTop(VESSSpacing.md)
+                    .padding(.bottom, VESSSpacing.md)
                 }
-                #endif
+                // A barcode message comes into view as it appears.
+                .onChange(of: scan) { _, new in
+                    guard new != .scanning, !isReading(new) else { return }
+                    withAnimation(reduceMotion ? nil : .snappy) { scroller.scrollTo(Self.statusID, anchor: .bottom) }
+                }
+                }
             }
-            .padding(.horizontal, VESSSpacing.screenInset)
-            .vessContentTop(VESSSpacing.md)
-            .padding(.bottom, VESSSpacing.md)
+            // Nothing scrolls out under the footer.
+            .clipped()
+            if !dynamicTypeSize.isAccessibilitySize { footer }
         }
-        }
+        // One session for all three modes: switching never restarts it.
         .task(id: isOutOfEstimates) {
             if isOutOfEstimates { camera.stop() } else { await camera.start() }
+        }
+    }
+
+    private static let statusID = "photo.barcodeStatus"
+
+    private func isReading(_ scan: Scan) -> Bool {
+        if case .reading = scan { true } else { false }
+    }
+
+    private var pillText: Text {
+        switch mode {
+        case .meal: return Text("Fit the whole plate in the frame.")
+        case .menu: return Text("Fit the whole menu page in the frame")
+        case .barcode:
+            if case .reading(let code) = scan {
+                return Text("Looking up \(BarcodeScannerView.grouped(code).replacingOccurrences(of: " ", with: "\u{00A0}"))…")
+            }
+            return Text("Point at the barcode")
         }
     }
 
@@ -210,13 +285,22 @@ struct AddPhotoContent: View {
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(VESSSpacing.lg)
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                    .padding(.horizontal, VESSSpacing.lg)
+                    .accessibilityShowsLargeContentViewer()
                 }
+                if mode == .barcode { BarcodeGuide() }
             }
+            // The frame flashes once when a code is found.
+            shape.fill(VESSColor.text)
+                .opacity(flash ? 0.35 : 0)
+                .allowsHitTesting(false)
         }
+        // Nothing inside spills past the frame.
+        .clipShape(shape)
         .overlay(alignment: .top) {
             if !isOutOfEstimates {
-                Text(mode == .menu ? "Fit the whole menu page in the frame" : "Fit the whole plate in the frame.")
+                pillText
                     .accessibilityShowsLargeContentViewer()
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.text)
@@ -229,6 +313,8 @@ struct AddPhotoContent: View {
                     .background(VESSColor.background.opacity(0.7), in: Capsule())
                     .padding(.top, VESSSpacing.sm)
                     .padding(.horizontal, VESSSpacing.sm)
+                    .contentTransition(.opacity)
+                    .accessibilityIdentifier("photo.pill")
             }
         }
         .accessibilityElement(children: .contain)
@@ -246,9 +332,10 @@ struct AddPhotoContent: View {
             }
             .disabled(isOutOfEstimates)
             .opacity(isOutOfEstimates ? 0.4 : 1)
-            .accessibilityLabel("Pick a photo")
+            .accessibilityLabel(mode == .barcode ? "Scan a barcode from a photo" : "Pick a photo")
             .accessibilityIdentifier("photo.pick")
             Spacer()
+            // Barcode mode reads on its own: no shutter (its space stays).
             Button(action: shoot) {
                 Circle()
                     .fill(VESSColor.accentFill)
@@ -256,11 +343,36 @@ struct AddPhotoContent: View {
                     .overlay(Circle().strokeBorder(VESSColor.borderStrong, lineWidth: 4).padding(-6))
             }
             .buttonStyle(.plain)
-            .disabled(camera.state != .running || isOutOfEstimates)
-            .opacity(camera.state == .running && !isOutOfEstimates ? 1 : 0.4)
+            .disabled(camera.state != .running || isOutOfEstimates || mode == .barcode)
+            .opacity(mode == .barcode ? 0 : (camera.state == .running && !isOutOfEstimates ? 1 : 0.4))
+            .accessibilityHidden(mode == .barcode)
             .accessibilityLabel("Take photo")
             .accessibilityIdentifier("photo.shutter")
             Spacer()
+            lightButton
+        }
+        // The symbols stop growing so they stay inside their circles.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .frame(height: Self.controlsHeight)
+    }
+
+    /// The photo flash in Meal and Menu; the torch in Barcode.
+    @ViewBuilder
+    private var lightButton: some View {
+        if mode == .barcode {
+            Button { camera.setTorch(!camera.isTorchOn) } label: {
+                Image(systemName: camera.isTorchOn ? "flashlight.on.fill" : "flashlight.off.fill")
+                    .font(.title3)
+                    .foregroundStyle(VESSColor.text)
+                    .frame(width: VESSSize.addButton, height: VESSSize.addButton)
+                    .background(VESSColor.fill, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .opacity(camera.hasTorch ? 1 : 0)
+            .disabled(!camera.hasTorch)
+            .accessibilityLabel(camera.isTorchOn ? "Turn light off" : "Turn light on")
+            .accessibilityIdentifier("photo.torch")
+        } else {
             Button { camera.isFlashOn.toggle() } label: {
                 Image(systemName: camera.isFlashOn ? "bolt.fill" : "bolt.slash")
                     .font(.title3)
@@ -273,33 +385,74 @@ struct AddPhotoContent: View {
             .disabled(!camera.hasFlash || isOutOfEstimates)
             .accessibilityLabel(camera.isFlashOn ? "Flash on" : "Flash off")
         }
-        // The symbols stop growing so they stay inside their circles.
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-        .frame(height: Self.controlsHeight)
     }
 
-    /// Two short lines: what happens to the photo, then what's left today.
-    /// In Menu mode, a way back to the menu already read.
+    /// Not found, a failed look-up, or no code in a photo: the scanner's flows.
+    @ViewBuilder
+    private var barcodeStatus: some View {
+        switch scan {
+        case .scanning, .reading:
+            EmptyView()
+        case .notFound(let code):
+            barcodeMessage(
+                // Non-breaking spaces keep the number on one line.
+                Text("Nothing on Open Food Facts for \(BarcodeScannerView.grouped(code).replacingOccurrences(of: " ", with: "\u{00A0}")). You can add it yourself."),
+                primary: ("Add manually", { onAddManually(code) }),
+                secondary: ("Scan again", resumeScanning)
+            )
+            .accessibilityIdentifier("photo.barcodeNotFound")
+        case .failed(_, let error):
+            barcodeMessage(
+                Text(BarcodeLookupView.message(for: error)),
+                primary: ("Scan again", resumeScanning),
+                secondary: ("Type barcode number", onTypeNumber)
+            )
+        case .noCodeInPhoto:
+            barcodeMessage(
+                Text("No barcode found in that photo. Try one where the barcode is sharp and fills more of the picture."),
+                primary: ("Scan again", resumeScanning),
+                secondary: ("Type barcode number", onTypeNumber)
+            )
+        }
+    }
+
+    private func barcodeMessage(_ text: Text, primary: (LocalizedStringResource, () -> Void), secondary: (LocalizedStringResource, () -> Void)) -> some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            text
+                .vessTextStyle(.bodyM)
+                .foregroundStyle(VESSColor.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(action: primary.1) { Text(primary.0) }
+                .buttonStyle(.vessPrimary)
+            Button(action: secondary.1) { Text(secondary.0) }
+                .buttonStyle(.vessSecondary)
+        }
+    }
+
+    /// Each mode's lines: what happens to the photo and what's left today,
+    /// or, for barcodes, where the data comes from.
     private var footer: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-            if mode == .menu, let menu {
-                Button {
-                    showMenu = true
-                } label: {
-                    Text("Back to \(menu.title?.isEmpty == false ? menu.title ?? "" : String(localized: "the menu"))")
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.accent)
-                        .frame(minHeight: VESSHitTarget.minimum)
+            switch mode {
+            case .barcode:
+                Text("Product data from Open Food Facts")
+                    .foregroundStyle(VESSColor.secondaryText)
+            case .meal, .menu:
+                if mode == .menu, let menu {
+                    Button {
+                        showMenu = true
+                    } label: {
+                        Text("Back to \(menu.title?.isEmpty == false ? menu.title ?? "" : String(localized: "the menu"))")
+                            .vessTextStyle(.bodyS)
+                            .foregroundStyle(VESSColor.accent)
+                            .frame(minHeight: VESSHitTarget.minimum)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("photo.menuAgain")
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("photo.menuAgain")
-            }
-            Text(mode == .menu ? "Reads the dishes, estimates each one. The photo is then deleted." : "Used only for this estimate, then deleted.")
-                .foregroundStyle(VESSColor.secondaryText)
-            if let left = remainingToday {
-                Text(mode == .menu
-                     ? "Uses 1 photo estimate · \(left) left today · \(AIQuotaText.resetsShort(after: AppClock.now))"
-                     : "\(left) left today · \(AIQuotaText.resetsShort(after: AppClock.now))")
+                Text(mode == .menu ? "Reads the dishes, estimates each one. The photo is then deleted." : "Used only for this estimate, then deleted.")
+                    .foregroundStyle(VESSColor.secondaryText)
+                Text(quotaLine)
                     .foregroundStyle(VESSColor.tertiaryText)
             }
         }
@@ -312,6 +465,15 @@ struct AddPhotoContent: View {
         .background(VESSColor.background)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("photo.footer")
+    }
+
+    /// "Uses 1 photo estimate · 9 left today · resets 1:00"; without the
+    /// count until it's known.
+    private var quotaLine: String {
+        let resets = AIQuotaText.resetsShort(after: AppClock.now)
+        let left = remainingToday.map { String(localized: "\($0) left today") }
+        let parts = (mode == .menu ? [String(localized: "Uses 1 photo estimate")] : []) + [left].compactMap { $0 } + [resets]
+        return parts.joined(separator: " · ")
     }
 
     private var looking: some View {
@@ -471,6 +633,70 @@ struct AddPhotoContent: View {
             isSaved = false
             showError = true
         }
+    }
+
+    // MARK: Barcode
+
+    /// Detection runs only in Barcode mode, while nothing else is showing.
+    private func updateDetection() {
+        camera.detectsBarcodes = mode == .barcode && scan == .scanning && found == nil
+    }
+
+    private func resumeScanning() {
+        scan = .scanning
+        updateDetection()
+    }
+
+    private func detected(_ code: String) {
+        guard mode == .barcode, scan == .scanning, !code.isEmpty else { return }
+        scan = .reading(code)
+        updateDetection()
+        haptics.play(.success)
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.12)) { flash = true }
+        Task {
+            try? await Task.sleep(for: .milliseconds(180))
+            withAnimation(reduceMotion ? nil : .easeIn(duration: 0.25)) { flash = false }
+        }
+        Task {
+            #if DEBUG
+            // `-demoBarcode`: the simulator has no camera or network.
+            if ProcessInfo.processInfo.arguments.contains("-demoBarcode"), code == MockData.barcodeDemo.barcode {
+                try? await Task.sleep(for: .seconds(1))
+                scan = .scanning
+                found = MockData.barcodeDemo
+                updateDetection()
+                return
+            }
+            #endif
+            switch await lookup.lookUp(barcode: code) {
+            case .success(let food):
+                scan = .scanning
+                found = food
+                updateDetection()
+            case .failure(.notFound):
+                scan = .notFound(code)
+            case .failure(let error):
+                scan = .failed(code, error)
+            }
+        }
+    }
+
+    /// The library button in Barcode mode: read the code in a photo.
+    private func readBarcode(inPhoto data: Data) async {
+        if let code = await PhotoBarcodeReader.code(in: data) {
+            scan = .scanning
+            detected(code)
+        } else {
+            scan = .noCodeInPhoto
+            updateDetection()
+        }
+    }
+
+    /// What's left today, from the server when this device doesn't know yet.
+    private func loadRemaining() async {
+        guard account.isSignedIn, remainingToday == nil,
+              let left = try? await account.remainingToday(kind: "photo") else { return }
+        setRemaining(left)
     }
 
     #if DEBUG
@@ -669,5 +895,36 @@ private struct VessTagLabel: View {
             .padding(.horizontal, VESSSpacing.xs)
             .padding(.vertical, VESSSpacing.xxs)
             .background(warning ? VESSColor.warningTint : VESSColor.background, in: Capsule())
+    }
+}
+
+/// Barcode mode's guide: four corner marks around a wide, short window and
+/// a thin line across it. Still: nothing moves, with or without Reduce Motion.
+private struct BarcodeGuide: View {
+    private static let corner: CGFloat = 22
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width * 0.78
+            let height = min(proxy.size.height * 0.34, width * 0.55)
+            let rect = CGRect(x: (proxy.size.width - width) / 2, y: (proxy.size.height - height) / 2, width: width, height: height)
+            ZStack {
+                Path { path in
+                    let c = Self.corner
+                    // Top left, top right, bottom right, bottom left.
+                    path.move(to: CGPoint(x: rect.minX, y: rect.minY + c)); path.addLine(to: CGPoint(x: rect.minX, y: rect.minY)); path.addLine(to: CGPoint(x: rect.minX + c, y: rect.minY))
+                    path.move(to: CGPoint(x: rect.maxX - c, y: rect.minY)); path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY)); path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + c))
+                    path.move(to: CGPoint(x: rect.maxX, y: rect.maxY - c)); path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY)); path.addLine(to: CGPoint(x: rect.maxX - c, y: rect.maxY))
+                    path.move(to: CGPoint(x: rect.minX + c, y: rect.maxY)); path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY)); path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - c))
+                }
+                .stroke(VESSColor.text, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                Rectangle()
+                    .fill(VESSColor.text.opacity(0.6))
+                    .frame(width: width - 2 * Self.corner, height: 1)
+                    .position(x: rect.midX, y: rect.midY)
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }

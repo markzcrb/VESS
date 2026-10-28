@@ -3947,6 +3947,9 @@
     "Looking at your photo…" : {
 
     },
+    "Looking up %@…" : {
+
+    },
     "Looking up on %@…" : {
 
     },
@@ -4319,6 +4322,9 @@
 
     },
     "No analytics and no ads. An account only if you use Coach, photo estimates or AI Chef." : {
+
+    },
+    "No barcode found in that photo. Try one where the barcode is sharp and fills more of the picture." : {
 
     },
     "No caffeine after %@" : {
@@ -4818,7 +4824,7 @@
     "Photo estimates" : {
 
     },
-    "Photo estimates need an account. Only for Coach, photo estimates and AI Chef; your log stays on this iPhone." : {
+    "Photo estimates need an account. Only for Coach, photo estimates and AI Chef; your log stays on this iPhone. Barcodes work without one." : {
 
     },
     "Photo estimates use AI." : {
@@ -4869,6 +4875,9 @@
     "Point at a barcode" : {
 
     },
+    "Point at the barcode" : {
+
+    },
     "pork" : {
 
     },
@@ -4913,6 +4922,9 @@
       }
     },
     "Produce" : {
+
+    },
+    "Product data from Open Food Facts" : {
 
     },
     "Product found" : {
@@ -5192,6 +5204,9 @@
 
     },
     "Scan a barcode" : {
+
+    },
+    "Scan a barcode from a photo" : {
 
     },
     "Scan again" : {
@@ -6179,15 +6194,8 @@
     "Uses %@ before they expire" : {
 
     },
-    "Uses 1 photo estimate · %lld left today · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Uses 1 photo estimate · %1$lld left today · %2$@"
-          }
-        }
-      }
+    "Uses 1 photo estimate" : {
+
     },
     "Uses the %@ before %@." : {
       "localizations" : {

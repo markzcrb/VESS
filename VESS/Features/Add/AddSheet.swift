@@ -164,7 +164,9 @@ struct AddSheet: View {
             CycleDayForm(date: day, showsClose: false, onDone: { dismiss() })
         case .photo:
             AddPhotoContent(day: day, meal: $meal, menu: $menu, onSearchInstead: { select(.food) },
-                            onBarcode: { path.append(.barcode) }, onLogged: { dismiss() })
+                            onTypeNumber: { path.append(.barcode) },
+                            onAddManually: { code in path.append(.createFood(barcode: code)) },
+                            onLogged: { dismiss() })
         }
     }
 
