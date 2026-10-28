@@ -33,9 +33,12 @@ struct VESSFeatureRow: View {
     }
 }
 
-/// PlanCard (P02): a plan's caps name, an optional badge ("−48 %"), the
-/// price large and one line under it. The chosen card is outlined in the
-/// link accent; the other is a plain raised card.
+/// PlanCard (P02): the plan's caps name with an optional pill ("−48%")
+/// beside it, the price, and the period line; a check on the chosen card's
+/// corner.
+/// Both cards read the same; the chosen one only adds the outline and the
+/// check. In a row, give the row `.fixedSize(horizontal: false, vertical:
+/// true)` so the cards share the taller one's height.
 struct VESSPlanCard: View {
     let title: LocalizedStringResource
     let price: Text
@@ -44,25 +47,19 @@ struct VESSPlanCard: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     private var shape: RoundedRectangle {
         RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
     }
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
-                    Text(title)
-                        .vessTextStyle(.labelCaps)
-                        .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
-                    Spacer(minLength: 0)
-                    if let badge {
-                        VESSTag(text: badge, tone: .accent)
-                    }
-                }
+            VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                labelRow
                 price
                     .vessTextStyle(.displayM)
-                    .foregroundStyle(isSelected ? VESSColor.text : VESSColor.secondaryText)
+                    .foregroundStyle(VESSColor.text)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 detail
@@ -75,12 +72,59 @@ struct VESSPlanCard: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(VESSColor.card, in: shape)
             .overlay(shape.strokeBorder(isSelected ? VESSColor.accent : VESSColor.divider, lineWidth: isSelected ? 2 : 1))
+            // The check sits on the corner, so the name and pill keep the row.
+            .overlay(alignment: .topTrailing) { check.padding(VESSSpacing.xs) }
             .contentShape(shape)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .vessHaptic(.selection, trigger: isSelected)
+    }
+
+    /// Name and pill on one baseline; at accessibility sizes the pill goes
+    /// under the name, never cut.
+    @ViewBuilder
+    private var labelRow: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                name
+                pill
+            }
+        } else {
+            HStack(alignment: .firstTextBaseline, spacing: VESSSpacing.xs) {
+                name
+                pill
+                Spacer(minLength: 0)
+            }
+            // Clear of the check on the corner.
+            .padding(.trailing, VESSSpacing.md)
+        }
+    }
+
+    private var name: some View {
+        Text(title)
+            .vessTextStyle(.labelCaps)
+            .foregroundStyle(VESSColor.text)
+            .lineLimit(1)
+    }
+
+    /// A card without a pill keeps its height, so both prices line up.
+    private var pill: some View {
+        VESSTag(text: badge ?? Text(verbatim: "\u{2212}0%"), tone: .accent)
+            .lineLimit(1)
+            .fixedSize()
+            .opacity(badge == nil ? 0 : 1)
+            .accessibilityHidden(badge == nil)
+    }
+
+    /// On the chosen card's corner.
+    private var check: some View {
+        Image(systemName: "checkmark.circle.fill")
+            .font(.subheadline)
+            .foregroundStyle(VESSColor.accent)
+            .opacity(isSelected ? 1 : 0)
+            .accessibilityHidden(true)
     }
 }
 
@@ -89,9 +133,9 @@ struct VESSPlanCard: View {
         VESSFeatureRow(systemImage: "bubble.left", title: Text(verbatim: "AI Coach"),
                        detail: Text(verbatim: "15 questions a day, with charts from your own data"))
         HStack(spacing: VESSSpacing.sm) {
-            VESSPlanCard(title: "Annual", price: Text(verbatim: "49,99 €"), detail: Text(verbatim: "4,17 € a month, billed yearly"),
-                         badge: Text(verbatim: "\u{2212}48\u{00A0}%"), isSelected: true) {}
-            VESSPlanCard(title: "Monthly", price: Text(verbatim: "7,99 €"), detail: Text(verbatim: "a month · cancel anytime"), isSelected: false) {}
+            VESSPlanCard(title: "Annual", price: Text(verbatim: "49,99 €"), detail: Text(verbatim: "a year · 4,17 € a month"),
+                         badge: Text(verbatim: "\u{2212}48%"), isSelected: true) {}
+            VESSPlanCard(title: "Monthly", price: Text(verbatim: "7,99 €"), detail: Text(verbatim: "a month"), isSelected: false) {}
         }
         .fixedSize(horizontal: false, vertical: true)
     }

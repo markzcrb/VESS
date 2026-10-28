@@ -83,6 +83,13 @@ struct AppRootView: View {
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: showsAllSet)
                 #if DEBUG
+                // Captures: the UMEVA+ paywall.
+                .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-capturePaywall"))) {
+                    VESSPlusView()
+                        .environment(store)
+                        .environment(reminders)
+                        .environment(account)
+                }
                 // Captures: B04 as after a trial purchase.
                 .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-capturePlusWelcome"))) {
                     PlusWelcomeView(welcome: PlusWelcome(id: 0, isTrial: true, endsAt: AppClock.now.addingTimeInterval(7 * 86_400),

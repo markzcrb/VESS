@@ -346,6 +346,29 @@ final class VESSUITests: XCTestCase {
         XCTAssertFalse(app.tabBars.firstMatch.exists)
     }
 
+    /// Paywall: both plan cards are the same height, start at the same
+    /// top, and end above the pinned bottom bar (never cut by it).
+    @MainActor
+    func testPaywallPlanCardsAreFullyVisible() throws {
+        let app = launch(seeded: true)
+        tapWhenReady(app.tabBars.buttons["You"])
+        let plus = app.buttons["you.plus"]
+        scrollUntilHittable(plus, in: app)
+        plus.tap()
+        let annual = app.buttons["plus.plan.annual"]
+        let monthly = app.buttons["plus.plan.monthly"]
+        let subscribe = app.buttons["plus.subscribe"]
+        XCTAssertTrue(annual.waitForExistence(timeout: 10))
+        XCTAssertTrue(subscribe.waitForExistence(timeout: 5))
+        for _ in 0..<4 where annual.frame.maxY > subscribe.frame.minY - 12 {
+            app.swipeUp()
+        }
+        XCTAssertEqual(annual.frame.height, monthly.frame.height, accuracy: 1, "Same height")
+        XCTAssertEqual(annual.frame.minY, monthly.frame.minY, accuracy: 1, "Same top")
+        XCTAssertLessThanOrEqual(annual.frame.maxY, subscribe.frame.minY - 12, "Above the bar, not under it")
+        XCTAssertGreaterThan(annual.frame.minY, app.navigationBars.firstMatch.frame.minY, "Not under the top either")
+    }
+
     @MainActor
     private func openChef(_ app: XCUIApplication) -> XCUIApplication {
         tapWhenReady(app.tabBars.buttons["Plan"])

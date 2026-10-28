@@ -6,10 +6,9 @@ import SwiftUI
 /// its 7-day trial and the trial timeline; Monthly without a trial), the
 /// required subscription text, and Free vs VESS+ in a sheet. Prices come
 /// from StoreKit (`displayPrice`); the euro values are DEBUG fallbacks.
-/// On small screens the button and its text stay pinned at the bottom once
-/// the page has been scrolled with the plans fully on screen and the
-/// button not yet (not at accessibility sizes, where the bar would fill
-/// the screen).
+/// The button and its text are pinned at the bottom, with their height
+/// reserved, so nothing scrolls under them (not at accessibility sizes,
+/// where the bar would fill the screen).
 /// DEBUG only.
 struct VESSPlusView: View {
     enum Plan: String, CaseIterable, Identifiable {
@@ -53,58 +52,46 @@ struct VESSPlusView: View {
     @State private var showCompare = false
     @State private var showPrivacy = false
     @State private var message: String?
-    /// For the pinned button: the viewport's height, the plans' top and the
-    /// in-page button's bottom, in the scroll view's coordinates.
-    @State private var viewportHeight: CGFloat = 0
-    @State private var plansBottom: CGFloat = .greatestFiniteMagnitude
-    @State private var buttonBottom: CGFloat = 0
-    @State private var hasScrolled = false
 
     /// Apple's standard licence agreement (Terms of Use).
     private static let termsURL = LegalLinks.appleEULA
 
     private var hasTrial: Bool { plan == .annual && trialEligible }
-    private var pinsButton: Bool {
-        !dynamicTypeSize.isAccessibilitySize && !isSubscribed && hasScrolled
-            && plansBottom <= viewportHeight && buttonBottom > viewportHeight
-    }
+    /// The button, its text and links are pinned under the page except at
+    /// accessibility sizes, where they'd fill the screen and end the page.
+    private var pinsButton: Bool { !dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: VESSSpacing.xl) {
                     header
-                    features
+                    // The plans first, so both cards are in full view above
+                    // the pinned button at the default size.
                     plans
-                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .scrollView).maxY } action: { plansBottom = $0 }
+                    features
                     if hasTrial { timeline }
-                    action
-                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .scrollView).maxY } action: { buttonBottom = $0 }
+                    if !pinsButton { action }
                 }
-                .padding(.horizontal, VESSSpacing.screenInset)
+                .padding(.horizontal, VESSSpacing.md)
                 .padding(.top, VESSSpacing.xs)
                 .padding(.bottom, VESSSpacing.xl)
-            }
-            .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.height } action: { _, height in viewportHeight = height }
-            .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.contentInsets.top > 1 } action: { _, scrolled in
-                if scrolled { hasScrolled = true }
             }
             // Content never shows through under Close and Restore.
             .scrollEdgeEffectStyle(.hard, for: .top)
             .background(VESSColor.background)
-            // An overlay, not an inset: the scroll view's size stays the same,
-            // so showing the bar can't change whether it should show.
-            .overlay(alignment: .bottom) {
+            // An inset, so the bar's height is reserved: the cards and the
+            // rest of the page always end above it, never under it.
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 if pinsButton {
                     action
-                        .padding(.horizontal, VESSSpacing.screenInset)
-                        .padding(.vertical, VESSSpacing.sm)
+                        .padding(.horizontal, VESSSpacing.md)
+                        .padding(.top, VESSSpacing.sm)
+                        .padding(.bottom, VESSSpacing.xs)
                         .background(VESSColor.background.ignoresSafeArea(edges: .bottom))
                         .overlay(alignment: .top) { VESSHairline() }
-                        .transition(.opacity)
                 }
             }
-            .animation(VESSMotion.selection, value: pinsButton)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .close) { dismiss() }
@@ -180,18 +167,20 @@ struct VESSPlusView: View {
         return layout {
             VESSPlanCard(
                 title: "Annual", price: Text(verbatim: price(.annual)),
-                detail: Text("\(monthlyEquivalent) a month, billed yearly"),
-                badge: Text(verbatim: "\u{2212}\(savingPercent)\u{00A0}%"),
+                detail: Text("a year · \(monthlyEquivalent) a month"),
+                badge: Text(verbatim: "\u{2212}\(savingPercent)%"),
                 isSelected: plan == .annual
             ) { select(.annual) }
             .accessibilityIdentifier("plus.plan.annual")
             VESSPlanCard(
                 title: "Monthly", price: Text(verbatim: price(.monthly)),
-                detail: Text("a month · cancel anytime"),
+                detail: Text("a month"),
                 isSelected: plan == .monthly
             ) { select(.monthly) }
             .accessibilityIdentifier("plus.plan.monthly")
         }
+        // Both cards as tall as the taller one.
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     /// Today · Day 5 · Day 7, annual trial only.
