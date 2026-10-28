@@ -18,7 +18,7 @@ struct VESSPlusView: View {
         /// "<bundle id>.plus.monthly" / ".plus.annual" (App Store Connect
         /// and VESS.storekit for local testing).
         var productID: String {
-            let bundle = Bundle.main.bundleIdentifier ?? "com.markgerasimovpersonalteam.VESS"
+            let bundle = Bundle.main.bundleIdentifier ?? "app.umeva.ios"
             switch self {
             case .monthly: return "\(bundle).plus.monthly"
             case .annual: return "\(bundle).plus.annual"

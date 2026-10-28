@@ -37,8 +37,14 @@ struct PlusStoreKitTests {
         return session
     }
 
+    /// On a device, the first run after an install can find no products for
+    /// a moment while the test session starts; try for up to 3 s.
     private func product(_ plan: VESSPlusView.Plan) async throws -> Product {
-        try #require(try await Product.products(for: [plan.productID]).first)
+        for _ in 0..<10 {
+            if let product = try await Product.products(for: [plan.productID]).first { return product }
+            try await Task.sleep(for: .milliseconds(300))
+        }
+        return try #require(try await Product.products(for: [plan.productID]).first)
     }
 
     @Test("Annual starts with the free week and unlocks UMEVA+")

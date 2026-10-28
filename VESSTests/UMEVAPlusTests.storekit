@@ -35,7 +35,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.markgerasimovpersonalteam.VESS.plus.annual",
+          "productID" : "app.umeva.ios.plus.annual",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "VESS+ Annual",
           "subscriptionGroupID" : "21500001",
@@ -56,7 +56,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.markgerasimovpersonalteam.VESS.plus.monthly",
+          "productID" : "app.umeva.ios.plus.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "VESS+ Monthly",
           "subscriptionGroupID" : "21500001",
