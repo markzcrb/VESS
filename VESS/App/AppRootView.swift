@@ -20,6 +20,8 @@ struct AppRootView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The on-disk store is opening off the main thread.
     @State private var isOpening: Bool
+    /// B01, until the store is ready. DEBUG in-memory stores skip it.
+    @State private var showsSplash: Bool
 
     init() {
         // DEBUG flags build an in-memory store at once (captures, UI tests);
@@ -28,6 +30,7 @@ struct AppRootView: View {
         _store = State(initialValue: store)
         _lookup = State(initialValue: store.map { Self.makeLookup(store: $0) })
         _isOpening = State(initialValue: store == nil)
+        _showsSplash = State(initialValue: store == nil)
         if store != nil { LaunchTiming.mark("store") }
     }
 
@@ -63,14 +66,28 @@ struct AppRootView: View {
                 // One success tap for every log, wherever it came from.
                 .vessHaptic(.success, trigger: foodUndo.loggedCount)
             } else if isOpening {
-                // The launch screen's colour while the store opens.
-                VESSColor.background
+                // The splash above covers this while the store opens.
+                VESSColor.launchBackground
                     .ignoresSafeArea()
                     .task { await openLiveStore() }
             } else {
                 StoreUnavailableView {
                     isOpening = true
                 }
+            }
+        }
+        // B01 over the first frame; fades as soon as the store is ready (or
+        // failed to open), with no wait of its own.
+        .overlay {
+            if showsSplash {
+                LaunchSplash()
+                    .transition(.opacity)
+            }
+        }
+        .onChange(of: isOpening, initial: true) { _, opening in
+            guard !opening, showsSplash else { return }
+            withAnimation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.splashFade) {
+                showsSplash = false
             }
         }
         .vessHapticsHost(haptics)

@@ -77,6 +77,8 @@ enum VESSMotion {
     static let selection = Animation.snappy(duration: 0.25)
     /// The Undo toast after logging.
     static let toast = Animation.spring(response: 0.38, dampingFraction: 0.86)
+    /// B01 splash fading into the app (at most 0.6 s).
+    static let splashFade = Animation.easeOut(duration: 0.4)
     /// What replaces movement under Reduce Motion.
     static let reducedCrossfade = Animation.easeInOut(duration: 0.2)
     /// Add sheet (21): content pages by the full width when the selection

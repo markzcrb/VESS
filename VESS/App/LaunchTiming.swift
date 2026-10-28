@@ -45,12 +45,16 @@ enum LaunchTiming {
     static func mark(_ step: StaticString) {
         guard isOn else { return }
         logger.notice("init → \(step, privacy: .public) \(ms(initDate), privacy: .public) ms")
+        print("LaunchTiming \(step) \(ms(initDate)) ms after init")
     }
 
     static func firstFrame() {
         guard isOn, !reportedFirstFrame else { return }
         reportedFirstFrame = true
-        logger.notice("process → first frame \(ms(processStart), privacy: .public) ms (init → first frame \(ms(initDate), privacy: .public) ms)")
+        let total = ms(processStart), sinceInit = ms(initDate)
+        logger.notice("process → first frame \(total, privacy: .public) ms (init → first frame \(sinceInit, privacy: .public) ms)")
+        // Also on stdout, so `devicectl … --console` can read it from a device.
+        print("LaunchTiming first frame \(total) ms (init \(sinceInit) ms)")
     }
 
     /// Runs `work` and logs it when it takes over 50 ms (during the first

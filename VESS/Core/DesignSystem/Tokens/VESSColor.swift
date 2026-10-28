@@ -46,6 +46,8 @@ enum VESSColor {
     static let brandInkSoft = Color(.brandInkSoft)
     static let brandGraphite = Color(.brandGraphite)
     static let brandPearlSoft = Color(.brandPearlSoft)
+    /// The launch screen: pearl in Light, graphite in Dark.
+    static let launchBackground = Color(.launchBackground)
     /// Primary button and selected chip fill.
     static let accentFill = Color(.vessAccentFill)
     /// Content on `accentFill`.

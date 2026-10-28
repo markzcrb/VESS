@@ -11,9 +11,9 @@
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
-		<string>VESSBackground</string>
+		<string>LaunchBackground</string>
 		<key>UIImageName</key>
-		<string>VESSLaunchWordmark</string>
+		<string>LaunchWordmark</string>
 	</dict>
 </dict>
 </plist>
