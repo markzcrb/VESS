@@ -330,6 +330,22 @@ final class VESSUITests: XCTestCase {
         XCTAssertFalse(app.buttons["draft.save"].exists)
     }
 
+    /// Delete account and all data: the server account, the log, consents and
+    /// reminders go, and the app starts again at B02.
+    @MainActor
+    func testDeleteAccountAndAllDataReturnsToFirstLaunch() throws {
+        let app = launchAI()
+        tapWhenReady(app.tabBars.buttons["You"])
+        let account = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Account")).firstMatch
+        scrollUntilHittable(account, in: app)
+        account.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["account.identity"].waitForExistence(timeout: 10), "Signed in with the mock server")
+        tapWhenReady(app.buttons["account.delete"])
+        tapWhenReady(app.buttons["Delete account and all data"])
+        XCTAssertTrue(app.buttons["onboarding.getStarted"].waitForExistence(timeout: 10), "Back to the first screen")
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
+    }
+
     @MainActor
     private func openChef(_ app: XCUIApplication) -> XCUIApplication {
         tapWhenReady(app.tabBars.buttons["Plan"])

@@ -76,8 +76,9 @@ struct AppRootView: View {
                 // once the UI is up.
                 .task { await catalog.load(foods: genericFoods) }
                 #if DEBUG
-                // The VESS+ trial reminder goes once the trial converts or is cancelled.
-                .task { await VESSPlusTrial.watch(reminders) }
+                // From launch: every verified transaction is finished, and the
+                // UMEVA+ trial reminder goes once the trial converts or is cancelled.
+                .task { await PlusStore.listen(reminders) }
                 #endif
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: showsAllSet)

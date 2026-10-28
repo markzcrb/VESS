@@ -95,6 +95,12 @@ final class ReminderService {
 
     static let trialReminderID = "plus.trialEnding"
 
+    /// Delete all data: nothing UMEVA scheduled stays, nor what it showed.
+    func removeAll() {
+        center?.removeAllPendingNotificationRequests()
+        center?.removeAllDeliveredNotifications()
+    }
+
     /// Replaces VESS's pending reminders with the current plan.
     func sync(store: LocalStore, now: Date = AppClock.now, calendar: Calendar = .current) async {
         guard let center else { return }

@@ -102,7 +102,7 @@ actor OpenFoodFactsClient: RemoteFoodProvider {
     }
 
     func search(_ query: String, limit: Int) async throws -> [Food] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = InputLimits.clamp(query.trimmingCharacters(in: .whitespacesAndNewlines), to: InputLimits.foodSearch)
         guard trimmed.count >= 2 else { return [] }
         if let wait = searchLimiter.acquire(at: now()) {
             throw FoodProviderError.rateLimited(retryAfter: wait)

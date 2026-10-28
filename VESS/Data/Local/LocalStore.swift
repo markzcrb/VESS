@@ -35,14 +35,28 @@ final class LocalStore {
 
     /// The on-disk store used by the app.
     static func live() throws -> LocalStore {
-        LocalStore(container: try makeContainer(inMemory: false))
+        LocalStore(container: try liveContainer())
     }
 
     /// The on-disk store's container, for opening it off the main thread:
     /// the first open after an update migrates (about 3 s on a cold
     /// simulator), which used to freeze the launch.
     nonisolated static func liveContainer() throws -> ModelContainer {
-        try makeContainer(inMemory: false)
+        let container = try makeContainer(inMemory: false)
+        protect(container.configurations.first?.url)
+        return container
+    }
+
+    /// The store and its journal files: readable only after the first unlock
+    /// since restart (also iOS's default for app files; set so it can't
+    /// silently change). Nothing health-derived is in a shared container.
+    nonisolated private static func protect(_ url: URL?) {
+        guard let url else { return }
+        for suffix in ["", "-wal", "-shm"] {
+            let path = url.path(percentEncoded: false) + suffix
+            guard FileManager.default.fileExists(atPath: path) else { continue }
+            try? FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: path)
+        }
     }
 
     /// An empty store that is discarded on exit. Used by previews and UI tests.

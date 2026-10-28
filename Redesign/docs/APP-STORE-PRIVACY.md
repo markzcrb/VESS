@@ -23,7 +23,9 @@ Everything UMEVA stores (profile, food log, drinks, workouts, pantry, plans, sup
 
 **Third-party processor:** Google (Gemini API), for Coach answers, photo estimates and AI Chef recipes, through UMEVA's server (Supabase, EU, Frankfurt). Google processes the requests under its API terms. If the provider changes to Anthropic (Claude API), update this line.
 
-> **TODO (Mark):** a public Privacy Policy URL for App Store Connect and for the UMEVA+ paywall link. Until then the paywall's "Privacy Policy" opens the in-app Privacy and data screen.
+> **TODO (Mark):** publish https://umeva.app/privacy and https://umeva.app/terms (`LegalLinks` in the app: B02 links both, the UMEVA+ paywall links the Privacy Policy and Apple's standard EULA as Terms of Use). Enter the Privacy Policy URL in App Store Connect.
+
+**Privacy manifest:** `VESS/PrivacyInfo.xcprivacy` declares no tracking and no tracking domains, the collected types in the table above (email, user ID, photos, health, fitness, other user content: linked, app functionality; search history: not linked), and one required-reason API, UserDefaults (CA92.1). `LaunchTiming` reads the process's own start time with `sysctl` (`KERN_PROC_PID`), not the boot time, so 35F9.1 isn't needed.
 
 ## Privacy policy text (to add to the published policy)
 > **Account.** You only need an account for Coach, photo estimates and AI Chef. You sign in with a one-time code by email (or Sign in with Apple). We keep your email address (or Apple's private relay address), your account ID and a count of how many AI requests you made each day, so we can apply the free daily limits. Your food log and other data are not stored on our server. You can delete your account at any time in You › Account; this removes your email, account ID and usage counts from our server. Data on your iPhone stays until you also choose Delete all data.

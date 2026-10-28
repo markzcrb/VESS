@@ -24,6 +24,10 @@ final class AIConsentStore {
         set(0, for: feature)
     }
 
+    func revokeAll() {
+        AIFeature.allCases.forEach(revoke)
+    }
+
     private func set(_ version: Int, for feature: AIFeature) {
         versions[feature] = version
         defaults.set(version, forKey: AIConsentRules.key(feature))

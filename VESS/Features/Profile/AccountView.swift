@@ -8,6 +8,8 @@ import SwiftUI
 struct AccountView: View {
     @Environment(AccountStore.self) private var account
     @Environment(LocalStore.self) private var store
+    @Environment(AIConsentStore.self) private var consent
+    @Environment(ReminderService.self) private var reminders
     @Environment(\.vessHaptics) private var haptics
 
     @State private var confirmDelete = false
@@ -78,7 +80,7 @@ struct AccountView: View {
         Task {
             do {
                 try await account.deleteAccount()
-                if alsoLocalData { try store.deleteAllData() }
+                if alsoLocalData { try LocalDataWipe.run(store: store, consent: consent, reminders: reminders) }
                 haptics.play(.warning)
             } catch {
                 self.error = BackendError.from(error)
@@ -193,7 +195,7 @@ struct AccountSignInForm: View {
 
     private var isValidEmail: Bool {
         let parts = trimmedEmail.split(separator: "@")
-        return parts.count == 2 && parts[1].contains(".") && !parts[0].isEmpty
+        return trimmedEmail.count <= InputLimits.email && parts.count == 2 && parts[1].contains(".") && !parts[0].isEmpty
     }
 
     private func sendCode() {

@@ -273,6 +273,16 @@ struct OpenFoodFactsClientTests {
         #expect(items.first { $0.name == "page_size" }?.value == "10")
     }
 
+    @Test("A pasted essay is cut to 100 characters before it's sent")
+    func longSearch() async throws {
+        let http = StubHTTPClient(.response(status: 200, body: #"{"hits":[],"count":0}"#))
+        _ = try await client(http).search(String(repeating: "oat drink ", count: 50), limit: 10)
+        let url = try #require(http.requests.first?.url)
+        let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "q" }?.value
+        #expect(query?.count == InputLimits.foodSearch)
+        #expect(InputLimits.clamp("short", to: InputLimits.coachQuestion) == "short")
+    }
+
     @Test("Very short searches don't hit the network")
     func shortSearch() async throws {
         let http = StubHTTPClient()

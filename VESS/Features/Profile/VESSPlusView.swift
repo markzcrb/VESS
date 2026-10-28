@@ -263,7 +263,7 @@ struct VESSPlusView: View {
             if let message {
                 Text(message)
                     .vessTextStyle(.bodyS)
-                    .foregroundStyle(VESSColor.warningText)
+                    .foregroundStyle(VESSColor.secondaryText)
                     .multilineTextAlignment(.center)
             }
             links
@@ -297,7 +297,9 @@ struct VESSPlusView: View {
         if let url = Self.termsURL {
             link("Terms of Use") { openURL(url) }
         }
-        link("Privacy") { showPrivacy = true }
+        link("Privacy Policy") {
+            if let url = LegalLinks.privacyPolicy { openURL(url) } else { showPrivacy = true }
+        }
         if isSubscribed {
             link("Manage subscription") { showManage = true }
         }
@@ -363,13 +365,7 @@ struct VESSPlusView: View {
     }
 
     private func refreshEntitlement() async {
-        var subscribed = false
-        for await result in Transaction.currentEntitlements {
-            if case .verified(let transaction) = result, Plan.allCases.map(\.productID).contains(transaction.productID) {
-                subscribed = true
-            }
-        }
-        isSubscribed = subscribed
+        isSubscribed = await PlusStore.isEntitled()
     }
 
     private func subscribe() {
@@ -382,8 +378,12 @@ struct VESSPlusView: View {
         Task {
             defer { isWorking = false }
             do {
-                if case .success(let verification) = try await product.purchase(), case .verified(let transaction) = verification {
-                    await transaction.finish()
+                switch try await PlusStore.purchase(product) {
+                case .pending:
+                    message = String(localized: "Waiting for approval. UMEVA+ starts as soon as it's approved.")
+                case .cancelled:
+                    break
+                case .purchased(let transaction):
                     let isTrial = transaction.offer?.type == .introductory
                     var reminderAt: Date?
                     if isTrial {
@@ -396,6 +396,8 @@ struct VESSPlusView: View {
                                               willAutoRenew: await willAutoRenew(product), reminderAt: reminderAt)
                     }
                 }
+            } catch PlusStore.PurchaseError.unverified {
+                message = String(localized: "The App Store couldn't confirm the purchase. Try Restore in a moment.")
             } catch {
                 message = String(localized: "The purchase didn't go through. Nothing was charged.")
             }
@@ -413,11 +415,20 @@ struct VESSPlusView: View {
         return true
     }
 
+    /// Never shows B04: that's only for a new purchase.
     private func restore() {
         isWorking = true
+        message = nil
         Task {
             defer { isWorking = false }
-            try? await AppStore.sync()
+            do {
+                let restored = try await PlusStore.restore()
+                message = restored
+                    ? String(localized: "UMEVA+ is active again.")
+                    : String(localized: "No UMEVA+ subscription was found for this Apple Account.")
+            } catch {
+                message = String(localized: "Restore didn't go through. Try again in a moment.")
+            }
             await refreshEntitlement()
         }
     }
@@ -441,14 +452,6 @@ enum VESSPlusTrial {
             if transaction.offer?.type == .introductory && renewal.willAutoRenew { return true }
         }
         return false
-    }
-
-    /// At launch and whenever a transaction changes.
-    static func watch(_ reminders: ReminderService) async {
-        await reconcileReminder(reminders)
-        for await _ in Transaction.updates {
-            await reconcileReminder(reminders)
-        }
     }
 }
 

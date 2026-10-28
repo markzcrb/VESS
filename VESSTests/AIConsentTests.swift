@@ -32,6 +32,15 @@ struct AIConsentTests {
         #expect(AIConsentStore(defaults: defaults).isGranted(.coach), "Kept across launches")
     }
 
+    @Test("Delete all data revokes every AI consent")
+    func revokeAll() {
+        let defaults = freshDefaults()
+        let store = AIConsentStore(defaults: defaults)
+        AIFeature.allCases.forEach(store.grant)
+        store.revokeAll()
+        #expect(AIFeature.allCases.allSatisfy { !AIConsentStore(defaults: defaults).isGranted($0) })
+    }
+
     @Test("Consent is for one processor: a new consent version asks again")
     func versionBump() {
         #expect(AIConsentRules.isGranted(storedVersion: 1, current: 1))

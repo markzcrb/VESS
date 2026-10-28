@@ -190,6 +190,7 @@ struct PrivacyView: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.vessHaptics) private var haptics
     @Environment(AIConsentStore.self) private var consent
+    @Environment(ReminderService.self) private var reminders
 
     @State private var confirmDelete = false
     @State private var asking: AIFeature?
@@ -279,7 +280,7 @@ struct PrivacyView: View {
 
     private func deleteAll() {
         do {
-            try store.deleteAllData()
+            try LocalDataWipe.run(store: store, consent: consent, reminders: reminders)
             haptics.play(.warning)
         } catch {
             showError = true

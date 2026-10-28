@@ -210,6 +210,10 @@ struct CoachView: View {
                         // Multi-line fields don't submit: Return sends instead
                         // of starting a new line.
                         .onChange(of: draft) { _, text in
+                            if text.count > InputLimits.coachQuestion {
+                                draft = InputLimits.clamp(text, to: InputLimits.coachQuestion)
+                                return
+                            }
                             guard text.hasSuffix("\n") else { return }
                             draft = String(text.dropLast())
                             ask(draft)
@@ -292,7 +296,7 @@ struct CoachView: View {
 
     /// Asks for consent first, once; then sends.
     private func ask(_ text: String) {
-        let question = trimmed(text)
+        let question = InputLimits.clamp(trimmed(text), to: InputLimits.coachQuestion)
         guard !question.isEmpty, !isSending else { return }
         guard consent.isGranted(.coach) else {
             pendingQuestion = question
