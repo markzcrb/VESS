@@ -53,6 +53,27 @@ final class ReminderService {
         }
     }
 
+    /// P02's promise: on day 5 of the VESS+ trial, at 10:00, a reminder that
+    /// it ends in two days. Asks for permission (the trial screen says it
+    /// will remind you); nothing is scheduled if the user declines.
+    func scheduleTrialReminder(trialStartedAt start: Date, calendar: Calendar = .current) async {
+        guard let center, await requestPermissionIfNeeded() else { return }
+        let day5 = calendar.date(byAdding: .day, value: 5, to: calendar.startOfDay(for: start)) ?? start
+        guard let date = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: day5), date > AppClock.now else { return }
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Your VESS+ trial ends in 2 days")
+        content.body = String(localized: "Nothing to do if you'd like to keep it. To cancel: Settings › Apple Account › Subscriptions.")
+        let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        do {
+            try await center.add(UNNotificationRequest(identifier: Self.trialReminderID, content: content,
+                                                       trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)))
+        } catch {
+            logger.error("Scheduling the trial reminder failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    static let trialReminderID = "plus.trialEnding"
+
     /// Replaces VESS's pending reminders with the current plan.
     func sync(store: LocalStore, now: Date = AppClock.now, calendar: Calendar = .current) async {
         guard let center else { return }

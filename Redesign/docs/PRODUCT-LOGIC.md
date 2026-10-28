@@ -91,3 +91,10 @@ Photo › Menu sends one photo to `/functions/v1/menu` (one photo estimate). Eve
 | Portion | Smaller ×0.75, Regular, Larger ×1.25. The portion picked in the dish sheet is kept for that dish in the list and the add bar. |
 | Meal | From the time of day (`MealType.likely`); touch and hold Add to pick another. |
 | Logged | One entry per dish, source photo estimate, with the menu's name ("… · The evening menu · Estimated" in the diary). |
+
+## VESS+ paywall (P02)
+
+- Annual is preselected. Its 7-day free trial shows only while StoreKit says the user is eligible for the introductory offer; otherwise the button reads "Subscribe · 49,99 € a year" and the timeline is hidden. Monthly has no trial.
+- The −48 % badge and "4,17 € a month" are worked out from the prices as shown (`displayPrice`), so they always agree with the big numbers.
+- Day 5 reminder: when a purchase starts the trial, VESS asks for notification permission (if not asked yet) and schedules one local notification on day 5 at 10:00, "Your VESS+ trial ends in 2 days". Nothing is scheduled if permission is declined. StoreKit itself sends no reminder.
+- The pinned button bar appears only after scrolling, with the plans fully on screen and the in-page button not yet; never at accessibility text sizes.

@@ -11,6 +11,7 @@ struct ProfileView: View {
     @State private var showError = false
     @State private var confirmCycleOff = false
     @State private var confirmCycleDelete = false
+    @State private var showPlus = false
 
     private let calendar = Calendar.current
 
@@ -36,6 +37,9 @@ struct ProfileView: View {
                 .profileDestinations()
                 .healthDestinations()
                 .vessErrorAlert(isPresented: $showError)
+                #if DEBUG
+                .fullScreenCover(isPresented: $showPlus) { VESSPlusView() }
+                #endif
             }
         }
     }
@@ -157,7 +161,12 @@ struct ProfileView: View {
                 link(.privacy, title: "Privacy and data")
                 link(.help, title: "Help")
                 #if DEBUG
-                link(.vessPlus, title: "VESS+ (demo)")
+                // P02 is shown full screen, with its own close.
+                Button { showPlus = true } label: {
+                    VESSListRow(title: Text("VESS+ (demo)"))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("you.plus")
                 #endif
             }
             .vessHairlineBottom()
@@ -178,9 +187,6 @@ struct ProfileView: View {
 enum ProfileRoute: Hashable {
     case goals, body, nutrition, supplements, appleHealth, notifications, privacy, settings, help, habits, account
     case helpArticle(HelpArticle)
-    #if DEBUG
-    case vessPlus
-    #endif
 }
 
 extension View {
@@ -199,9 +205,6 @@ extension View {
             case .habits: HabitsView()
             case .account: AccountView()
             case .helpArticle(let article): HelpArticleView(article: article)
-            #if DEBUG
-            case .vessPlus: VESSPlusView()
-            #endif
             }
         }
     }

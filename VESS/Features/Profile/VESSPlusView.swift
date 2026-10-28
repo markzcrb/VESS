@@ -2,10 +2,15 @@
 import StoreKit
 import SwiftUI
 
-/// E08 VESS+. Two plans (annual preselected, 7-day trial on annual only),
-/// what free and VESS+ include, and the required subscription text. Prices
-/// come from StoreKit (`displayPrice`); the euro values are DEBUG fallbacks
-/// until the products exist. DEBUG only: Release has no row for it yet.
+/// P02 VESS+: what it adds, two plans side by side (Annual preselected with
+/// its 7-day trial and the trial timeline; Monthly without a trial), the
+/// required subscription text, and Free vs VESS+ in a sheet. Prices come
+/// from StoreKit (`displayPrice`); the euro values are DEBUG fallbacks.
+/// On small screens the button and its text stay pinned at the bottom once
+/// the page has been scrolled with the plans fully on screen and the
+/// button not yet (not at accessibility sizes, where the bar would fill
+/// the screen).
+/// DEBUG only.
 struct VESSPlusView: View {
     enum Plan: String, CaseIterable, Identifiable {
         case monthly, annual
@@ -30,203 +35,286 @@ struct VESSPlusView: View {
         }
     }
 
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(ReminderService.self) private var reminders
     @State private var plan: Plan = .annual
     @State private var products: [String: Product] = [:]
+    /// Whether the annual trial can still be offered (StoreKit says).
+    @State private var trialEligible = true
     @State private var isSubscribed = false
     @State private var isWorking = false
     @State private var showManage = false
+    @State private var showCompare = false
+    @State private var showPrivacy = false
     @State private var message: String?
+    /// For the pinned button: the viewport's height, the plans' top and the
+    /// in-page button's bottom, in the scroll view's coordinates.
+    @State private var viewportHeight: CGFloat = 0
+    @State private var plansBottom: CGFloat = .greatestFiniteMagnitude
+    @State private var buttonBottom: CGFloat = 0
+    @State private var hasScrolled = false
 
     /// Apple's standard licence agreement (Terms of Use).
     private static let termsURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")
 
+    private var hasTrial: Bool { plan == .annual && trialEligible }
+    private var pinsButton: Bool {
+        !dynamicTypeSize.isAccessibilitySize && !isSubscribed && hasScrolled
+            && plansBottom <= viewportHeight && buttonBottom > viewportHeight
+    }
+
     var body: some View {
-        ProfilePage(title: "VESS+") {
-            ProfileIntro(title: "Coach, Chef and photo estimates, every day.",
-                         text: "Logging, recipes, pantry, grocery and Apple Health stay free.")
-
-            VStack(spacing: VESSSpacing.sm) {
-                ForEach([Plan.annual, .monthly]) { option in
-                    planCard(option)
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                    header
+                    features
+                    plans
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .scrollView).maxY } action: { plansBottom = $0 }
+                    if hasTrial { timeline }
+                    action
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .scrollView).maxY } action: { buttonBottom = $0 }
+                }
+                .padding(.horizontal, VESSSpacing.screenInset)
+                .padding(.top, VESSSpacing.xs)
+                .padding(.bottom, VESSSpacing.xl)
+            }
+            .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.height } action: { _, height in viewportHeight = height }
+            .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.contentInsets.top > 1 } action: { _, scrolled in
+                if scrolled { hasScrolled = true }
+            }
+            // Content never shows through under Close and Restore.
+            .scrollEdgeEffectStyle(.hard, for: .top)
+            .background(VESSColor.background)
+            // An overlay, not an inset: the scroll view's size stays the same,
+            // so showing the bar can't change whether it should show.
+            .overlay(alignment: .bottom) {
+                if pinsButton {
+                    action
+                        .padding(.horizontal, VESSSpacing.screenInset)
+                        .padding(.vertical, VESSSpacing.sm)
+                        .background(VESSColor.background.ignoresSafeArea(edges: .bottom))
+                        .overlay(alignment: .top) { VESSHairline() }
+                        .transition(.opacity)
                 }
             }
-
-            comparison
-
-            VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                Button(action: subscribe) {
-                    Text(plan == .annual ? "Start 7-day free trial" : "Subscribe")
+            .animation(VESSMotion.selection, value: pinsButton)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { dismiss() }
                 }
-                .buttonStyle(.vessPrimary)
-                .disabled(isWorking || isSubscribed)
-                .accessibilityIdentifier("plus.subscribe")
-                Text(plan == .annual
-                     ? "7 days free, then \(price(.annual))/year. Cancel anytime."
-                     : "\(price(.monthly))/month. Cancel anytime.")
-                    .vessTextStyle(.bodyS)
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .frame(maxWidth: .infinity)
-                    .multilineTextAlignment(.center)
-                if let message {
-                    Text(message)
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.warningText)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: restore) {
+                        Text("Restore")
+                            .vessTextStyle(.bodyM)
+                            .foregroundStyle(VESSColor.secondaryText)
+                            .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isWorking)
+                    .accessibilityIdentifier("plus.restore")
                 }
+                .sharedBackgroundVisibility(.hidden)
             }
-
-            legal
+            .navigationDestination(isPresented: $showPrivacy) { PrivacyView() }
+            .sheet(isPresented: $showCompare) { VESSPlusComparison() }
+            .manageSubscriptionsSheet(isPresented: $showManage)
         }
-        .manageSubscriptionsSheet(isPresented: $showManage)
         .task { await load() }
     }
 
-    // MARK: Plans
+    // MARK: Sections
 
-    private func planCard(_ option: Plan) -> some View {
-        let isSelected = option == plan
-        let shape = RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
-        return Button { plan = option } label: {
-            HStack(alignment: .top, spacing: VESSSpacing.md) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(isSelected ? VESSColor.accent : VESSColor.tertiaryText)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-                    // Stacked at accessibility sizes, so no word splits.
-                    let layout = dynamicTypeSize.isAccessibilitySize
-                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: VESSSpacing.xxs))
-                        : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
-                    layout {
-                        Text(option == .annual ? "Annual" : "Monthly")
-                            .vessTextStyle(.bodyMStrong)
-                            .foregroundStyle(VESSColor.text)
-                        if option == .annual {
-                            VESSTag(text: Text("7 days free"), tone: .accent)
-                        }
-                        if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: VESSSpacing.xs) }
-                        Text(option == .annual ? "\(price(.annual))/year" : "\(price(.monthly))/month")
-                            .vessTextStyle(.bodyM)
-                            .foregroundStyle(VESSColor.text)
-                    }
-                    .fixedSize(horizontal: false, vertical: true)
-                    if option == .annual {
-                        Text("\(monthlyEquivalent)/month · save \(savingPercent)\u{00A0}%")
-                            .vessTextStyle(.bodyS)
-                            .foregroundStyle(VESSColor.secondaryText)
-                    }
+    private var header: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+            Text("VESS+")
+                .vessTextStyle(.labelCaps)
+                .foregroundStyle(VESSColor.accent)
+            Text("Coach, Chef and photo estimates, every day.")
+                .vessTextStyle(.editorialL)
+                .foregroundStyle(VESSColor.text)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text("Logging, recipes, pantry, grocery and Apple Health stay free.")
+                .vessTextStyle(.bodyS)
+                .foregroundStyle(VESSColor.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var features: some View {
+        VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            VESSFeatureRow(systemImage: "bubble.left", title: Text("AI Coach"),
+                           detail: Text("15 questions a day, with charts from your own data"))
+            VESSFeatureRow(systemImage: "camera", title: Text("Photo and menu estimates"),
+                           detail: Text("10 a day: your plate or a restaurant menu"))
+            VESSFeatureRow(systemImage: "fork.knife", title: Text("AI Chef"),
+                           detail: Text("5 recipes a day from what's in your pantry"))
+            VESSFeatureRow(systemImage: "chart.bar", title: Text("Insights and Health patterns"),
+                           detail: Text("All history, plus sleep, stress and heart patterns"))
+        }
+    }
+
+    /// Side by side; stacked at accessibility sizes.
+    private var plans: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: VESSSpacing.sm))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: VESSSpacing.sm))
+        return layout {
+            VESSPlanCard(
+                title: "Annual", price: Text(verbatim: price(.annual)),
+                detail: Text("\(monthlyEquivalent) a month, billed yearly"),
+                badge: Text(verbatim: "\u{2212}\(savingPercent)\u{00A0}%"),
+                isSelected: plan == .annual
+            ) { select(.annual) }
+            .accessibilityIdentifier("plus.plan.annual")
+            VESSPlanCard(
+                title: "Monthly", price: Text(verbatim: price(.monthly)),
+                detail: Text("a month · cancel anytime"),
+                isSelected: plan == .monthly
+            ) { select(.monthly) }
+            .accessibilityIdentifier("plus.plan.monthly")
+        }
+    }
+
+    /// Today · Day 5 · Day 7, annual trial only.
+    private var timeline: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            step(Text("Today"), Text("Full VESS+, nothing charged"), isFirst: true, isLast: false)
+            step(Text("Day 5"), Text("We remind you the trial is ending"), isFirst: false, isLast: false)
+            step(Text("Day 7"), Text("\(price(.annual)) a year starts, unless you cancel"), isFirst: false, isLast: true)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("plus.timeline")
+    }
+
+    private func step(_ title: Text, _ detail: Text, isFirst: Bool, isLast: Bool) -> some View {
+        HStack(alignment: .top, spacing: VESSSpacing.md) {
+            VStack(spacing: 0) {
+                Circle()
+                    .fill(isFirst ? VESSColor.accent : VESSColor.borderStrong)
+                    .frame(width: VESSSpacing.sm, height: VESSSpacing.sm)
+                    .padding(.top, VESSSpacing.xxs + 2)
+                if !isLast {
+                    Rectangle()
+                        .fill(VESSColor.borderStrong)
+                        .frame(width: 2)
+                        .frame(maxHeight: .infinity)
                 }
             }
-            .padding(VESSSpacing.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(isSelected ? VESSColor.tintLink : VESSColor.card, in: shape)
-            .overlay(shape.strokeBorder(isSelected ? VESSColor.strokeLink : VESSColor.divider, lineWidth: isSelected ? 1.5 : 1))
-            .contentShape(shape)
+            .frame(width: VESSSpacing.sm)
+            VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                title
+                    .vessTextStyle(.bodyMStrong)
+                    .foregroundStyle(VESSColor.text)
+                detail
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.bottom, isLast ? 0 : VESSSpacing.md)
+        }
+    }
+
+    /// The button, the renewal text and the links.
+    private var action: some View {
+        VStack(spacing: VESSSpacing.sm) {
+            Button(action: subscribe) {
+                if isSubscribed {
+                    Text("You have VESS+")
+                } else if hasTrial {
+                    Text("Start 7-day free trial")
+                } else if plan == .annual {
+                    Text("Subscribe · \(price(.annual)) a year")
+                } else {
+                    Text("Subscribe · \(price(.monthly)) a month")
+                }
+            }
+            .buttonStyle(.vessPrimary)
+            .disabled(isWorking || isSubscribed)
+            .accessibilityIdentifier("plus.subscribe")
+
+            if !isSubscribed {
+                Text(disclosure)
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let message {
+                Text(message)
+                    .vessTextStyle(.bodyS)
+                    .foregroundStyle(VESSColor.warningText)
+                    .multilineTextAlignment(.center)
+            }
+            links
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var disclosure: LocalizedStringResource {
+        if hasTrial {
+            return "Then \(price(.annual)) a year. Renews automatically until you cancel, at least 24 hours before the renewal date, in Settings › Apple Account › Subscriptions."
+        }
+        return plan == .annual
+            ? "\(price(.annual)) a year. Renews automatically until you cancel, at least 24 hours before the renewal date, in Settings › Apple Account › Subscriptions."
+            : "\(price(.monthly)) a month. Renews automatically until you cancel, at least 24 hours before the renewal date, in Settings › Apple Account › Subscriptions."
+    }
+
+    /// "Compare Free and VESS+ · Terms of Use · Privacy", centred; stacked
+    /// when they don't fit on one line.
+    private var links: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: VESSSpacing.md) { linkItems }
+            VStack(spacing: 0) { linkItems }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var linkItems: some View {
+        link("Compare Free and VESS+") { showCompare = true }
+            .accessibilityIdentifier("plus.compare")
+        if let url = Self.termsURL {
+            link("Terms of Use") { openURL(url) }
+        }
+        link("Privacy") { showPrivacy = true }
+        if isSubscribed {
+            link("Manage subscription") { showManage = true }
+        }
+    }
+
+    private func link(_ title: LocalizedStringResource, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .vessTextStyle(.caption)
+                .foregroundStyle(VESSColor.secondaryText)
+                .multilineTextAlignment(.center)
+                .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .accessibilityIdentifier("plus.plan.\(option.rawValue)")
     }
 
-    // MARK: Free vs VESS+
-
-    private struct Row: Identifiable {
-        let title: LocalizedStringResource
-        let free: String
-        let plus: String
-        var id: String { "\(title)" }
-    }
-
-    private var rows: [Row] {
-        [
-            Row(title: "AI Coach", free: String(localized: "3 a day"), plus: String(localized: "15 a day")),
-            Row(title: "Meal photo estimates", free: String(localized: "1 a day"), plus: String(localized: "10 a day")),
-            Row(title: "AI Chef recipes", free: String(localized: "1 a day"), plus: String(localized: "5 a day")),
-            Row(title: "Insights history", free: String(localized: "30 days"), plus: String(localized: "All")),
-            Row(title: "Health patterns", free: "—", plus: "✓"),
-        ]
-    }
-
-    private var comparison: some View {
-        VStack(alignment: .leading, spacing: VESSSpacing.xs) {
-            HStack {
-                Text("Free vs VESS+")
-                    .vessTextStyle(.labelCaps)
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer()
-                Text("Free").frame(minWidth: 64, alignment: .trailing)
-                Text("VESS+").frame(minWidth: 64, alignment: .trailing)
-            }
-            .vessTextStyle(.caption)
-            .foregroundStyle(VESSColor.tertiaryText)
-            VESSRowGroup {
-                ForEach(rows) { row in
-                    ViewThatFits(in: .horizontal) {
-                        HStack {
-                            Text(row.title).vessTextStyle(.bodyM).foregroundStyle(VESSColor.text)
-                            Spacer(minLength: VESSSpacing.sm)
-                            Text(verbatim: row.free).frame(minWidth: 64, alignment: .trailing).foregroundStyle(VESSColor.secondaryText)
-                            Text(verbatim: row.plus).frame(minWidth: 64, alignment: .trailing).foregroundStyle(VESSColor.text)
-                        }
-                        VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
-                            Text(row.title).vessTextStyle(.bodyM).foregroundStyle(VESSColor.text)
-                            Text("Free \(row.free) · VESS+ \(row.plus)").foregroundStyle(VESSColor.secondaryText)
-                        }
-                    }
-                    .vessTextStyle(.bodyM)
-                    .padding(.vertical, VESSSpacing.sm)
-                    .frame(minHeight: VESSSize.rowHeight)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text(row.title))
-                    .accessibilityValue(Text("Free: \(row.free). VESS+: \(row.plus)"))
-                }
-            }
-            .vessHairlineBottom()
-        }
-    }
-
-    // MARK: Required text
-
-    private var legal: some View {
-        VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            ActivityFootnote(text: Text("Payment is charged to your Apple Account when you confirm (after the free trial, for the annual plan). The subscription renews automatically at the same price unless you cancel at least 24 hours before the end of the period. Manage or cancel in Settings › Apple Account › Subscriptions."))
-            HStack(spacing: VESSSpacing.lg) {
-                if let url = Self.termsURL {
-                    Button("Terms of Use") { openURL(url) }
-                        .buttonStyle(.vessQuiet)
-                }
-                NavigationLink(value: ProfileRoute.privacy) {
-                    Text("Privacy Policy")
-                        .vessTextStyle(.bodyS)
-                        .foregroundStyle(VESSColor.accent)
-                        .padding(.vertical, VESSSpacing.sm)
-                        .frame(minWidth: VESSHitTarget.minimum, minHeight: VESSHitTarget.minimum)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-            HStack(spacing: VESSSpacing.lg) {
-                Button("Restore purchases", action: restore)
-                    .buttonStyle(.vessQuiet)
-                    .disabled(isWorking)
-                if isSubscribed {
-                    Button("Manage subscription") { showManage = true }
-                        .buttonStyle(.vessQuiet)
-                }
-            }
-        }
+    private func select(_ option: Plan) {
+        withAnimation(VESSMotion.selection) { plan = option }
     }
 
     // MARK: Prices
 
     private func price(_ option: Plan) -> String {
-        products[option.productID]?.displayPrice ?? option.fallbackPrice.formatted(.currency(code: "EUR"))
+        VESSFormat.groupThousands(products[option.productID]?.displayPrice ?? option.fallbackPrice.formatted(.currency(code: "EUR")))
     }
 
+    /// The price as shown: parsed from `displayPrice`, which StoreKit
+    /// formats for the storefront, so the badge and the per-month line
+    /// always agree with the big price.
     private func amount(_ option: Plan) -> Decimal {
-        products[option.productID]?.price ?? option.fallbackPrice
+        guard let product = products[option.productID] else { return option.fallbackPrice }
+        return (try? Decimal(product.displayPrice, format: product.priceFormatStyle)) ?? product.price
     }
 
     /// "4,17 €": the annual price over 12 months, in the product's currency.
@@ -251,6 +339,9 @@ struct VESSPlusView: View {
     private func load() async {
         if let loaded = try? await Product.products(for: Plan.allCases.map(\.productID)) {
             products = Dictionary(loaded.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        }
+        if let subscription = products[Plan.annual.productID]?.subscription {
+            trialEligible = await subscription.isEligibleForIntroOffer
         }
         await refreshEntitlement()
     }
@@ -277,6 +368,9 @@ struct VESSPlusView: View {
             do {
                 if case .success(let verification) = try await product.purchase(), case .verified(let transaction) = verification {
                     await transaction.finish()
+                    if transaction.offer?.type == .introductory {
+                        await reminders.scheduleTrialReminder(trialStartedAt: transaction.purchaseDate)
+                    }
                     await refreshEntitlement()
                 }
             } catch {
@@ -292,6 +386,80 @@ struct VESSPlusView: View {
             try? await AppStore.sync()
             await refreshEntitlement()
         }
+    }
+}
+
+/// "Compare Free and VESS+": the limits side by side.
+private struct VESSPlusComparison: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private struct Row: Identifiable {
+        let title: LocalizedStringResource
+        let free: String
+        let plus: String
+        var id: String { "\(title)" }
+    }
+
+    private var rows: [Row] {
+        [
+            Row(title: "AI Coach", free: String(localized: "3 a day"), plus: String(localized: "15 a day")),
+            Row(title: "Photo and menu estimates", free: String(localized: "1 a day"), plus: String(localized: "10 a day")),
+            Row(title: "AI Chef recipes", free: String(localized: "1 a day"), plus: String(localized: "5 a day")),
+            Row(title: "Insights history", free: String(localized: "30 days"), plus: String(localized: "All")),
+            Row(title: "Health patterns", free: "—", plus: "✓"),
+            Row(title: "Logging, recipes, pantry, grocery, Apple Health", free: "✓", plus: "✓"),
+        ]
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VESSSpacing.xs) {
+                    HStack {
+                        Spacer()
+                        Text("Free").frame(minWidth: 64, alignment: .trailing)
+                        Text("VESS+").frame(minWidth: 64, alignment: .trailing)
+                    }
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    VESSRowGroup {
+                        ForEach(rows) { row in
+                            ViewThatFits(in: .horizontal) {
+                                HStack {
+                                    Text(row.title).foregroundStyle(VESSColor.text)
+                                    Spacer(minLength: VESSSpacing.sm)
+                                    Text(verbatim: row.free).frame(minWidth: 64, alignment: .trailing).foregroundStyle(VESSColor.secondaryText)
+                                    Text(verbatim: row.plus).frame(minWidth: 64, alignment: .trailing).foregroundStyle(VESSColor.text)
+                                }
+                                VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
+                                    Text(row.title).foregroundStyle(VESSColor.text)
+                                    Text("Free \(row.free) · VESS+ \(row.plus)").foregroundStyle(VESSColor.secondaryText)
+                                }
+                            }
+                            .vessTextStyle(.bodyM)
+                            .padding(.vertical, VESSSpacing.sm)
+                            .frame(maxWidth: .infinity, minHeight: VESSSize.rowHeight, alignment: .leading)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(Text(row.title))
+                            .accessibilityValue(Text("Free: \(row.free). VESS+: \(row.plus)"))
+                        }
+                    }
+                    .vessHairlineBottom()
+                }
+                .padding(.horizontal, VESSSpacing.screenInset)
+                .vessContentTop(VESSSpacing.md)
+            }
+            .background(VESSColor.card)
+            .vessDetailTitle("Free and VESS+")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationCornerRadius(VESSRadius.sheet)
     }
 }
 #endif
