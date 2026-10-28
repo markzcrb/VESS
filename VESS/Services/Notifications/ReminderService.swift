@@ -62,15 +62,18 @@ final class ReminderService {
     /// P02's promise: on day 5 of the VESS+ trial, at 10:00, a reminder that
     /// it ends in two days. Only when reminders are already allowed (the
     /// paywall promises it only then); never asks.
-    func scheduleTrialReminder(trialStartedAt start: Date, quiet: QuietHours = .standard, calendar: Calendar = .current) async {
-        guard let center else { return }
+    /// Returns when the reminder is scheduled, or `nil` when it isn't (no
+    /// permission, already past, or the system refused it).
+    @discardableResult
+    func scheduleTrialReminder(trialStartedAt start: Date, quiet: QuietHours = .standard, calendar: Calendar = .current) async -> Date? {
+        guard let center else { return nil }
         await refreshAuthorization()
-        guard canRemind else { return }
+        guard canRemind else { return nil }
         let day5 = calendar.date(byAdding: .day, value: 5, to: calendar.startOfDay(for: start)) ?? start
         // 10:00, or when quiet hours end if they cover it.
-        guard let ten = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: day5) else { return }
+        guard let ten = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: day5) else { return nil }
         let date = quiet.firstAllowed(atOrAfter: ten, calendar: calendar)
-        guard date > AppClock.now else { return }
+        guard date > AppClock.now else { return nil }
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Your UMEVA+ trial ends in 2 days")
         content.body = String(localized: "Nothing to do if you'd like to keep it. To cancel: Settings › Apple Account › Subscriptions.")
@@ -78,8 +81,10 @@ final class ReminderService {
         do {
             try await center.add(UNNotificationRequest(identifier: Self.trialReminderID, content: content,
                                                        trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)))
+            return date
         } catch {
             logger.error("Scheduling the trial reminder failed: \(error.localizedDescription, privacy: .public)")
+            return nil
         }
     }
 

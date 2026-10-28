@@ -1,78 +1,69 @@
 import SwiftUI
 
-/// The first screen. Typographic by design: no photography is required.
-/// A licensed image named `WelcomeHero` in the asset catalog appears above
-/// the wordmark automatically.
+/// B02, the first screen, shown only before onboarding: silk, the
+/// wordmark, one editorial line, Get started (onboarding) and "I already
+/// use UMEVA" (sign in first), and the Terms and Privacy Policy links.
 struct WelcomeView: View {
     let onStart: () -> Void
+    let onSignIn: () -> Void
 
     var body: some View {
-        // Fills the screen as designed, and scrolls at large text sizes
-        // instead of truncating.
-        GeometryReader { proxy in
-            ScrollView {
-                content
-                    .frame(minHeight: proxy.size.height)
+        BrandScreenLayout {
+            UMEVAWordmark(width: UMEVAWordmark.headerWidth)
+                .foregroundStyle(VESSColor.text)
+                .padding(.top, VESSSpacing.xxl)
+        } bottom: {
+            VStack(alignment: .leading, spacing: VESSSpacing.xl) {
+                VStack(alignment: .leading, spacing: VESSSpacing.sm) {
+                    Text("Your body, in balance.")
+                        .vessTextStyle(.editorialL)
+                        .foregroundStyle(VESSColor.text)
+                        .accessibilityAddTraits(.isHeader)
+                    Text("Food, drinks, sleep and recovery in one calm place. Your log stays on this iPhone.")
+                        .vessTextStyle(.bodyM)
+                        .foregroundStyle(VESSColor.secondaryText)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+
+                VStack(spacing: VESSSpacing.xs) {
+                    Button("Get started", action: onStart)
+                        .buttonStyle(.vessPrimary)
+                        .accessibilityIdentifier("onboarding.getStarted")
+                    Button("I already use UMEVA", action: onSignIn)
+                        .buttonStyle(.brandText)
+                        .accessibilityIdentifier("onboarding.signIn")
+                }
+
+                Text(legalCaption)
+                    .vessTextStyle(.caption)
+                    .foregroundStyle(VESSColor.tertiaryText)
+                    .tint(VESSColor.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .scrollBounceBehavior(.basedOnSize)
         }
+        .background { BrandSilkBackground() }
     }
 
-    private var content: some View {
-        VStack(spacing: 0) {
-            if VESSBrandAssets.isAvailable(VESSBrandAssets.welcomeHero) {
-                Image(VESSBrandAssets.welcomeHero)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxHeight: 320)
-                    .clipShape(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
-                    .accessibilityHidden(true)
-                    .padding(.top, VESSSpacing.lg)
-            }
-
-            Spacer(minLength: VESSSpacing.huge)
-
-            VStack(spacing: VESSSpacing.lg) {
-                UMEVAWordmark(width: 150)
-                    .foregroundStyle(VESSColor.text)
-                Text("Your body. Better understood.")
-                    .font(.title3)
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: VESSSpacing.huge)
-
-            VStack(spacing: VESSSpacing.lg) {
-                // A single thin Vessel Line as the only ornament.
-                Capsule()
-                    .fill(VESSColor.brandSage)
-                    .frame(width: 32, height: 2)
-                    .accessibilityHidden(true)
-
-                Text("What you eat and drink, how you move, and what's at home, understood together.")
-                    .font(.body)
-                    .foregroundStyle(VESSColor.secondaryText)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Button("Get started") { onStart() }
-                    .buttonStyle(.vessPrimary)
-                    .accessibilityIdentifier("onboarding.getStarted")
-
-                Text("Your log stays on this iPhone.")
-                    .vessTextStyle(.label)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+    /// The sentence with its two links, which come from `LegalLinks`.
+    private var legalCaption: AttributedString {
+        var caption = AttributedString(localized: "By continuing you agree to the [Terms of Use](umeva:terms) and [Privacy Policy](umeva:privacy).")
+        for run in caption.runs {
+            guard let link = run.link else { continue }
+            caption[run.range].link = link.absoluteString == "umeva:terms" ? LegalLinks.terms : LegalLinks.privacyPolicy
+            caption[run.range].underlineStyle = .single
         }
-        .padding(.horizontal, VESSSpacing.screenInset)
-        .padding(.bottom, VESSSpacing.md)
+        return caption
     }
 }
 
-#Preview {
-    WelcomeView {}
-        .background(VESSColor.background)
+#Preview("B02 Light") {
+    WelcomeView(onStart: {}, onSignIn: {})
+        .preferredColorScheme(.light)
+}
+
+#Preview("B02 Dark") {
+    WelcomeView(onStart: {}, onSignIn: {})
+        .preferredColorScheme(.dark)
 }

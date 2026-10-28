@@ -47,6 +47,8 @@ final class HealthDataStore {
 
     /// Apple Health exists on this device and there is a reader.
     var canConnect: Bool { service?.isAvailable == true }
+    /// The user has been through the permission sheet (B03 hides Connect).
+    var hasConnected: Bool { didRequestAccess }
 
     /// "Connect Apple Health": the system sheet, then a first read.
     func connect(stepsTarget: Int) async {

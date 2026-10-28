@@ -5,6 +5,8 @@ import SwiftUI
 /// first log (S1), syncing with Apple Health (S2), full day (I09).
 struct TodayView: View {
     @Binding var selectedTab: AppTab
+    /// Bumped by `VESSOpenCoachAction`: opens Coach.
+    var coachRequests = 0
 
     @Environment(LocalStore.self) private var store
     @Environment(HealthDataStore.self) private var health
@@ -181,6 +183,7 @@ struct TodayView: View {
         .navigationDestination(isPresented: $showCoach) {
             CoachView()
         }
+        .onChange(of: coachRequests) { showCoach = true }
         .safeAreaInset(edge: .bottom) {
             if health.state == .syncing {
                 TodaySyncingLabel()

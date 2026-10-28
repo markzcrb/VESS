@@ -22,6 +22,8 @@ struct AppRootView: View {
     @State private var isOpening: Bool
     /// B01, until the store is ready. DEBUG in-memory stores skip it.
     @State private var showsSplash: Bool
+    /// B03, once, between the last onboarding answer and Today.
+    @State private var showsAllSet = false
 
     init() {
         // DEBUG flags build an in-memory store at once (captures, UI tests);
@@ -31,6 +33,10 @@ struct AppRootView: View {
         _lookup = State(initialValue: store.map { Self.makeLookup(store: $0) })
         _isOpening = State(initialValue: store == nil)
         _showsSplash = State(initialValue: store == nil)
+        #if DEBUG
+        // Captures: B03 over a seeded profile.
+        _showsAllSet = State(initialValue: ProcessInfo.processInfo.arguments.contains("-captureAllSet"))
+        #endif
         if store != nil { LaunchTiming.mark("store") }
     }
 
@@ -39,8 +45,19 @@ struct AppRootView: View {
             if let store, let lookup {
                 Group {
                     if store.profile == nil {
-                        OnboardingFlow()
+                        OnboardingFlow { showsAllSet = true }
                             .transition(.opacity)
+                    } else if showsAllSet, let profile = store.profile {
+                        AllSetView(profile: profile,
+                                   showsConnectHealth: health.canConnect && !health.hasConnected,
+                                   onOpenToday: closeAllSet,
+                                   onConnectHealth: {
+                                       Task {
+                                           await health.connect(stepsTarget: profile.dailyStepsTarget)
+                                           closeAllSet()
+                                       }
+                                   })
+                        .transition(.opacity)
                     } else {
                         RootTabView()
                             .transition(.opacity)
@@ -63,6 +80,15 @@ struct AppRootView: View {
                 .task { await VESSPlusTrial.watch(reminders) }
                 #endif
                 .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: store.profile == nil)
+                .animation(reduceMotion ? VESSMotion.reducedCrossfade : .default, value: showsAllSet)
+                #if DEBUG
+                // Captures: B04 as after a trial purchase.
+                .fullScreenCover(isPresented: .constant(ProcessInfo.processInfo.arguments.contains("-capturePlusWelcome"))) {
+                    PlusWelcomeView(welcome: PlusWelcome(id: 0, isTrial: true, endsAt: AppClock.now.addingTimeInterval(7 * 86_400),
+                                                         willAutoRenew: true, reminderAt: AppClock.now.addingTimeInterval(5 * 86_400)),
+                                    onAskCoach: {}, onDone: {})
+                }
+                #endif
                 // One success tap for every log, wherever it came from.
                 .vessHaptic(.success, trigger: foodUndo.loggedCount)
             } else if isOpening {
@@ -111,6 +137,10 @@ struct AppRootView: View {
     /// - `-seedProfileOnly`: a profile with history but nothing logged today (S1).
     /// - `-seedSampleData`: start with clearly labeled sample data, in memory,
     ///   never written to the real store.
+    private func closeAllSet() {
+        showsAllSet = false
+    }
+
     private func refreshOnActive() {
         guard let store, let profile = store.profile else { return }
         Task {

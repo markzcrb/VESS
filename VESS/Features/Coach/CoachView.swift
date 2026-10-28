@@ -635,6 +635,8 @@ struct CoachContextView: View {
 
 /// Coach and photos ask for an account in place; closes once signed in.
 struct AISignInSheet: View {
+    var title: LocalizedStringResource = "An account for AI features."
+    var text: LocalizedStringResource = "Only for Coach, photo estimates and AI Chef. Your log stays on this iPhone."
     @Environment(AccountStore.self) private var account
     @Environment(\.dismiss) private var dismiss
 
@@ -642,7 +644,7 @@ struct AISignInSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                    ProfileIntro(title: "An account for AI features.", text: "Only for Coach, photo estimates and AI Chef. Your log stays on this iPhone.")
+                    ProfileIntro(title: title, text: text)
                     AccountSignInForm()
                 }
                 .padding(VESSSpacing.screenInset)

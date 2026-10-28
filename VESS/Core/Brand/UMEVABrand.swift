@@ -65,6 +65,9 @@ nonisolated enum UMEVABrandGeometry {
 /// The wordmark at a given width (its height follows, 592 : 100). Read as
 /// "UMEVA" by VoiceOver.
 struct UMEVAWordmark: View {
+    /// At the top of the brand screens (B02, B04).
+    static let headerWidth: CGFloat = 122
+
     var width: CGFloat = 150
 
     var body: some View {

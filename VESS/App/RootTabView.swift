@@ -28,6 +28,8 @@ struct RootTabView: View {
     @State private var didPrewarm = false
     /// Counts re-selections per tab: each scrolls that tab to the top.
     @State private var reselects: [AppTab: Int] = [:]
+    /// Counts requests to open Coach from elsewhere (B04); Today opens it.
+    @State private var coachRequests = 0
 
     private let calendar = Calendar.current
 
@@ -36,7 +38,7 @@ struct RootTabView: View {
         let _ = addTaps
         TabView(selection: tabSelection) {
             Tab(value: .today) {
-                TodayView(selectedTab: $selection)
+                TodayView(selectedTab: $selection, coachRequests: coachRequests)
                     .vessFoodUndoToast()
                     .environment(\.vessTabReselect, reselects[.today, default: 0])
             } label: {
@@ -74,6 +76,10 @@ struct RootTabView: View {
         // Entry points elsewhere open the same sheet on their type.
         .environment(\.vessOpenAdd, VESSOpenAddAction { type in
             requestAdd(type)
+        })
+        .environment(\.vessOpenCoach, VESSOpenCoachAction {
+            selection = .today
+            coachRequests += 1
         })
         .sheet(item: Binding(
             get: { addRequest },
@@ -210,6 +216,20 @@ struct RootTabView: View {
         .preferredColorScheme(.light)
 }
 #endif
+
+/// Opens Coach on Today from anywhere (B04's "Ask Coach something"). Set by
+/// `RootTabView`; call it like a function, `openCoach()`.
+struct VESSOpenCoachAction {
+    let handler: () -> Void
+
+    func callAsFunction() { handler() }
+
+    static let none = VESSOpenCoachAction {}
+}
+
+extension EnvironmentValues {
+    @Entry var vessOpenCoach: VESSOpenCoachAction = .none
+}
 
 /// DEBUG: how long the first "+" takes, tap to the sheet's content on
 /// screen. Console: subsystem "VESS", category "Timing".

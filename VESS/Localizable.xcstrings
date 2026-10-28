@@ -845,6 +845,9 @@
     "%lld" : {
 
     },
+    "%lld AI Chef recipes a day" : {
+
+    },
     "%lld aren't %@" : {
       "localizations" : {
         "en" : {
@@ -877,6 +880,9 @@
           }
         }
       }
+    },
+    "%lld Coach questions a day, with charts" : {
+
     },
     "%lld cup" : {
       "comment" : "A whole count of cups, such as 1 cup or 2 cups.",
@@ -1155,6 +1161,9 @@
 
     },
     "%lld percent of target" : {
+
+    },
+    "%lld photo and menu estimates a day" : {
 
     },
     "%lld piece" : {
@@ -1937,7 +1946,13 @@
     "All done today" : {
 
     },
+    "All insights and Health patterns" : {
+
+    },
     "All main meals" : {
+
+    },
+    "All set" : {
 
     },
     "Allergies and intolerances · never shown" : {
@@ -2057,6 +2072,9 @@
 
     },
     "Ask Coach" : {
+
+    },
+    "Ask Coach something" : {
 
     },
     "Ask the staff about" : {
@@ -2223,6 +2241,9 @@
         }
       }
     },
+    "By continuing you agree to the [Terms of Use](umeva:terms) and [Privacy Policy](umeva:privacy)." : {
+
+    },
     "caffeine" : {
 
     },
@@ -2302,6 +2323,9 @@
 
     },
     "Change ingredient" : {
+
+    },
+    "Change them anytime in You › Goals." : {
 
     },
     "Change, or delete" : {
@@ -2428,6 +2452,9 @@
 
     },
     "Connect Apple Health" : {
+
+    },
+    "Connect Apple Health first" : {
 
     },
     "Connect Apple Health to see steps and recorded workouts here and on Today. Until then, only workouts you enter appear." : {
@@ -2992,6 +3019,28 @@
     "Everything is in your pantry" : {
 
     },
+    "Everything is unlocked until %@." : {
+
+    },
+    "Everything is unlocked." : {
+
+    },
+    "Everything is unlocked. It renews on %@." : {
+
+    },
+    "Everything is unlocked. Your free week runs until %@; we'll remind you on %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Everything is unlocked. Your free week runs until %1$@; we'll remind you on %2$@."
+          }
+        }
+      }
+    },
+    "Everything is unlocked. Your free week runs until %@." : {
+
+    },
     "Everything stored on this iPhone, as a JSON file" : {
 
     },
@@ -3140,6 +3189,9 @@
 
     },
     "Food waste" : {
+
+    },
+    "Food, drinks, sleep and recovery in one calm place. Your log stays on this iPhone." : {
 
     },
     "Foods from the built-in list show typical values. Products from Open Food Facts are community data, and UMEVA says so. What you enter yourself is used as you entered it." : {
@@ -3579,6 +3631,9 @@
 
     },
     "I already have it" : {
+
+    },
+    "I already use UMEVA" : {
 
     },
     "Icon" : {
@@ -4039,6 +4094,9 @@
 
     },
     "Male" : {
+
+    },
+    "Manage or cancel any time in Settings." : {
 
     },
     "Manual entry" : {
@@ -4712,6 +4770,9 @@
     "Open Settings" : {
 
     },
+    "Open Today" : {
+
+    },
     "Opens Nutrition" : {
 
     },
@@ -4722,6 +4783,9 @@
 
     },
     "Opens the month" : {
+
+    },
+    "Opens your subscriptions" : {
 
     },
     "Optimal" : {
@@ -5396,6 +5460,9 @@
 
     },
     "Signed in" : {
+
+    },
+    "Signing in brings back Coach, photo estimates and AI Chef. UMEVA+ comes back with your Apple Account. Your log is never stored in your account, so a few questions set things up here." : {
 
     },
     "Signing in didn't work. Try again." : {
@@ -6076,6 +6143,61 @@
     "Typical values: about %@ kcal, counted in your energy." : {
 
     },
+    "UMEVA %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "UMEVA %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "UMEVA can use what Apple Health already knows, so you log less." : {
+
+    },
+    "UMEVA couldn't open your data on this iPhone. Your data hasn't been changed." : {
+
+    },
+    "UMEVA data export" : {
+
+    },
+    "UMEVA doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy." : {
+
+    },
+    "UMEVA doesn't guess your steps." : {
+
+    },
+    "UMEVA doesn't store it. %@ processes it under its API terms." : {
+
+    },
+    "UMEVA never estimates steps." : {
+
+    },
+    "UMEVA never estimates steps. Without Apple Health, steps show —." : {
+
+    },
+    "UMEVA reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health." : {
+
+    },
+    "UMEVA reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach." : {
+
+    },
+    "UMEVA records the dose you choose. It doesn't recommend supplements or doses." : {
+
+    },
+    "UMEVA shapes your daily targets from these. It never changes them without asking." : {
+
+    },
+    "UMEVA will bring these forward. Choose any." : {
+
+    },
+    "UMEVA+ · Active" : {
+
+    },
+    "UMEVA+ · Trial active" : {
+
+    },
     "Under 20 min" : {
 
     },
@@ -6231,55 +6353,6 @@
     "Very active" : {
 
     },
-    "UMEVA %@ (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "UMEVA %1$@ (%2$@)"
-          }
-        }
-      }
-    },
-    "UMEVA can use what Apple Health already knows, so you log less." : {
-
-    },
-    "UMEVA couldn't open your data on this iPhone. Your data hasn't been changed." : {
-
-    },
-    "UMEVA data export" : {
-
-    },
-    "UMEVA doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy." : {
-
-    },
-    "UMEVA doesn't guess your steps." : {
-
-    },
-    "UMEVA doesn't store it. %@ processes it under its API terms." : {
-
-    },
-    "UMEVA never estimates steps." : {
-
-    },
-    "UMEVA never estimates steps. Without Apple Health, steps show —." : {
-
-    },
-    "UMEVA reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health." : {
-
-    },
-    "UMEVA reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach." : {
-
-    },
-    "UMEVA records the dose you choose. It doesn't recommend supplements or doses." : {
-
-    },
-    "UMEVA shapes your daily targets from these. It never changes them without asking." : {
-
-    },
-    "UMEVA will bring these forward. Choose any." : {
-
-    },
     "View or correct this product on Open Food Facts" : {
 
     },
@@ -6371,6 +6444,18 @@
     "Welcome" : {
 
     },
+    "Welcome back." : {
+
+    },
+    "Welcome to UMEVA+." : {
+
+    },
+    "Welcome, %@." : {
+
+    },
+    "Welcome." : {
+
+    },
     "What brings you to UMEVA?" : {
 
     },
@@ -6399,9 +6484,6 @@
 
     },
     "What stays here" : {
-
-    },
-    "What you eat and drink, how you move, and what's at home, understood together." : {
 
     },
     "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105 %." : {
@@ -6550,13 +6632,16 @@
     "Your body signals look close to your baseline." : {
 
     },
-    "Your body. Better understood." : {
+    "Your body, in balance." : {
 
     },
     "Your calorie, protein, carb and fat targets change. Water and steps stay as they are." : {
 
     },
     "Your change wasn't saved. Please try again." : {
+
+    },
+    "Your daily targets are ready. They're a starting point, not a rule." : {
 
     },
     "Your data stays yours." : {
@@ -6575,9 +6660,6 @@
 
     },
     "Your kitchen." : {
-
-    },
-    "Your log stays on this iPhone." : {
 
     },
     "Your log, profile and history stay on this iPhone." : {
@@ -6628,13 +6710,13 @@
     "Your rings" : {
 
     },
+    "Your UMEVA+ trial ends in 2 days" : {
+
+    },
     "Your usual is the middle value of the 28 nights before. The ring fills toward your sleep target." : {
 
     },
     "Your values" : {
-
-    },
-    "Your UMEVA+ trial ends in 2 days" : {
 
     },
     "Your week fills in as you go." : {

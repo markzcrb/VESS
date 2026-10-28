@@ -1,9 +1,13 @@
 import SwiftUI
 
-/// Progressive onboarding: a welcome screen, then one question per screen.
-/// Finishing saves the profile, and the app moves to Today.
+/// Progressive onboarding: B02, then one question per screen. "I already
+/// use UMEVA" signs in first (the log itself is only ever on the iPhone, so
+/// the account brings back AI features; UMEVA+ comes from the App Store).
+/// Finishing saves the profile; `onFinish` runs first, so the app shows B03.
 struct OnboardingFlow: View {
+    var onFinish: () -> Void = {}
     @Environment(LocalStore.self) private var store
+    @Environment(AccountStore.self) private var account
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var draft = OnboardingDraft()
@@ -11,18 +15,26 @@ struct OnboardingFlow: View {
     @State private var isMovingForward = true
     @State private var showError = false
     @State private var pendingHealthPreference: Bool?
+    @State private var showSignIn = false
 
     var body: some View {
         ZStack {
             VESSColor.background.ignoresSafeArea()
 
             if step == .welcome {
-                WelcomeView { go(to: .goal) }
+                WelcomeView(onStart: { go(to: .goal) }, onSignIn: signIn)
                     .transition(.opacity)
             } else {
                 questionScreen
                     .transition(.opacity)
             }
+        }
+        .sheet(isPresented: $showSignIn) {
+            // Signed in: on to the questions the account can't answer.
+            if account.isSignedIn { go(to: .goal) }
+        } content: {
+            AISignInSheet(title: "Welcome back.",
+                          text: "Signing in brings back Coach, photo estimates and AI Chef. UMEVA+ comes back with your Apple Account. Your log is never stored in your account, so a few questions set things up here.")
         }
         .vessErrorAlert(isPresented: $showError) {
             if let pendingHealthPreference { finish(prefersAppleHealth: pendingHealthPreference) }
@@ -166,6 +178,14 @@ struct OnboardingFlow: View {
         }
     }
 
+    private func signIn() {
+        if account.isSignedIn {
+            go(to: .goal)
+        } else {
+            showSignIn = true
+        }
+    }
+
     private func finish(prefersAppleHealth: Bool) {
         pendingHealthPreference = prefersAppleHealth
         guard let profile = draft.makeProfile(prefersAppleHealth: prefersAppleHealth, now: .now, calendar: .current) else {
@@ -176,6 +196,7 @@ struct OnboardingFlow: View {
             return
         }
         do {
+            onFinish()
             try store.saveProfile(profile)
         } catch {
             showError = true
@@ -203,5 +224,6 @@ private extension OnboardingStep {
 #Preview("Onboarding") {
     OnboardingFlow()
         .environment(LocalStore.preview(.empty))
+        .environment(AccountStore.make())
 }
 #endif

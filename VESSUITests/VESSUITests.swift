@@ -60,6 +60,11 @@ final class VESSUITests: XCTestCase {
         // Apple Health: choosing "Not now" finishes without any permission prompt.
         tapWhenReady(app.buttons["onboarding.notNow"])
 
+        // B03: the targets that were set, once, then Today.
+        XCTAssertTrue(app.staticTexts["Welcome, Mark."].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Energy"].exists)
+        tapWhenReady(app.buttons["allSet.openToday"])
+
         let dayWord = app.staticTexts["today.dayWord"]
         XCTAssertTrue(dayWord.waitForExistence(timeout: 5))
         XCTAssertEqual(dayWord.label, "Nothing logged yet today.")

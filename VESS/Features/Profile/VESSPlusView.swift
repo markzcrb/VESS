@@ -40,7 +40,10 @@ struct VESSPlusView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(ReminderService.self) private var reminders
     @Environment(LocalStore.self) private var store
+    @Environment(\.vessOpenCoach) private var openCoach
     @State private var plan: Plan = .annual
+    /// B04, after a verified purchase (never after Restore).
+    @State private var welcome: PlusWelcome?
     @State private var products: [String: Product] = [:]
     /// Whether the annual trial can still be offered (StoreKit says).
     @State private var trialEligible = true
@@ -58,7 +61,7 @@ struct VESSPlusView: View {
     @State private var hasScrolled = false
 
     /// Apple's standard licence agreement (Terms of Use).
-    private static let termsURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")
+    private static let termsURL = LegalLinks.appleEULA
 
     private var hasTrial: Bool { plan == .annual && trialEligible }
     private var pinsButton: Bool {
@@ -124,6 +127,12 @@ struct VESSPlusView: View {
             .sheet(isPresented: $showCompare) { VESSPlusComparison() }
             .manageSubscriptionsSheet(isPresented: $showManage)
         }
+        .fullScreenCover(item: $welcome) { welcome in
+            PlusWelcomeView(welcome: welcome, onAskCoach: {
+                openCoach()
+                dismiss()
+            }, onDone: { dismiss() })
+        }
         .task {
             await reminders.refreshAuthorization()
             await load()
@@ -151,12 +160,13 @@ struct VESSPlusView: View {
 
     private var features: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.md) {
+            let plus = UMEVAPlusLimits.plus
             VESSFeatureRow(systemImage: "bubble.left", title: Text("AI Coach"),
-                           detail: Text("15 questions a day, with charts from your own data"))
+                           detail: Text("\(plus.coachQuestions) questions a day, with charts from your own data"))
             VESSFeatureRow(systemImage: "camera", title: Text("Photo and menu estimates"),
-                           detail: Text("10 a day: your plate or a restaurant menu"))
+                           detail: Text("\(plus.photoEstimates) a day: your plate or a restaurant menu"))
             VESSFeatureRow(systemImage: "fork.knife", title: Text("AI Chef"),
-                           detail: Text("5 recipes a day from what's in your pantry"))
+                           detail: Text("\(plus.chefRecipes) recipes a day from what's in your pantry"))
             VESSFeatureRow(systemImage: "chart.bar", title: Text("Insights and Health patterns"),
                            detail: Text("All history, plus sleep, stress and heart patterns"))
         }
@@ -374,16 +384,33 @@ struct VESSPlusView: View {
             do {
                 if case .success(let verification) = try await product.purchase(), case .verified(let transaction) = verification {
                     await transaction.finish()
-                    if transaction.offer?.type == .introductory {
-                        await reminders.scheduleTrialReminder(trialStartedAt: transaction.purchaseDate,
-                                                             quiet: store.profile?.quietHours ?? .standard)
+                    let isTrial = transaction.offer?.type == .introductory
+                    var reminderAt: Date?
+                    if isTrial {
+                        reminderAt = await reminders.scheduleTrialReminder(trialStartedAt: transaction.purchaseDate,
+                                                                           quiet: store.profile?.quietHours ?? .standard)
                     }
                     await refreshEntitlement()
+                    if PlusWelcomeLedger().claim(transaction.originalID) {
+                        welcome = PlusWelcome(id: transaction.originalID, isTrial: isTrial, endsAt: transaction.expirationDate,
+                                              willAutoRenew: await willAutoRenew(product), reminderAt: reminderAt)
+                    }
                 }
             } catch {
                 message = String(localized: "The purchase didn't go through. Nothing was charged.")
             }
         }
+    }
+
+    /// From the renewal info; true when StoreKit can't say.
+    private func willAutoRenew(_ product: Product) async -> Bool {
+        guard let statuses = try? await product.subscription?.status else { return true }
+        for status in statuses {
+            if case .verified(let renewal) = status.renewalInfo, renewal.currentProductID == product.id {
+                return renewal.willAutoRenew
+            }
+        }
+        return true
     }
 
     private func restore() {
@@ -438,13 +465,17 @@ private struct VESSPlusComparison: View {
 
     private var rows: [Row] {
         [
-            Row(title: "AI Coach", free: String(localized: "3 a day"), plus: String(localized: "15 a day")),
-            Row(title: "Photo and menu estimates", free: String(localized: "1 a day"), plus: String(localized: "10 a day")),
-            Row(title: "AI Chef recipes", free: String(localized: "1 a day"), plus: String(localized: "5 a day")),
-            Row(title: "Insights history", free: String(localized: "30 days"), plus: String(localized: "All")),
+            Row(title: "AI Coach", free: perDay(\.coachQuestions, UMEVAPlusLimits.free), plus: perDay(\.coachQuestions, UMEVAPlusLimits.plus)),
+            Row(title: "Photo and menu estimates", free: perDay(\.photoEstimates, UMEVAPlusLimits.free), plus: perDay(\.photoEstimates, UMEVAPlusLimits.plus)),
+            Row(title: "AI Chef recipes", free: perDay(\.chefRecipes, UMEVAPlusLimits.free), plus: perDay(\.chefRecipes, UMEVAPlusLimits.plus)),
+            Row(title: "Insights history", free: String(localized: "\(UMEVAPlusLimits.freeInsightsDays) days"), plus: String(localized: "All")),
             Row(title: "Health patterns", free: "—", plus: "✓"),
             Row(title: "Logging, recipes, pantry, grocery, Apple Health", free: "✓", plus: "✓"),
         ]
+    }
+
+    private func perDay(_ limit: KeyPath<UMEVAPlusLimits.Tier, Int>, _ tier: UMEVAPlusLimits.Tier) -> String {
+        String(localized: "\(tier[keyPath: limit]) a day")
     }
 
     var body: some View {
