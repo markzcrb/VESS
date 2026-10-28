@@ -459,11 +459,11 @@ struct CycleInfoSheet: View {
     }
 
     private static let paragraphs: [LocalizedStringResource] = [
-        "A cycle runs from the first day of one period to the first day of the next. VESS uses your last six completed cycles.",
+        "A cycle runs from the first day of one period to the first day of the next. UMEVA uses your last six completed cycles.",
         "The window runs from your shortest to your longest of those cycles. It says when they vary by more than a week.",
         "Log three period starts to see an estimate: that's two completed cycles.",
         "Cycles shorter than 15 or longer than 60 days are left out, as they usually mean a period wasn't logged. If every cycle is left out, there's no estimate yet.",
-        "VESS doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy.",
+        "UMEVA doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy.",
     ]
 }
 

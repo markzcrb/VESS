@@ -216,7 +216,7 @@ struct RootTabView: View {
 enum AddSheetTiming {
     #if DEBUG
     private static var tapDate: Date?
-    private static let logger = Logger(subsystem: "VESS", category: "Timing")
+    private static let logger = Logger(subsystem: AppLog.subsystem, category: "Timing")
     #endif
 
     static func tapped() {

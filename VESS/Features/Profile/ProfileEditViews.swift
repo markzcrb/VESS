@@ -23,7 +23,7 @@ struct GoalsView: View {
             let suggested = Self.suggestedTargets(for: profile)
 
             ProfilePage(title: "Goals") {
-                ProfileIntro(title: "A guide, not a grade.", text: "VESS shapes your daily targets from these. It never changes them without asking.")
+                ProfileIntro(title: "A guide, not a grade.", text: "UMEVA shapes your daily targets from these. It never changes them without asking.")
 
                 VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                     VESSSectionHeader(title: "Direction")
@@ -52,7 +52,7 @@ struct GoalsView: View {
 
                 if let suggested, suggested != targets {
                     VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-                        Text("From your body and direction, VESS would suggest \(VESSFormat.calories(suggested.calories))\u{00A0}kcal, \(VESSFormat.grams(suggested.proteinGrams))\u{00A0}g protein, \(VESSFormat.grams(suggested.carbohydrateGrams))\u{00A0}g carbs and \(VESSFormat.grams(suggested.fatGrams))\u{00A0}g fat.")
+                        Text("From your body and direction, UMEVA would suggest \(VESSFormat.calories(suggested.calories))\u{00A0}kcal, \(VESSFormat.grams(suggested.proteinGrams))\u{00A0}g protein, \(VESSFormat.grams(suggested.carbohydrateGrams))\u{00A0}g carbs and \(VESSFormat.grams(suggested.fatGrams))\u{00A0}g fat.")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
@@ -254,7 +254,7 @@ struct BodyView: View {
                 ActivityFootnote(text: healthWeight == nil
                     ? Text("Body settings help estimate your needs. Changing them doesn't change your targets; Goals shows a suggestion you can use.")
                     : Text("Body settings help estimate your needs. Weight, waist and body fat are read from Apple Health. Changing these doesn't change your targets; Goals shows a suggestion you can use."))
-                ActivityFootnote(text: Text("Adults only. BMI isn't shown for under-18s or during pregnancy, and VESS never sets goals from BMI alone."))
+                ActivityFootnote(text: Text("Adults only. BMI isn't shown for under-18s or during pregnancy, and UMEVA never sets goals from BMI alone."))
             }
             .toolbar {
                 // Only with the BMI section it explains.
@@ -267,7 +267,7 @@ struct BodyView: View {
             .sheet(isPresented: $showInfo) {
                 HealthInfoSheet(title: "About BMI", notes: [
                     "BMI is your weight in kilograms divided by your height in metres, squared. The ranges are the WHO's adult ranges.",
-                    "It's a rough guide: it doesn't tell muscle from fat. VESS shows it only to adults, never during pregnancy, and never sets goals from it alone.",
+                    "It's a rough guide: it doesn't tell muscle from fat. UMEVA shows it only to adults, never during pregnancy, and never sets goals from it alone.",
                     "When Apple Health has a weight newer than the one in your profile, that weight is used.",
                 ])
             }

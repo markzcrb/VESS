@@ -93,7 +93,7 @@ struct BarcodeScannerView: View {
         case .reading: "Barcode detected"
         case .notFound: "No product found"
         case .failed: "Couldn't look it up"
-        case .cameraDenied: "The camera is off for VESS"
+        case .cameraDenied: "The camera is off for UMEVA"
         case .unsupported: "Scanning isn't available here"
         }
     }

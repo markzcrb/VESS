@@ -406,7 +406,7 @@ struct EnergyInfoSheet: View {
                         .foregroundStyle(VESSColor.text)
                     item("Energy vs. target", "What you've logged as a share of your daily target. The level compares it with the share expected by this time of day: optimal within 90–105\u{00A0}%.")
                     item("Meal regularity", "How close today's meals are to your usual times, from the last 14 days. A meal at its usual time scores 100\u{00A0}%; two hours away or more scores 0\u{00A0}%.")
-                    item("Before noon", "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat.")
+                    item("Before noon", "The share of today's energy you logged before 12:00. It has no level: UMEVA doesn't judge when you eat.")
                     item("Last 7 days", "The average covers days with at least one meal logged, not counting today, and needs three of them.")
                     Text("Everything here comes from what you log. It describes your logging, not your health.")
                         .vessTextStyle(.bodyS)

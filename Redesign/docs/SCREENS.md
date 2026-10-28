@@ -1,4 +1,4 @@
-# VESS screen map
+# UMEVA screen map
 
 All references are in `Design/screens/` at @2x, 402 pt wide. "Tab" = which tab bar item is active (— means a pushed detail with no tab bar).
 Build order: **Core → Add/logging → Plan → Grocery/Pantry → Activity → Profile → States → Accessibility → Light**.
@@ -29,7 +29,7 @@ Build order: **Core → Add/logging → Plan → Grocery/Pantry → Activity →
 | S1-today-first-log | Today, nothing logged (ring empty, values "—", "Log a meal") |
 | S2-today-loading | Today skeleton ("Syncing with Apple Health…") |
 | S3-insights-not-enough-data | Insights: 12/30 days ring, ghost rows at 28 % opacity, tagging list |
-| S4-activity-no-health | Activity without Apple Health ("VESS doesn't guess your steps.") |
+| S4-activity-no-health | Activity without Apple Health ("UMEVA doesn't guess your steps.") |
 
 ## A · Plan
 A01 week (full) · A02 add meal to Thu dinner · A03 planned meal detail · A04 tonight → log from plan · A05 move meal (sheet) · A06 suggest loading · A07 suggest results · A08 suggest error · A09 next week empty · A10 last week logged.
@@ -45,7 +45,7 @@ C01 overview ("use soon" first, grouped Fridge / Freezer / Cupboard / Counter) �
 D01 steps hour by hour · D02 workout detail (Recorded) · D03 add workout (type, duration, effort, when → "≈ 150 kcal · estimate") · D04 history · D05 statistics · D06 syncing · D07 sync error (keeps last known 6,420 steps / 412 kcal from 16:20, Retry).
 
 ## E · Profile destinations (grouped settings lists)
-E01 goals · E02 body · E03 nutrition preferences (Pescatarian ✓, avoid Nuts ✓) · E04 supplements · E05 Apple Health (read/write toggles) · E06 notifications · E07 privacy · E08 VESS+ (€39.99/year) · E09 settings (appearance System/Light/Dark) · E10 help.
+E01 goals · E02 body · E03 nutrition preferences (Pescatarian ✓, avoid Nuts ✓) · E04 supplements · E05 Apple Health (read/write toggles) · E06 notifications · E07 privacy · E08 UMEVA+ (€39.99/year) · E09 settings (appearance System/Light/Dark) · E10 help.
 
 ## F · Barcode
 F01 scanner · F02 detected/reading · F03 product found (sheet) · F04 product detail (label values only) · F05 not found → Add manually · F06 camera denied → Open Settings / type number.

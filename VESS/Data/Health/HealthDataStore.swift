@@ -21,7 +21,7 @@ final class HealthDataStore {
     private var didRequestAccess: Bool
     /// Off for demo stores, so a demo never marks the real app as connected.
     private let remembersAccess: Bool
-    private let logger = Logger(subsystem: "VESS", category: "Health")
+    private let logger = Logger(subsystem: AppLog.subsystem, category: "Health")
     /// Asked for newly added types this launch already.
     private var didAskForNewTypes = false
 

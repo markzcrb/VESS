@@ -1,4 +1,4 @@
-# VESS · Discover recipes (v3, with nutrition)
+# UMEVA · Discover recipes (v3, with nutrition)
 
 122 original recipes for Discover. The full data the app ships (amounts, steps, sources) is `Redesign/Data/recipes.json`; this file is the readable overview.
 

@@ -27,7 +27,7 @@ final class RecipeCatalog {
         do {
             recipes = try await Task.detached(priority: .utility) { try Self.bundled(per100: table) }.value
         } catch {
-            Logger(subsystem: "VESS", category: "Recipes").fault("Reading recipes.json failed: \(error.localizedDescription, privacy: .public)")
+            Logger(subsystem: AppLog.subsystem, category: "Recipes").fault("Reading recipes.json failed: \(error.localizedDescription, privacy: .public)")
         }
         isLoaded = true
     }

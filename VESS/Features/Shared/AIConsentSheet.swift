@@ -24,8 +24,8 @@ struct AIConsentSheet: View {
 
                     VESSRowGroup {
                         fact("What is sent", sent)
-                        fact("To whom", Text("\(AIProcessor.displayName), through VESS's server."))
-                        fact("Kept?", Text("VESS doesn't store it. \(AIProcessor.company) processes it under its API terms."))
+                        fact("To whom", Text("\(AIProcessor.displayName), through UMEVA's server."))
+                        fact("Kept?", Text("UMEVA doesn't store it. \(AIProcessor.company) processes it under its API terms."))
                         fact("What stays here", Text("Your log, profile and history stay on this iPhone."))
                     }
                     .vessHairlineBottom()

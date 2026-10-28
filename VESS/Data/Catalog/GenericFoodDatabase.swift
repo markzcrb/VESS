@@ -43,7 +43,7 @@ final class GenericFoodDatabase {
         do {
             index = try await Task.detached(priority: .userInitiated) { GenericFoodIndex(foods: try Self.bundled()) }.value
         } catch {
-            Logger(subsystem: "VESS", category: "Foods").fault("Reading usda-sr-legacy.json failed: \(error.localizedDescription, privacy: .public)")
+            Logger(subsystem: AppLog.subsystem, category: "Foods").fault("Reading usda-sr-legacy.json failed: \(error.localizedDescription, privacy: .public)")
         }
         isLoaded = true
     }

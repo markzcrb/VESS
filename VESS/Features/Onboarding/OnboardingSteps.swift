@@ -33,7 +33,7 @@ struct GoalStep: View {
     @Bindable var draft: OnboardingDraft
 
     var body: some View {
-        QuestionScaffold(title: "What brings you to VESS?", subtitle: "Choose the one that matters most right now.") {
+        QuestionScaffold(title: "What brings you to UMEVA?", subtitle: "Choose the one that matters most right now.") {
             VESSRowGroup {
                 ForEach(WellnessGoal.allCases, id: \.self) { goal in
                     VESSOptionRow(title: goal.title, isSelected: draft.goal == goal) {
@@ -177,7 +177,7 @@ struct FocusStep: View {
     @Bindable var draft: OnboardingDraft
 
     var body: some View {
-        QuestionScaffold(title: "What matters to you?", subtitle: "VESS will bring these forward. Choose any.") {
+        QuestionScaffold(title: "What matters to you?", subtitle: "UMEVA will bring these forward. Choose any.") {
             VESSChipFlow {
                 ForEach(FocusArea.allCases, id: \.self) { area in
                     VESSChip(title: area.title, isSelected: draft.focusAreas.contains(area)) {
@@ -197,7 +197,7 @@ struct AppleHealthStep: View {
     var body: some View {
         QuestionScaffold(
             title: "Apple Health",
-            subtitle: "VESS can use what Apple Health already knows, so you log less."
+            subtitle: "UMEVA can use what Apple Health already knows, so you log less."
         ) {
             VESSRowGroup {
                 // Exactly the four types HealthKitService reads.
@@ -207,7 +207,7 @@ struct AppleHealthStep: View {
             }
             .vessHairlineBottom()
 
-            Text("Nothing is shared now. VESS asks once, when you connect Apple Health in Activity or Settings. It only reads, never writes, and you can change access anytime in the Health app.")
+            Text("Nothing is shared now. UMEVA asks once, when you connect Apple Health in Activity or Settings. It only reads, never writes, and you can change access anytime in the Health app.")
                 .vessTextStyle(.caption)
                 .foregroundStyle(VESSColor.tertiaryText)
                 .fixedSize(horizontal: false, vertical: true)

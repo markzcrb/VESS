@@ -22,7 +22,7 @@ actor OpenFoodFactsClient: RemoteFoodProvider {
         /// Identifies the app to Open Food Facts, as their API terms require.
         /// Add a public contact URL or address here before release. Never a
         /// user's personal data.
-        var userAgent = "VESS/\(OpenFoodFactsClient.appVersion) (iOS)"
+        var userAgent = "UMEVA/\(OpenFoodFactsClient.appVersion) (iOS)"
         var timeout: TimeInterval = 10
         var productReadsPerMinute = 15
         var searchesPerMinute = 10

@@ -134,7 +134,7 @@ struct VESSPlusView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            Text("VESS+")
+            Text("UMEVA+")
                 .vessTextStyle(.labelCaps)
                 .foregroundStyle(VESSColor.accent)
             Text("Coach, Chef and photo estimates, every day.")
@@ -187,7 +187,7 @@ struct VESSPlusView: View {
     /// Today · Day 5 · Day 7, annual trial only.
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 0) {
-            step(Text("Today"), Text("Full VESS+, nothing charged"), isFirst: true, isLast: false)
+            step(Text("Today"), Text("Full UMEVA+, nothing charged"), isFirst: true, isLast: false)
             // The reminder is promised only when VESS may send one.
             step(Text("Day 5"), reminders.canRemind ? Text("We remind you the trial is ending") : Text("Cancel anytime in Settings before day 7"),
                  isFirst: false, isLast: false)
@@ -230,7 +230,7 @@ struct VESSPlusView: View {
         VStack(spacing: VESSSpacing.sm) {
             Button(action: subscribe) {
                 if isSubscribed {
-                    Text("You have VESS+")
+                    Text("You have UMEVA+")
                 } else if hasTrial {
                     Text("Start 7-day free trial")
                 } else if plan == .annual {
@@ -282,7 +282,7 @@ struct VESSPlusView: View {
 
     @ViewBuilder
     private var linkItems: some View {
-        link("Compare Free and VESS+") { showCompare = true }
+        link("Compare Free and UMEVA+") { showCompare = true }
             .accessibilityIdentifier("plus.compare")
         if let url = Self.termsURL {
             link("Terms of Use") { openURL(url) }
@@ -454,7 +454,7 @@ private struct VESSPlusComparison: View {
                     HStack {
                         Spacer()
                         Text("Free").frame(minWidth: 64, alignment: .trailing)
-                        Text("VESS+").frame(minWidth: 64, alignment: .trailing)
+                        Text("UMEVA+").frame(minWidth: 64, alignment: .trailing)
                     }
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.tertiaryText)
@@ -469,7 +469,7 @@ private struct VESSPlusComparison: View {
                                 }
                                 VStack(alignment: .leading, spacing: VESSSpacing.xxs) {
                                     Text(row.title).foregroundStyle(VESSColor.text)
-                                    Text("Free \(row.free) · VESS+ \(row.plus)").foregroundStyle(VESSColor.secondaryText)
+                                    Text("Free \(row.free) · UMEVA+ \(row.plus)").foregroundStyle(VESSColor.secondaryText)
                                 }
                             }
                             .vessTextStyle(.bodyM)
@@ -477,7 +477,7 @@ private struct VESSPlusComparison: View {
                             .frame(maxWidth: .infinity, minHeight: VESSSize.rowHeight, alignment: .leading)
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel(Text(row.title))
-                            .accessibilityValue(Text("Free: \(row.free). VESS+: \(row.plus)"))
+                            .accessibilityValue(Text("Free: \(row.free). UMEVA+: \(row.plus)"))
                         }
                     }
                     .vessHairlineBottom()
@@ -486,7 +486,7 @@ private struct VESSPlusComparison: View {
                 .vessContentTop(VESSSpacing.md)
             }
             .background(VESSColor.card)
-            .vessDetailTitle("Free and VESS+")
+            .vessDetailTitle("Free and UMEVA+")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .close) { dismiss() }

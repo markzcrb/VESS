@@ -37,7 +37,7 @@ nonisolated struct HealthKitService: HealthService {
     static let historyDays = 61
 
     private let store = HKHealthStore()
-    private let logger = Logger(subsystem: "VESS", category: "Health")
+    private let logger = Logger(subsystem: AppLog.subsystem, category: "Health")
 
     /// Read only. Sleep, heart and stress (H01–H03), body fat and waist
     /// (H04), State of Mind and mindful minutes as stress signals.

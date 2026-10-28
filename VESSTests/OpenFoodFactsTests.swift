@@ -184,7 +184,7 @@ struct OpenFoodFactsClientTests {
         #expect(url.path() == "/api/v3/product/3017620422003")
         #expect(url.query()?.contains("fields=") == true)
         let userAgent = try #require(request.value(forHTTPHeaderField: "User-Agent"))
-        #expect(userAgent.hasPrefix("VESS/"))
+        #expect(userAgent.hasPrefix("UMEVA/"))
         #expect(!userAgent.contains("@")) // Never personal data.
         #expect(request.timeoutInterval == 10)
     }

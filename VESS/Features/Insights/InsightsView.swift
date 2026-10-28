@@ -100,7 +100,7 @@ struct InsightsView: View {
             if remaining > 0 {
                 Text("Insights need about \(Self.daysNeeded) days of logging so a pattern isn't just one odd week. Keep logging and they'll show up here.")
             } else {
-                Text("You've logged enough days. Insights will appear here once VESS can compare them carefully.")
+                Text("You've logged enough days. Insights will appear here once UMEVA can compare them carefully.")
             }
         }
         .vessTextStyle(.bodyM)

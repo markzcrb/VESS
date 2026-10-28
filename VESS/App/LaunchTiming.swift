@@ -17,7 +17,7 @@ enum LaunchTiming {
         return ProcessInfo.processInfo.arguments.contains("-launchTiming")
         #endif
     }()
-    private static let logger = Logger(subsystem: "VESS", category: "Launch")
+    private static let logger = Logger(subsystem: AppLog.subsystem, category: "Launch")
     nonisolated(unsafe) private static var initDate: Date?
     nonisolated(unsafe) private static var reportedFirstFrame = false
 

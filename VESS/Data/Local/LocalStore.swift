@@ -15,7 +15,7 @@ final class LocalStore {
     private let context: ModelContext
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
-    private let logger = Logger(subsystem: "VESS", category: "LocalStore")
+    private let logger = Logger(subsystem: AppLog.subsystem, category: "LocalStore")
 
     /// The user's profile; `nil` until onboarding completes.
     private(set) var profile: UserProfile?
@@ -617,7 +617,7 @@ final class LocalStore {
     func exportData(now: Date) throws -> Data {
         _ = revision
         let document = ExportDocument(
-            app: "VESS",
+            app: "UMEVA",
             exportedAt: now,
             profile: profile,
             foodLog: fetchDecoded(FetchDescriptor<StoredFoodLogEntry>(), as: FoodLogEntry.self) { $0.payload }

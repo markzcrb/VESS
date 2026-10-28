@@ -29,7 +29,7 @@ struct VESSWordmark: View {
                     .scaledToFit()
                     .frame(height: size)
             } else {
-                Text(verbatim: "VESS")
+                Text(verbatim: "UMEVA")
                     .font(.system(size: size, weight: .thin))
                     .tracking(size * 0.32)
                     // Trailing tracking would offset the optical center.
@@ -37,7 +37,7 @@ struct VESSWordmark: View {
             }
         }
         .foregroundStyle(color)
-        .accessibilityLabel(Text(verbatim: "VESS"))
+        .accessibilityLabel(Text(verbatim: "UMEVA"))
     }
 }
 

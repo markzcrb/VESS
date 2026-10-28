@@ -60,7 +60,7 @@ struct AddWorkoutView: View {
                 if dynamicTypeSize.isAccessibilitySize {
                     estimateLine(estimate)
                 }
-                ActivityFootnote(text: Text("Energy is estimated from duration and effort, not measured. VESS never estimates steps."))
+                ActivityFootnote(text: Text("Energy is estimated from duration and effort, not measured. UMEVA never estimates steps."))
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .vessContentTop(VESSSpacing.xs)

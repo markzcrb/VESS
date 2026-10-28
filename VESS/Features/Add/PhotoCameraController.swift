@@ -32,7 +32,7 @@ final class PhotoCameraController {
     @ObservationIgnored let box = CaptureBox()
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
 
-    private static let logger = Logger(subsystem: "VESS", category: "PhotoCamera")
+    private static let logger = Logger(subsystem: AppLog.subsystem, category: "PhotoCamera")
 
     init() {
         box.onCode = { [weak self] code in

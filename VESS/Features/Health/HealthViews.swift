@@ -88,7 +88,7 @@ struct HealthHubView: View {
                     .accessibilityIdentifier("health.hub.connect")
                 }
 
-                ActivityFootnote(text: Text("Without an Apple Watch, Sleep and Heart show only what your iPhone or other apps save to Health. VESS doesn't guess missing values."))
+                ActivityFootnote(text: Text("Without an Apple Watch, Sleep and Heart show only what your iPhone or other apps save to Health. UMEVA doesn't guess missing values."))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, VESSSpacing.screenInset)
@@ -180,7 +180,7 @@ struct SleepView: View {
                 "Last night is your main sleep that ended between 03:00 and 14:00 today. Naps don't count.",
                 "When your Apple Watch and another app both recorded the same time, the Watch is used.",
                 "Your usual is the middle value of the 28 nights before. The ring fills toward your sleep target.",
-                "Stages come from Apple Watch only. VESS doesn't diagnose sleep problems.",
+                "Stages come from Apple Watch only. UMEVA doesn't diagnose sleep problems.",
             ])
         ) {
             VESSScoreRing(
@@ -231,7 +231,7 @@ struct SleepView: View {
                 HealthPatternCard(text: Text("On nights you ate within 2 hours of falling asleep, you slept about \(pattern.minutesLess)\u{00A0}min less. A pattern from \(pattern.weeks) weeks, not a cause."))
             }
 
-            ActivityFootnote(text: Text("Read from Apple Health. VESS doesn't keep a copy and doesn't diagnose sleep problems."))
+            ActivityFootnote(text: Text("Read from Apple Health. UMEVA doesn't keep a copy and doesn't diagnose sleep problems."))
         }
         .sheet(isPresented: $editsTarget) {
             NumberEditSheet(title: "Sleep target", unit: "h", value: Double(target) / 60, range: 4...12, step: 0.5, fractionDigits: 1) { hours in

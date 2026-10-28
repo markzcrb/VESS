@@ -7,7 +7,7 @@ import Synchronization
 /// takes the others (steps) down with it.
 nonisolated final class HealthReadLog: Sendable {
     private let failures = Mutex<[HealthDataKind: String]>([:])
-    private let logger = Logger(subsystem: "VESS", category: "Health")
+    private let logger = Logger(subsystem: AppLog.subsystem, category: "Health")
 
     /// The kinds that failed, with a description of the error.
     var issues: [HealthDataKind: String] { failures.withLock { $0 } }

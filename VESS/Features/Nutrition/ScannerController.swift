@@ -39,7 +39,7 @@ final class ScannerController {
     @ObservationIgnored private var torchObservations: [NSKeyValueObservation] = []
     @ObservationIgnored private var recovery: Task<Void, Never>?
 
-    private static let logger = Logger(subsystem: "VESS", category: "Scanner")
+    private static let logger = Logger(subsystem: AppLog.subsystem, category: "Scanner")
 
     init() {
         observeSessions()

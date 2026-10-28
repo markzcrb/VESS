@@ -16,7 +16,7 @@ struct SupplementsView: View {
         let supplements = store.supplements
 
         ProfilePage(title: "Supplements") {
-            ProfileIntro(title: "A separate daily rhythm.", text: "Your own supplements and doses, kept apart from food. VESS never suggests one.")
+            ProfileIntro(title: "A separate daily rhythm.", text: "Your own supplements and doses, kept apart from food. UMEVA never suggests one.")
 
             if supplements.isEmpty {
                 Text("No supplements yet.")
@@ -234,7 +234,7 @@ struct SupplementEditSheet: View {
                                 .foregroundStyle(VESSColor.text)
                         }
                     }
-                    Text("VESS records the dose you choose. It doesn't recommend supplements or doses.")
+                    Text("UMEVA records the dose you choose. It doesn't recommend supplements or doses.")
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.tertiaryText)
                         .fixedSize(horizontal: false, vertical: true)
@@ -384,7 +384,7 @@ struct NotificationsDeniedNote: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: VESSSpacing.sm) {
-            Text("Notifications are off for VESS. You can turn them on in Settings.")
+            Text("Notifications are off for UMEVA. You can turn them on in Settings.")
                 .vessTextStyle(.bodyS)
                 .foregroundStyle(VESSColor.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)

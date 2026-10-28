@@ -121,7 +121,7 @@ struct ActivityView: View {
 
         workoutsSection(workouts: data.workouts(since: data.day(offset: -6)), data: data)
 
-        ActivityFootnote(text: Text("Energy for entered workouts is an estimate from duration and effort, not a measurement. VESS never estimates steps."))
+        ActivityFootnote(text: Text("Energy for entered workouts is an estimate from duration and effort, not a measurement. UMEVA never estimates steps."))
         logWorkoutButton
     }
 
@@ -139,7 +139,7 @@ struct ActivityView: View {
     private func disconnected(_ data: ActivityData) -> some View {
         VStack(spacing: VESSSpacing.xl) {
             VESSScoreRing(value: "—", label: "Steps", sublabel: Text("No source connected"), progress: 0, metric: .activity)
-            Text("VESS doesn't guess your steps.")
+            Text("UMEVA doesn't guess your steps.")
                 .vessTextStyle(.editorialL)
                 .foregroundStyle(VESSColor.text)
                 .multilineTextAlignment(.center)
@@ -166,7 +166,7 @@ struct ActivityView: View {
 
     private var disconnectedMessage: Text {
         if health.state == .nothingShared {
-            return Text("Apple Health hasn't shared steps or workouts with VESS. You can allow access in the Health app, under your profile › Apps › VESS. Until then, only workouts you enter appear.")
+            return Text("Apple Health hasn't shared steps or workouts with UMEVA. You can allow access in the Health app, under your profile › Apps › UMEVA. Until then, only workouts you enter appear.")
         }
         if !health.canConnect {
             return Text("Apple Health isn't available on this device, so only workouts you enter appear.")
@@ -351,10 +351,10 @@ private struct ActivityInfoSheet: View {
                     Text("Where these numbers come from")
                         .vessTextStyle(.editorialM)
                         .foregroundStyle(VESSColor.text)
-                    note("Steps, active energy and recorded workouts come from Apple Health. VESS only reads them; it never writes to Health.")
-                    note("Workouts you enter are kept in VESS. Their energy is an estimate from type, duration and effort, so it's shown with ≈.")
+                    note("Steps, active energy and recorded workouts come from Apple Health. UMEVA only reads them; it never writes to Health.")
+                    note("Workouts you enter are kept in UMEVA. Their energy is an estimate from type, duration and effort, so it's shown with ≈.")
                     note("Arrows compare today with the median of your last four same weekdays, up to the same time. Within 10\u{00A0}% counts as about usual.")
-                    note("VESS never estimates steps. Without Apple Health, steps show —.")
+                    note("UMEVA never estimates steps. Without Apple Health, steps show —.")
                 }
                 .padding(VESSSpacing.screenInset)
             }

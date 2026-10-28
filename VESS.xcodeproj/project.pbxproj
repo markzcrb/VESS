@@ -353,10 +353,10 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/VESS-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = VESS;
+				INFOPLIST_KEY_CFBundleDisplayName = UMEVA;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSCameraUsageDescription = "VESS uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "VESS reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. Only steps and workouts are included when you ask Coach.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "UMEVA uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "UMEVA reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. Only steps and workouts are included when you ask Coach.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -399,10 +399,10 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/VESS-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = VESS;
+				INFOPLIST_KEY_CFBundleDisplayName = UMEVA;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSCameraUsageDescription = "VESS uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "VESS reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. Only steps and workouts are included when you ask Coach.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "UMEVA uses the camera to scan food barcodes, and to photograph a meal when you ask for an estimate. Barcode scans are never recorded. A meal photo is sent once for the estimate and not kept.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "UMEVA reads your steps, workouts, active energy, weight, sleep, heart rate, heart rate variability, State of Mind, mindful minutes, body fat and waist to show them in Today, Activity and Health. It never writes to Apple Health. Only steps and workouts are included when you ask Coach.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

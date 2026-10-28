@@ -817,7 +817,7 @@
     "%@, an estimate" : {
 
     },
-    "%@, through VESS's server." : {
+    "%@, through UMEVA's server." : {
 
     },
     "%@, today" : {
@@ -1487,7 +1487,7 @@
     "100 %@" : {
 
     },
-    "A cycle runs from the first day of one period to the first day of the next. VESS uses your last six completed cycles." : {
+    "A cycle runs from the first day of one period to the first day of the next. UMEVA uses your last six completed cycles." : {
 
     },
     "a day" : {
@@ -1868,7 +1868,7 @@
     "Adds this ring" : {
 
     },
-    "Adults only. BMI isn't shown for under-18s or during pregnancy, and VESS never sets goals from BMI alone." : {
+    "Adults only. BMI isn't shown for under-18s or during pregnancy, and UMEVA never sets goals from BMI alone." : {
 
     },
     "After %lld:00 · from your drinks" : {
@@ -2038,7 +2038,7 @@
     "Apple Health · updated ^[%lld day](inflect: true) ago" : {
 
     },
-    "Apple Health hasn't shared steps or workouts with VESS. You can allow access in the Health app, under your profile › Apps › VESS. Until then, only workouts you enter appear." : {
+    "Apple Health hasn't shared steps or workouts with UMEVA. You can allow access in the Health app, under your profile › Apps › UMEVA. Until then, only workouts you enter appear." : {
 
     },
     "Apple Health isn't available on this device, so only workouts you enter appear." : {
@@ -2253,7 +2253,7 @@
     "Camera" : {
 
     },
-    "Camera access is off for VESS. Pick a photo, or turn it on in Settings." : {
+    "Camera access is off for UMEVA. Pick a photo, or turn it on in Settings." : {
 
     },
     "Camera preview" : {
@@ -2337,7 +2337,7 @@
     "Choose food" : {
 
     },
-    "Choose the food that matches %@. VESS remembers it for next time." : {
+    "Choose the food that matches %@. UMEVA remembers it for next time." : {
 
     },
     "Choose the one that matters most right now." : {
@@ -2869,7 +2869,7 @@
     "Energy drink" : {
 
     },
-    "Energy for entered workouts is an estimate from duration and effort, not a measurement. VESS never estimates steps." : {
+    "Energy for entered workouts is an estimate from duration and effort, not a measurement. UMEVA never estimates steps." : {
 
     },
     "Energy for workouts you enter is estimated from type, duration, effort and your weight, so it's shown with ≈. Recorded workouts use Apple Health's measurement." : {
@@ -2895,7 +2895,7 @@
         }
       }
     },
-    "Energy is estimated from duration and effort, not measured. VESS never estimates steps." : {
+    "Energy is estimated from duration and effort, not measured. UMEVA never estimates steps." : {
 
     },
     "Energy through the day" : {
@@ -2922,7 +2922,7 @@
     "Entered by you" : {
 
     },
-    "Entered in VESS. Energy is estimated from type, duration and effort, not measured." : {
+    "Entered in UMEVA. Energy is estimated from type, duration and effort, not measured." : {
 
     },
     "Entered workouts are saved" : {
@@ -3142,7 +3142,7 @@
     "Food waste" : {
 
     },
-    "Foods from the built-in list show typical values. Products from Open Food Facts are community data, and VESS says so. What you enter yourself is used as you entered it." : {
+    "Foods from the built-in list show typical values. Products from Open Food Facts are community data, and UMEVA says so. What you enter yourself is used as you entered it." : {
 
     },
     "Foods that don't report a macro add nothing to it, so totals can read low." : {
@@ -3200,7 +3200,7 @@
     "From Apple Health, when connected" : {
 
     },
-    "From Apple Health. VESS never estimates steps." : {
+    "From Apple Health. UMEVA never estimates steps." : {
 
     },
     "From HRV and resting heart rate" : {
@@ -3224,12 +3224,12 @@
     "From the product database · check against the label" : {
 
     },
-    "From your body and direction, VESS would suggest %@ kcal, %@ g protein, %@ g carbs and %@ g fat." : {
+    "From your body and direction, UMEVA would suggest %@ kcal, %@ g protein, %@ g carbs and %@ g fat." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "From your body and direction, VESS would suggest %1$@ kcal, %2$@ g protein, %3$@ g carbs and %4$@ g fat."
+            "value" : "From your body and direction, UMEVA would suggest %1$@ kcal, %2$@ g protein, %3$@ g carbs and %4$@ g fat."
           }
         }
       }
@@ -3668,16 +3668,16 @@
     "Intervals" : {
 
     },
-    "iOS decides what VESS can read and doesn't tell apps what you turned off, so a type without data may simply be off. To change access, open the Health app, tap your profile, then Apps › VESS." : {
+    "iOS decides what UMEVA can read and doesn't tell apps what you turned off, so a type without data may simply be off. To change access, open the Health app, tap your profile, then Apps › UMEVA." : {
 
     },
-    "iOS decides what VESS can read. To change access, open the Health app, tap your profile, then Apps › VESS." : {
+    "iOS decides what UMEVA can read. To change access, open the Health app, tap your profile, then Apps › UMEVA." : {
 
     },
     "It only goes up as you log. The one thing that lowers it is going well past your energy target." : {
 
     },
-    "It's a rough guide: it doesn't tell muscle from fat. VESS shows it only to adults, never during pregnancy, and never sets goals from it alone." : {
+    "It's a rough guide: it doesn't tell muscle from fat. UMEVA shows it only to adults, never during pregnancy, and never sets goals from it alone." : {
 
     },
     "It's removed from this iPhone. Meals you logged from it stay in your log." : {
@@ -4035,7 +4035,7 @@
     "Make a new recipe from what you have." : {
 
     },
-    "Make VESS feel familiar." : {
+    "Make UMEVA feel familiar." : {
 
     },
     "Male" : {
@@ -4492,7 +4492,7 @@
     "Nothing fits yet. Log a few meals or save some foods, and suggestions will follow." : {
 
     },
-    "Nothing is shared now. VESS asks once, when you connect Apple Health in Activity or Settings. It only reads, never writes, and you can change access anytime in the Health app." : {
+    "Nothing is shared now. UMEVA asks once, when you connect Apple Health in Activity or Settings. It only reads, never writes, and you can change access anytime in the Health app." : {
 
     },
     "Nothing logged" : {
@@ -4558,7 +4558,7 @@
     "Notifications" : {
 
     },
-    "Notifications are off for VESS. You can turn them on in Settings." : {
+    "Notifications are off for UMEVA. You can turn them on in Settings." : {
 
     },
     "Now" : {
@@ -4679,13 +4679,13 @@
     "Only what I have" : {
 
     },
-    "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through VESS's server, once. VESS doesn't store them." : {
+    "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through UMEVA's server, once. UMEVA doesn't store them." : {
 
     },
-    "Only when you create a recipe: your pantry list, the choices you made, your diet, the ingredients you don't eat, your allergies and today's protein gap go to the AI processor once. VESS doesn't store them, nutrition is calculated on this iPhone, and the recipe is saved only if you save it." : {
+    "Only when you create a recipe: your pantry list, the choices you made, your diet, the ingredients you don't eat, your allergies and today's protein gap go to the AI processor once. UMEVA doesn't store them, nutrition is calculated on this iPhone, and the recipe is saved only if you save it." : {
 
     },
-    "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. VESS doesn't store it, and nothing is logged until you confirm." : {
+    "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. UMEVA doesn't store it, and nothing is logged until you confirm." : {
 
     },
     "Open details" : {
@@ -4845,10 +4845,10 @@
     "Plan" : {
 
     },
-    "Plan a few dinners and VESS builds the grocery list from them." : {
+    "Plan a few dinners and UMEVA builds the grocery list from them." : {
 
     },
-    "Plan a few meals and VESS builds the list, leaving out what's already at home." : {
+    "Plan a few meals and UMEVA builds the list, leaving out what's already at home." : {
 
     },
     "Plan for %@" : {
@@ -4911,12 +4911,12 @@
     "Privacy and data" : {
 
     },
-    "Processed by %@ through VESS's server. VESS doesn't store it. %@ processes it under its API terms." : {
+    "Processed by %@ through UMEVA's server. UMEVA doesn't store it. %@ processes it under its API terms." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Processed by %1$@ through VESS's server. VESS doesn't store it. %2$@ processes it under its API terms."
+            "value" : "Processed by %1$@ through UMEVA's server. UMEVA doesn't store it. %2$@ processes it under its API terms."
           }
         }
       }
@@ -4989,12 +4989,12 @@
     "Quantity" : {
 
     },
-    "Questions go to %@ through VESS's server. VESS doesn't store them. %@ processes them under its API terms. The conversation is kept only on this iPhone." : {
+    "Questions go to %@ through UMEVA's server. UMEVA doesn't store them. %@ processes them under its API terms. The conversation is kept only on this iPhone." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Questions go to %1$@ through VESS's server. VESS doesn't store them. %2$@ processes them under its API terms. The conversation is kept only on this iPhone."
+            "value" : "Questions go to %1$@ through UMEVA's server. UMEVA doesn't store them. %2$@ processes them under its API terms. The conversation is kept only on this iPhone."
           }
         }
       }
@@ -5026,13 +5026,13 @@
     "Read from Apple Health. Nothing here is a diagnosis." : {
 
     },
-    "Read from Apple Health. VESS doesn't keep a copy and doesn't diagnose sleep problems." : {
+    "Read from Apple Health. UMEVA doesn't keep a copy and doesn't diagnose sleep problems." : {
 
     },
     "Read from Health" : {
 
     },
-    "Read only: steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, HRV, State of Mind and mindful minutes. VESS shows them but doesn't keep a copy. Only steps and recorded workouts go into Coach's summary, when you ask." : {
+    "Read only: steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, HRV, State of Mind and mindful minutes. UMEVA shows them but doesn't keep a copy. Only steps and recorded workouts go into Coach's summary, when you ask." : {
 
     },
     "Read-only, on your terms." : {
@@ -5278,7 +5278,7 @@
     "Sends the photo you take or pick." : {
 
     },
-    "Sends your pantry list, diet and avoid list and these choices to %@ through VESS's server. Nothing else from your log. You review the recipe before it's saved." : {
+    "Sends your pantry list, diet and avoid list and these choices to %@ through UMEVA's server. Nothing else from your log. You review the recipe before it's saved." : {
 
     },
     "Sends your pantry list, recipe choices, diet, avoid list and allergies." : {
@@ -5509,7 +5509,7 @@
     "Sort" : {
 
     },
-    "Source · %@. Energy is a recorded measurement, not an estimate entered in VESS." : {
+    "Source · %@. Energy is a recorded measurement, not an estimate entered in UMEVA." : {
 
     },
     "soy" : {
@@ -5542,7 +5542,7 @@
     "Stages · %@" : {
 
     },
-    "Stages come from Apple Watch only. VESS doesn't diagnose sleep problems." : {
+    "Stages come from Apple Watch only. UMEVA doesn't diagnose sleep problems." : {
 
     },
     "Stages need Apple Watch. This night shows the time in bed or asleep that Health has." : {
@@ -5597,7 +5597,7 @@
     "steps today" : {
 
     },
-    "Steps, active energy and recorded workouts come from Apple Health. VESS only reads them; it never writes to Health." : {
+    "Steps, active energy and recorded workouts come from Apple Health. UMEVA only reads them; it never writes to Health." : {
 
     },
     "Steps, last 7 days" : {
@@ -5808,7 +5808,7 @@
     "The average covers days with at least one meal logged, not counting today, and needs three of them." : {
 
     },
-    "The camera is off for VESS" : {
+    "The camera is off for UMEVA" : {
 
     },
     "The camera isn't available here. Pick a photo instead." : {
@@ -5844,7 +5844,7 @@
     "The ring shows where today's resting heart rate sits within your usual range: the middle 80 % of your last 30 days. It isn't a score." : {
 
     },
-    "The share of today's energy you logged before 12:00. It has no level: VESS doesn't judge when you eat." : {
+    "The share of today's energy you logged before 12:00. It has no level: UMEVA doesn't judge when you eat." : {
 
     },
     "The summary sent with each question" : {
@@ -6231,53 +6231,53 @@
     "Very active" : {
 
     },
-    "VESS %@ (%@)" : {
+    "UMEVA %@ (%@)" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "VESS %1$@ (%2$@)"
+            "value" : "UMEVA %1$@ (%2$@)"
           }
         }
       }
     },
-    "VESS can use what Apple Health already knows, so you log less." : {
+    "UMEVA can use what Apple Health already knows, so you log less." : {
 
     },
-    "VESS couldn't open your data on this iPhone. Your data hasn't been changed." : {
+    "UMEVA couldn't open your data on this iPhone. Your data hasn't been changed." : {
 
     },
-    "VESS data export" : {
+    "UMEVA data export" : {
 
     },
-    "VESS doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy." : {
+    "UMEVA doesn't estimate fertile days or ovulation, and the estimate can't be used to prevent or plan a pregnancy." : {
 
     },
-    "VESS doesn't guess your steps." : {
+    "UMEVA doesn't guess your steps." : {
 
     },
-    "VESS doesn't store it. %@ processes it under its API terms." : {
+    "UMEVA doesn't store it. %@ processes it under its API terms." : {
 
     },
-    "VESS never estimates steps." : {
+    "UMEVA never estimates steps." : {
 
     },
-    "VESS never estimates steps. Without Apple Health, steps show —." : {
+    "UMEVA never estimates steps. Without Apple Health, steps show —." : {
 
     },
-    "VESS reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health." : {
+    "UMEVA reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health." : {
 
     },
-    "VESS reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach." : {
+    "UMEVA reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach." : {
 
     },
-    "VESS records the dose you choose. It doesn't recommend supplements or doses." : {
+    "UMEVA records the dose you choose. It doesn't recommend supplements or doses." : {
 
     },
-    "VESS shapes your daily targets from these. It never changes them without asking." : {
+    "UMEVA shapes your daily targets from these. It never changes them without asking." : {
 
     },
-    "VESS will bring these forward. Choose any." : {
+    "UMEVA will bring these forward. Choose any." : {
 
     },
     "View or correct this product on Open Food Facts" : {
@@ -6371,7 +6371,7 @@
     "Welcome" : {
 
     },
-    "What brings you to VESS?" : {
+    "What brings you to UMEVA?" : {
 
     },
     "What can I cook tonight?" : {
@@ -6437,7 +6437,7 @@
     "Without 3 days of history there's no regularity yet, so the other three parts make up the whole score." : {
 
     },
-    "Without an Apple Watch, Sleep and Heart show only what your iPhone or other apps save to Health. VESS doesn't guess missing values." : {
+    "Without an Apple Watch, Sleep and Heart show only what your iPhone or other apps save to Health. UMEVA doesn't guess missing values." : {
 
     },
     "workout" : {
@@ -6449,7 +6449,7 @@
     "Workouts" : {
 
     },
-    "Workouts you enter are kept in VESS. Their energy is an estimate from type, duration and effort, so it's shown with ≈." : {
+    "Workouts you enter are kept in UMEVA. Their energy is an estimate from type, duration and effort, so it's shown with ≈." : {
 
     },
     "Writing a recipe…" : {
@@ -6535,7 +6535,7 @@
     "You're offline. Try again when you're connected." : {
 
     },
-    "You've logged enough days. Insights will appear here once VESS can compare them carefully." : {
+    "You've logged enough days. Insights will appear here once UMEVA can compare them carefully." : {
 
     },
     "Your baseline is the middle value of 28 days of overnight HRV and resting heart rate. It needs 14 days before there's an estimate." : {
@@ -6604,7 +6604,7 @@
     "Your own recipes and the ones you save from AI Chef live here." : {
 
     },
-    "Your own supplements and doses, kept apart from food. VESS never suggests one." : {
+    "Your own supplements and doses, kept apart from food. UMEVA never suggests one." : {
 
     },
     "Your pantry is empty" : {
@@ -6634,7 +6634,7 @@
     "Your values" : {
 
     },
-    "Your VESS+ trial ends in 2 days" : {
+    "Your UMEVA+ trial ends in 2 days" : {
 
     },
     "Your week fills in as you go." : {

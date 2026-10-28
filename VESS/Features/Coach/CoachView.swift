@@ -560,7 +560,7 @@ struct CoachSettingsSheet: View {
                     }
                     .vessHairlineBottom()
 
-                    Text("Questions go to \(AIProcessor.displayName) through VESS's server. VESS doesn't store them. \(AIProcessor.company) processes them under its API terms. The conversation is kept only on this iPhone.")
+                    Text("Questions go to \(AIProcessor.displayName) through UMEVA's server. UMEVA doesn't store them. \(AIProcessor.company) processes them under its API terms. The conversation is kept only on this iPhone.")
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.tertiaryText)
                         .fixedSize(horizontal: false, vertical: true)

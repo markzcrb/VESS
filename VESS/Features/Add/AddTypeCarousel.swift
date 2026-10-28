@@ -229,7 +229,7 @@ struct AddTypeCarousel: View {
 
     #if DEBUG
     /// Carousel timing, for checking selection against the snap.
-    private static let log = Logger(subsystem: "VESS", category: "AddCarousel")
+    private static let log = Logger(subsystem: AppLog.subsystem, category: "AddCarousel")
     #endif
 
     /// (width − slot) / 2 on both sides.

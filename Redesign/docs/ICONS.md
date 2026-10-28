@@ -60,4 +60,4 @@ Add sheet tiles (`AddType.symbol`): Photo `camera`, Quick add `bolt`, Food `fork
 | menu | `menucard` | Menu mode in Photo |
 | scan | `viewfinder` | Camera framing |
 | chart | `chart.bar` | Today row in Add › Drink; Coach chart cards |
-| lock | `lock` | VESS+ feature rows |
+| lock | `lock` | UMEVA+ feature rows |

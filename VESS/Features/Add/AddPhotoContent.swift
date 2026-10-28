@@ -279,7 +279,7 @@ struct AddPhotoContent: View {
                             .font(.title2)
                             .foregroundStyle(VESSColor.secondaryText)
                             .accessibilityHidden(true)
-                        Text(camera.state == .denied ? "Camera access is off for VESS. Pick a photo, or turn it on in Settings." : "The camera isn't available here. Pick a photo instead.")
+                        Text(camera.state == .denied ? "Camera access is off for UMEVA. Pick a photo, or turn it on in Settings." : "The camera isn't available here. Pick a photo instead.")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                             .multilineTextAlignment(.center)

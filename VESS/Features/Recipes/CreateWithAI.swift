@@ -115,7 +115,7 @@ struct CreateWithAISheet: View {
                             .accessibilityIdentifier("create.failure")
                     }
 
-                    Text("Sends your pantry list, diet and avoid list and these choices to \(AIProcessor.displayName) through VESS's server. Nothing else from your log. You review the recipe before it's saved.")
+                    Text("Sends your pantry list, diet and avoid list and these choices to \(AIProcessor.displayName) through UMEVA's server. Nothing else from your log. You review the recipe before it's saved.")
                         .vessTextStyle(.caption)
                         .foregroundStyle(VESSColor.tertiaryText)
                         .fixedSize(horizontal: false, vertical: true)

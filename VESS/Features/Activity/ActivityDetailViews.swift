@@ -30,7 +30,7 @@ struct StepsDetailView: View {
                     periodContent(hourly, days: 30, target: target, title: "The last 30 days.")
                 }
 
-                ActivityFootnote(text: Text("From Apple Health. VESS never estimates steps."))
+                ActivityFootnote(text: Text("From Apple Health. UMEVA never estimates steps."))
             }
             .padding(.horizontal, VESSSpacing.screenInset)
             .padding(.top, VESSSpacing.xs)
@@ -289,9 +289,9 @@ struct WorkoutDetailView: View {
     private func sourceNote(_ workout: Workout) -> Text {
         if workout.isRecorded {
             let device = workout.deviceName.map { Text("\($0), via Apple Health") } ?? Text("Apple Health")
-            return Text("Source · \(device). Energy is a recorded measurement, not an estimate entered in VESS.")
+            return Text("Source · \(device). Energy is a recorded measurement, not an estimate entered in UMEVA.")
         }
-        return Text("Entered in VESS. Energy is estimated from type, duration and effort, not measured.")
+        return Text("Entered in UMEVA. Energy is estimated from type, duration and effort, not measured.")
     }
 
     private func delete() {

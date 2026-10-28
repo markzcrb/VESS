@@ -114,7 +114,7 @@ struct AppRootView: View {
             // The launch's "became active" came before the store was open.
             if scenePhase == .active { refreshOnActive() }
         } catch {
-            Logger(subsystem: "VESS", category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
+            Logger(subsystem: AppLog.subsystem, category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
         }
         isOpening = false
     }
@@ -168,7 +168,7 @@ struct AppRootView: View {
             #endif
             return nil
         } catch {
-            Logger(subsystem: "VESS", category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
+            Logger(subsystem: AppLog.subsystem, category: "App").fault("Opening the store failed: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }
@@ -244,7 +244,7 @@ private struct StoreUnavailableView: View {
         ContentUnavailableView {
             Label("Something went wrong", systemImage: "exclamationmark.circle")
         } description: {
-            Text("VESS couldn't open your data on this iPhone. Your data hasn't been changed.")
+            Text("UMEVA couldn't open your data on this iPhone. Your data hasn't been changed.")
         } actions: {
             Button("Try again", action: retry)
                 .buttonStyle(.vessPrimary)

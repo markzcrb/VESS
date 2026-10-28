@@ -38,7 +38,7 @@ All haptics go through `VESSHaptic` (`VESS/Core/DesignSystem/Tokens/VESSHaptics.
 - **Success:** played when something is saved or added.
 - **Warning:** played when something is deleted.
 
-A view plays a haptic on a state change with `vessHaptic(_:trigger:)`. An action whose view closes straight away (Save or Delete in a sheet) calls `haptics.play(_:)` on `\.vessHaptics`, and the app root plays it, so it isn't lost when the sheet closes. Haptics follow the system setting; VESS has no switch of its own.
+A view plays a haptic on a state change with `vessHaptic(_:trigger:)`. An action whose view closes straight away (Save or Delete in a sheet) calls `haptics.play(_:)` on `\.vessHaptics`, and the app root plays it, so it isn't lost when the sheet closes. Haptics follow the system setting; UMEVA has no switch of its own.
 
 | Where | Haptic | Trigger | Code |
 |---|---|---|---|

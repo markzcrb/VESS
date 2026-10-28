@@ -263,7 +263,7 @@ struct GroceryContent: View {
                 .vessTextStyle(.editorialL)
                 .foregroundStyle(VESSColor.text)
                 .accessibilityAddTraits(.isHeader)
-            Text("Plan a few meals and VESS builds the list, leaving out what's already at home.")
+            Text("Plan a few meals and UMEVA builds the list, leaving out what's already at home.")
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)

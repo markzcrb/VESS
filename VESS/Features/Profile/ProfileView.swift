@@ -163,7 +163,7 @@ struct ProfileView: View {
                 #if DEBUG
                 // P02 is shown full screen, with its own close.
                 Button { showPlus = true } label: {
-                    VESSListRow(title: Text("VESS+ (demo)"))
+                    VESSListRow(title: Text("UMEVA+ (demo)"))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("you.plus")

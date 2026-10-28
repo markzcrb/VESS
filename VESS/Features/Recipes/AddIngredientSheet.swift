@@ -196,7 +196,7 @@ struct AddIngredientSheet: View {
                         .id("amount")
 
                     if let matchingItem {
-                        Text("Choose the food that matches \(matchingItem.name). VESS remembers it for next time.")
+                        Text("Choose the food that matches \(matchingItem.name). UMEVA remembers it for next time.")
                             .vessTextStyle(.bodyS)
                             .foregroundStyle(VESSColor.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)

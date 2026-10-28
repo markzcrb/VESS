@@ -12,7 +12,7 @@ import OSLog
 final class FoodLookupService {
     private let store: LocalStore
     private let provider: RemoteFoodProvider
-    private let logger = Logger(subsystem: "VESS", category: "FoodLookup")
+    private let logger = Logger(subsystem: AppLog.subsystem, category: "FoodLookup")
 
     /// Cached products older than this are refreshed when online.
     static let cacheLifetime: TimeInterval = 30 * 24 * 60 * 60

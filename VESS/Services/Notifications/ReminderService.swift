@@ -17,7 +17,7 @@ final class ReminderService {
 
     private let center: UNUserNotificationCenter?
     private let defaults: UserDefaults
-    private let logger = Logger(subsystem: "VESS", category: "Reminders")
+    private let logger = Logger(subsystem: AppLog.subsystem, category: "Reminders")
 
     private static let mealsKey = "reminders.meals"
     static let supplementPrefix = "supplement."
@@ -72,7 +72,7 @@ final class ReminderService {
         let date = quiet.firstAllowed(atOrAfter: ten, calendar: calendar)
         guard date > AppClock.now else { return }
         let content = UNMutableNotificationContent()
-        content.title = String(localized: "Your VESS+ trial ends in 2 days")
+        content.title = String(localized: "Your UMEVA+ trial ends in 2 days")
         content.body = String(localized: "Nothing to do if you'd like to keep it. To cancel: Settings › Apple Account › Subscriptions.")
         let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
         do {

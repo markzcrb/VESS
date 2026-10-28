@@ -345,7 +345,7 @@ struct PlanView: View {
             Text("Nothing planned yet")
                 .vessTextStyle(.titleL)
                 .foregroundStyle(VESSColor.text)
-            Text("Plan a few dinners and VESS builds the grocery list from them.")
+            Text("Plan a few dinners and UMEVA builds the grocery list from them.")
                 .vessTextStyle(.bodyM)
                 .foregroundStyle(VESSColor.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)

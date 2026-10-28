@@ -13,7 +13,7 @@ struct AppleHealthView: View {
         let stepsTarget = store.profile?.dailyStepsTarget ?? UserProfile.defaultStepsTarget
 
         ProfilePage(title: "Apple Health") {
-            ProfileIntro(title: "Read-only, on your terms.", text: "VESS reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health.")
+            ProfileIntro(title: "Read-only, on your terms.", text: "UMEVA reads movement, sleep, heart and body data from Apple Health to show it in Activity, Today, Health and You. It never writes to Health.")
 
             VESSRowGroup {
                 VESSListRow(title: Text("Status"), value: Text(health.state.statusTitle), showsChevron: false)
@@ -38,7 +38,7 @@ struct AppleHealthView: View {
                     VESSListRow(title: Text("Mindful minutes"), showsChevron: false)
                 }
                 .vessHairlineBottom()
-                ActivityFootnote(text: Text("iOS decides what VESS can read and doesn't tell apps what you turned off, so a type without data may simply be off. To change access, open the Health app, tap your profile, then Apps › VESS."))
+                ActivityFootnote(text: Text("iOS decides what UMEVA can read and doesn't tell apps what you turned off, so a type without data may simply be off. To change access, open the Health app, tap your profile, then Apps › UMEVA."))
             }
 
             #if DEBUG
@@ -198,7 +198,7 @@ struct PrivacyView: View {
     var body: some View {
         let now = AppClock.now
         let export = (try? store.exportData(now: now)).map {
-            VESSExportFile(data: $0, name: "VESS-export-\(now.formatted(.iso8601.year().month().day())).json")
+            VESSExportFile(data: $0, name: "UMEVA-export-\(now.formatted(.iso8601.year().month().day())).json")
         }
 
         ProfilePage(title: "Privacy") {
@@ -206,13 +206,13 @@ struct PrivacyView: View {
 
             VESSRowGroup {
                 fact("On this iPhone", "Everything you log: meals, drinks, workouts, pantry, plans, supplements, habits, cycle days, the Coach conversation and your profile.")
-                fact("Coach", "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through VESS's server, once. VESS doesn't store them.")
-                fact("Photo estimates", "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. VESS doesn't store it, and nothing is logged until you confirm.")
-                fact("AI Chef", "Only when you create a recipe: your pantry list, the choices you made, your diet, the ingredients you don't eat, your allergies and today's protein gap go to the AI processor once. VESS doesn't store them, nutrition is calculated on this iPhone, and the recipe is saved only if you save it.")
+                fact("Coach", "Only when you ask: your question, the conversation so far and a summary of recent logs go to the AI processor through UMEVA's server, once. UMEVA doesn't store them.")
+                fact("Photo estimates", "Only when you take or pick a photo: the photo, made smaller and without location or camera details, goes to the AI processor once. UMEVA doesn't store it, and nothing is logged until you confirm.")
+                fact("AI Chef", "Only when you create a recipe: your pantry list, the choices you made, your diet, the ingredients you don't eat, your allergies and today's protein gap go to the AI processor once. UMEVA doesn't store them, nutrition is calculated on this iPhone, and the recipe is saved only if you save it.")
                 fact("Account", "Only for Coach, photo estimates and AI Chef: your email or Apple ID and a daily count of AI uses. Delete it any time in Account.")
                 fact("Cycle tracking", "Off unless you turn it on. Cycle days stay on this iPhone and are never shared with Apple Health. Coach gets your cycle day and next estimated window only if you turn on Share cycle with Coach.")
                 fact("Open Food Facts", "When you search or scan, the search words or the barcode go to Open Food Facts to find the product. Nothing else is sent.")
-                fact("Apple Health", "Read only: steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, HRV, State of Mind and mindful minutes. VESS shows them but doesn't keep a copy. Only steps and recorded workouts go into Coach's summary, when you ask.")
+                fact("Apple Health", "Read only: steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, HRV, State of Mind and mindful minutes. UMEVA shows them but doesn't keep a copy. Only steps and recorded workouts go into Coach's summary, when you ask.")
                 fact("Pregnant", "Set in You › Body and stored on this iPhone. While it's on, Coach's summary says so, so Coach never suggests losing weight.")
                 fact("Reminders", "Scheduled on this iPhone, never on a server.")
                 fact("Nothing else", "No analytics and no ads. An account only if you use Coach, photo estimates or AI Chef.")
@@ -227,7 +227,7 @@ struct PrivacyView: View {
                     consentToggle(.chef, title: "AI Chef", detail: "Sends your pantry list, recipe choices, diet, avoid list and allergies.")
                 }
                 .vessHairlineBottom()
-                Text("Processed by \(AIProcessor.displayName) through VESS's server. VESS doesn't store it. \(AIProcessor.company) processes it under its API terms.")
+                Text("Processed by \(AIProcessor.displayName) through UMEVA's server. UMEVA doesn't store it. \(AIProcessor.company) processes it under its API terms.")
                     .vessTextStyle(.caption)
                     .foregroundStyle(VESSColor.tertiaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -237,7 +237,7 @@ struct PrivacyView: View {
             }
 
             if let export {
-                ShareLink(item: export, preview: SharePreview(Text("VESS data export"))) {
+                ShareLink(item: export, preview: SharePreview(Text("UMEVA data export"))) {
                     VESSListRow(title: Text("Export my data"), subtitle: Text("Everything stored on this iPhone, as a JSON file"))
                         .contentShape(Rectangle())
                 }
@@ -314,7 +314,7 @@ struct SettingsView: View {
         let language = Locale.current.localizedString(forLanguageCode: Locale.current.language.languageCode?.identifier ?? "en") ?? "English"
 
         ProfilePage(title: "Settings") {
-            ProfileIntro(title: "Make VESS feel familiar.")
+            ProfileIntro(title: "Make UMEVA feel familiar.")
 
             VStack(alignment: .leading, spacing: VESSSpacing.xs) {
                 VESSSectionHeader(title: "Appearance")
@@ -380,18 +380,18 @@ enum HelpArticle: String, Hashable, CaseIterable {
             "You can change your targets, diet and what to avoid at any time under You.",
         ]
         case .estimates: [
-            "Foods from the built-in list show typical values. Products from Open Food Facts are community data, and VESS says so. What you enter yourself is used as you entered it.",
+            "Foods from the built-in list show typical values. Products from Open Food Facts are community data, and UMEVA says so. What you enter yourself is used as you entered it.",
             "Energy for workouts you enter is estimated from type, duration, effort and your weight, so it's shown with ≈. Recorded workouts use Apple Health's measurement.",
-            "VESS never estimates steps.",
+            "UMEVA never estimates steps.",
         ]
         case .planning: [
             "Plan your week's meals from saved foods and meals. Suggestions follow your diet and what you avoid, and prefer what's in your pantry and expires soon.",
             "The grocery list is built from the meals you've planned, minus what you already have. Checking an item doesn't store it; Done shopping moves checked items into your pantry.",
         ]
         case .appleHealth: [
-            "VESS reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach.",
+            "UMEVA reads steps, workouts, active energy, weight, body fat, waist, sleep, heart rate, heart rate variability, State of Mind and mindful minutes from Apple Health. It never writes to Health. Only steps and recorded workouts leave your iPhone, in Coach's summary when you ask Coach.",
             "Sleep, Heart and Stress (You › Health) are read and estimated on your iPhone. Stress is an estimate against your own baseline, not a medical measurement.",
-            "iOS decides what VESS can read. To change access, open the Health app, tap your profile, then Apps › VESS.",
+            "iOS decides what UMEVA can read. To change access, open the Health app, tap your profile, then Apps › UMEVA.",
         ]
         }
     }
@@ -414,7 +414,7 @@ struct HelpView: View {
                 }
             }
             .vessHairlineBottom()
-            ActivityFootnote(text: Text("VESS \(version) (\(build))"))
+            ActivityFootnote(text: Text("UMEVA \(version) (\(build))"))
         }
     }
 }
