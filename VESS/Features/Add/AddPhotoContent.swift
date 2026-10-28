@@ -76,6 +76,10 @@ struct AddPhotoContent: View {
     @State private var found: Food?
     /// The frame's one flash when a code is found.
     @State private var flash = false
+    /// Tap to focus: where the square shows, and its fade.
+    @State private var focusPoint: CGPoint?
+    @State private var focusTap = 0
+    @State private var frameSize: CGSize = .zero
 
     private var mode: Mode { Mode(rawValue: storedMode) ?? .meal }
 
@@ -124,17 +128,36 @@ struct AddPhotoContent: View {
             guard !isPrewarm else { return }
             CameraTiming.mark("sheet")
             camera.onBarcode = { code in detected(code) }
-            camera.isBarcodeMode = mode == .barcode
+            camera.switchMode(mode.rawValue, barcode: mode == .barcode)
             updateDetection()
         }
         .onChange(of: storedMode) { _, _ in
-            camera.setTorch(false)
-            camera.isFlashOn = false
-            camera.isBarcodeMode = mode == .barcode
+            camera.switchMode(mode.rawValue, barcode: mode == .barcode)
             scan = .scanning
             updateDetection()
         }
         .task { await loadRemaining() }
+        #if DEBUG
+        // `-cameraLightTest`: torch in Barcode, then a flash photo and the
+        // torch in Meal; the console says whether each really lit up.
+        .task {
+            guard !isPrewarm, ProcessInfo.processInfo.arguments.contains("-cameraLightTest") else { return }
+            try? await Task.sleep(for: .seconds(2))
+            storedMode = Mode.barcode.rawValue
+            try? await Task.sleep(for: .seconds(1))
+            while camera.light != .torch, camera.availableLights.contains(.torch) { camera.cycleLight() }
+            try? await Task.sleep(for: .seconds(2))
+            storedMode = Mode.meal.rawValue
+            try? await Task.sleep(for: .seconds(1))
+            print("CameraLight meal lights=\(camera.availableLights.map(\.rawValue)) light after switch=\(camera.light.rawValue)")
+            while camera.light != .flash, camera.availableLights.contains(.flash) { camera.cycleLight() }
+            _ = await camera.capture()
+            try? await Task.sleep(for: .seconds(1))
+            while camera.light != .torch, camera.availableLights.contains(.torch) { camera.cycleLight() }
+            try? await Task.sleep(for: .seconds(2))
+            camera.cycleLight()
+        }
+        #endif
         .onDisappear { camera.release() }
     }
 
@@ -244,6 +267,13 @@ struct AddPhotoContent: View {
 
     private static let statusID = "photo.barcodeStatus"
 
+    /// What decides the barcode scan area.
+    private struct ScanArea: Equatable {
+        var size: CGSize
+        var isBarcode: Bool
+        var hasFrame: Bool
+    }
+
     /// What decides whether the camera runs.
     private struct CameraUse: Equatable {
         var isOutOfEstimates: Bool
@@ -293,6 +323,15 @@ struct AddPhotoContent: View {
                             .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: camera.hasFrame)
                             .clipShape(shape)
                             .accessibilityHidden(true)
+                            // Tap to focus and expose there.
+                            .contentShape(Rectangle())
+                            .onTapGesture(coordinateSpace: .local) { location in
+                                guard camera.hasFrame else { return }
+                                camera.focus(atPreviewPoint: location)
+                                focusPoint = location
+                                focusTap += 1
+                            }
+                        if let focusPoint { FocusSquare(tap: focusTap).position(focusPoint) }
                     }
                 case .interrupted:
                     Color.black
@@ -328,6 +367,14 @@ struct AddPhotoContent: View {
         }
         // Nothing inside spills past the frame.
         .clipShape(shape)
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { frameSize = $0 }
+        // Barcode mode reads codes only inside the guide.
+        .onChange(of: ScanArea(size: frameSize, isBarcode: mode == .barcode, hasFrame: camera.hasFrame), initial: true) { _, area in
+            if area.isBarcode, area.hasFrame { camera.setScanRect(BarcodeScanArea.rect(in: area.size)) }
+        }
+        .overlay(alignment: .topTrailing) {
+            if !isOutOfEstimates, camera.state == .running { lightButton }
+        }
         .overlay(alignment: .top) {
             if !isOutOfEstimates {
                 pillText
@@ -379,41 +426,49 @@ struct AddPhotoContent: View {
             .accessibilityLabel("Take photo")
             .accessibilityIdentifier("photo.shutter")
             Spacer()
-            lightButton
+            // The light is in the frame's corner; this keeps the shutter centred.
+            Color.clear.frame(width: VESSSize.addButton, height: VESSSize.addButton)
         }
         // The symbols stop growing so they stay inside their circles.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .frame(height: Self.controlsHeight)
     }
 
-    /// The photo flash in Meal and Menu; the torch in Barcode.
+    /// The light, in the frame's top corner: flash and torch in Meal and
+    /// Menu, the torch in Barcode. Hidden when the camera has neither.
     @ViewBuilder
     private var lightButton: some View {
-        if mode == .barcode {
-            Button { camera.setTorch(!camera.isTorchOn) } label: {
-                Image(systemName: camera.isTorchOn ? "flashlight.on.fill" : "flashlight.off.fill")
-                    .font(.title3)
-                    .foregroundStyle(VESSColor.text)
-                    .frame(width: VESSSize.addButton, height: VESSSize.addButton)
-                    .background(VESSColor.fill, in: Circle())
+        if camera.availableLights.count > 1 {
+            Button { camera.cycleLight() } label: {
+                Image(systemName: lightSymbol)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(camera.light == .off ? VESSColor.text : VESSColor.background)
+                    .frame(width: VESSHitTarget.minimum, height: VESSHitTarget.minimum)
+                    .background(camera.light == .off ? VESSColor.background.opacity(0.7) : VESSColor.text, in: Circle())
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .opacity(camera.hasTorch ? 1 : 0)
-            .disabled(!camera.hasTorch)
-            .accessibilityLabel(camera.isTorchOn ? "Turn light off" : "Turn light on")
-            .accessibilityIdentifier("photo.torch")
-        } else {
-            Button { camera.isFlashOn.toggle() } label: {
-                Image(systemName: camera.isFlashOn ? "bolt.fill" : "bolt.slash")
-                    .font(.title3)
-                    .foregroundStyle(VESSColor.text)
-                    .frame(width: VESSSize.addButton, height: VESSSize.addButton)
-                    .background(VESSColor.fill, in: Circle())
-            }
-            .buttonStyle(.plain)
-            .opacity(camera.hasFlash && !isOutOfEstimates ? 1 : 0)
-            .disabled(!camera.hasFlash || isOutOfEstimates)
-            .accessibilityLabel(camera.isFlashOn ? "Flash on" : "Flash off")
+            .padding(VESSSpacing.xs)
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+            .accessibilityLabel(lightLabel)
+            .accessibilityHint(Text("Changes the light"))
+            .accessibilityIdentifier("photo.light")
+        }
+    }
+
+    private var lightSymbol: String {
+        switch camera.light {
+        case .off: "bolt.slash"
+        case .flash: "bolt.fill"
+        case .torch: "flashlight.on.fill"
+        }
+    }
+
+    private var lightLabel: Text {
+        switch camera.light {
+        case .off: Text("Flash off")
+        case .flash: Text("Flash on")
+        case .torch: Text("Torch on")
         }
     }
 
@@ -582,7 +637,15 @@ struct AddPhotoContent: View {
 
     private func shoot() {
         Task {
-            if let data = await camera.capture() { use(data) } else { showError = true }
+            guard let data = await camera.capture() else { showError = true; return }
+            #if DEBUG
+            // `-cameraShots`: keep the shot in Documents/shots to check focus.
+            if ProcessInfo.processInfo.arguments.contains("-cameraShots"), let folder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appending(path: "shots") {
+                try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try? data.write(to: folder.appending(path: "\(mode.rawValue)-\(Int(Date.now.timeIntervalSince1970)).heic"))
+            }
+            #endif
+            use(data)
         }
     }
 
@@ -679,6 +742,7 @@ struct AddPhotoContent: View {
 
     private func detected(_ code: String) {
         guard mode == .barcode, scan == .scanning, !code.isEmpty else { return }
+        if ProcessInfo.processInfo.arguments.contains("-cameraShots") { print("CameraBarcode read a \(code.count)-digit code at \(Date.now.formatted(date: .omitted, time: .standard))") }
         scan = .reading(code)
         updateDetection()
         haptics.play(.success)
@@ -935,9 +999,8 @@ private struct BarcodeGuide: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let width = proxy.size.width * 0.78
-            let height = min(proxy.size.height * 0.34, width * 0.55)
-            let rect = CGRect(x: (proxy.size.width - width) / 2, y: (proxy.size.height - height) / 2, width: width, height: height)
+            let rect = BarcodeScanArea.rect(in: proxy.size)
+            let width = rect.width
             ZStack {
                 Path { path in
                     let c = Self.corner
@@ -956,5 +1019,27 @@ private struct BarcodeGuide: View {
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+/// Tap to focus: a small square that settles and fades out.
+private struct FocusSquare: View {
+    let tap: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isShown = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: VESSRadius.small, style: .continuous)
+            .stroke(VESSColor.text, lineWidth: 1.5)
+            .frame(width: 64, height: 64)
+            .scaleEffect(isShown || reduceMotion ? 1 : 1.25)
+            .opacity(isShown ? 1 : 0)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .task(id: tap) {
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { isShown = true }
+                try? await Task.sleep(for: .seconds(1.2))
+                withAnimation(.easeIn(duration: 0.4)) { isShown = false }
+            }
     }
 }

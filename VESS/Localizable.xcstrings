@@ -2337,6 +2337,9 @@
     "Change, or delete" : {
 
     },
+    "Changes the light" : {
+
+    },
     "Check access" : {
 
     },
@@ -6097,6 +6100,9 @@
 
     },
     "Too many tries for now. Wait a minute and try again." : {
+
+    },
+    "Torch on" : {
 
     },
     "Total" : {

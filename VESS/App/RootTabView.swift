@@ -118,12 +118,14 @@ struct RootTabView: View {
             // `-cameraTiming`: open Add on Photo three times (one cold, two
             // warm), so the console shows how long the camera takes.
             guard CameraTiming.isPrinting else { return }
+            // The light test keeps one sheet open while it runs.
+            let isLightTest = ProcessInfo.processInfo.arguments.contains("-cameraLightTest")
             try? await Task.sleep(for: .seconds(3))
-            for _ in 0..<3 {
+            for _ in 0..<(isLightTest ? 1 : 3) {
                 UserDefaults.standard.set(AddType.photo.rawValue, forKey: "add.lastType")
                 UserDefaults.standard.set(AppClock.now.timeIntervalSince1970, forKey: "add.lastTypeAt")
                 requestAdd(nil)
-                try? await Task.sleep(for: .seconds(4))
+                try? await Task.sleep(for: .seconds(isLightTest ? 16 : 4))
                 addRequest = nil
                 try? await Task.sleep(for: .seconds(3))
             }
