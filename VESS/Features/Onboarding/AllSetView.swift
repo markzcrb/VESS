@@ -59,7 +59,7 @@ struct AllSetView: View {
                 }
             }
         }
-        .background { BrandSilkBackground(coverage: 0.32) }
+        .background { BrandBackground() }
     }
 
     private var welcome: LocalizedStringResource {

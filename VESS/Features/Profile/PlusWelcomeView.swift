@@ -35,7 +35,7 @@ struct PlusWelcomeLedger {
     }
 }
 
-/// B04, right after a verified UMEVA+ purchase: always graphite silk, the
+/// B04, right after a verified UMEVA+ purchase: always plain graphite, the
 /// state, the dates from the transaction, the real limits
 /// (`UMEVAPlusLimits`), Ask Coach something, Done, and Manage.
 struct PlusWelcomeView: View {
@@ -96,9 +96,7 @@ struct PlusWelcomeView: View {
                 }
             }
         }
-        .background {
-            BrandSilkBackground(image: VESSBrandAssets.silkGraphite, base: VESSColor.brandGraphite, coverage: 0.55)
-        }
+        .background { BrandBackground(color: VESSColor.brandGraphite) }
         .manageSubscriptionsSheet(isPresented: $showManage)
         // Graphite in both appearances, so every token resolves dark.
         .environment(\.colorScheme, .dark)

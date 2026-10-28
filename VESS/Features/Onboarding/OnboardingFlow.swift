@@ -19,7 +19,8 @@ struct OnboardingFlow: View {
 
     var body: some View {
         ZStack {
-            VESSColor.background.ignoresSafeArea()
+            // The brand screens' plain pearl / graphite, through every question.
+            BrandBackground()
 
             if step == .welcome {
                 WelcomeView(onStart: { go(to: .goal) }, onSignIn: signIn)

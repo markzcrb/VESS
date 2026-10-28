@@ -113,6 +113,10 @@ struct AppRootView: View {
         }
         .onChange(of: isOpening, initial: true) { _, opening in
             guard !opening, showsSplash else { return }
+            #if DEBUG
+            // Captures: B01 stays.
+            if ProcessInfo.processInfo.arguments.contains("-captureSplash") { return }
+            #endif
             withAnimation(reduceMotion ? VESSMotion.reducedCrossfade : VESSMotion.splashFade) {
                 showsSplash = false
             }

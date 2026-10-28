@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// B01: the first frame after the launch screen. Silk full-bleed with the
-/// wordmark at the launch image's place and size (centred in the whole
-/// screen, 192 pt wide), so the handoff doesn't jump. `AppRootView` fades it
-/// out as soon as the store is ready.
+/// B01: the first frame after the launch screen, the same as it: the plain
+/// launch colour with the wordmark at the launch image's place and size
+/// (centred in the whole screen, 192 pt wide), so the handoff doesn't
+/// jump. B02 puts its wordmark in the same place.
 struct LaunchSplash: View {
     /// Width of `LaunchWordmark` in the asset catalog; keep the two equal.
     static let wordmarkWidth: CGFloat = 192
@@ -11,15 +11,7 @@ struct LaunchSplash: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        // The silk fills the screen as an overlay so its size never moves the
-        // wordmark off the screen's centre.
         VESSColor.launchBackground
-            .overlay {
-                Image(decorative: VESSBrandAssets.silk)
-                    .resizable()
-                    .scaledToFill()
-            }
-            .clipped()
             .overlay {
                 UMEVAWordmark(width: Self.wordmarkWidth)
                     .foregroundStyle(colorScheme == .dark ? VESSColor.brandPearl : VESSColor.brandInk)

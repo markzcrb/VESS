@@ -97,10 +97,6 @@ struct UMEVAMonogram: View {
 enum VESSBrandAssets {
     /// Optional welcome-screen image. Only licensed imagery.
     static let welcomeHero = "WelcomeHero"
-    /// Silk: pearl in Light, graphite in Dark.
-    static let silk = "BrandSilk"
-    /// Graphite silk in both appearances (UMEVA+ welcome).
-    static let silkGraphite = "BrandSilkGraphite"
 
     static func isAvailable(_ name: String) -> Bool {
         #if canImport(UIKit)

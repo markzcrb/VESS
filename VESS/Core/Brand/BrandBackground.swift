@@ -1,34 +1,12 @@
 import SwiftUI
 
-/// The brand screens' background (B02–B04): silk on the top part of the
-/// screen, fading into the plain base colour where the text sits.
-struct BrandSilkBackground: View {
-    /// `VESSBrandAssets.silk` (pearl / graphite by appearance) or
-    /// `.silkGraphite` (UMEVA+, always graphite).
-    var image = VESSBrandAssets.silk
-    var base = VESSColor.launchBackground
-    /// The part of the screen's height the silk covers before it has faded.
-    var coverage: CGFloat = 0.62
+/// The brand screens' plain background: pearl in Light and graphite in
+/// Dark (B01–B03, onboarding), or graphite always (B04). No image.
+struct BrandBackground: View {
+    var color = VESSColor.launchBackground
 
     var body: some View {
-        base
-            .overlay(alignment: .top) {
-                Image(decorative: image)
-                    .resizable()
-                    .scaledToFill()
-                    .containerRelativeFrame([.horizontal, .vertical]) { length, axis in
-                        axis == .vertical ? length * coverage : length
-                    }
-                    .clipped()
-                    .mask {
-                        LinearGradient(stops: [.init(color: .black, location: 0),
-                                               .init(color: .black, location: 0.55),
-                                               .init(color: .clear, location: 1)],
-                                       startPoint: .top, endPoint: .bottom)
-                    }
-            }
-            .ignoresSafeArea()
-            .accessibilityHidden(true)
+        color.ignoresSafeArea()
     }
 }
 
