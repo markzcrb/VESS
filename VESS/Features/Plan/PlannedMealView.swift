@@ -42,16 +42,27 @@ struct PlannedMealView: View {
 
         return ScrollView {
             VStack(alignment: .leading, spacing: VESSSpacing.xl) {
-                // No food photo: VESS shows only the user's own photos.
-                RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
-                    .fill(VESSColor.fill)
-                    .frame(height: 120)
-                    .overlay {
-                        Image(systemName: "fork.knife")
-                            .font(.title)
-                            .foregroundStyle(VESSColor.decorative)
-                    }
-                    .accessibilityHidden(true)
+                // The recipe's photo (bundled, or the user's own); the quiet
+                // tile only when there truly is none.
+                if case .recipe(let id) = meal.source, let photo = RecipePhoto.image(recipeID: id, catalog: catalog, store: store) {
+                    photo
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: RecipePhotoHeader.photoHeight * 0.6)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous))
+                        .accessibilityHidden(true)
+                } else {
+                    RoundedRectangle(cornerRadius: VESSRadius.large, style: .continuous)
+                        .fill(VESSColor.fill)
+                        .frame(height: 120)
+                        .overlay {
+                            Image(systemName: "fork.knife")
+                                .font(.title)
+                                .foregroundStyle(VESSColor.decorative)
+                        }
+                        .accessibilityHidden(true)
+                }
 
                 VStack(alignment: .leading, spacing: VESSSpacing.md) {
                     Text(meal.name)

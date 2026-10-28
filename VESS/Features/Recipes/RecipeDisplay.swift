@@ -92,13 +92,7 @@ extension Recipe {
     /// The bundled photo, or the user's own; `nil` for the quiet tile.
     @MainActor
     func photoImage(store: LocalStore) -> Image? {
-        if origin == .discover, let photo, let image = UIImage(named: photo) {
-            return Image(uiImage: image)
-        }
-        if origin != .discover, let data = store.recipePhoto(id: id), let image = UIImage(data: data) {
-            return Image(uiImage: image)
-        }
-        return nil
+        RecipePhoto.of(self) { store.recipePhoto(id: $0) != nil }?.image(store: store)
     }
 }
 
@@ -239,5 +233,25 @@ enum RecipeText {
             badges.append(.init(text: reason.text, tone: .warning))
         }
         return badges
+    }
+}
+
+extension RecipePhoto {
+    /// The image itself; `nil` when it can't be loaded (the quiet tile).
+    @MainActor
+    func image(store: LocalStore) -> Image? {
+        switch self {
+        case .bundled(let name):
+            return UIImage(named: name).map(Image.init(uiImage:))
+        case .user(let id):
+            return store.recipePhoto(id: id).flatMap(UIImage.init(data:)).map(Image.init(uiImage:))
+        }
+    }
+
+    /// A planned or logged meal's photo, by recipe id.
+    @MainActor
+    static func image(recipeID: String, catalog: RecipeCatalog, store: LocalStore) -> Image? {
+        lookup(recipeID: recipeID, catalog: catalog.recipes, userRecipes: store.userRecipes) { store.recipePhoto(id: $0) != nil }?
+            .image(store: store)
     }
 }
